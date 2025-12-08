@@ -38,21 +38,7 @@ const table = document.getElementById("table");
 
 // Wczytaj dane
 async function loadData() {
-  import { collection, onSnapshot } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore.js";
-
-const list = document.getElementById("list");
-
-onSnapshot(collection(db, "users"), (snapshot) => {
-  list.innerHTML = ""; // czyścimy listę
-
-  snapshot.forEach((doc) => {
-    const data = doc.data();
-
-    const li = document.createElement("li");
-    li.textContent = `${data.name} — ${data.hour}`;
-    list.appendChild(li);
-  });
-});
+  const querySnapshot = await getDocs(collection(db, "users"));
 
   querySnapshot.forEach((docu) => {
     const data = docu.data();
@@ -85,6 +71,7 @@ window.clearAll = async function(){
 
 </body>
 </html>
+
 
 
 
