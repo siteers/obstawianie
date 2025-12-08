@@ -2,54 +2,52 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Dodaj dane</title>
+  <title>Dodaj użytkownika</title>
 </head>
 <body>
+  <h2>Dodaj swoje dane</h2>
 
-<h2>Podaj swoje dane</h2>
+  <input id="name" placeholder="Imię / pseudonim"><br><br>
+  <input id="hour" placeholder="Typowa godzina np. 18:00"><br><br>
+  <button onclick="saveData()">Zapisz</button>
 
-<input type="text" id="name" placeholder="Pseudonim"><br><br>
-<input type="text" id="time" placeholder="Typowa godzina (np. 8:00)"><br><br>
+  <p id="msg"></p>
 
-<button onclick="saveData()">Zapisz</button>
-<p id="msg"></p>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<!-- Firebase v8 -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
-
-<script>
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
-  databaseURL: "https://obstaiwanie-default-rtdb.europe-west1.firebasedatabase.app", 
   projectId: "obstaiwanie",
   storageBucket: "obstaiwanie.firebasestorage.app",
   messagingSenderId: "64783465818",
   appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-function saveData() {
+window.saveData = async function(){
   const name = document.getElementById("name").value;
-  const time = document.getElementById("time").value;
+  const hour = document.getElementById("hour").value;
 
-  if (!name || !time) {
+  if(!name || !hour){
     alert("Uzupełnij oba pola!");
     return;
   }
 
-  database.ref("users").push({
+  await addDoc(collection(db, "users"), {
     name: name,
-    time: time
+    hour: hour
   });
 
-  document.getElementById("msg").innerText = "✅ Dane zapisane!";
-  document.getElementById("name").value = "";
-  document.getElementById("time").value = "";
+  document.getElementById("msg").innerText = "Zapisano!";
+  document.getElementById("name").value="";
+  document.getElementById("hour").value="";
 }
 </script>
+
 </body>
 </html>
