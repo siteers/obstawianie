@@ -2,56 +2,71 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>Lista osób</title>
+  <title>Lista użytkowników</title>
 </head>
 <body>
-
 <h2>Lista zapisanych osób</h2>
 
-<button onclick="clearDatabase()">🗑 Wyczyść wszystkie rekordy</button>
+<button onclick="clearAll()">Wyczyść rekordy</button>
 <br><br>
 
-<ul id="list"></ul>
+<table border="1" id="table">
+  <tr>
+    <th>Imię</th>
+    <th>Godzina</th>
+  </tr>
+</table>
 
-<!-- Firebase v8 -->
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-<script>
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
-  databaseURL: "https://obstaiwanie-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "obstaiwanie",
   storageBucket: "obstaiwanie.firebasestorage.app",
   messagingSenderId: "64783465818",
   appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
 };
 
-firebase.initializeApp(firebaseConfig);
-const database = firebase.database();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-const list = document.getElementById("list");
+const table = document.getElementById("table");
 
-database.ref("users").on("value", (snapshot) => {
-  list.innerHTML = "";
+// Wczytaj dane
+async function loadData() {
+  const querySnapshot = await getDocs(collection(db, "users"));
 
-  snapshot.forEach((child) => {
-    const data = child.val();
-    const key = child.key;
-
-    const li = document.createElement("li");
-    li.textContent = data.name + " — " + data.time;
-
-    list.appendChild(li);
+  querySnapshot.forEach((docu) => {
+    const data = docu.data();
+    const row = `
+      <tr>
+        <td>${data.name}</td>
+        <td>${data.hour}</td>
+      </tr>
+    `;
+    table.innerHTML += row;
   });
-});
+}
 
-function clearDatabase() {
-  if (confirm("Czy na pewno chcesz usunąć WSZYSTKIE dane?")) {
-    database.ref("users").remove();
-  }
+loadData();
+
+// Wyczyść wszystkie rekordy
+window.clearAll = async function(){
+  const querySnapshot = await getDocs(collection(db, "users"));
+  querySnapshot.forEach(async (d) => {
+    await deleteDoc(doc(db, "users", d.id));
+  });
+
+  table.innerHTML = `
+    <tr>
+      <th>Imię</th>
+      <th>Godzina</th>
+    </tr>`;
 }
 </script>
+
 </body>
 </html>
