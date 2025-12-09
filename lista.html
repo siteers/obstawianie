@@ -14,8 +14,6 @@
         display: flex;
         justify-content: center;
         transition: background-color 0.2s;
-        overflow-x: hidden;
-        overflow-y: hidden;
     }
 
     .container {
@@ -145,28 +143,21 @@
         display: none;
     }
 
-    /* ---- CRINGE MEMY ---- */
-    .meme {
+    /* ---- CRINGE GIFY W MIEJSCU ---- */
+    #cringeGifs {
         position: fixed;
-        width: 150px;
-        height: 150px;
-        pointer-events: none;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
         z-index: 99999;
-        animation: floatUp 3s forwards;
+        display: none;
     }
 
-    @keyframes floatUp {
-        0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity:1; }
-        100% { transform: translateY(-200px) scale(1) rotate(360deg); opacity:0; }
-    }
-
-    /* migające tło */
-    @keyframes cringeBg {
-        0% { background-color: #ff69b4; }
-        25% { background-color: #00ffff; }
-        50% { background-color: #ffff00; }
-        75% { background-color: #ff00ff; }
-        100% { background-color: #00ff00; }
+    #cringeGifs img {
+        height: 180px;
+        margin: 5px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255,255,255,0.8);
     }
 
     /* migająca pierwsza osoba */
@@ -216,8 +207,13 @@
 
 </div>
 
-<!-- Fajerwerki -->
+<!-- Fajerwerki + cringe gify -->
 <canvas id="fireworksCanvas"></canvas>
+<div id="cringeGifs">
+    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
+</div>
 
 <!-- Dźwięk fanfar -->
 <audio id="fanfareAudio" src="https://www.soundjay.com/misc/fanfare-trumpets-01.mp3"></audio>
@@ -357,28 +353,11 @@ function updateFireworks() {
 function startFireworks() {
     fireworksActive = true;
     canvas.style.display = "block";
-    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+    document.getElementById("cringeGifs").style.display = "block";
 
     spawnFirework();
     updateFireworks();
     const interval = setInterval(() => spawnFirework(), 400);
-
-    // Dodaj memy losowo
-    const memeUrls = [
-        "https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif",
-        "https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif",
-        "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif"
-    ];
-
-    const memeInterval = setInterval(() => {
-        const img = document.createElement("img");
-        img.src = memeUrls[Math.floor(Math.random()*memeUrls.length)];
-        img.className = "meme";
-        img.style.left = Math.random()*80 + "vw";
-        img.style.width = 150 + Math.random()*100 + "px";
-        document.body.appendChild(img);
-        setTimeout(()=> img.remove(), 3000);
-    }, 500);
 
     // Dźwięk fanfar
     const audio = document.getElementById("fanfareAudio");
@@ -386,10 +365,9 @@ function startFireworks() {
 
     setTimeout(() => {
         clearInterval(interval);
-        clearInterval(memeInterval);
         fireworksActive = false;
         canvas.style.display = "none";
-        document.body.style.animation = "none";
+        document.getElementById("cringeGifs").style.display = "none";
     }, 7000);
 }
 
