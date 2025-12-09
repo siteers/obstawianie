@@ -31,7 +31,7 @@
       margin-top: 0;
     }
 
-    input {
+    select, input {
       width: 90%;
       padding: 12px;
       margin: 10px 0;
@@ -42,7 +42,7 @@
       transition: 0.2s;
     }
 
-    input:focus {
+    select:focus, input:focus {
       border-color: #0077ff;
       box-shadow: 0 0 8px rgba(0,123,255,0.4);
     }
@@ -80,7 +80,17 @@
   <div class="container">
     <h2>Dodaj swoje dane</h2>
 
-    <input id="name" placeholder="Imię / pseudonim">
+    <!-- Zmienione z input na select -->
+    <select id="name">
+      <option value="">Wybierz imię</option>
+      <option value="Arek">Arek</option>
+      <option value="Paweł">Paweł</option>
+      <option value="Grzesiek Sz">Grzesiek</option>
+      <option value="Grzesiek P">Piotr</option>
+      <option value="Krzysiek">Krzysiek</option>
+      <option value="Mariusz">Mariusz</option>
+      <option value="Dominik">Dominik</option>
+    </select>
 
     <input id="hour" type="time" placeholder="Godzina">
 
@@ -109,7 +119,7 @@ const db = getFirestore(app);
 // Zapis danych
 // -------------------------------
 window.saveData = async function() {
-  const name = document.getElementById("name").value.trim();
+  const name = document.getElementById("name").value;
   const hour = document.getElementById("hour").value;
 
   if (!name || !hour) {
@@ -126,7 +136,6 @@ window.saveData = async function() {
   document.getElementById("name").value = "";
   document.getElementById("hour").value = "";
 
-  // Usuń komunikat po 2 sekundach
   setTimeout(() => {
     document.getElementById("msg").innerText = "";
   }, 2000);
