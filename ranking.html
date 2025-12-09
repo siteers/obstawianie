@@ -6,46 +6,46 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
 }
 
 .container {
-    max-width: 800px;
-    width: 100%;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    max-width: 800px;
+    width: 100%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
 h2 { text-align: center; margin-bottom: 20px; }
 
 table {
-    width: 100%;
-    border-collapse: collapse;
-    background: white;
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
 }
 
 th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
 }
 
 th { background: #eee; }
 
 button.deleteBtn {
-    padding: 5px 10px;
-    border-radius: 6px;
-    border: none;
-    cursor: pointer;
-    background: #ff4d4d;
-    color: white;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    background: #ff4d4d;
+    color: white;
 }
 
 button.deleteBtn:hover { background: red; }
@@ -53,16 +53,16 @@ button.deleteBtn:hover { background: red; }
 </head>
 <body>
 <div class="container">
-    <h2>Ranking wszystkich sesji</h2>
-    <table id="rankingTable">
-        <tr>
-            <th>Data</th>
-            <th>Miejsce 1</th>
-            <th>Miejsce 2</th>
-            <th>Miejsce 3</th>
-            <th>Akcje</th>
-        </tr>
-    </table>
+    <h2>Ranking wszystkich sesji</h2>
+    <table id="rankingTable">
+        <tr>
+            <th>Data</th>
+            <th>Miejsce 1</th>
+            <th>Miejsce 2</th>
+            <th>Miejsce 3</th>
+            <th>Akcje</th>
+        </tr>
+    </table>
 </div>
 
 <script type="module">
@@ -71,12 +71,12 @@ import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://ww
 
 // konfiguracja Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
-  authDomain: "obstaiwanie.firebaseapp.com",
-  projectId: "obstaiwanie",
-  storageBucket: "obstaiwanie.firebasestorage.app",
-  messagingSenderId: "64783465818",
-  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie",
+  storageBucket: "obstaiwanie.firebasestorage.app",
+  messagingSenderId: "64783465818",
+  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -85,48 +85,70 @@ const table = document.getElementById("rankingTable");
 
 let allSessions = [];
 
-// nasłuchiwanie zmian w kolekcji "sessions"
-onSnapshot(collection(db, "sessions"), snapshot => {
-    allSessions = [];
-    snapshot.forEach(docu => {
-        allSessions.push({ id: docu.id, ...docu.data() });
-    });
-    renderTable();
-});
+/* ------------------ FUNKCJE LOGIKI ------------------ */
+
+// funkcja usuwania sesji
+const deleteSession = async function(id) {
+    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
+        await deleteDoc(doc(db, "sessions", id));
+    }
+}
 
 // funkcja do rysowania tabeli
 function renderTable() {
-    table.innerHTML = `
-        <tr>
-            <th>Data</th>
-            <th>Miejsce 1</th>
-            <th>Miejsce 2</th>
-            <th>Miejsce 3</th>
-            <th>Akcje</th>
-        </tr>`;
+    // Zawsze zaczynamy od nagłówka
+    let html = `
+        <tr>
+            <th>Data</th>
+            <th>Miejsce 1</th>
+            <th>Miejsce 2</th>
+            <th>Miejsce 3</th>
+            <th>Akcje</th>
+        </tr>`;
+    
+    // Sortowanie sesji od najnowszej (używamy b.date - a.date)
+    allSessions.sort((a,b) => new Date(b.date) - new Date(a.date));
+    
+    allSessions.forEach(session => {
+        // Używamy session.results?.[index] dla bezpieczeństwa
+        html += `
+        <tr>
+            <td>${new Date(session.date).toLocaleString("pl-PL")}</td>
+            <td>${session.results?.[0] || "-"}</td>
+            <td>${session.results?.[1] || "-"}</td>
+            <td>${session.results?.[2] || "-"}</td>
+            <td>
+                                <button class="deleteBtn" data-id="${session.id}">Usuń</button>
+            </td>
+        </tr>`;
+    });
     
-    allSessions.sort((a,b) => new Date(b.date) - new Date(a.date));
-    
-    allSessions.forEach(session => {
-        table.innerHTML += `
-        <tr>
-            <td>${new Date(session.date).toLocaleString("pl-PL")}</td>
-            <td>${session.results[0] || ""}</td>
-            <td>${session.results[1] || ""}</td>
-            <td>${session.results[2] || ""}</td>
-            <td>
-                <button class="deleteBtn" onclick="deleteSession('${session.id}')">Usuń</button>
-            </td>
-        </tr>`;
-    });
+    table.innerHTML = html; 
 }
 
-// funkcja usuwania sesji
-window.deleteSession = async function(id) {
-    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
-        await deleteDoc(doc(db, "sessions", id));
+/* ------------------ OBSŁUGA DANYCH FIREBASE ------------------ */
+
+// nasłuchiwanie zmian w kolekcji "sessions"
+onSnapshot(collection(db, "sessions"), snapshot => {
+    allSessions = [];
+    snapshot.forEach(docu => {
+        allSessions.push({ id: docu.id, ...docu.data() });
+    });
+    renderTable(); // Rysowanie danych po każdej aktualizacji
+});
+
+/* ------------------ DELEGACJA ZDARZEŃ ------------------ */
+
+// Nasłuchiwanie kliknięć na całą tabelę
+table.addEventListener('click', (e) => {
+    // Sprawdzamy, czy kliknięty element ma klasę 'deleteBtn'
+    if (e.target.classList.contains('deleteBtn')) {
+        const sessionId = e.target.dataset.id; // Pobieramy ID z data-id
+        if (sessionId) {
+            deleteSession(sessionId); // Wywołujemy funkcję wewnątrz modułu
+        }
     }
-}
+});
 </script>
 </body>
 </html>
