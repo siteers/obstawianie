@@ -167,11 +167,15 @@
     50% { background-color: #006400; }
     100% { background-color: #d1ffd1; }
 }
-.blink {
-    animation: blinkGreen 1.5s infinite;
-    color: white !important; /* wymusza biały tekst */
-    font-weight: bold !important; /* wymusza pogrubienie */
-}
+    .blink {
+
+        animation: blinkGreen 1.0s infinite;
+
+        color: white; /* tekst będzie dobrze widoczny na ciemnozielonym */
+
+    font-weight: bold;
+
+    }
     /* efekt migającego tła (cringe) */
 @keyframes cringeBg {
     0% { background-color: #ff69b4; }
@@ -412,4 +416,5 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
 
