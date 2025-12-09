@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Ranking wszystkich sesji</title>
+<title>Ranking</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -12,65 +12,77 @@ body {
     padding: 20px;
     display: flex;
     justify-content: center;
+    transition: background-color 0.2s;
 }
 
 .container {
-    max-width: 800px;
+    max-width: 900px;
     width: 100%;
     background: white;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(0,0,0,0.2);
-    overflow-x: auto;
 }
 
-h2 { text-align: center; margin-bottom: 20px; }
+h2 { text-align: center; }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    margin-top: 20px;
 }
 
 th, td {
     border: 1px solid #ccc;
     padding: 10px;
     text-align: center;
+    font-weight: normal;
+    color: black;
 }
 
 th { background: #eee; }
 
-button.deleteBtn {
-    padding: 5px 10px;
-    border-radius: 6px;
-    border: none;
+th.deleteCell, td.deleteCell { width: 40px; padding: 5px; }
+
+.deleteBtn {
+    display: inline-block;
+    width: 28px;
+    height: 28px;
+    line-height: 28px;
+    border-radius: 50%;
+    background: #ffdddd;
+    border: 1px solid red;
+    color: red;
+    font-weight: bold;
     cursor: pointer;
-    background: #ff4d4d;
+    transition: 0.2s;
+}
+.deleteBtn:hover {
+    background: red;
     color: white;
 }
-
-button.deleteBtn:hover { background: red; }
 </style>
 </head>
 <body>
 <div class="container">
-    <h2>Ranking wszystkich sesji</h2>
+    <h2>Ranking Sesji</h2>
     <table id="rankingTable">
         <tr>
+            <th>No.</th>
             <th>Data</th>
-            <th>Miejsce 1</th>
-            <th>Miejsce 2</th>
-            <th>Miejsce 3</th>
-            <th>Akcje</th>
+            <th>1 miejsce</th>
+            <th>2 miejsce</th>
+            <th>3 miejsce</th>
+            <th class="deleteCell">X</th>
         </tr>
     </table>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// konfiguracja Firebase
+// konfiguracja Firebase (ta sama co na stronie głównej)
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
@@ -82,83 +94,55 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-const table = document.getElementById("rankingTable");
 
-let allSessions = [];
+const rankingTable = document.getElementById("rankingTable");
 
-/* ------------------ FUNKCJE LOGIKI ------------------ */
-
-// funkcja usuwania sesji
-const deleteSession = async function(id) {
-    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
-        try {
-            await deleteDoc(doc(db, "sessions", id));
-            console.log("Usunięto sesję:", id);
-        } catch (err) {
-            console.error("Błąd przy usuwaniu:", err);
-        }
-    }
-}
-
-// funkcja do rysowania tabeli
-function renderTable() {
-    // Sortowanie sesji od najnowszej
-    allSessions.sort((a,b) => {
-        const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
-        const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
-        return dateB - dateA;
-    });
-    
-    // Budujemy wiersze
-    let rowsHtml = '';
-    allSessions.forEach(session => {
-        let dateObj = session.date?.toDate ? session.date.toDate() : new Date(session.date);
-        const dateStr = dateObj instanceof Date && !isNaN(dateObj) ? dateObj.toLocaleString("pl-PL") : "-";
-
-        rowsHtml += `
+// funkcja odświeżająca tabelę
+function updateRankingTable(sessions) {
+    rankingTable.innerHTML = `
         <tr>
-            <td>${dateStr}</td>
-            <td>${session.results?.[0] || "-"}</td>
-            <td>${session.results?.[1] || "-"}</td>
-            <td>${session.results?.[2] || "-"}</td>
-            <td>
-                <button class="deleteBtn" data-id="${session.id}">Usuń</button>
-            </td>
-        </tr>`;
-    });
-    
-    // Wstawiamy wiersze do tabeli, nagłówek pozostaje statyczny
-    table.innerHTML = `
-        <tr>
+            <th>No.</th>
             <th>Data</th>
-            <th>Miejsce 1</th>
-            <th>Miejsce 2</th>
-            <th>Miejsce 3</th>
-            <th>Akcje</th>
-        </tr>
-        ${rowsHtml}`;
+            <th>1 miejsce</th>
+            <th>2 miejsce</th>
+            <th>3 miejsce</th>
+            <th class="deleteCell">X</th>
+        </tr>`;
+    
+    sessions.forEach((s, index) => {
+        const [first="", second="", third=""] = s.results || [];
+        rankingTable.innerHTML += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${new Date(s.date).toLocaleString("pl-PL")}</td>
+                <td>${first}</td>
+                <td>${second}</td>
+                <td>${third}</td>
+                <td class="deleteCell">
+                    <span class="deleteBtn" onclick="deleteSession('${s.id}')">X</span>
+                </td>
+            </tr>
+        `;
+    });
 }
 
-/* ------------------ OBSŁUGA DANYCH FIREBASE ------------------ */
-
-// nasłuchiwanie zmian w kolekcji "sessions"
-onSnapshot(collection(db, "sessions"), snapshot => {
-    console.log("Snapshot received:", snapshot.size); // log do debugowania
-    allSessions = [];
+// pobieranie danych w czasie rzeczywistym
+onSnapshot(collection(db, "sessions"), (snapshot) => {
+    const sessionsData = [];
     snapshot.forEach(docu => {
-        allSessions.push({ id: docu.id, ...docu.data() });
+        sessionsData.push({ id: docu.id, ...docu.data() });
     });
-    renderTable();
+    // sortowanie po dacie (najnowsze na górze)
+    sessionsData.sort((a,b)=>new Date(b.date) - new Date(a.date));
+    updateRankingTable(sessionsData);
 });
 
-/* ------------------ DELEGACJA ZDARZEŃ ------------------ */
-
-table.addEventListener('click', (e) => {
-    if (e.target.classList.contains('deleteBtn')) {
-        const sessionId = e.target.dataset.id;
-        if (sessionId) deleteSession(sessionId);
+// funkcja do usuwania rekordu
+window.deleteSession = async function(id) {
+    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
+        await deleteDoc(doc(db, "sessions", id));
     }
-});
+};
 </script>
 </body>
 </html>
