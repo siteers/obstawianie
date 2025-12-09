@@ -24,9 +24,7 @@
         box-shadow: 0 0 20px rgba(0,0,0,0.2);
     }
 
-    h2 {
-        text-align: center;
-    }
+    h2 { text-align: center; }
 
     .flex {
         display: flex;
@@ -75,9 +73,7 @@
         margin: auto;
     }
 
-    #stopBtn:active {
-        transform: scale(0.95);
-    }
+    #stopBtn:active { transform: scale(0.95); }
 
     #stoppedTime {
         font-size: 28px;
@@ -108,6 +104,13 @@
     button.clear:hover {
         background: black;
     }
+
+    .deleteBtn {
+        color: red;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
 </style>
 </head>
 
@@ -126,6 +129,7 @@
             <tr>
                 <th>Imię</th>
                 <th>Godzina</th>
+                <th>Usuń</th>
             </tr>
         </table>
     </div>
@@ -164,50 +168,58 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 let usersData = [];
 
-// Automatyczne odświeżanie listy
+// Automatyczna aktualizacja tabeli
 onSnapshot(collection(db, "users"), (snapshot) => {
     usersData = [];
+
     table.innerHTML = `
         <tr>
-          <th>Imię</th>
-          <th>Godzina</th>
+            <th>Imię</th>
+            <th>Godzina</th>
+            <th>Usuń</th>
         </tr>`;
 
     snapshot.forEach((docu) => {
         const data = docu.data();
-        usersData.push(data);
+        usersData.push({ id: docu.id, ...data });
 
         table.innerHTML += `
         <tr>
-          <td>${data.name}</td>
-          <td>${data.hour}</td>
+            <td>${data.name}</td>
+            <td>${data.hour}</td>
+            <td><span class="deleteBtn" onclick="deleteOne('${docu.id}')">X</span></td>
         </tr>`;
     });
 });
 
-/* ------------------ WYCZYSZCZENIE WSZYSTKIEGO ------------------ */
+/* ------------------ USUNIĘCIE POJEDYNCZEGO REKORDU ------------------ */
+window.deleteOne = async function(id) {
+    await deleteDoc(doc(db, "users", id));
+};
+
+/* ------------------ WYCZYSZCZENIE WSZYSTKICH ------------------ */
 window.clearAll = async function () {
     const snapshot = await getDocs(collection(db, "users"));
     snapshot.forEach(async (d) => {
         await deleteDoc(doc(db, "users", d.id));
     });
 
-    // 🔥 DODATKOWE CZYSZCZENIE:
+    // reset pomiaru
     document.getElementById("stoppedTime").textContent = "";
     document.getElementById("winner").style.display = "none";
     document.getElementById("winner").textContent = "";
 };
 
-/* ------------------ ZEGAR ------------------ */
+/* ------------------ ZEGAR CHODZI NON-STOP ------------------ */
 const clock = document.getElementById("clock");
-let interval = setInterval(() => {
+
+setInterval(() => {
     const now = new Date();
     clock.textContent = now.toLocaleTimeString("pl-PL");
 }, 1000);
 
 /* ------------------ STOP + WYZNACZENIE ZWYCIĘZCY ------------------ */
 document.getElementById("stopBtn").onclick = () => {
-    clearInterval(interval);
 
     const stopped = clock.textContent;
     document.getElementById("stoppedTime").textContent =
@@ -215,23 +227,22 @@ document.getElementById("stopBtn").onclick = () => {
 
     if (usersData.length === 0) return;
 
-    // Oblicz zwycięzcę
     const target = toSeconds(stopped);
     let best = null;
 
     usersData.forEach(u => {
         const diff = Math.abs(toSeconds(u.hour) - target);
-        if (!best || diff < best.diff) best = { name: u.name, hour: u.hour, diff };
+        if (!best || diff < best.diff) best = u;
     });
 
     const winner = document.getElementById("winner");
     winner.style.display = "block";
-    winner.textContent = `🏆 Zwycięzca: ${best.name} (jego czas: ${best.hour})`;
+    winner.textContent = `🏆 Zwycięzca: ${best.name} (czas: ${best.hour})`;
 };
 
 /* ------------------ KONWERSJA NA SEKUNDY ------------------ */
-function toSeconds(timeStr) {
-    const [h, m, s] = timeStr.split(":").map(Number);
+function toSeconds(t) {
+    const [h, m, s] = t.split(":").map(Number);
     return h * 3600 + m * 60 + s;
 }
 </script>
