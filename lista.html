@@ -230,10 +230,7 @@
 </div>
 
 <!-- Dźwięk fanfar -->
-<audio id="fanfareAudio" preload="auto">
-  <source src="https://www.soundjay.com/misc/fanfare-trumpets-01.mp3" type="audio/mpeg">
-</audio>
-
+<audio id="fanfareAudio" src="fanfare1.mp3" preload="auto"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -376,10 +373,16 @@ function startFireworks() {
     updateFireworks();
     const interval = setInterval(() => spawnFirework(), 400);
 
-    // Dźwięk fanfar
+  document.getElementById("stopBtn").onclick = () => {
+    // Twój kod wyznaczania zwycięzcy...
+    
+    // Odtwórz fanfarę
     const audio = document.getElementById("fanfareAudio");
-audio.play().catch(err => console.log("Nie można odtworzyć dźwięku:", err));
+    audio.currentTime = 0; // zaczynamy od początku
+    audio.play().catch(err => console.log("Nie można odtworzyć dźwięku:", err));
 
+    startFireworks(); // uruchomienie fajerwerków i gify
+};
 
     setTimeout(() => {
         clearInterval(interval);
@@ -419,6 +422,7 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
 
 
 
