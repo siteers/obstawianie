@@ -378,7 +378,8 @@ function startFireworks() {
 
     // Dźwięk fanfar
     const audio = document.getElementById("fanfareAudio");
-    audio.play();
+audio.play().catch(err => console.log("Nie można odtworzyć dźwięku:", err));
+
 
     setTimeout(() => {
         clearInterval(interval);
@@ -418,6 +419,7 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
 
 
 
