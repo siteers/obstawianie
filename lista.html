@@ -13,6 +13,7 @@
         padding: 20px;
         display: flex;
         justify-content: center;
+        transition: background-color 0.2s;
     }
 
     .container {
@@ -49,13 +50,11 @@
         background: #eee;
     }
 
-    /* Wąska kolumna X */
     th.deleteCell, td.deleteCell {
         width: 40px;
         padding: 5px;
     }
 
-    /* Styl czerwonego X */
     .deleteBtn {
         display: inline-block;
         width: 28px;
@@ -129,6 +128,44 @@
     button.clear:hover {
         background: black;
     }
+
+    /* ---- FAJERWERKI ---- */
+    #fireworksCanvas {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 9999;
+        display: none;
+    }
+
+    /* ---- CRINGE GIFY ---- */
+    #cringeGifs {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        display: none;
+    }
+
+    #cringeGifs img {
+        height: 180px;
+        margin: 5px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    }
+
+    /* migające tło */
+    @keyframes cringeBg {
+        0% { background-color: #ff69b4; }
+        25% { background-color: #00ffff; }
+        50% { background-color: #ffff00; }
+        75% { background-color: #ff00ff; }
+        100% { background-color: #00ff00; }
+    }
 </style>
 </head>
 
@@ -165,8 +202,15 @@
 
 </div>
 
+<!-- Fajerwerki + cringe gify -->
+<canvas id="fireworksCanvas"></canvas>
+<div id="cringeGifs">
+    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
+</div>
+
 <script type="module">
-/* ------------------ FIREBASE ------------------ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -182,25 +226,21 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* ------------------ TABLICA ------------------ */
 const table = document.getElementById("table");
 let usersData = [];
 
 // Automatyczna aktualizacja tabeli
 onSnapshot(collection(db, "users"), (snapshot) => {
     usersData = [];
-
     table.innerHTML = `
         <tr>
             <th>Imię</th>
             <th>Godzina</th>
             <th class="deleteCell">X</th>
         </tr>`;
-
     snapshot.forEach((docu) => {
         const data = docu.data();
         usersData.push({ id: docu.id, ...data });
-
         table.innerHTML += `
         <tr>
             <td>${data.name}</td>
@@ -212,76 +252,117 @@ onSnapshot(collection(db, "users"), (snapshot) => {
     });
 });
 
-/* ------------------ USUNIĘCIE POJEDYNCZEGO REKORDU ------------------ */
 window.deleteOne = async function(id) {
     await deleteDoc(doc(db, "users", id));
 };
 
-/* ------------------ WYCZYSZCZENIE WSZYSTKICH ------------------ */
 window.clearAll = async function () {
     const snapshot = await getDocs(collection(db, "users"));
     snapshot.forEach(async (d) => {
         await deleteDoc(doc(db, "users", d.id));
     });
-
-    // reset pomiaru
     document.getElementById("stoppedTime").textContent = "";
     document.getElementById("winner").style.display = "none";
     document.getElementById("winner").textContent = "";
 };
 
-/* ------------------ ZEGAR CHODZI NON-STOP ------------------ */
 const clock = document.getElementById("clock");
-
 setInterval(() => {
     const now = new Date();
     clock.textContent = now.toLocaleTimeString("pl-PL");
 }, 1000);
 
-/* ------------------ STOP + WYZNACZENIE ZWYCIĘZCY ------------------ */
 document.getElementById("stopBtn").onclick = () => {
-
     const stopped = clock.textContent;
     document.getElementById("stoppedTime").textContent =
         "Zatrzymana godzina: " + stopped;
-
     if (usersData.length === 0) return;
-
-   const target = toSeconds(stopped);
-    let best = null;
-
-    usersData.forEach(u => {
-        const diff = Math.abs(toSeconds(u.hour) - target);
-        if (!best || diff < best.diff) best = { ...u, diff };
-    });
-
+    const target = toSeconds(stopped);
+    let best = null;
+    usersData.forEach(u => {
+        const diff = Math.abs(toSeconds(u.hour) - target);
+        if (!best || diff < best.diff) best = { ...u, diff };
+    });
     const winner = document.getElementById("winner");
     winner.style.display = "block";
     winner.textContent = `🏆 Zwycięzca: ${best.name} (czas: ${best.hour})`;
+
+    // uruchom fajerwerki i cringowe efekty
+    startFireworks();
 };
 
-/* ------------------ KONWERSJA NA SEKUNDY ------------------ */
-/* ------------------ KONWERSJA NA SEKUNDY ------------------ */
 function toSeconds(t) {
     const parts = t.split(":").map(Number);
     let h, m, s;
-
-    // Przetwarzanie HH:MM:SS (3 części) lub HH:MM (2 części)
     if (parts.length === 3) {
         [h, m, s] = parts;
     } else if (parts.length === 2) {
         [h, m] = parts;
-        s = 0; // Ustaw sekundy na 0, jeśli brakuje
+        s = 0;
     } else {
-        // Niepoprawny format, zwróć 0, aby uniknąć NaN
         return 0; 
     }
-
     return h * 3600 + m * 60 + s;
+}
+
+/* ------------------ FAJERWERKI + CRINGE ------------------ */
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+let particles = [];
+let fireworksActive = false;
+
+function spawnFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.5;
+    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
+    for (let i = 0; i < 50; i++) {
+        particles.push({
+            x, y,
+            angle: Math.random() * Math.PI * 2,
+            speed: Math.random() * 4 + 1,
+            alpha: 1,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        });
+    }
+}
+
+function updateFireworks() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p, i) => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= 0.01;
+        if (p.alpha <= 0) particles.splice(i, 1);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (fireworksActive) requestAnimationFrame(updateFireworks);
+}
+
+function startFireworks() {
+    fireworksActive = true;
+    canvas.style.display = "block";
+    document.getElementById("cringeGifs").style.display = "block";
+    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+
+    spawnFirework();
+    updateFireworks();
+    const interval = setInterval(() => spawnFirework(), 400);
+    setTimeout(() => {
+        clearInterval(interval);
+        fireworksActive = false;
+        canvas.style.display = "none";
+        document.getElementById("cringeGifs").style.display = "none";
+        document.body.style.animation = "none";
+    }, 7000);
 }
 </script>
 
 </body>
 </html>
-
-
