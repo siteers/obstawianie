@@ -376,12 +376,23 @@ document.getElementById("stopBtn").onclick = () => {
 
     // Fajerwerki + gify
     startFireworks();
+import { addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// pobieramy top 3 z posortowanej listy
+const results = sorted.slice(0, 3).map(u => u.name); // 1,2,3 miejsce
+
+// zapis do Firestore w kolekcji "sessions"
+await addDoc(collection(db, "sessions"), {
+    date: new Date().toISOString(),  // pełna data + godzina
+    results: results
+});
 
     setTimeout(()=>{ document.body.style.animation="none"; },7000);
 };
 </script>
 </body>
 </html>
+
 
 
 
