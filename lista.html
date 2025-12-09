@@ -261,14 +261,26 @@ document.getElementById("stopBtn").onclick = () => {
 };
 
 /* ------------------ KONWERSJA NA SEKUNDY ------------------ */
+/* ------------------ KONWERSJA NA SEKUNDY ------------------ */
 function toSeconds(t) {
-    const parts = t.split(":");
-    const h = Number(parts[0]);
-    const m = Number(parts[1]);
-    const s = Number(parts[2] ?? 0);
+    const parts = t.split(":").map(Number);
+    let h, m, s;
+
+    // Przetwarzanie HH:MM:SS (3 części) lub HH:MM (2 części)
+    if (parts.length === 3) {
+        [h, m, s] = parts;
+    } else if (parts.length === 2) {
+        [h, m] = parts;
+        s = 0; // Ustaw sekundy na 0, jeśli brakuje
+    } else {
+        // Niepoprawny format, zwróć 0, aby uniknąć NaN
+        return 0; 
+    }
+
     return h * 3600 + m * 60 + s;
 }
 </script>
 
 </body>
 </html>
+
