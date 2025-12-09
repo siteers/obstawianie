@@ -49,31 +49,6 @@
         background: #eee;
     }
 
-    /* Wąska kolumna X */
-    th.deleteCell, td.deleteCell {
-        width: 40px;
-        padding: 5px;
-    }
-
-    /* Styl czerwonego X */
-    .deleteBtn {
-        display: inline-block;
-        width: 28px;
-        height: 28px;
-        line-height: 28px;
-        border-radius: 50%;
-        background: #ffdddd;
-        border: 1px solid red;
-        color: red;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.2s;
-    }
-    .deleteBtn:hover {
-        background: red;
-        color: white;
-    }
-
     .panel {
         flex: 1;
         min-width: 300px;
@@ -129,6 +104,13 @@
     button.clear:hover {
         background: black;
     }
+
+    .deleteBtn {
+        color: red;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
 </style>
 </head>
 
@@ -141,13 +123,13 @@
 
     <!-- LEWA STRONA – tabela -->
     <div class="panel">
-        <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
+        <button class="clear" onclick="clearAll()">Wyczyść rekordy</button>
 
         <table id="table">
             <tr>
                 <th>Imię</th>
                 <th>Godzina</th>
-                <th class="deleteCell">X</th>
+                <th>Usuń</th>
             </tr>
         </table>
     </div>
@@ -194,7 +176,7 @@ onSnapshot(collection(db, "users"), (snapshot) => {
         <tr>
             <th>Imię</th>
             <th>Godzina</th>
-            <th class="deleteCell">X</th>
+            <th>Usuń</th>
         </tr>`;
 
     snapshot.forEach((docu) => {
@@ -205,9 +187,7 @@ onSnapshot(collection(db, "users"), (snapshot) => {
         <tr>
             <td>${data.name}</td>
             <td>${data.hour}</td>
-            <td class="deleteCell">
-                <span class="deleteBtn" onclick="deleteOne('${docu.id}')">X</span>
-            </td>
+            <td><span class="deleteBtn" onclick="deleteOne('${docu.id}')">X</span></td>
         </tr>`;
     });
 });
@@ -252,9 +232,20 @@ document.getElementById("stopBtn").onclick = () => {
 
     usersData.forEach(u => {
         const diff = Math.abs(toSeconds(u.hour) - target);
-        if (!best || diff < best.diff) best = { ...u, diff };
+        if (!best || diff < best.diff) best = u;
     });
 
     const winner = document.getElementById("winner");
     winner.style.display = "block";
-    winner.textContent = `🏆 Zwyci
+    winner.textContent = `🏆 Zwycięzca: ${best.name} (czas: ${best.hour})`;
+};
+
+/* ------------------ KONWERSJA NA SEKUNDY ------------------ */
+function toSeconds(t) {
+    const [h, m, s] = t.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
+}
+</script>
+
+</body>
+</html>
