@@ -161,16 +161,27 @@
     }
 
     /* migająca pierwsza osoba */
-    @keyframes blinkGreen {
-        0% { background-color: #d1ffd1; }
-        50% { background-color: #006400; }
-        100% { background-color: #d1ffd1; }
-    }
-    .blink {
-        animation: blinkGreen 1.5s infinite;
-        color: white;
-        font-weight: bold;
-    }
+    /* migająca pierwsza osoba */
+@keyframes blinkGreen {
+    0% { background-color: #d1ffd1; }
+    50% { background-color: #006400; }
+    100% { background-color: #d1ffd1; }
+}
+.blink {
+    animation: blinkGreen 1.5s infinite;
+    color: white !important; /* wymusza biały tekst */
+    font-weight: bold !important; /* wymusza pogrubienie */
+}
+    /* efekt migającego tła (cringe) */
+@keyframes cringeBg {
+    0% { background-color: #ff69b4; }
+    25% { background-color: #00ffff; }
+    50% { background-color: #ffff00; }
+    75% { background-color: #ff00ff; }
+    100% { background-color: #00ff00; }
+}
+
+
 </style>
 </head>
 
@@ -372,6 +383,7 @@ function startFireworks() {
 }
 
 // STOP – ogłoszenie zwycięzcy
+// STOP – ogłoszenie zwycięzcy
 document.getElementById("stopBtn").onclick = () => {
     if (usersData.length === 0) return;
     const stopped = clock.textContent;
@@ -385,9 +397,19 @@ document.getElementById("stopBtn").onclick = () => {
     winner.style.display = "block";
     winner.textContent = `🏆 Zwycięzca: ${best.name} (czas: ${best.hour})`;
 
+    // Włączanie efektu cringe tła
+    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+
     startFireworks();
+
+    // Wyłącz efekt po 7 sekundach
+    setTimeout(() => {
+        document.body.style.animation = "none";
+    }, 7000);
 };
+
 </script>
 
 </body>
 </html>
+
