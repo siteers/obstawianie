@@ -110,3 +110,285 @@
         padding: 20px;
         font-size: 24px;
         background: #d1ffd1;
+        border-left: 5px solid green;
+        display: none;
+        text-align: center;
+    }
+
+    button.clear {
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #444;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+
+    button.clear:hover {
+        background: black;
+    }
+
+    /* ---- FAJERWERKI ---- */
+    #fireworksCanvas {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 9999;
+        display: none;
+    }
+
+    /* ---- CRINGE GIFY ---- */
+    #cringeGifs {
+        position: fixed;
+        bottom: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 99999;
+        display: none;
+    }
+
+    #cringeGifs img {
+        height: 180px;
+        margin: 5px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    }
+
+    /* migające tło */
+    @keyframes cringeBg {
+        0% { background-color: #ff69b4; }
+        25% { background-color: #00ffff; }
+        50% { background-color: #ffff00; }
+        75% { background-color: #ff00ff; }
+        100% { background-color: #00ff00; }
+    }
+
+    /* migająca pierwsza osoba */
+    @keyframes blinkGreen {
+        0% { background-color: #d1ffd1; }
+        50% { background-color: #00ff00; }
+        100% { background-color: #d1ffd1; }
+    }
+    .blink {
+        animation: blinkGreen 0.5s infinite;
+    }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>Lista zapisanych osób</h2>
+
+<div class="flex">
+
+    <!-- LEWA STRONA – tabela -->
+    <div class="panel">
+        <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
+
+        <table id="table">
+            <tr>
+                <th>Imię</th>
+                <th>Godzina</th>
+                <th class="deleteCell">X</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- PRAWA STRONA – zegar -->
+    <div class="panel">
+        <div id="clock">--:--:--</div>
+        <button id="stopBtn">STOP</button>
+        <div id="stoppedTime"></div>
+    </div>
+
+</div>
+
+<div id="winner"></div>
+
+</div>
+
+<!-- Fajerwerki + cringe gify -->
+<canvas id="fireworksCanvas"></canvas>
+<div id="cringeGifs">
+    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie",
+  storageBucket: "obstaiwanie.firebasestorage.app",
+  messagingSenderId: "64783465818",
+  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const table = document.getElementById("table");
+let usersData = [];
+
+// Automatyczna aktualizacja danych z Firestore
+onSnapshot(collection(db, "users"), (snapshot) => {
+    usersData = [];
+    snapshot.forEach((docu) => {
+        const data = docu.data();
+        usersData.push({ id: docu.id, ...data });
+    });
+});
+
+// Usuwanie pojedynczego użytkownika
+window.deleteOne = async function(id) {
+    await deleteDoc(doc(db, "users", id));
+};
+
+// Wyczyść wszystkie dane
+window.clearAll = async function () {
+    const snapshot = await getDocs(collection(db, "users"));
+    snapshot.forEach(async (d) => {
+        await deleteDoc(doc(db, "users", d.id));
+    });
+    document.getElementById("stoppedTime").textContent = "";
+    document.getElementById("winner").style.display = "none";
+    document.getElementById("winner").textContent = "";
+};
+
+// Aktualny zegar
+const clock = document.getElementById("clock");
+setInterval(() => {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString("pl-PL");
+    updateTableRealtime(now);
+}, 1000);
+
+// Funkcja konwersji czasu na sekundy
+function toSeconds(t) {
+    const parts = t.split(":").map(Number);
+    let h, m, s;
+    if (parts.length === 3) {
+        [h, m, s] = parts;
+    } else if (parts.length === 2) {
+        [h, m] = parts;
+        s = 0;
+    } else {
+        return 0; 
+    }
+    return h * 3600 + m * 60 + s;
+}
+
+// Funkcja aktualizacji tabeli w czasie rzeczywistym
+function updateTableRealtime(now) {
+    const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+
+    // sortowanie po odległości od aktualnego czasu
+    const sorted = [...usersData].sort((a,b) => Math.abs(toSeconds(a.hour)-currentSeconds)-Math.abs(toSeconds(b.hour)-currentSeconds));
+
+    table.innerHTML = `
+        <tr>
+            <th>Imię</th>
+            <th>Godzina</th>
+            <th class="deleteCell">X</th>
+        </tr>`;
+
+    sorted.forEach((u, index) => {
+        table.innerHTML += `
+        <tr class="${index===0 ? 'blink' : ''}">
+            <td>${u.name}</td>
+            <td>${u.hour}</td>
+            <td class="deleteCell">
+                <span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span>
+            </td>
+        </tr>`;
+    });
+}
+
+/* ------------------ FAJERWERKI + CRINGE ------------------ */
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+let particles = [];
+let fireworksActive = false;
+
+function spawnFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.5;
+    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
+    for (let i = 0; i < 50; i++) {
+        particles.push({
+            x, y,
+            angle: Math.random() * Math.PI * 2,
+            speed: Math.random() * 4 + 1,
+            alpha: 1,
+            color: colors[Math.floor(Math.random() * colors.length)]
+        });
+    }
+}
+
+function updateFireworks() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p, i) => {
+        p.x += Math.cos(p.angle) * p.speed;
+        p.y += Math.sin(p.angle) * p.speed;
+        p.alpha -= 0.01;
+        if (p.alpha <= 0) particles.splice(i, 1);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 3, 0, Math.PI*2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1;
+    if (fireworksActive) requestAnimationFrame(updateFireworks);
+}
+
+function startFireworks() {
+    fireworksActive = true;
+    canvas.style.display = "block";
+    document.getElementById("cringeGifs").style.display = "block";
+    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+
+    spawnFirework();
+    updateFireworks();
+    const interval = setInterval(() => spawnFirework(), 400);
+    setTimeout(() => {
+        clearInterval(interval);
+        fireworksActive = false;
+        canvas.style.display = "none";
+        document.getElementById("cringeGifs").style.display = "none";
+        document.body.style.animation = "none";
+    }, 7000);
+}
+
+// STOP – ogłoszenie zwycięzcy
+document.getElementById("stopBtn").onclick = () => {
+    if (usersData.length === 0) return;
+    const stopped = clock.textContent;
+    document.getElementById("stoppedTime").textContent = "Zatrzymana godzina: " + stopped;
+
+    // zwycięzca: najbliżej w tym momencie
+    const currentSeconds = new Date().getHours()*3600 + new Date().getMinutes()*60 + new Date().getSeconds();
+    const sorted = [...usersData].sort((a,b)=>Math.abs(toSeconds(a.hour)-currentSeconds)-Math.abs(toSeconds(b.hour)-currentSeconds));
+    const best = sorted[0];
+
+    const winner = document.getElementById("winner");
+    winner.style.display = "block";
+    winner.textContent = `🏆 Zwycięzca: ${best.name} (czas: ${best.hour})`;
+
+    startFireworks();
+};
+</script>
+
+</body>
+</html>
