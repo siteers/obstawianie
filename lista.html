@@ -373,15 +373,7 @@ function startFireworks() {
     updateFireworks();
     const interval = setInterval(() => spawnFirework(), 400);
 
-  document.getElementById("stopBtn").onclick = () => {
-    // Twój kod wyznaczania zwycięzcy...
-    
-    // Odtwórz fanfarę
-    const audio = document.getElementById("fanfareAudio");
-    audio.currentTime = 0; // zaczynamy od początku
-    audio.play().catch(err => console.log("Nie można odtworzyć dźwięku:", err));
 
-    startFireworks(); // uruchomienie fajerwerków i gify
 };
 
     setTimeout(() => {
@@ -422,6 +414,7 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
 
 
 
