@@ -1,17 +1,93 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
   <meta charset="UTF-8">
   <title>Dodaj użytkownika</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .container {
+      background: white;
+      padding: 25px;
+      border-radius: 12px;
+      width: 90%;
+      max-width: 450px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      text-align: center;
+      animation: fadeIn 0.4s ease;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: 0.2s;
+    }
+
+    input:focus {
+      border-color: #0077ff;
+      box-shadow: 0 0 8px rgba(0,123,255,0.4);
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 12px 25px;
+      background: #0077ff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.2s;
+    }
+
+    button:hover {
+      background: #005fcc;
+    }
+
+    #msg {
+      margin-top: 15px;
+      font-weight: bold;
+      color: green;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
 </head>
+
 <body>
-  <h2>Dodaj swoje dane</h2>
+  <div class="container">
+    <h2>Dodaj swoje dane</h2>
 
-  <input id="name" placeholder="Imię / pseudonim"><br><br>
-  <input id="hour" placeholder="Typowa godzina np. 18:00"><br><br>
-  <button onclick="saveData()">Zapisz</button>
+    <input id="name" placeholder="Imię / pseudonim">
 
-  <p id="msg"></p>
+    <input id="hour" type="time" placeholder="Godzina">
+
+    <button onclick="saveData()">Zapisz</button>
+
+    <p id="msg"></p>
+  </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -29,11 +105,14 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-window.saveData = async function(){
-  const name = document.getElementById("name").value;
+// -------------------------------
+// Zapis danych
+// -------------------------------
+window.saveData = async function() {
+  const name = document.getElementById("name").value.trim();
   const hour = document.getElementById("hour").value;
 
-  if(!name || !hour){
+  if (!name || !hour) {
     alert("Uzupełnij oba pola!");
     return;
   }
@@ -44,9 +123,14 @@ window.saveData = async function(){
   });
 
   document.getElementById("msg").innerText = "Zapisano!";
-  document.getElementById("name").value="";
-  document.getElementById("hour").value="";
-}
+  document.getElementById("name").value = "";
+  document.getElementById("hour").value = "";
+
+  // Usuń komunikat po 2 sekundach
+  setTimeout(() => {
+    document.getElementById("msg").innerText = "";
+  }, 2000);
+};
 </script>
 
 </body>
