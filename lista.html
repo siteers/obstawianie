@@ -1,27 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-  
-  <meta charset="UTF-8">
-  <meta http-equiv="refresh" content="10">
-  <title>Lista użytkowników</title>
+<meta charset="UTF-8">
+<title>Lista użytkowników</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f2f2f2;
+        margin: 0;
+        padding: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    .container {
+        max-width: 1100px;
+        width: 100%;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+        text-align: center;
+    }
+
+    .flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        background: white;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+    }
+
+    th {
+        background: #eee;
+    }
+
+    .panel {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    #clock {
+        font-size: 48px;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+
+    #stopBtn {
+        background: red;
+        color: white;
+        padding: 20px 40px;
+        font-size: 28px;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        display: block;
+        margin: auto;
+    }
+
+    #stopBtn:active {
+        transform: scale(0.95);
+    }
+
+    #stoppedTime {
+        font-size: 28px;
+        margin-top: 20px;
+        text-align: center;
+    }
+
+    #winner {
+        margin-top: 30px;
+        padding: 20px;
+        font-size: 24px;
+        background: #d1ffd1;
+        border-left: 5px solid green;
+        display: none;
+        text-align: center;
+    }
+
+    button.clear {
+        margin-bottom: 10px;
+        padding: 10px;
+        background: #444;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+    }
+
+    button.clear:hover {
+        background: black;
+    }
+</style>
 </head>
+
 <body>
+<div class="container">
+
 <h2>Lista zapisanych osób</h2>
 
-<button onclick="clearAll()">Wyczyść rekordy</button>
-<br><br>
+<div class="flex">
 
-<table border="1" id="table">
-  <tr>
-    <th>Imię</th>
-    <th>Godzina</th>
-  </tr>
-</table>
+    <!-- LEWA STRONA – tabela -->
+    <div class="panel">
+        <button class="clear" onclick="clearAll()">Wyczyść rekordy</button>
+
+        <table id="table">
+            <tr>
+                <th>Imię</th>
+                <th>Godzina</th>
+            </tr>
+        </table>
+    </div>
+
+    <!-- PRAWA STRONA – zegar -->
+    <div class="panel">
+        <div id="clock">--:--:--</div>
+        <button id="stopBtn">STOP</button>
+        <div id="stoppedTime"></div>
+    </div>
+
+</div>
+
+<div id="winner"></div>
+
+</div>
 
 <script type="module">
+/* ------------------ FIREBASE ------------------ */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -35,50 +160,79 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+/* ------------------ TABLICA ------------------ */
 const table = document.getElementById("table");
+let usersData = [];
 
-// Wczytaj dane
-async function loadData() {
- const querySnapshot = await getDocs(collection(db, "users"));
+// Automatyczne odświeżanie listy
+onSnapshot(collection(db, "users"), (snapshot) => {
+    usersData = [];
+    table.innerHTML = `
+        <tr>
+          <th>Imię</th>
+          <th>Godzina</th>
+        </tr>`;
 
-  querySnapshot.forEach((docu) => {
-    const data = docu.data();
-    const row = `
-      <tr>
-        <td>${data.name}</td>
-        <td>${data.hour}</td>
-      </tr>
-    `;
-    table.innerHTML += row;
-  });
-}
+    snapshot.forEach((docu) => {
+        const data = docu.data();
+        usersData.push(data);
 
-loadData();
+        table.innerHTML += `
+        <tr>
+          <td>${data.name}</td>
+          <td>${data.hour}</td>
+        </tr>`;
+    });
+});
 
-// Wyczyść wszystkie rekordy
-window.clearAll = async function(){
-  const querySnapshot = await getDocs(collection(db, "users"));
-  querySnapshot.forEach(async (d) => {
-    await deleteDoc(doc(db, "users", d.id));
-  });
+/* ------------------ CZYSZCZENIE DANYCH ------------------ */
+window.clearAll = async function () {
+    const snapshot = await getDocs(collection(db, "users"));
+    snapshot.forEach(async (d) => {
+        await deleteDoc(doc(db, "users", d.id));
+    });
+};
 
-  table.innerHTML = `
-    <tr>
-      <th>Imię</th>
-      <th>Godzina</th>
-    </tr>`;
+/* ------------------ ZEGAR ------------------ */
+const clock = document.getElementById("clock");
+let interval = setInterval(() => {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString("pl-PL");
+}, 1000);
+
+/* ------------------ STOP + WYZNACZENIE ZWYCIĘZCY ------------------ */
+document.getElementById("stopBtn").onclick = () => {
+    clearInterval(interval);
+
+    const stopped = clock.textContent;
+    document.getElementById("stoppedTime").textContent =
+        "Zatrzymana godzina: " + stopped;
+
+    if (usersData.length === 0) return;
+
+    // Oblicz zwycięzcę
+    const target = toSeconds(stopped);
+    let best = null;
+
+    usersData.forEach(u => {
+        const diff = Math.abs(toSeconds(u.hour) - target);
+
+        if (!best || diff < best.diff) {
+            best = { name: u.name, hour: u.hour, diff };
+        }
+    });
+
+    const winner = document.getElementById("winner");
+    winner.style.display = "block";
+    winner.textContent = `🏆 Zwycięzca: ${best.name} (jego czas: ${best.hour})`;
+};
+
+/* ------------------ KONWERSJA NA SEKUNDY ------------------ */
+function toSeconds(timeStr) {
+    const [h, m, s] = timeStr.split(":").map(Number);
+    return h * 3600 + m * 60 + s;
 }
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
