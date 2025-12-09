@@ -230,7 +230,10 @@
 </div>
 
 <!-- Dźwięk fanfar -->
-<audio id="fanfareAudio" src="https://www.soundjay.com/misc/fanfare-trumpets-01.mp3"></audio>
+<audio id="fanfareAudio" preload="auto">
+  <source src="https://www.soundjay.com/misc/fanfare-trumpets-01.mp3" type="audio/mpeg">
+</audio>
+
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -415,6 +418,7 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
 
 
 
