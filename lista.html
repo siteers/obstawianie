@@ -176,6 +176,7 @@ button.clear:hover { background: black; }
         <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
         <table id="table">
             <tr>
+                <th>Miejsce</th>
                 <th>Imię</th>
                 <th>Godzina</th>
                 <th class="deleteCell">X</th>
@@ -271,16 +272,18 @@ function updateTableRealtime(now) {
             <th class="deleteCell">X</th>
         </tr>`;
 
-    sorted.forEach((u,index) => {
-        table.innerHTML += `
-        <tr class="${index===0 ? 'blink' : ''}">
-            <td>${u.name}</td>
-            <td>${u.hour}</td>
-            <td class="deleteCell">
-                <span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span>
-            </td>
-        </tr>`;
-    });
+   sorted.forEach((u,index) => {
+    table.innerHTML += `
+    <tr class="${index===0 ? 'blink' : ''}">
+        <td>${index+1}</td>
+        <td>${u.name}</td>
+        <td>${u.hour}</td>
+        <td class="deleteCell">
+            <span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span>
+        </td>
+    </tr>`;
+});
+
 }
 
 const canvas = document.getElementById("fireworksCanvas");
@@ -366,3 +369,4 @@ document.getElementById("stopBtn").onclick = () => {
 </script>
 </body>
 </html>
+
