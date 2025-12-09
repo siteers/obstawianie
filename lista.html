@@ -185,12 +185,17 @@ onSnapshot(collection(db, "users"), (snapshot) => {
     });
 });
 
-/* ------------------ CZYSZCZENIE DANYCH ------------------ */
+/* ------------------ WYCZYSZCZENIE WSZYSTKIEGO ------------------ */
 window.clearAll = async function () {
     const snapshot = await getDocs(collection(db, "users"));
     snapshot.forEach(async (d) => {
         await deleteDoc(doc(db, "users", d.id));
     });
+
+    // 🔥 DODATKOWE CZYSZCZENIE:
+    document.getElementById("stoppedTime").textContent = "";
+    document.getElementById("winner").style.display = "none";
+    document.getElementById("winner").textContent = "";
 };
 
 /* ------------------ ZEGAR ------------------ */
@@ -216,10 +221,7 @@ document.getElementById("stopBtn").onclick = () => {
 
     usersData.forEach(u => {
         const diff = Math.abs(toSeconds(u.hour) - target);
-
-        if (!best || diff < best.diff) {
-            best = { name: u.name, hour: u.hour, diff };
-        }
+        if (!best || diff < best.diff) best = { name: u.name, hour: u.hour, diff };
     });
 
     const winner = document.getElementById("winner");
