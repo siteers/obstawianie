@@ -137,24 +137,27 @@ button.clear:hover { background: black; }
     left: 50%;
     transform: translateX(-50%);
     z-index: 99999;
-    display: flex;             /* flex zamiast block */
-    gap: 10px;                 /* odstęp między gifami */
-    flex-wrap: nowrap;         /* nie zawijaj */
+    display: none;           /* ukryte domyślnie */
+    flex-wrap: nowrap;
     justify-content: center;   
     align-items: flex-end;
-    width: 90%;                /* ograniczenie szerokości kontenera */
-    max-width: 800px;          /* opcjonalnie */
+    gap: 10px;
+    width: 90%;
+    max-width: 800px;
+}
+
+#cringeGifs.show {          /* klasa, którą dodamy w JS */
+    display: flex;           /* dopiero wtedy flex i widoczne */
 }
 
 #cringeGifs img {
-    height: auto;              /* skalowanie proporcjonalne */
-    max-height: 150px;         /* dopasuj wysokość */
+    height: auto;
+    max-height: 150px;
     width: auto;
-    flex: 1 1 0;               /* każdy gif dzieli dostępną przestrzeń */
+    flex: 1 1 0;
     border-radius: 10px;
     box-shadow: 0 0 20px rgba(255,255,255,0.8);
 }
-
 /* migająca pierwsza osoba */
 @keyframes blinkGreen {
     0% { background-color: #d1ffd1; }
@@ -379,6 +382,7 @@ document.getElementById("stopBtn").onclick = () => {
 </script>
 </body>
 </html>
+
 
 
 
