@@ -353,7 +353,7 @@ function startFireworks() {
     },7000);
 }
 
-document.getElementById("stopBtn").onclick = () => {
+document.getElementById("stopBtn").onclick = async () => {
     if(usersData.length===0) return;
 
     const stopped = clock.textContent;
@@ -392,6 +392,7 @@ await addDoc(collection(db, "sessions"), {
 </script>
 </body>
 </html>
+
 
 
 
