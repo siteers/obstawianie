@@ -14,6 +14,8 @@
         display: flex;
         justify-content: center;
         transition: background-color 0.2s;
+        overflow-x: hidden;
+        overflow-y: hidden;
     }
 
     .container {
@@ -44,6 +46,8 @@
         border: 1px solid #ccc;
         padding: 10px;
         text-align: center;
+        font-weight: normal;
+        color: black;
     }
 
     th {
@@ -141,21 +145,19 @@
         display: none;
     }
 
-    /* ---- CRINGE GIFY ---- */
-    #cringeGifs {
+    /* ---- CRINGE MEMY ---- */
+    .meme {
         position: fixed;
-        bottom: 10px;
-        left: 50%;
-        transform: translateX(-50%);
+        width: 150px;
+        height: 150px;
+        pointer-events: none;
         z-index: 99999;
-        display: none;
+        animation: floatUp 3s forwards;
     }
 
-    #cringeGifs img {
-        height: 180px;
-        margin: 5px;
-        border-radius: 10px;
-        box-shadow: 0 0 20px rgba(255,255,255,0.8);
+    @keyframes floatUp {
+        0% { transform: translateY(100vh) scale(0.5) rotate(0deg); opacity:1; }
+        100% { transform: translateY(-200px) scale(1) rotate(360deg); opacity:0; }
     }
 
     /* migające tło */
@@ -168,16 +170,15 @@
     }
 
     /* migająca pierwsza osoba */
-   @keyframes blinkGreen {
-    0% { background-color: #d1ffd1; }
-    50% { background-color: #006400; } /* ciemniejszy zielony */
-    100% { background-color: #d1ffd1; }
-}
-
+    @keyframes blinkGreen {
+        0% { background-color: #d1ffd1; }
+        50% { background-color: #006400; }
+        100% { background-color: #d1ffd1; }
+    }
     .blink {
-        animation: blinkGreen 1.0s infinite;
-        color: white; /* tekst będzie dobrze widoczny na ciemnozielonym */
-    font-weight: bold;
+        animation: blinkGreen 1.5s infinite;
+        color: white;
+        font-weight: bold;
     }
 </style>
 </head>
@@ -215,13 +216,11 @@
 
 </div>
 
-<!-- Fajerwerki + cringe gify -->
+<!-- Fajerwerki -->
 <canvas id="fireworksCanvas"></canvas>
-<div id="cringeGifs">
-    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
-    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
-    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
-</div>
+
+<!-- Dźwięk fanfar -->
+<audio id="fanfareAudio" src="https://www.soundjay.com/misc/fanfare-trumpets-01.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -294,7 +293,6 @@ function toSeconds(t) {
 function updateTableRealtime(now) {
     const currentSeconds = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
 
-    // sortowanie po odległości od aktualnego czasu
     const sorted = [...usersData].sort((a,b) => Math.abs(toSeconds(a.hour)-currentSeconds)-Math.abs(toSeconds(b.hour)-currentSeconds));
 
     table.innerHTML = `
@@ -316,7 +314,7 @@ function updateTableRealtime(now) {
     });
 }
 
-/* ------------------ FAJERWERKI + CRINGE ------------------ */
+/* ------------------ FAJERWERKI ------------------ */
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
 canvas.width = innerWidth;
@@ -359,17 +357,38 @@ function updateFireworks() {
 function startFireworks() {
     fireworksActive = true;
     canvas.style.display = "block";
-    document.getElementById("cringeGifs").style.display = "block";
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
 
     spawnFirework();
     updateFireworks();
     const interval = setInterval(() => spawnFirework(), 400);
+
+    // Dodaj memy losowo
+    const memeUrls = [
+        "https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif",
+        "https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif",
+        "https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif"
+    ];
+
+    const memeInterval = setInterval(() => {
+        const img = document.createElement("img");
+        img.src = memeUrls[Math.floor(Math.random()*memeUrls.length)];
+        img.className = "meme";
+        img.style.left = Math.random()*80 + "vw";
+        img.style.width = 150 + Math.random()*100 + "px";
+        document.body.appendChild(img);
+        setTimeout(()=> img.remove(), 3000);
+    }, 500);
+
+    // Dźwięk fanfar
+    const audio = document.getElementById("fanfareAudio");
+    audio.play();
+
     setTimeout(() => {
         clearInterval(interval);
+        clearInterval(memeInterval);
         fireworksActive = false;
         canvas.style.display = "none";
-        document.getElementById("cringeGifs").style.display = "none";
         document.body.style.animation = "none";
     }, 7000);
 }
@@ -380,7 +399,6 @@ document.getElementById("stopBtn").onclick = () => {
     const stopped = clock.textContent;
     document.getElementById("stoppedTime").textContent = "Zatrzymana godzina: " + stopped;
 
-    // zwycięzca: najbliżej w tym momencie
     const currentSeconds = new Date().getHours()*3600 + new Date().getMinutes()*60 + new Date().getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSeconds(a.hour)-currentSeconds)-Math.abs(toSeconds(b.hour)-currentSeconds));
     const best = sorted[0];
@@ -395,6 +413,3 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
-
-
-
