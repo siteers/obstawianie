@@ -247,13 +247,13 @@ document.getElementById("stopBtn").onclick = () => {
 
     if (usersData.length === 0) return;
 
-    const target = toSeconds(stopped);
-    let best = null;
+   const target = toSeconds(stopped);
+    let best = null;
 
-    usersData.forEach(u => {
-        const diff = Math.abs(toSeconds(u.hour) - target);
-        if (!best || diff < best.diff) best = { ...u, diff };
-    });
+    usersData.forEach(u => {
+        const diff = Math.abs(toSeconds(u.hour) - target);
+        if (!best || diff < best.diff) best = { ...u, diff };
+    });
 
     const winner = document.getElementById("winner");
     winner.style.display = "block";
@@ -283,4 +283,5 @@ function toSeconds(t) {
 
 </body>
 </html>
+
 
