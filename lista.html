@@ -376,7 +376,6 @@ document.getElementById("stopBtn").onclick = async () => {
 
     // Fajerwerki + gify
     startFireworks();
-import { addDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 // pobieramy top 3 z posortowanej listy
 const results = sorted.slice(0, 3).map(u => u.name); // 1,2,3 miejsce
@@ -392,6 +391,7 @@ await addDoc(collection(db, "sessions"), {
 </script>
 </body>
 </html>
+
 
 
 
