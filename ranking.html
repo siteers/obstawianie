@@ -91,19 +91,30 @@ let allSessions = [];
 // funkcja usuwania sesji
 const deleteSession = async function(id) {
     if(confirm("Na pewno chcesz usunąć ten rekord?")) {
-        await deleteDoc(doc(db, "sessions", id));
+        try {
+            await deleteDoc(doc(db, "sessions", id));
+            console.log("Usunięto sesję:", id);
+        } catch (err) {
+            console.error("Błąd przy usuwaniu:", err);
+        }
     }
 }
 
 // funkcja do rysowania tabeli
 function renderTable() {
     // Sortowanie sesji od najnowszej
-    allSessions.sort((a,b) => new Date(b.date) - new Date(a.date));
+    allSessions.sort((a,b) => {
+        const dateA = a.date?.toDate ? a.date.toDate() : new Date(a.date);
+        const dateB = b.date?.toDate ? b.date.toDate() : new Date(b.date);
+        return dateB - dateA;
+    });
     
     // Budujemy wiersze
     let rowsHtml = '';
     allSessions.forEach(session => {
-        const dateStr = session.date ? new Date(session.date).toLocaleString("pl-PL") : "-";
+        let dateObj = session.date?.toDate ? session.date.toDate() : new Date(session.date);
+        const dateStr = dateObj instanceof Date && !isNaN(dateObj) ? dateObj.toLocaleString("pl-PL") : "-";
+
         rowsHtml += `
         <tr>
             <td>${dateStr}</td>
@@ -116,7 +127,7 @@ function renderTable() {
         </tr>`;
     });
     
-    // Zostawiamy nagłówek w HTML, podmieniamy tylko wiersze
+    // Wstawiamy wiersze do tabeli, nagłówek pozostaje statyczny
     table.innerHTML = `
         <tr>
             <th>Data</th>
@@ -132,16 +143,16 @@ function renderTable() {
 
 // nasłuchiwanie zmian w kolekcji "sessions"
 onSnapshot(collection(db, "sessions"), snapshot => {
+    console.log("Snapshot received:", snapshot.size); // log do debugowania
     allSessions = [];
     snapshot.forEach(docu => {
         allSessions.push({ id: docu.id, ...docu.data() });
     });
-    renderTable(); // Rysowanie danych po każdej aktualizacji
+    renderTable();
 });
 
 /* ------------------ DELEGACJA ZDARZEŃ ------------------ */
 
-// Nasłuchiwanie kliknięć na całą tabelę
 table.addEventListener('click', (e) => {
     if (e.target.classList.contains('deleteBtn')) {
         const sessionId = e.target.dataset.id;
