@@ -176,7 +176,7 @@ button.clear:hover { background: black; }
         <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
         <table id="table">
             <tr>
-                <th>Miejsce</th>
+                <th>No.</th>
                 <th>Imię</th>
                 <th>Godzina</th>
                 <th class="deleteCell">X</th>
@@ -267,6 +267,7 @@ function updateTableRealtime(now) {
 
     table.innerHTML = `
         <tr>
+        <th>No.</th>
             <th>Imię</th>
             <th>Godzina</th>
             <th class="deleteCell">X</th>
@@ -369,4 +370,5 @@ document.getElementById("stopBtn").onclick = () => {
 </script>
 </body>
 </html>
+
 
