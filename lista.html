@@ -168,13 +168,14 @@
     }
 
     /* migająca pierwsza osoba */
-    @keyframes blinkGreen {
-        0% { background-color: #d1ffd1; }
-        50% { background-color: #00ff00; }
-        100% { background-color: #d1ffd1; }
-    }
+   @keyframes blinkGreen {
+    0% { background-color: #d1ffd1; }
+    50% { background-color: #006400; } /* ciemniejszy zielony */
+    100% { background-color: #d1ffd1; }
+}
+
     .blink {
-        animation: blinkGreen 0.5s infinite;
+        animation: blinkGreen 1.0s infinite;
     }
 </style>
 </head>
@@ -392,3 +393,4 @@ document.getElementById("stopBtn").onclick = () => {
 
 </body>
 </html>
+
