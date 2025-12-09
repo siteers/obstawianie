@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Ranking wszystkich sesji</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #f2f2f2;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.container {
+    max-width: 1100px;
+    width: 100%;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
+}
+
+h2 { text-align: center; margin-bottom: 20px; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    margin-bottom: 20px;
+}
+
+th, td {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+    font-weight: normal;
+    color: black;
+}
+
+th { background: #eee; }
+
+button.deleteBtn, button.editBtn {
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    margin: 2px;
+}
+
+button.deleteBtn {
+    background: #ff4d4d;
+    color: white;
+}
+
+button.deleteBtn:hover { background: red; }
+
+button.editBtn {
+    background: #4d79ff;
+    color: white;
+}
+
+button.editBtn:hover { background: #0033cc; }
+
+#charts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+canvas {
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <h2>Ranking wszystkich sesji</h2>
+    <table id="rankingTable">
+        <tr>
+            <th>Data</th>
+            <th>Miejsce 1</th>
+            <th>Miejsce 2</th>
+            <th>Miejsce 3</th>
+            <th>Akcje</th>
+        </tr>
+    </table>
+
+    <div id="charts">
+        <canvas id="barChart" width="400" height="200"></canvas>
+        <canvas id="pieChart" width="400" height="200"></canvas>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie",
+  storageBucket: "obstaiwanie.firebasestorage.app",
+  messagingSenderId: "64783465818",
+  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const table = document.getElementById("rankingTable");
+
+let allSessions = [];
+
+onSnapshot(collection(db, "sessions"), (snapshot) => {
+    allSessions = [];
+    snapshot.forEach(docu => {
+        allSessions.push({ id: docu.id, ...docu.data() });
+    });
+    renderTable();
+    renderCharts();
+});
+
+function renderTable() {
+    table.innerHTML = `
+        <tr>
+            <th>Data</th>
+            <th>Miejsce 1</th>
+            <th>Miejsce 2</th>
+            <th>Miejsce 3</th>
+            <th>Akcje</th>
+        </tr>`;
+    allSessions.sort((a,b) => new Date(b.date) - new Date(a.date));
+    allSessions.forEach(session => {
+        table.innerHTML += `
+        <tr>
+            <td>${new Date(session.date).toLocaleString("pl-PL")}</td>
+            <td>${session.results[0] || ""}</td>
+            <td>${session.results[1] || ""}</td>
+            <td>${session.results[2] || ""}</td>
+            <td>
+                <button class="editBtn" onclick="editSession('${session.id}')">Edytuj</button>
+                <button class="deleteBtn" onclick="deleteSession('${session.id}')">Usuń</button>
+            </td>
+        </tr>`;
+    });
+}
+
+window.deleteSession = async function(id) {
+    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
+        await deleteDoc(doc(db, "sessions", id));
+    }
+}
+
+window.editSession = async function(id) {
+    const session = allSessions.find(s => s.id===id);
+    if(!session) return;
+    let newResults = prompt("Podaj nowe wyniki w kolejności 1,2,3 oddzielone przecinkiem", session.results.join(","));
+    if(newResults) {
+        newResults = newResults.split(",").map(s => s.trim());
+        await db.collection("sessions").doc(id).update({ results: newResults });
+    }
+}
+
+// ---- CHARTS ----
+function renderCharts() {
+    const ctxBar = document.getElementById("barChart").getContext("2d");
+    const ctxPie = document.getElementById("pieChart").getContext("2d");
+
+    // Liczba zwycięstw każdego imienia
+    const winnerCount = {};
+    allSessions.forEach(s => {
+        const winner = s.results[0];
+        if(winner) winnerCount[winner] = (winnerCount[winner]||0)+1;
+    });
+
+    const labels = Object.keys(winnerCount);
+    const data = Object.values(winnerCount);
+
+    // Bar chart
+    new Chart(ctxBar, {
+        type: 'bar',
+        data: { labels, datasets:[{ label: "Liczba zwycięstw", data, backgroundColor:"#4d79ff" }] },
+        options: { responsive:true, maintainAspectRatio:false }
+    });
+
+    // Pie chart
+    new Chart(ctxPie, {
+        type: 'pie',
+        data: { labels, datasets:[{ label: "Zwycięstwa", data, backgroundColor:["#ff6384","#36a2eb","#ffce56","#4d79ff","#00cc44"] }] },
+        options: { responsive:true, maintainAspectRatio:false }
+    });
+}
+
+// Musimy doładować Chart.js
+const script = document.createElement("script");
+script.src="https://cdn.jsdelivr.net/npm/chart.js";
+document.head.appendChild(script);
+</script>
+</body>
+</html>
