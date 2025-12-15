@@ -22,57 +22,43 @@ body {
     width: 100%;
     background: white;
     padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 25px rgba(0,0,0,0.3);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
-h2 {
-    text-align: center;
-}
+h2 { text-align: center; }
 
-/* ===== LAYOUT ===== */
 .flex {
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
+    justify-content: center;
 }
 
-.panel {
-    flex: 1;
-    min-width: 300px;
-}
-
-/* ===== TABELA ===== */
 table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed; /* 🔥 KLUCZ */
+    background: white;
 }
 
 th, td {
     border: 1px solid #ccc;
     padding: 10px;
     text-align: center;
+    color: black;
 }
 
-th {
-    background: #eee;
-}
+th { background: #eee; }
 
-/* ===== KOLUMNA X ===== */
-th.deleteCell,
-td.deleteCell {
-    width: 60px;
-    min-width: 60px;
-    max-width: 60px;
+th.deleteCell, td.deleteCell {
+    width: 40px;
+    padding: 5px;
 }
 
 .deleteBtn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     width: 28px;
     height: 28px;
+    line-height: 28px;
     border-radius: 50%;
     background: #ffdddd;
     border: 1px solid red;
@@ -81,9 +67,11 @@ td.deleteCell {
     cursor: pointer;
 }
 
-/* ===== CLOCK / STOP ===== */
+.panel { flex: 1; min-width: 300px; }
+
 #clock {
     font-size: 48px;
+    font-weight: bold;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -104,28 +92,8 @@ button.clear {
     background: #444;
     color: white;
     border: none;
-    border-radius: 6px;
     cursor: pointer;
-}
-
-/* ===== MIGANIE ===== */
-@keyframes blinkLight {
-    0% { background-color: #d1ffd1; }
-    50% { background-color: #006400; }
-    100% { background-color: #d1ffd1; }
-}
-
-@keyframes blinkDark {
-    0% { background-color: #003300; }
-    50% { background-color: #00cc00; }
-    100% { background-color: #003300; }
-}
-
-/* 🔥 animujemy TD */
-tr.blink td {
-    animation: blinkLight 1.5s infinite;
-    color: white;
-    font-weight: bold;
+    border-radius: 6px;
 }
 
 /* ===== DARK MODE ===== */
@@ -138,9 +106,13 @@ body.dark .container {
     background: #1e1e1e;
 }
 
+body.dark table {
+    background: #1e1e1e;
+}
+
 body.dark th {
     background: #2a2a2a;
-    color: white;
+    color: #fff;
 }
 
 body.dark td {
@@ -148,80 +120,63 @@ body.dark td {
     color: #ddd;
 }
 
-body.dark tr.blink td {
-    animation: blinkDark 1.5s infinite;
-    color: #eaffea;
-}
-
-body.dark .deleteBtn {
-    background: #550000;
-    border-color: #ff5555;
-    color: #ff5555;
+body.dark button.clear {
+    background: #666;
 }
 
 body.dark #stopBtn {
     background: #b30000;
 }
 
-/* ===== SUWAK ===== */
-.theme-switch {
+body.dark .deleteBtn {
+    background: #3a0000;
+    border-color: #ff4444;
+    color: #ff8888;
+}
+
+/* ===== TOGGLE ===== */
+#themeToggle {
     position: fixed;
     top: 15px;
     right: 15px;
+    font-size: 24px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
     z-index: 100000;
 }
 
-.theme-switch input {
-    display: none;
+/* ===== MIGANIE ===== */
+@keyframes blinkGreen {
+    0% { background-color: #d1ffd1; }
+    50% { background-color: #006400; }
+    100% { background-color: #d1ffd1; }
 }
 
-.slider {
-    width: 50px;
-    height: 26px;
-    background: #ccc;
-    border-radius: 26px;
-    position: relative;
-    cursor: pointer;
-}
+.blink { animation: blinkGreen 1.5s infinite; }
+.blink td { color: white; font-weight: bold; }
 
-.slider::before {
-    content: "";
-    position: absolute;
-    width: 22px;
-    height: 22px;
-    background: white;
-    border-radius: 50%;
-    top: 2px;
-    left: 2px;
-    transition: transform 0.3s;
-}
-
-input:checked + .slider {
-    background: #4caf50;
-}
-
-input:checked + .slider::before {
-    transform: translateX(24px);
+/* ===== CRINGE BG ===== */
+@keyframes cringeBg {
+    0% { background-color: #ff69b4; }
+    25% { background-color: #00ffff; }
+    50% { background-color: #ffff00; }
+    75% { background-color: #ff00ff; }
+    100% { background-color: #00ff00; }
 }
 </style>
 </head>
 
 <body>
 
-<!-- SUWAK -->
-<label class="theme-switch">
-    <input type="checkbox" id="themeToggle">
-    <span class="slider"></span>
-</label>
+<button id="themeToggle">🌙</button>
 
 <div class="container">
 <h2>Lista zapisanych osób</h2>
 
 <div class="flex">
-
 <div class="panel">
 <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
-
 <table id="table">
 <tr>
 <th>No.</th>
@@ -235,15 +190,20 @@ input:checked + .slider::before {
 <div class="panel">
 <div id="clock">--:--:--</div>
 <button id="stopBtn">STOP</button>
+<div id="stoppedTime"></div>
+</div>
 </div>
 
+<div id="winner"></div>
 </div>
-</div>
+
+<audio id="fanfareAudio" src="fanfare1.mp3" preload="auto"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+/* ===== FIREBASE ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
@@ -259,62 +219,76 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 let usersData = [];
 
-onSnapshot(collection(db,"users"), snap=>{
-    usersData=[];
-    snap.forEach(d=>usersData.push({id:d.id,...d.data()}));
+/* ===== REALTIME ===== */
+onSnapshot(collection(db, "users"), (snapshot) => {
+    usersData = [];
+    snapshot.forEach(d => usersData.push({ id: d.id, ...d.data() }));
 });
 
-function toSeconds(t){
-    const p=t.split(":").map(Number);
-    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
+/* ===== CLOCK ===== */
+const clock = document.getElementById("clock");
+setInterval(() => {
+    const now = new Date();
+    clock.textContent = now.toLocaleTimeString("pl-PL");
+    updateTable(now);
+}, 1000);
+
+function toSeconds(t) {
+    const p = t.split(":").map(Number);
+    return (p[0]||0)*3600 + (p[1]||0)*60 + (p[2]||0);
 }
 
-setInterval(()=>{
-    const now=new Date();
-    document.getElementById("clock").textContent=now.toLocaleTimeString("pl-PL");
-
-    const cur=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
-    const sorted=[...usersData].sort(
-        (a,b)=>Math.abs(toSeconds(a.hour)-cur)-Math.abs(toSeconds(b.hour)-cur)
+function updateTable(now) {
+    const cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    const sorted = [...usersData].sort((a,b)=>
+        Math.abs(toSeconds(a.hour)-cur)-Math.abs(toSeconds(b.hour)-cur)
     );
 
-    table.innerHTML=`
+    table.innerHTML = `
     <tr>
-        <th>No.</th>
-        <th>Imię</th>
-        <th>Godzina</th>
-        <th class="deleteCell">X</th>
+    <th>No.</th><th>Imię</th><th>Godzina</th><th>X</th>
     </tr>`;
 
     sorted.forEach((u,i)=>{
-        table.innerHTML+=`
+        table.innerHTML += `
         <tr class="${i===0?'blink':''}">
-            <td>${i+1}</td>
-            <td>${u.name}</td>
-            <td>${u.hour}</td>
-            <td class="deleteCell">
-                <span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span>
-            </td>
+        <td>${i+1}</td>
+        <td>${u.name}</td>
+        <td>${u.hour}</td>
+        <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
     });
-},1000);
+}
 
-window.deleteOne=id=>deleteDoc(doc(db,"users",id));
+/* ===== ACTIONS ===== */
+window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 
-window.clearAll=async()=>{
-    const s=await getDocs(collection(db,"users"));
+window.clearAll = async () => {
+    const s = await getDocs(collection(db,"users"));
     s.forEach(d=>deleteDoc(doc(db,"users",d.id)));
 };
 
+/* ===== STOP ===== */
+document.getElementById("stopBtn").onclick = () => {
+    if(!usersData.length) return;
+    document.body.style.animation="cringeBg .3s infinite alternate";
+    document.getElementById("fanfareAudio").play();
+    setTimeout(()=>document.body.style.animation="none",7000);
+};
+
 /* ===== DARK MODE ===== */
-const toggle=document.getElementById("themeToggle");
+const toggle = document.getElementById("themeToggle");
+
 if(localStorage.getItem("theme")==="dark"){
     document.body.classList.add("dark");
-    toggle.checked=true;
+    toggle.textContent="☀️";
 }
-toggle.onchange=()=>{
+
+toggle.onclick = () => {
     document.body.classList.toggle("dark");
-    localStorage.setItem("theme",toggle.checked?"dark":"light");
+    const dark = document.body.classList.contains("dark");
+    toggle.textContent = dark ? "☀️" : "🌙";
+    localStorage.setItem("theme", dark?"dark":"light");
 };
 </script>
 
