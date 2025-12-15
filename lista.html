@@ -35,10 +35,11 @@ h2 { text-align: center; }
     justify-content: center;
 }
 
+.panel { flex: 1; min-width: 300px; }
+
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
 }
 
 th, td {
@@ -50,15 +51,26 @@ th, td {
 
 th { background: #eee; }
 
-th.deleteCell, td.deleteCell {
-    width: 40px;
-    padding: 5px;
+/* ===== DELETE COLUMN ===== */
+th.deleteCell,
+td.deleteCell {
+    width: 50px;
 }
 
+td.deleteCell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ===== DELETE BUTTON (FIX KOŁA) ===== */
 .deleteBtn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
     width: 28px;
     height: 28px;
-    line-height: 28px;
+    aspect-ratio: 1 / 1;
     border-radius: 50%;
     background: #ffdddd;
     border: 1px solid red;
@@ -67,8 +79,7 @@ th.deleteCell, td.deleteCell {
     cursor: pointer;
 }
 
-.panel { flex: 1; min-width: 300px; }
-
+/* ===== CLOCK ===== */
 #clock {
     font-size: 48px;
     font-weight: bold;
@@ -94,6 +105,22 @@ button.clear {
     border: none;
     cursor: pointer;
     border-radius: 6px;
+}
+
+/* ===== MIGANIE ===== */
+@keyframes blinkGreen {
+    0%   { background-color: #d1ffd1; }
+    50%  { background-color: #006400; }
+    100% { background-color: #d1ffd1; }
+}
+
+.blink {
+    animation: blinkGreen 1.5s infinite;
+}
+
+.blink td {
+    color: white;
+    font-weight: bold;
 }
 
 /* ===== DARK MODE ===== */
@@ -128,10 +155,13 @@ body.dark #stopBtn {
     background: #b30000;
 }
 
-body.dark .deleteBtn {
-    background: #3a0000;
-    border-color: #ff4444;
-    color: #ff8888;
+/* 🔥 FIX MIGANIA W DARK MODE */
+body.dark .blink {
+    animation: blinkGreen 1.5s infinite;
+}
+
+body.dark .blink td {
+    color: white;
 }
 
 /* ===== TOGGLE ===== */
@@ -145,16 +175,6 @@ body.dark .deleteBtn {
     cursor: pointer;
     z-index: 100000;
 }
-
-/* ===== MIGANIE ===== */
-@keyframes blinkGreen {
-    0% { background-color: #d1ffd1; }
-    50% { background-color: #006400; }
-    100% { background-color: #d1ffd1; }
-}
-
-.blink { animation: blinkGreen 1.5s infinite; }
-.blink td { color: white; font-weight: bold; }
 
 /* ===== CRINGE BG ===== */
 @keyframes cringeBg {
@@ -175,8 +195,10 @@ body.dark .deleteBtn {
 <h2>Lista zapisanych osób</h2>
 
 <div class="flex">
+
 <div class="panel">
 <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
+
 <table id="table">
 <tr>
 <th>No.</th>
@@ -190,11 +212,9 @@ body.dark .deleteBtn {
 <div class="panel">
 <div id="clock">--:--:--</div>
 <button id="stopBtn">STOP</button>
-<div id="stoppedTime"></div>
-</div>
 </div>
 
-<div id="winner"></div>
+</div>
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3" preload="auto"></audio>
@@ -227,6 +247,7 @@ onSnapshot(collection(db, "users"), (snapshot) => {
 
 /* ===== CLOCK ===== */
 const clock = document.getElementById("clock");
+
 setInterval(() => {
     const now = new Date();
     clock.textContent = now.toLocaleTimeString("pl-PL");
@@ -240,22 +261,29 @@ function toSeconds(t) {
 
 function updateTable(now) {
     const cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-    const sorted = [...usersData].sort((a,b)=>
-        Math.abs(toSeconds(a.hour)-cur)-Math.abs(toSeconds(b.hour)-cur)
+
+    const sorted = [...usersData].sort((a,b) =>
+        Math.abs(toSeconds(a.hour)-cur) - Math.abs(toSeconds(b.hour)-cur)
     );
 
     table.innerHTML = `
-    <tr>
-    <th>No.</th><th>Imię</th><th>Godzina</th><th>X</th>
-    </tr>`;
+        <tr>
+            <th>No.</th>
+            <th>Imię</th>
+            <th>Godzina</th>
+            <th class="deleteCell">X</th>
+        </tr>
+    `;
 
     sorted.forEach((u,i)=>{
         table.innerHTML += `
-        <tr class="${i===0?'blink':''}">
-        <td>${i+1}</td>
-        <td>${u.name}</td>
-        <td>${u.hour}</td>
-        <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
+        <tr class="${i === 0 ? 'blink' : ''}">
+            <td>${i+1}</td>
+            <td>${u.name}</td>
+            <td>${u.hour}</td>
+            <td class="deleteCell">
+                <span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span>
+            </td>
         </tr>`;
     });
 }
@@ -265,30 +293,30 @@ window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 
 window.clearAll = async () => {
     const s = await getDocs(collection(db,"users"));
-    s.forEach(d=>deleteDoc(doc(db,"users",d.id)));
+    s.forEach(d => deleteDoc(doc(db,"users",d.id)));
 };
 
 /* ===== STOP ===== */
 document.getElementById("stopBtn").onclick = () => {
     if(!usersData.length) return;
-    document.body.style.animation="cringeBg .3s infinite alternate";
+    document.body.style.animation = "cringeBg .3s infinite alternate";
     document.getElementById("fanfareAudio").play();
-    setTimeout(()=>document.body.style.animation="none",7000);
+    setTimeout(() => document.body.style.animation = "none", 7000);
 };
 
 /* ===== DARK MODE ===== */
 const toggle = document.getElementById("themeToggle");
 
-if(localStorage.getItem("theme")==="dark"){
+if(localStorage.getItem("theme") === "dark") {
     document.body.classList.add("dark");
-    toggle.textContent="☀️";
+    toggle.textContent = "☀️";
 }
 
 toggle.onclick = () => {
     document.body.classList.toggle("dark");
     const dark = document.body.classList.contains("dark");
     toggle.textContent = dark ? "☀️" : "🌙";
-    localStorage.setItem("theme", dark?"dark":"light");
+    localStorage.setItem("theme", dark ? "dark" : "light");
 };
 </script>
 
