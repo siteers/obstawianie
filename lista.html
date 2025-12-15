@@ -38,22 +38,15 @@ h2 { text-align: center; }
 table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
 }
 
 th, td {
     border: 1px solid #ccc;
     padding: 10px;
     text-align: center;
-    color: black;
 }
 
 th { background: #eee; }
-
-th.deleteCell, td.deleteCell {
-    width: 40px;
-    padding: 5px;
-}
 
 .deleteBtn {
     width: 28px;
@@ -71,7 +64,6 @@ th.deleteCell, td.deleteCell {
 
 #clock {
     font-size: 48px;
-    font-weight: bold;
     text-align: center;
     margin-bottom: 20px;
 }
@@ -92,8 +84,30 @@ button.clear {
     background: #444;
     color: white;
     border: none;
-    cursor: pointer;
     border-radius: 6px;
+    cursor: pointer;
+}
+
+/* ===== MIGANIE ===== */
+@keyframes blinkLight {
+    0% { background-color: #d1ffd1; }
+    50% { background-color: #006400; }
+    100% { background-color: #d1ffd1; }
+}
+
+@keyframes blinkDark {
+    0% { background-color: #003300; }
+    50% { background-color: #00aa00; }
+    100% { background-color: #003300; }
+}
+
+.blink {
+    animation: blinkLight 1.5s infinite;
+}
+
+.blink td {
+    color: white;
+    font-weight: bold;
 }
 
 /* ===== DARK MODE ===== */
@@ -103,10 +117,6 @@ body.dark {
 }
 
 body.dark .container {
-    background: #1e1e1e;
-}
-
-body.dark table {
     background: #1e1e1e;
 }
 
@@ -120,56 +130,73 @@ body.dark td {
     color: #ddd;
 }
 
-body.dark button.clear {
-    background: #666;
-}
-
-body.dark #stopBtn {
-    background: #b30000;
-}
-
 body.dark .deleteBtn {
     background: #3a0000;
     border-color: #ff4444;
     color: #ff8888;
 }
 
-/* ===== TOGGLE ===== */
-#themeToggle {
+body.dark #stopBtn {
+    background: #b30000;
+}
+
+body.dark .blink {
+    animation: blinkDark 1.5s infinite;
+}
+
+/* ===== SUWAK ===== */
+.theme-switch {
     position: fixed;
     top: 15px;
     right: 15px;
-    font-size: 24px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
+    display: flex;
+    align-items: center;
     z-index: 100000;
 }
 
-/* ===== MIGANIE ===== */
-@keyframes blinkGreen {
-    0% { background-color: #d1ffd1; }
-    50% { background-color: #006400; }
-    100% { background-color: #d1ffd1; }
+.theme-switch input {
+    display: none;
 }
 
-.blink { animation: blinkGreen 1.5s infinite; }
-.blink td { color: white; font-weight: bold; }
+.slider {
+    width: 50px;
+    height: 26px;
+    background: #ccc;
+    border-radius: 26px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.3s;
+}
 
-/* ===== CRINGE BG ===== */
-@keyframes cringeBg {
-    0% { background-color: #ff69b4; }
-    25% { background-color: #00ffff; }
-    50% { background-color: #ffff00; }
-    75% { background-color: #ff00ff; }
-    100% { background-color: #00ff00; }
+.slider::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    top: 2px;
+    left: 2px;
+    transition: transform 0.3s;
+}
+
+input:checked + .slider {
+    background: #4caf50;
+}
+
+input:checked + .slider::before {
+    transform: translateX(24px);
 }
 </style>
 </head>
 
 <body>
 
-<button id="themeToggle">🌙</button>
+<!-- SUWAK -->
+<label class="theme-switch">
+    <input type="checkbox" id="themeToggle">
+    <span class="slider"></span>
+</label>
 
 <div class="container">
 <h2>Lista zapisanych osób</h2>
@@ -182,7 +209,7 @@ body.dark .deleteBtn {
 <th>No.</th>
 <th>Imię</th>
 <th>Godzina</th>
-<th class="deleteCell">X</th>
+<th>X</th>
 </tr>
 </table>
 </div>
@@ -197,13 +224,10 @@ body.dark .deleteBtn {
 <div id="winner"></div>
 </div>
 
-<audio id="fanfareAudio" src="fanfare1.mp3" preload="auto"></audio>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===== FIREBASE ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
@@ -219,76 +243,51 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 let usersData = [];
 
-/* ===== REALTIME ===== */
-onSnapshot(collection(db, "users"), (snapshot) => {
+onSnapshot(collection(db, "users"), snap => {
     usersData = [];
-    snapshot.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+    snap.forEach(d => usersData.push({ id:d.id, ...d.data() }));
 });
 
-/* ===== CLOCK ===== */
-const clock = document.getElementById("clock");
-setInterval(() => {
-    const now = new Date();
-    clock.textContent = now.toLocaleTimeString("pl-PL");
-    updateTable(now);
-}, 1000);
-
-function toSeconds(t) {
-    const p = t.split(":").map(Number);
-    return (p[0]||0)*3600 + (p[1]||0)*60 + (p[2]||0);
+function toSeconds(t){
+    const p=t.split(":").map(Number);
+    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
-function updateTable(now) {
-    const cur = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-    const sorted = [...usersData].sort((a,b)=>
-        Math.abs(toSeconds(a.hour)-cur)-Math.abs(toSeconds(b.hour)-cur)
-    );
-
-    table.innerHTML = `
-    <tr>
-    <th>No.</th><th>Imię</th><th>Godzina</th><th>X</th>
-    </tr>`;
-
+setInterval(()=>{
+    const now=new Date();
+    document.getElementById("clock").textContent=now.toLocaleTimeString("pl-PL");
+    const cur=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+    const sorted=[...usersData].sort((a,b)=>Math.abs(toSeconds(a.hour)-cur)-Math.abs(toSeconds(b.hour)-cur));
+    table.innerHTML=`<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>`;
     sorted.forEach((u,i)=>{
-        table.innerHTML += `
+        table.innerHTML+=`
         <tr class="${i===0?'blink':''}">
-        <td>${i+1}</td>
-        <td>${u.name}</td>
-        <td>${u.hour}</td>
-        <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
+            <td>${i+1}</td>
+            <td>${u.name}</td>
+            <td>${u.hour}</td>
+            <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
     });
-}
+},1000);
 
-/* ===== ACTIONS ===== */
-window.deleteOne = async id => deleteDoc(doc(db,"users",id));
+window.deleteOne = id => deleteDoc(doc(db,"users",id));
 
-window.clearAll = async () => {
-    const s = await getDocs(collection(db,"users"));
+window.clearAll = async ()=>{
+    const s=await getDocs(collection(db,"users"));
     s.forEach(d=>deleteDoc(doc(db,"users",d.id)));
 };
 
-/* ===== STOP ===== */
-document.getElementById("stopBtn").onclick = () => {
-    if(!usersData.length) return;
-    document.body.style.animation="cringeBg .3s infinite alternate";
-    document.getElementById("fanfareAudio").play();
-    setTimeout(()=>document.body.style.animation="none",7000);
-};
-
-/* ===== DARK MODE ===== */
-const toggle = document.getElementById("themeToggle");
+/* ===== DARK MODE LOGIC ===== */
+const toggle=document.getElementById("themeToggle");
 
 if(localStorage.getItem("theme")==="dark"){
     document.body.classList.add("dark");
-    toggle.textContent="☀️";
+    toggle.checked=true;
 }
 
-toggle.onclick = () => {
+toggle.onchange=()=>{
     document.body.classList.toggle("dark");
-    const dark = document.body.classList.contains("dark");
-    toggle.textContent = dark ? "☀️" : "🌙";
-    localStorage.setItem("theme", dark?"dark":"light");
+    localStorage.setItem("theme",toggle.checked?"dark":"light");
 };
 </script>
 
