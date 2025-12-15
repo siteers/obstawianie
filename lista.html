@@ -23,7 +23,6 @@ body {
     background: white;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
 }
 
 h2 { text-align: center; }
@@ -32,7 +31,6 @@ h2 { text-align: center; }
     display: flex;
     flex-wrap: wrap;
     gap: 20px;
-    justify-content: center;
 }
 
 table {
@@ -78,17 +76,7 @@ th { background: #eee; }
     cursor: pointer;
 }
 
-button.clear {
-    margin-bottom: 10px;
-    padding: 10px;
-    background: #444;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-}
-
-/* ===== MIGANIE ===== */
+/* ===== MIGANIE (KLUCZOWA POPRAWKA) ===== */
 @keyframes blinkLight {
     0% { background-color: #d1ffd1; }
     50% { background-color: #006400; }
@@ -97,15 +85,13 @@ button.clear {
 
 @keyframes blinkDark {
     0% { background-color: #003300; }
-    50% { background-color: #00aa00; }
+    50% { background-color: #00cc00; }
     100% { background-color: #003300; }
 }
 
-.blink {
+/* ❗ animujemy TD, nie TR */
+tr.blink td {
     animation: blinkLight 1.5s infinite;
-}
-
-.blink td {
     color: white;
     font-weight: bold;
 }
@@ -130,6 +116,12 @@ body.dark td {
     color: #ddd;
 }
 
+/* 🔥 WŁAŚCIWA NAPRAWA */
+body.dark tr.blink td {
+    animation: blinkDark 1.5s infinite;
+    color: #eaffea;
+}
+
 body.dark .deleteBtn {
     background: #3a0000;
     border-color: #ff4444;
@@ -140,18 +132,11 @@ body.dark #stopBtn {
     background: #b30000;
 }
 
-body.dark .blink {
-    animation: blinkDark 1.5s infinite;
-}
-
 /* ===== SUWAK ===== */
 .theme-switch {
     position: fixed;
     top: 15px;
     right: 15px;
-    display: flex;
-    align-items: center;
-    z-index: 100000;
 }
 
 .theme-switch input {
@@ -165,7 +150,6 @@ body.dark .blink {
     border-radius: 26px;
     position: relative;
     cursor: pointer;
-    transition: background 0.3s;
 }
 
 .slider::before {
@@ -203,7 +187,7 @@ input:checked + .slider::before {
 
 <div class="flex">
 <div class="panel">
-<button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
+<button onclick="clearAll()">Wyczyść wszystkie dane</button>
 <table id="table">
 <tr>
 <th>No.</th>
@@ -217,11 +201,8 @@ input:checked + .slider::before {
 <div class="panel">
 <div id="clock">--:--:--</div>
 <button id="stopBtn">STOP</button>
-<div id="stoppedTime"></div>
 </div>
 </div>
-
-<div id="winner"></div>
 </div>
 
 <script type="module">
@@ -243,9 +224,9 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 let usersData = [];
 
-onSnapshot(collection(db, "users"), snap => {
-    usersData = [];
-    snap.forEach(d => usersData.push({ id:d.id, ...d.data() }));
+onSnapshot(collection(db,"users"), snap=>{
+    usersData=[];
+    snap.forEach(d=>usersData.push({id:d.id,...d.data()}));
 });
 
 function toSeconds(t){
@@ -270,21 +251,18 @@ setInterval(()=>{
     });
 },1000);
 
-window.deleteOne = id => deleteDoc(doc(db,"users",id));
-
-window.clearAll = async ()=>{
+window.deleteOne=id=>deleteDoc(doc(db,"users",id));
+window.clearAll=async()=>{
     const s=await getDocs(collection(db,"users"));
     s.forEach(d=>deleteDoc(doc(db,"users",d.id)));
 };
 
-/* ===== DARK MODE LOGIC ===== */
+/* DARK MODE */
 const toggle=document.getElementById("themeToggle");
-
 if(localStorage.getItem("theme")==="dark"){
     document.body.classList.add("dark");
     toggle.checked=true;
 }
-
 toggle.onchange=()=>{
     document.body.classList.toggle("dark");
     localStorage.setItem("theme",toggle.checked?"dark":"light");
