@@ -23,7 +23,7 @@
         #clock { font-size: 48px; font-weight: bold; text-align: center; }
         #stopBtn { background: red; color: white; padding: 20px 45px; font-size: 28px; border-radius: 60px; border: none; cursor: pointer; display: block; margin: 15px auto; }
         #stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
-        #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; }
+        #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
         button.clear { margin-bottom: 10px; padding: 10px 14px; background: #444; color: white; border-radius: 6px; border: none; cursor: pointer; }
         #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; }
@@ -62,6 +62,7 @@
 <div id="cringeGifs">
     <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
     <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
@@ -84,6 +85,7 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
+const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
 
 /* DARK MODE */
@@ -124,6 +126,50 @@ setInterval(() => {
     });
 }, 1000);
 
+/* FIREWORKS LOGIC */
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+let particles = [], fwActive = false;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function spawnFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.5;
+    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
+    for(let i=0; i<50; i++) {
+        particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
+    }
+}
+
+function updateFW() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach((p,i) => {
+        p.x += Math.cos(p.a) * p.s;
+        p.y += Math.sin(p.a) * p.s;
+        p.al -= 0.01;
+        if(p.al <= 0) particles.splice(i,1);
+        ctx.globalAlpha = p.al;
+        ctx.fillStyle = p.c;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+    });
+    if(fwActive) requestAnimationFrame(updateFW);
+}
+
+function startCelebration() {
+    document.getElementById("cringeGifs").style.display = "flex";
+    canvas.style.display = "block";
+    fwActive = true;
+    const interval = setInterval(spawnFirework, 400);
+    updateFW();
+    setTimeout(() => {
+        clearInterval(interval);
+        fwActive = false;
+        canvas.style.display = "none";
+        document.getElementById("cringeGifs").style.display = "none";
+    }, 7000);
+}
+
 /* STOP BUTTON LOGIC (TOP 3) */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
@@ -137,15 +183,17 @@ stopBtn.onclick = async () => {
     // TOP 3
     const top3 = sorted.slice(0, 3);
     winner.style.display = "block";
-    winner.innerHTML = `<strong>TOP 3:</strong><br>
+    winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>
         1. ${top3[0].name} (+3 pkt)<br>
         ${top3[1] ? '2. ' + top3[1].name + ' (+2 pkt)<br>' : ''}
         ${top3[2] ? '3. ' + top3[2].name + ' (+1 pkt)' : ''}`;
 
-    // FIREWORKS & AUDIO
-    document.body.style.animation="cringeBg 0.3s infinite alternate";
-    document.getElementById("fanfareAudio").play().catch(()=>{});
-    setTimeout(()=>document.body.style.animation="none", 5000);
+    // CELEBRATION
+    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+    fanfareAudio.currentTime = 0;
+    fanfareAudio.play().catch(()=>{});
+    startCelebration();
+    setTimeout(() => document.body.style.animation = "none", 7000);
 
     // DATABASE UPDATE
     for (let i = 0; i < top3.length; i++) {
