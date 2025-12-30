@@ -104,7 +104,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { 
     getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot, 
-    setDoc, getDoc, updateDoc, increment 
+    setDoc, getDoc, updateDoc, increment, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -209,17 +209,22 @@ function startCelebration() {
 /* STOP BUTTON LOGIC (TOP 3) */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
-    const nowStr = document.getElementById("clock").textContent;
+    const nowObj = new Date();
+    const nowStr = nowObj.toLocaleTimeString("pl-PL");
+    const fullDateStr = nowObj.toLocaleString("pl-PL");
     stoppedTime.textContent = "Zatrzymana godzina: " + nowStr;
     
-    const now = new Date();
-    const s = now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+    const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
     const top3 = sorted.slice(0, 3);
-    
-    // ZAPISANIE OSTATNIEGO WYNIKU DO PAMIĘCI (DLA PRZYCISKU COFNIJ)
-    localStorage.setItem("lastTop3", JSON.stringify(top3));
+
+    // ZAPIS DO HISTORII DLA RANKINGU
+    await addDoc(collection(db, "history"), {
+        date: fullDateStr,
+        timestamp: nowObj.getTime(),
+        winners: top3.map(p => ({name: p.name}))
+    });
 
     winner.style.display = "block";
     winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>
