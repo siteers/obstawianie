@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>🏆 Ranking zwycięzców</title>
+<title>🏆 Ranking punktowy</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
@@ -10,6 +10,18 @@ body {
   background:#111;
   color:#fff;
   padding:20px;
+}
+h1 { text-align:center; margin-bottom:10px; }
+.points-info {
+  text-align: center;
+  background: #222;
+  max-width: 600px;
+  margin: 0 auto 20px auto;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px dashed #555;
+  color: #ffcc00;
+  font-size: 0.9em;
 }
 table {
   width:100%;
@@ -23,12 +35,10 @@ th,td {
   text-align:center;
 }
 th { background:#222; }
-h1 { text-align:center; margin-bottom:20px; }
 
-/* Styl dla przycisku czyszczenia */
 .clear-btn {
   display: block;
-  margin: 0 auto 20px auto;
+  margin: 20px auto;
   padding: 10px 20px;
   background-color: #e74c3c;
   color: white;
@@ -37,20 +47,23 @@ h1 { text-align:center; margin-bottom:20px; }
   cursor: pointer;
   font-weight: bold;
 }
-.clear-btn:hover {
-  background-color: #c0392b;
-}
+.clear-btn:hover { background-color: #c0392b; }
 </style>
 </head>
 <body>
 
-<h1>🏆 Ranking zwycięzców</h1>
+<h1>🏆 Ranking punktowy</h1>
 
-<button class="clear-btn" onclick="clearRanking()">🗑️ Wyczyść cały ranking</button>
+<div class="points-info">
+  <strong>System punktacji:</strong><br>
+  🥇 1. miejsce: <b>3 pkt</b> | 🥈 2. miejsce: <b>2 pkt</b> | 🥉 3. miejsce: <b>1 pkt</b>
+</div>
 
 <table id="rank">
-<tr><th>#</th><th>Imię</th><th>Wygrane</th></tr>
+<tr><th>#</th><th>Imię</th><th>Punkty</th></tr>
 </table>
+
+<button class="clear-btn" onclick="clearRanking()">🗑️ Wyczyść wszystko</button>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -68,41 +81,48 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const table = document.getElementById("rank");
 
-// Pobieranie rankingu w czasie rzeczywistym
 onSnapshot(collection(db,"ranking"), snap=>{
   const data=[];
-  snap.forEach(d=>data.push({name:d.id, ...d.data()}));
-  data.sort((a,b)=>b.wins-a.wins);
+  snap.forEach(d => {
+    const docData = d.data();
+    
+    // Obliczanie punktów na podstawie pól w Firebase
+    // Jeśli pola nie istnieją, przyjmujemy 0
+    const p1 = docData.place1 || 0;
+    const p2 = docData.place2 || 0;
+    const p3 = docData.place3 || 0;
+    
+    const totalPoints = (p1 * 3) + (p2 * 2) + (p3 * 1);
+    
+    data.push({
+      name: d.id, 
+      points: totalPoints
+    });
+  });
 
-  table.innerHTML="<tr><th>#</th><th>Imię</th><th>Wygrane</th></tr>";
+  // Sortowanie po punktach malejąco
+  data.sort((a,b) => b.points - a.points);
+
+  table.innerHTML="<tr><th>#</th><th>Imię</th><th>Suma Punktów</th></tr>";
   data.forEach((u,i)=>{
     table.innerHTML+=`
       <tr>
         <td>${i+1}</td>
         <td>${u.name}</td>
-        <td>${u.wins}</td>
+        <td><strong>${u.points}</strong></td>
       </tr>`;
   });
 });
 
-// FUNKCJA CZYSZCZENIA RANKINGU
 window.clearRanking = async () => {
-  if (confirm("Czy na pewno chcesz trwale usunąć WSZYSTKIE rekordy z rankingu?")) {
+  if (confirm("Czy na pewno chcesz wyczyścić wszystkie dane?")) {
     try {
-      // Pobierz wszystkie dokumenty z kolekcji "ranking"
       const querySnapshot = await getDocs(collection(db, "ranking"));
-      
-      // Usuń każdy dokument po kolei
-      const deletePromises = [];
-      querySnapshot.forEach((document) => {
-        deletePromises.push(deleteDoc(doc(db, "ranking", document.id)));
-      });
-
+      const deletePromises = querySnapshot.docs.map(d => deleteDoc(doc(db, "ranking", d.id)));
       await Promise.all(deletePromises);
-      alert("Ranking został wyczyszczony.");
-    } catch (error) {
-      console.error("Błąd podczas usuwania:", error);
-      alert("Nie udało się wyczyścić rankingu.");
+      alert("Dane zostały usunięte.");
+    } catch (e) {
+      alert("Błąd: " + e.message);
     }
   }
 };
