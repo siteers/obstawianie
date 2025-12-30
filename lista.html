@@ -27,9 +27,36 @@
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
         button.clear { margin-bottom: 10px; padding: 10px 14px; background: #444; color: white; border-radius: 6px; border: none; cursor: pointer; }
         
-        /* POPRAWKA PRZYCISKU DARK MODE */
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s; }
+        /* PRZYCISKI BOCZNE */
+        #darkModeBtn, #rankingBtn { 
+            position: fixed; 
+            right: 15px; 
+            padding: 10px 18px; 
+            border-radius: 30px; 
+            border: none; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: bold; 
+            z-index: 100000; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
+            transition: 0.3s;
+            width: 150px;
+        }
+        
+        #darkModeBtn { top: 15px; background: #111; color: #fff; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
+
+        #rankingBtn { 
+            top: 65px; 
+            background: #ffcc00; 
+            color: #111; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+        }
+        body.dark #rankingBtn { background: #ffd700; color: #000; }
+        #rankingBtn:hover { transform: scale(1.05); }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
         #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
@@ -43,6 +70,7 @@
 <body>
 
 <button id="darkModeBtn">🌙 Dark mode</button>
+<a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
 
 <div class="container">
     <h2>Lista zapisanych osób</h2>
