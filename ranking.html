@@ -2,147 +2,71 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Ranking</title>
+<title>🏆 Ranking zwycięzców</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body {
-    font-family: Arial, sans-serif;
-    background: #f2f2f2;
-    margin: 0;
-    padding: 20px;
-    display: flex;
-    justify-content: center;
-    transition: background-color 0.2s;
+  font-family: Arial, sans-serif;
+  background:#111;
+  color:#fff;
+  padding:20px;
 }
-
-.container {
-    max-width: 900px;
-    width: 100%;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0,0,0,0.2);
-}
-
-h2 { text-align: center; }
-
 table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
+  width:100%;
+  max-width:600px;
+  margin:auto;
+  border-collapse:collapse;
 }
-
-th, td {
-    border: 1px solid #ccc;
-    padding: 10px;
-    text-align: center;
-    font-weight: normal;
-    color: black;
+th,td {
+  border:1px solid #444;
+  padding:12px;
+  text-align:center;
 }
-
-th { background: #eee; }
-
-th.deleteCell, td.deleteCell { width: 40px; padding: 5px; }
-
-.deleteBtn {
-    display: inline-block;
-    width: 28px;
-    height: 28px;
-    line-height: 28px;
-    border-radius: 50%;
-    background: #ffdddd;
-    border: 1px solid red;
-    color: red;
-    font-weight: bold;
-    cursor: pointer;
-    transition: 0.2s;
-}
-.deleteBtn:hover {
-    background: red;
-    color: white;
-}
+th { background:#222; }
+h1 { text-align:center; margin-bottom:20px; }
 </style>
 </head>
 <body>
-<div class="container">
-    <h2>Ranking Sesji</h2>
-    <table id="rankingTable">
-        <tr>
-            <th>No.</th>
-            <th>Data</th>
-            <th>1 miejsce</th>
-            <th>2 miejsce</th>
-            <th>3 miejsce</th>
-            <th class="deleteCell">X</th>
-        </tr>
-    </table>
-</div>
+
+<h1>🏆 Ranking zwycięzców</h1>
+
+<table id="rank">
+<tr><th>#</th><th>Imię</th><th>Wygrane</th></tr>
+</table>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, onSnapshot } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-// konfiguracja Firebase (ta sama co na stronie głównej)
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
-  projectId: "obstaiwanie",
-  storageBucket: "obstaiwanie.firebasestorage.app",
-  messagingSenderId: "64783465818",
-  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+  projectId: "obstaiwanie"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const table = document.getElementById("rank");
 
-const rankingTable = document.getElementById("rankingTable");
+// Pobieranie ranking w czasie rzeczywistym
+onSnapshot(collection(db,"ranking"), snap=>{
+  const data=[];
+  snap.forEach(d=>data.push({name:d.id, ...d.data()}));
+  // Sortowanie po liczbie wygranych malejąco
+  data.sort((a,b)=>b.wins-a.wins);
 
-// funkcja odświeżająca tabelę
-function updateRankingTable(sessions) {
-    rankingTable.innerHTML = `
-        <tr>
-            <th>No.</th>
-            <th>Data</th>
-            <th>1 miejsce</th>
-            <th>2 miejsce</th>
-            <th>3 miejsce</th>
-            <th class="deleteCell">X</th>
-        </tr>`;
-    
-    sessions.forEach((s, index) => {
-        const [first="", second="", third=""] = s.results || [];
-        rankingTable.innerHTML += `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${new Date(s.date).toLocaleString("pl-PL")}</td>
-                <td>${first}</td>
-                <td>${second}</td>
-                <td>${third}</td>
-                <td class="deleteCell">
-                    <span class="deleteBtn" onclick="deleteSession('${s.id}')">X</span>
-                </td>
-            </tr>
-        `;
-    });
-}
-
-// pobieranie danych w czasie rzeczywistym
-onSnapshot(collection(db, "sessions"), (snapshot) => {
-    const sessionsData = [];
-    snapshot.forEach(docu => {
-        sessionsData.push({ id: docu.id, ...docu.data() });
-    });
-    // sortowanie po dacie (najnowsze na górze)
-    sessionsData.sort((a,b)=>new Date(b.date) - new Date(a.date));
-    updateRankingTable(sessionsData);
+  table.innerHTML="<tr><th>#</th><th>Imię</th><th>Wygrane</th></tr>";
+  data.forEach((u,i)=>{
+    table.innerHTML+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>${u.name}</td>
+        <td>${u.wins}</td>
+      </tr>`;
+  });
 });
-
-// funkcja do usuwania rekordu
-window.deleteSession = async function(id) {
-    if(confirm("Na pewno chcesz usunąć ten rekord?")) {
-        await deleteDoc(doc(db, "sessions", id));
-    }
-};
 </script>
+
 </body>
 </html>
