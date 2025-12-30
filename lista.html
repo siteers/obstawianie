@@ -15,7 +15,6 @@ body {
   justify-content: center;
   transition: background-color 0.3s;
 }
-
 body.dark { background: #121212; }
 
 .container {
@@ -26,19 +25,13 @@ body.dark { background: #121212; }
   border-radius: 12px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.15);
 }
-
 body.dark .container {
   background: #1e1e1e;
   box-shadow: 0 10px 30px rgba(255,255,255,0.05);
 }
 
 h2 { text-align: center; }
-
-body.dark h2,
-body.dark th,
-body.dark td,
-body.dark #clock,
-body.dark #stoppedTime {
+body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime {
   color: #f1f1f1;
 }
 
@@ -49,7 +42,6 @@ table {
   border-collapse: collapse;
   background: white;
 }
-
 body.dark table { background: #1e1e1e; }
 
 th, td {
@@ -57,7 +49,6 @@ th, td {
   padding: 10px;
   text-align: center;
 }
-
 body.dark th, body.dark td { border-color: #333; }
 
 th { background: #eee; }
@@ -77,11 +68,7 @@ body.dark th { background: #2a2a2a; }
 
 .panel { flex: 1; min-width: 300px; }
 
-#clock {
-  font-size: 48px;
-  font-weight: bold;
-  text-align: center;
-}
+#clock { font-size: 48px; font-weight: bold; text-align: center; }
 
 #stopBtn {
   background: red;
@@ -95,11 +82,7 @@ body.dark th { background: #2a2a2a; }
   margin: 15px auto;
 }
 
-#stoppedTime {
-  font-size: 26px;
-  text-align: center;
-  margin-top: 15px;
-}
+#stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
 
 #winner {
   margin-top: 30px;
@@ -110,7 +93,6 @@ body.dark th { background: #2a2a2a; }
   display: none;
   text-align: center;
 }
-
 body.dark #winner {
   background: #1f3d1f;
   color: #aaffaa;
@@ -126,7 +108,6 @@ button.clear {
   cursor: pointer;
 }
 
-/* 🔥 WYRAŹNY PRZYCISK DARK MODE */
 #darkModeBtn {
   position: fixed;
   top: 15px;
@@ -142,9 +123,7 @@ button.clear {
   box-shadow: 0 4px 12px rgba(0,0,0,0.25);
   z-index: 100000;
 }
-
 #darkModeBtn:hover { background: #000; }
-
 body.dark #darkModeBtn {
   background: #f1f1f1;
   color: #111;
@@ -168,18 +147,13 @@ body.dark #darkModeBtn {
   gap: 10px;
   z-index: 99999;
 }
-
-#cringeGifs img {
-  max-height: 150px;
-  border-radius: 10px;
-}
+#cringeGifs img { max-height: 150px; border-radius: 10px; }
 
 @keyframes blinkGreen {
   0% { background: #d1ffd1; }
   50% { background: #006400; }
   100% { background: #d1ffd1; }
 }
-
 .blink { animation: blinkGreen 1.5s infinite; }
 .blink td { color: white; font-weight: bold; }
 
@@ -230,7 +204,10 @@ body.dark #darkModeBtn {
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { 
+  getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot, 
+  setDoc, getDoc, updateDoc, increment 
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* DARK MODE */
 const darkBtn = document.getElementById("darkModeBtn");
@@ -267,7 +244,6 @@ onSnapshot(collection(db, "users"), snap => {
 
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 
-/* 🔥 CLEAR – usuwa zwycięzcę i godzinę */
 window.clearAll = async () => {
   const snap = await getDocs(collection(db,"users"));
   snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
@@ -277,7 +253,6 @@ window.clearAll = async () => {
   winner.style.display = "none";
 };
 
-/* CLOCK */
 const clock = document.getElementById("clock");
 setInterval(() => {
   const n = new Date();
@@ -347,7 +322,7 @@ function startFireworks(){
 }
 
 /* STOP */
-stopBtn.onclick=()=>{
+stopBtn.onclick = async () => {
   if(!usersData.length) return;
 
   stoppedTime.textContent="Zatrzymana godzina: "+clock.textContent;
@@ -362,9 +337,17 @@ stopBtn.onclick=()=>{
   fanfareAudio.currentTime=0; fanfareAudio.play().catch(()=>{});
   startFireworks();
 
+  // 🔥 ZAPIS DO RANKINGU
+  const ref = doc(db, "ranking", best.name);
+  const snap = await getDoc(ref);
+  if(snap.exists()){
+    await updateDoc(ref, { wins: increment(1) });
+  } else {
+    await setDoc(ref, { wins: 1 });
+  }
+
   setTimeout(()=>document.body.style.animation="none",7000);
 };
 </script>
-
 </body>
 </html>
