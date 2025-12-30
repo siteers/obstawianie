@@ -7,8 +7,6 @@
     <style>
         /* PODSTAWOWE STYLE (Light Mode) */
         body { font-family: Arial, sans-serif; background: #f2f2f2; color: #111; padding: 20px; text-align: center; transition: background-color 0.3s, color 0.3s; }
-        
-        /* DARK MODE - Klasa nadrzędna */
         body.dark { background: #111; color: #fff; }
 
         .points-box { background: white; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #ccc; color: #d4af37; font-weight: bold; transition: 0.3s; }
@@ -23,15 +21,22 @@
         th { background: #eee; }
         body.dark th { background: #222; }
 
-        .clear-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 30px; font-weight: bold; }
+        .btn-container { margin-top: 30px; display: flex; justify-content: center; gap: 10px; }
+
+        .clear-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
         .clear-btn:hover { background: #c0392b; }
 
-        /* PRZYCISK TRYBU - Identyczny jak na stronie głównej */
+        /* NOWY STYL PRZYCISKU COFNIJ */
+        .undo-btn { background: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .undo-btn:hover { background: #e67e22; }
+        .undo-btn:disabled { background: #7f8c8d; cursor: not-allowed; }
+
         #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
     </style>
 </head>
-<body class="dark"> <button id="darkModeBtn">☀️ Light mode</button>
+<body class="dark"> 
+    <button id="darkModeBtn">☀️ Light mode</button>
 
     <h1>🏆 Ranking zwycięzców</h1>
 
@@ -43,11 +48,14 @@
         <tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>
     </table>
 
-    <button class="clear-btn" onclick="clearRanking()">🗑️ Wyczyść cały ranking</button>
+    <div class="btn-container">
+        <button id="undoBtn" class="undo-btn" onclick="undoLastAction()">↩️ Cofnij ostatni rekord</button>
+        <button class="clear-btn" onclick="clearRanking()">🗑️ Wyczyść cały ranking</button>
+    </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc, updateDoc, increment, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -83,12 +91,44 @@
             });
         });
 
+        /* FUNKCJA COFANIA OSTATNIEGO REKORDU */
+        window.undoLastAction = async () => {
+            // Pobieramy dane o ostatnim rzucie zapisane przez stronę główną (STOP)
+            const lastResult = JSON.parse(localStorage.getItem("lastTop3"));
+
+            if (!lastResult) {
+                alert("Nie znaleziono ostatniego rekordu do cofnięcia (lub został już cofnięty).");
+                return;
+            }
+
+            if (confirm(`Czy na pewno chcesz odjąć punkty przyznane ostatnio dla: ${lastResult.map(p => p.name).join(", ")}?`)) {
+                try {
+                    for (let i = 0; i < lastResult.length; i++) {
+                        const player = lastResult[i];
+                        const pointsToSubtract = (i === 0) ? -3 : (i === 1) ? -2 : -1;
+                        
+                        const ref = doc(db, "ranking", player.name);
+                        await updateDoc(ref, {
+                            points: increment(pointsToSubtract)
+                        });
+                    }
+                    // Usuwamy informację z pamięci, aby nie cofnąć tego samego dwa razy
+                    localStorage.removeItem("lastTop3");
+                    alert("Pomyślnie cofnięto ostatnie punkty.");
+                } catch (error) {
+                    console.error(error);
+                    alert("Wystąpił błąd podczas cofania.");
+                }
+            }
+        };
+
         /* FUNKCJA CZYSZCZENIA */
         window.clearRanking = async () => {
             if(confirm("Czy na pewno wyczyścić wszystkie punkty?")) {
                 const snap = await getDocs(collection(db, "ranking"));
                 const promises = snap.docs.map(d => deleteDoc(doc(db, "ranking", d.id)));
                 await Promise.all(promises);
+                localStorage.removeItem("lastTop3");
             }
         };
     </script>
