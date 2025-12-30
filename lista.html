@@ -27,12 +27,12 @@
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
         button.clear { margin-bottom: 10px; padding: 10px 14px; background: #444; color: white; border-radius: 6px; border: none; cursor: pointer; }
         
-        /* UJEDNOLICONE PRZYCISKI BOCZNE */
+        /* PRZYCISKI BOCZNE */
         #darkModeBtn, #rankingBtn { 
             position: fixed; 
             right: 15px; 
-            width: 165px; /* Stała szerokość dla obu */
-            height: 45px; /* Stała wysokość dla obu */
+            width: 165px; 
+            height: 45px; 
             padding: 0; 
             border-radius: 30px; 
             border: none; 
@@ -217,6 +217,10 @@ stopBtn.onclick = async () => {
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
     const top3 = sorted.slice(0, 3);
+    
+    // ZAPISANIE OSTATNIEGO WYNIKU DO PAMIĘCI (DLA PRZYCISKU COFNIJ)
+    localStorage.setItem("lastTop3", JSON.stringify(top3));
+
     winner.style.display = "block";
     winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>
         1. ${top3[0].name} (+3 pkt)<br>
