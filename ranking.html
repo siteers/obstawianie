@@ -5,16 +5,13 @@
     <title>🏆 Ranking Zwycięzców</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        /* PODSTAWOWE STYLE (Light Mode) */
         body { font-family: Arial, sans-serif; background: #f2f2f2; color: #111; padding: 20px; text-align: center; transition: background-color 0.3s, color 0.3s; }
-        
-        /* DARK MODE */
         body.dark { background: #111; color: #fff; }
 
         .points-box { background: white; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #ccc; color: #d4af37; font-weight: bold; transition: 0.3s; }
         body.dark .points-box { background: #222; border-color: #444; color: #ffcc00; }
 
-        table { width: 100%; max-width: 700px; margin: 20px auto; border-collapse: collapse; background: white; transition: 0.3s; }
+        table { width: 100%; max-width: 750px; margin: 20px auto; border-collapse: collapse; background: white; transition: 0.3s; }
         body.dark table { background: #1a1a1a; }
 
         th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
@@ -23,14 +20,12 @@
         th { background: #eee; }
         body.dark th { background: #222; }
 
-        /* PRZYCISK USUWANIA W HISTORII */
         .deleteBtn { width: 24px; height: 24px; line-height: 24px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; font-weight: bold; }
         .deleteBtn:hover { background: red; color: white; }
 
         .clear-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 40px; font-weight: bold; }
         .clear-btn:hover { background: #c0392b; }
 
-        /* PRZYCISK TRYBU */
         #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
 
@@ -73,22 +68,21 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // DARK MODE LOGIC
+        // DARK MODE
         const darkBtn = document.getElementById("darkModeBtn");
         darkBtn.onclick = () => {
             document.body.classList.toggle("dark");
             darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
         };
 
-        // 1. SYNCHRONIZACJA RANKINGU (PUNKTY)
+        // 1. POBIERANIE RANKINGU
         onSnapshot(collection(db, "ranking"), snap => {
             let players = [];
             snap.forEach(d => {
-                players.push({ name: d.id, points: d.data().points || 0 });
+                const val = d.data().points || 0;
+                players.push({ name: d.id, points: val });
             });
-
             players.sort((a, b) => b.points - a.points);
-
             const rankTable = document.getElementById("rankTable");
             rankTable.innerHTML = "<tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>";
             players.forEach((p, i) => {
@@ -96,59 +90,60 @@
             });
         });
 
-        // 2. SYNCHRONIZACJA HISTORII (OSTATNIE RZUTY)
+        // 2. POBIERANIE HISTORII
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(25)), snap => {
             const historyTable = document.getElementById("historyTable");
             historyTable.innerHTML = "<tr><th>Data i Godzina</th><th>Wyniki (TOP 3)</th><th>X</th></tr>";
             snap.forEach(d => {
                 const data = d.data();
-                const resultsText = data.winners.map((w, i) => `${i+1}. ${w.name}`).join(", ");
+                const results = data.winners.map((w, i) => `${i+1}. ${w.name}`).join(", ");
                 historyTable.innerHTML += `
                     <tr>
                         <td>${data.date}</td>
-                        <td style="font-size: 0.9em;">${resultsText}</td>
+                        <td style="font-size: 0.9em;">${results}</td>
                         <td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">X</span></td>
                     </tr>`;
             });
         });
 
-        // 3. USUWANIE REKORDU I AUTOMATYCZNE COFANIE PUNKTÓW
+        // 3. USUWANIE I COFANIE PUNKTÓW (Z USUWANIEM GRACZA JEŚLI 0 PKT)
         window.deleteHistoryRecord = async (historyId) => {
-            if(!confirm("Czy na pewno usunąć ten rzut i odjąć punkty zwycięzcom?")) return;
+            if(!confirm("Czy na pewno usunąć ten rzut i odjąć punkty?")) return;
             
             const recordRef = doc(db, "history", historyId);
             const recordSnap = await getDoc(recordRef);
             
             if(recordSnap.exists()) {
                 const data = recordSnap.data();
-                
-                // Pętla cofająca punkty dla osób zapisanych w tym rekordzie
                 for (let i = 0; i < data.winners.length; i++) {
                     const player = data.winners[i];
                     const ptsToSubtract = (i === 0) ? -3 : (i === 1) ? -2 : -1;
-                    
                     const rankRef = doc(db, "ranking", player.name);
-                    await updateDoc(rankRef, { points: increment(ptsToSubtract) });
+                    const playerSnap = await getDoc(rankRef);
+                    
+                    if (playerSnap.exists()) {
+                        const newPoints = (playerSnap.data().points || 0) + ptsToSubtract;
+                        if (newPoints <= 0) {
+                            await deleteDoc(rankRef); // Usuwa imię z bazy jeśli ma 0 pkt
+                        } else {
+                            await updateDoc(rankRef, { points: newPoints });
+                        }
+                    }
                 }
-                
-                // Usunięcie wpisu z historii
                 await deleteDoc(recordRef);
             }
         };
 
-        // 4. CZYSZCZENIE CAŁEJ BAZY
+        // 4. PEŁNE CZYSZCZENIE
         window.clearAllData = async () => {
-            if(!confirm("UWAGA! To usunie wszystkie punkty i całą historię. Kontynuować?")) return;
-            
-            const rankSnap = await getDocs(collection(db, "ranking"));
-            const histSnap = await getDocs(collection(db, "history"));
-            
+            if(!confirm("Czy na pewno chcesz wyczyścić WSZYSTKIE dane?")) return;
             const promises = [];
-            rankSnap.forEach(d => promises.push(deleteDoc(doc(db, "ranking", d.id))));
-            histSnap.forEach(d => promises.push(deleteDoc(doc(db, "history", d.id))));
-            
+            const rSnap = await getDocs(collection(db, "ranking"));
+            rSnap.forEach(d => promises.push(deleteDoc(doc(db, "ranking", d.id))));
+            const hSnap = await getDocs(collection(db, "history"));
+            hSnap.forEach(d => promises.push(deleteDoc(doc(db, "history", d.id))));
             await Promise.all(promises);
-            alert("Baza została wyczyszczona.");
+            alert("Baza wyczyszczona.");
         };
     </script>
 </body>
