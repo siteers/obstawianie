@@ -2,38 +2,34 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>🏆 Globalny Ranking Punktowy</title>
+    <title>🏆 Ranking Zwycięzców</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <style>
-        body { font-family: 'Segoe UI', Arial, sans-serif; background:#111; color:#fff; padding:20px; text-align: center; }
-        .points-info { background: #222; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #444; color: #ffcc00; }
-        table { width:100%; max-width:600px; margin: 20px auto; border-collapse:collapse; background: #1a1a1a; }
+        body { font-family: Arial, sans-serif; background:#111; color:#fff; padding:20px; text-align: center; }
+        .points-box { background: #222; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #444; color: #ffcc00; }
+        table { width:100%; max-width:600px; margin: 20px auto; border-collapse:collapse; }
         th, td { border:1px solid #333; padding:15px; text-align:center; }
-        th { background:#222; color: #aaa; text-transform: uppercase; font-size: 12px; }
-        tr:nth-child(2) { font-size: 1.2em; color: #ffd700; font-weight: bold; } /* 1 miejsce */
-        .clear-btn { background: #444; color: #888; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; margin-top: 50px; font-size: 12px; }
-        .clear-btn:hover { background: #cc0000; color: #fff; }
+        th { background:#222; }
+        .clear-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 30px; }
     </style>
 </head>
 <body>
 
     <h1>🏆 Ranking zwycięzców</h1>
 
-    <div class="points-info">
+    <div class="points-box">
         🥇 1. miejsce: <b>3 pkt</b> | 🥈 2. miejsce: <b>2 pkt</b> | 🥉 3. miejsce: <b>1 pkt</b>
     </div>
 
     <table id="rankTable">
-        <tr><th>#</th><th>Imię</th><th>Suma Punktów</th></tr>
+        <tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>
     </table>
 
-    <button class="clear-btn" onclick="clearRanking()">Wyczyść wszystkie rekordy</button>
+    <button class="clear-btn" onclick="clearRanking()">🗑️ Wyczyść cały ranking</button>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { 
-            getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc 
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -45,35 +41,28 @@
         const db = getFirestore(app);
         const rankTable = document.getElementById("rankTable");
 
-        // Nasłuchiwanie zmian w rankingu
+        // Pobieranie danych i wyświetlanie
         onSnapshot(collection(db, "ranking"), snap => {
             let players = [];
             snap.forEach(d => {
-                players.push({ name: d.id, points: d.data().points || 0 });
+                const val = d.data().points || 0;
+                players.push({ name: d.id, points: val });
             });
 
-            // Sortowanie: najpierw najwięcej punktów
             players.sort((a, b) => b.points - a.points);
 
-            // Generowanie tabeli
-            rankTable.innerHTML = "<tr><th>#</th><th>Imię</th><th>Suma Punktów</th></tr>";
+            rankTable.innerHTML = "<tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>";
             players.forEach((p, i) => {
-                rankTable.innerHTML += `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td>${p.name}</td>
-                        <td>${p.points}</td>
-                    </tr>`;
+                rankTable.innerHTML += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.points}</td></tr>`;
             });
         });
 
-        // Resetowanie bazy
+        // Funkcja czyszczenia
         window.clearRanking = async () => {
-            if (confirm("UWAGA! Czy na pewno chcesz wyczyścić wszystkie punkty w rankingu?")) {
+            if(confirm("Czy na pewno wyczyścić wszystkie punkty?")) {
                 const snap = await getDocs(collection(db, "ranking"));
-                const batch = snap.docs.map(d => deleteDoc(doc(db, "ranking", d.id)));
-                await Promise.all(batch);
-                alert("Ranking wyczyszczony.");
+                const promises = snap.docs.map(d => deleteDoc(doc(db, "ranking", d.id)));
+                await Promise.all(promises);
             }
         };
     </script>
