@@ -16,9 +16,7 @@ body {
   transition: background-color 0.3s;
 }
 
-body.dark {
-  background: #121212;
-}
+body.dark { background: #121212; }
 
 .container {
   max-width: 1100px;
@@ -52,29 +50,23 @@ table {
   background: white;
 }
 
-body.dark table {
-  background: #1e1e1e;
-}
+body.dark table { background: #1e1e1e; }
 
 th, td {
   border: 1px solid #ccc;
   padding: 10px;
   text-align: center;
-  font-weight: normal;
   color: black;
 }
 
-body.dark th, body.dark td {
-  border-color: #333;
-}
+body.dark th, body.dark td { border-color: #333; }
 
 th { background: #eee; }
 body.dark th { background: #2a2a2a; }
 
-th.deleteCell, td.deleteCell { width: 40px; padding: 5px; }
+th.deleteCell, td.deleteCell { width: 40px; }
 
 .deleteBtn {
-  display: inline-block;
   width: 28px;
   height: 28px;
   line-height: 28px;
@@ -82,18 +74,9 @@ th.deleteCell, td.deleteCell { width: 40px; padding: 5px; }
   background: #ffdddd;
   border: 1px solid red;
   color: red;
-  font-weight: bold;
   cursor: pointer;
-  transition: 0.2s;
+  display: inline-block;
 }
-
-body.dark .deleteBtn {
-  background: #3a1a1a;
-  border-color: #ff4d4d;
-  color: #ff4d4d;
-}
-
-.deleteBtn:hover { background: red; color: white; }
 
 .panel { flex: 1; min-width: 300px; }
 
@@ -101,7 +84,6 @@ body.dark .deleteBtn {
   font-size: 48px;
   font-weight: bold;
   text-align: center;
-  margin-bottom: 20px;
 }
 
 #stopBtn {
@@ -109,16 +91,14 @@ body.dark .deleteBtn {
   color: white;
   padding: 20px 40px;
   font-size: 28px;
-  border: none;
   border-radius: 50px;
+  border: none;
   cursor: pointer;
   display: block;
   margin: auto;
 }
 
-#stopBtn:active { transform: scale(0.95); }
-
-#stoppedTime { font-size: 28px; margin-top: 20px; text-align: center; }
+#stoppedTime { font-size: 28px; text-align: center; }
 
 #winner {
   margin-top: 30px;
@@ -140,12 +120,9 @@ button.clear {
   padding: 10px;
   background: #444;
   color: white;
-  border: none;
-  cursor: pointer;
   border-radius: 6px;
+  border: none;
 }
-
-button.clear:hover { background: black; }
 
 #darkModeBtn {
   position: fixed;
@@ -155,26 +132,15 @@ button.clear:hover { background: black; }
   border-radius: 30px;
   border: none;
   cursor: pointer;
-  font-size: 14px;
-  background: #222;
-  color: white;
   z-index: 100000;
-}
-
-body.dark #darkModeBtn {
-  background: #eee;
-  color: black;
 }
 
 #fireworksCanvas {
   position: fixed;
-  left: 0;
-  top: 0;
-  width: 100vw;
-  height: 100vh;
+  inset: 0;
   pointer-events: none;
-  z-index: 9999;
   display: none;
+  z-index: 9999;
 }
 
 #cringeGifs {
@@ -182,11 +148,9 @@ body.dark #darkModeBtn {
   bottom: 10px;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 99999;
   display: none;
   gap: 10px;
-  width: 90%;
-  max-width: 800px;
+  z-index: 99999;
 }
 
 #cringeGifs img {
@@ -195,20 +159,20 @@ body.dark #darkModeBtn {
 }
 
 @keyframes blinkGreen {
-  0% { background-color: #d1ffd1; }
-  50% { background-color: #006400; }
-  100% { background-color: #d1ffd1; }
+  0% { background: #d1ffd1; }
+  50% { background: #006400; }
+  100% { background: #d1ffd1; }
 }
 
 .blink { animation: blinkGreen 1.5s infinite; }
-.blink td { color: white !important; font-weight: bold !important; }
+.blink td { color: white; font-weight: bold; }
 
 @keyframes cringeBg {
-  0% { background-color: #ff69b4; }
-  25% { background-color: #00ffff; }
-  50% { background-color: #ffff00; }
-  75% { background-color: #ff00ff; }
-  100% { background-color: #00ff00; }
+  0% { background: #ff69b4; }
+  25% { background: #00ffff; }
+  50% { background: #ffff00; }
+  75% { background: #ff00ff; }
+  100% { background: #00ff00; }
 }
 </style>
 </head>
@@ -224,12 +188,7 @@ body.dark #darkModeBtn {
 <div class="panel">
 <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
 <table id="table">
-<tr>
-<th>No.</th>
-<th>Imię</th>
-<th>Godzina</th>
-<th class="deleteCell">X</th>
-</tr>
+<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
 </table>
 </div>
 
@@ -251,13 +210,13 @@ body.dark #darkModeBtn {
 <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
 </div>
 
-<audio id="fanfareAudio" src="fanfare1.mp3" preload="auto"></audio>
+<audio id="fanfareAudio" src="fanfare1.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-/* ===== DARK MODE ===== */
+/* DARK MODE */
 const darkBtn = document.getElementById("darkModeBtn");
 if (localStorage.getItem("darkMode") === "on") {
   document.body.classList.add("dark");
@@ -270,14 +229,14 @@ darkBtn.onclick = () => {
   localStorage.setItem("darkMode", d ? "on" : "off");
 };
 
-/* ===== FIREBASE ===== */
+/* FIREBASE */
 const firebaseConfig = {
-apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
-authDomain: "obstaiwanie.firebaseapp.com",
-projectId: "obstaiwanie",
-storageBucket: "obstaiwanie.firebasestorage.app",
-messagingSenderId: "64783465818",
-appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie",
+  storageBucket: "obstaiwanie.firebasestorage.app",
+  messagingSenderId: "64783465818",
+  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -285,82 +244,106 @@ const db = getFirestore(app);
 const table = document.getElementById("table");
 let usersData = [];
 
-onSnapshot(collection(db, "users"), (snapshot) => {
+onSnapshot(collection(db, "users"), snap => {
   usersData = [];
-  snapshot.forEach((d) => usersData.push({ id: d.id, ...d.data() }));
+  snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
 });
 
-window.deleteOne = async (id) => {
-  await deleteDoc(doc(db, "users", id));
-};
-
+window.deleteOne = async id => await deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
-  const snap = await getDocs(collection(db, "users"));
-  snap.forEach(async d => await deleteDoc(doc(db, "users", d.id)));
-  stoppedTime.textContent = "";
-  winner.style.display = "none";
+  const snap = await getDocs(collection(db,"users"));
+  snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
 };
 
-/* ===== CLOCK ===== */
+/* CLOCK */
 const clock = document.getElementById("clock");
 setInterval(() => {
-  const now = new Date();
-  clock.textContent = now.toLocaleTimeString("pl-PL");
-  updateTableRealtime(now);
-}, 1000);
+  const n = new Date();
+  clock.textContent = n.toLocaleTimeString("pl-PL");
+  updateTable(n);
+},1000);
 
-function toSeconds(t) {
-  const p = t.split(":").map(Number);
-  return (p[0]||0)*3600 + (p[1]||0)*60 + (p[2]||0);
+function toSec(t){
+  const p=t.split(":").map(Number);
+  return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
-function updateTableRealtime(now) {
-  const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-  const sorted = [...usersData].sort((a,b)=>Math.abs(toSeconds(a.hour)-sec)-Math.abs(toSeconds(b.hour)-sec));
-  table.innerHTML = `
-  <tr>
-    <th>No.</th><th>Imię</th><th>Godzina</th><th class="deleteCell">X</th>
-  </tr>`;
+function updateTable(now){
+  const s=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+  const sorted=[...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
+  table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
   sorted.forEach((u,i)=>{
-    table.innerHTML += `
+    table.innerHTML+=`
     <tr class="${i===0?'blink':''}">
-      <td>${i+1}</td>
-      <td>${u.name}</td>
-      <td>${u.hour}</td>
-      <td class="deleteCell"><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
+      <td>${i+1}</td><td>${u.name}</td><td>${u.hour}</td>
+      <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
     </tr>`;
   });
 }
 
-/* ===== STOP ===== */
-stopBtn.onclick = () => {
-  if (!usersData.length) return;
+/* FIREWORKS + GIFS */
+const canvas=document.getElementById("fireworksCanvas");
+const ctx=canvas.getContext("2d");
+canvas.width=innerWidth; canvas.height=innerHeight;
+let particles=[],fw=false;
 
-  stoppedTime.textContent = "Zatrzymana godzina: " + clock.textContent;
+function spawnFirework(){
+  const x=Math.random()*canvas.width,y=Math.random()*canvas.height*0.5;
+  const colors=["#ff0040","#00ffea","#ffd700","#ff7b00","#9d00ff"];
+  for(let i=0;i<50;i++){
+    particles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:colors[Math.floor(Math.random()*colors.length)]});
+  }
+}
 
-  const now = new Date();
-  const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-  const best = [...usersData].sort(
-    (a,b)=>Math.abs(toSeconds(a.hour)-sec)-Math.abs(toSeconds(b.hour)-sec)
-  )[0];
+function updateFW(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particles.forEach((p,i)=>{
+    p.x+=Math.cos(p.a)*p.s;
+    p.y+=Math.sin(p.a)*p.s;
+    p.al-=0.01;
+    if(p.al<=0) particles.splice(i,1);
+    ctx.globalAlpha=p.al;
+    ctx.fillStyle=p.c;
+    ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill();
+  });
+  ctx.globalAlpha=1;
+  if(fw) requestAnimationFrame(updateFW);
+}
 
-  winner.style.display = "block";
-  winner.textContent = `🏆 Zwycięzca: ${best.name} (${best.hour})`;
+function startFireworks(){
+  document.getElementById("cringeGifs").style.display="flex";
+  canvas.style.display="block";
+  fw=true; particles=[];
+  spawnFirework(); updateFW();
+  const i=setInterval(spawnFirework,400);
+  setTimeout(()=>{
+    clearInterval(i);
+    fw=false;
+    canvas.style.display="none";
+    document.getElementById("cringeGifs").style.display="none";
+  },7000);
+}
 
-  document.body.style.animation = "cringeBg 0.3s infinite alternate";
+/* STOP */
+stopBtn.onclick=()=>{
+  if(!usersData.length) return;
+  document.body.style.animation="none";
 
-  fanfareAudio.currentTime = 0;
-  fanfareAudio.play().catch(()=>{});
+  stoppedTime.textContent="Zatrzymana godzina: "+clock.textContent;
+  const now=new Date();
+  const s=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+  const best=[...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s))[0];
 
-  startFireworks(); // 🔥🔥🔥 TO BYŁO POTRZEBNE
+  winner.style.display="block";
+  winner.textContent=`🏆 Zwycięzca: ${best.name} (${best.hour})`;
 
-  setTimeout(() => {
-    document.body.style.animation = "none";
-  }, 7000);
+  document.body.style.animation="cringeBg 0.3s infinite alternate";
+  fanfareAudio.currentTime=0; fanfareAudio.play().catch(()=>{});
+  startFireworks();
+
+  setTimeout(()=>document.body.style.animation="none",7000);
 };
-
 </script>
 
 </body>
 </html>
-
