@@ -335,17 +335,32 @@ function updateTableRealtime(now) {
 /* ===== STOP ===== */
 stopBtn.onclick = () => {
   if (!usersData.length) return;
+
   stoppedTime.textContent = "Zatrzymana godzina: " + clock.textContent;
+
   const now = new Date();
   const sec = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
-  const best = [...usersData].sort((a,b)=>Math.abs(toSeconds(a.hour)-sec)-Math.abs(toSeconds(b.hour)-sec))[0];
+  const best = [...usersData].sort(
+    (a,b)=>Math.abs(toSeconds(a.hour)-sec)-Math.abs(toSeconds(b.hour)-sec)
+  )[0];
+
   winner.style.display = "block";
   winner.textContent = `🏆 Zwycięzca: ${best.name} (${best.hour})`;
-  document.body.style.animation="cringeBg 0.3s infinite alternate";
-  fanfareAudio.currentTime=0; fanfareAudio.play().catch(()=>{});
-  setTimeout(()=>document.body.style.animation="none",7000);
+
+  document.body.style.animation = "cringeBg 0.3s infinite alternate";
+
+  fanfareAudio.currentTime = 0;
+  fanfareAudio.play().catch(()=>{});
+
+  startFireworks(); // 🔥🔥🔥 TO BYŁO POTRZEBNE
+
+  setTimeout(() => {
+    document.body.style.animation = "none";
+  }, 7000);
 };
+
 </script>
 
 </body>
 </html>
+
