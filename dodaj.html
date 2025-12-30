@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <title>Dodaj użytkownika</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
+    /* PODSTAWOWE STYLE (Light Mode) */
     body {
       font-family: Arial, sans-serif;
       background: #f4f4f4;
@@ -14,6 +16,13 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    /* DARK MODE */
+    body.dark {
+      background: #121212;
+      color: #f1f1f1;
     }
 
     .container {
@@ -25,30 +34,44 @@
       box-shadow: 0 4px 12px rgba(0,0,0,0.2);
       text-align: center;
       animation: fadeIn 0.4s ease;
+      transition: background-color 0.3s, box-shadow 0.3s;
+    }
+
+    body.dark .container {
+      background: #1e1e1e;
+      box-shadow: 0 10px 30px rgba(255,255,255,0.05);
     }
 
     h2 {
       margin-top: 0;
     }
 
-  select, input {
-  width: 90%;           /* już masz */
-  padding: 12px;
-  margin: 10px 0;
-  font-size: 16px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  outline: none;
-  transition: 0.2s;
-  box-sizing: border-box; /* dodaj to! */
-}
+    select, input {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      outline: none;
+      transition: 0.2s;
+      box-sizing: border-box;
+      background: white;
+      color: black;
+    }
+
+    body.dark select, body.dark input {
+      background: #2a2a2a;
+      border-color: #444;
+      color: white;
+    }
 
     select:focus, input:focus {
       border-color: #0077ff;
       box-shadow: 0 0 8px rgba(0,123,255,0.4);
     }
 
-    button {
+    button.save-btn {
       margin-top: 10px;
       padding: 12px 25px;
       background: #0077ff;
@@ -60,14 +83,41 @@
       transition: 0.2s;
     }
 
-    button:hover {
+    button.save-btn:hover {
       background: #005fcc;
+    }
+
+    /* PRZYCISK TRYBU (Spójny z pozostałymi stronami) */
+    #darkModeBtn {
+      position: fixed;
+      top: 15px;
+      right: 15px;
+      padding: 10px 18px;
+      border-radius: 30px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      background: #111;
+      color: #fff;
+      z-index: 100000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      transition: 0.3s;
+    }
+
+    body.dark #darkModeBtn {
+      background: #f1f1f1;
+      color: #111;
     }
 
     #msg {
       margin-top: 15px;
       font-weight: bold;
       color: green;
+    }
+
+    body.dark #msg {
+      color: #44ff44;
     }
 
     @keyframes fadeIn {
@@ -77,11 +127,11 @@
   </style>
 </head>
 
-<body>
+<body class="dark"> <button id="darkModeBtn">☀️ Light mode</button>
+
   <div class="container">
     <h2>Dodaj swoje dane</h2>
 
-    <!-- Zmienione z input na select -->
     <select id="name">
       <option value="">Wybierz imię</option>
       <option value="Arek">Arek</option>
@@ -95,7 +145,7 @@
 
     <input id="hour" type="time" placeholder="Godzina">
 
-    <button onclick="saveData()">Zapisz</button>
+    <button class="save-btn" onclick="saveData()">Zapisz</button>
 
     <p id="msg"></p>
   </div>
@@ -116,9 +166,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// -------------------------------
-// Zapis danych
-// -------------------------------
+/* DARK MODE LOGIC */
+const darkBtn = document.getElementById("darkModeBtn");
+darkBtn.onclick = () => {
+    document.body.classList.toggle("dark");
+    const isDark = document.body.classList.contains("dark");
+    darkBtn.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+};
+
+/* Zapis danych */
 window.saveData = async function() {
   const name = document.getElementById("name").value;
   const hour = document.getElementById("hour").value;
@@ -128,22 +184,24 @@ window.saveData = async function() {
     return;
   }
 
-  await addDoc(collection(db, "users"), {
-    name: name,
-    hour: hour
-  });
+  try {
+    await addDoc(collection(db, "users"), {
+      name: name,
+      hour: hour
+    });
 
-  document.getElementById("msg").innerText = "Zapisano!";
-  document.getElementById("name").value = "";
-  document.getElementById("hour").value = "";
+    document.getElementById("msg").innerText = "Zapisano!";
+    document.getElementById("name").value = "";
+    document.getElementById("hour").value = "";
 
-  setTimeout(() => {
-    document.getElementById("msg").innerText = "";
-  }, 2000);
+    setTimeout(() => {
+      document.getElementById("msg").innerText = "";
+    }, 2000);
+  } catch (e) {
+    alert("Błąd zapisu: " + e.message);
+  }
 };
 </script>
 
 </body>
 </html>
-
-
