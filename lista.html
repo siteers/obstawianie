@@ -27,7 +27,18 @@
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
         button.clear { margin-bottom: 10px; padding: 10px 14px; background: #444; color: white; border-radius: 6px; border: none; cursor: pointer; }
         
-        /* PRZYCISKI BOCZNE */
+        /* --- NOWE STYLE DLA BLURA --- */
+        .hidden-hour {
+            filter: blur(5px);
+            user-select: none; /* Zapobiega kopiowaniu tekstu, żeby podejrzeć godzinę */
+            transition: filter 0.5s ease;
+        }
+
+        .reveal-hour {
+            filter: blur(0) !important;
+        }
+        /* ---------------------------- */
+
         #darkModeBtn, #rankingBtn { 
             position: fixed; 
             right: 15px; 
@@ -120,6 +131,7 @@ const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
+let isStopped = false; // Flag do kontrolowania blura
 
 /* DARK MODE */
 const darkBtn = document.getElementById("darkModeBtn");
@@ -142,6 +154,7 @@ window.clearAll = async () => {
     snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
     winner.style.display = "none";
     stoppedTime.textContent = ""; 
+    isStopped = false; // Resetujemy flagę przy czyszczeniu
 };
 
 /* CLOCK & TABLE UPDATE */
@@ -158,7 +171,15 @@ setInterval(() => {
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u,i)=>{
-        table.innerHTML+=`<tr class="${i===0?'blink':''}"><td>${i+1}</td><td>${u.name}</td><td>${u.hour}</td><td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td></tr>`;
+        // Dodajemy klasę blura, chyba że kliknięto STOP
+        const blurClass = isStopped ? 'reveal-hour' : 'hidden-hour';
+        
+        table.innerHTML+=`<tr class="${i===0?'blink':''}">
+            <td>${i+1}</td>
+            <td>${u.name}</td>
+            <td class="${blurClass}">${u.hour}</td>
+            <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
+        </tr>`;
     });
 }, 1000);
 
@@ -209,6 +230,9 @@ function startCelebration() {
 /* STOP BUTTON LOGIC (TOP 3) */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
+    
+    isStopped = true; // Zmieniamy flagę - godziny zostaną odblurowane przy następnym odświeżeniu tabeli
+
     const nowObj = new Date();
     const nowStr = nowObj.toLocaleTimeString("pl-PL");
     const fullDateStr = nowObj.toLocaleString("pl-PL");
