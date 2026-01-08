@@ -28,10 +28,19 @@
         
         .clear, .reveal-btn { margin-bottom: 10px; padding: 10px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
         .clear { background: #444; color: white; }
-        .reveal-btn { background: #007bff; color: white; margin-left: 5px; }
+        
+        /* POPRAWIONY PRZYCISK ODKRYWANIA */
+        .reveal-btn { 
+            background: #6c5ce7; 
+            color: white; 
+            margin-left: 5px; 
+            width: 140px; /* Stała szerokość */
+            transition: background 0.3s;
+        }
+        .reveal-btn:hover { background: #5849c4; }
 
-        /* --- STYLE DLA BLURA --- */
-        .hidden-data {
+        /* --- STYLE DLA BLURA GODZINY --- */
+        .hidden-hour {
             filter: blur(5px);
             user-select: none;
             transition: filter 0.5s ease;
@@ -135,7 +144,7 @@ const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
 let isStopped = false; 
-let namesRevealed = false; // Flag dla przycisku Odkryj imiona
+let namesRevealed = false; 
 
 /* DARK MODE */
 const darkBtn = document.getElementById("darkModeBtn");
@@ -183,13 +192,14 @@ setInterval(() => {
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u,i)=>{
-        const hourBlur = isStopped ? 'reveal-data' : 'hidden-data';
-        const nameBlur = (namesRevealed || isStopped) ? 'reveal-data' : 'hidden-data';
+        const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
+        // Zamiast blura dla imion: jeśli ukryte, pokazuj stały ciąg znaków
+        const displayName = (namesRevealed || isStopped) ? u.name : "??? ???";
         
         table.innerHTML+=`<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
-            <td class="${nameBlur}">${u.name}</td>
-            <td class="${hourBlur}">${u.hour}</td>
+            <td>${displayName}</td>
+            <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
     });
@@ -239,7 +249,7 @@ function startCelebration() {
     }, 7000);
 }
 
-/* STOP BUTTON LOGIC WITH SPORT RANKING SYSTEM */
+/* STOP BUTTON LOGIC */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
     
@@ -251,11 +261,8 @@ stopBtn.onclick = async () => {
     stoppedTime.textContent = "Zatrzymana godzina: " + nowStr;
     
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
-    
-    // Sortowanie po różnicy czasu
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
-    // PRZYPISYWANIE MIEJSC I PUNKTÓW (SYSTEM SPORTOWY)
     let playersWithPoints = [];
     let rank = 1;
     
@@ -263,13 +270,12 @@ stopBtn.onclick = async () => {
         if (i > 0) {
             const currentDiff = Math.abs(toSec(sorted[i].hour) - s);
             const prevDiff = Math.abs(toSec(sorted[i-1].hour) - s);
-            // Jeśli różnica jest inna, przesuwamy rank do aktualnej pozycji w tablicy (standard sportowy)
             if (currentDiff !== prevDiff) {
                 rank = i + 1;
             }
         }
         
-        if (rank > 3) break; // Interesują nas tylko miejsca 1, 2 i 3
+        if (rank > 3) break;
 
         let pts = 0;
         if (rank === 1) pts = 3;
@@ -279,14 +285,12 @@ stopBtn.onclick = async () => {
         playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
     }
 
-    // ZAPIS DO HISTORII
     await addDoc(collection(db, "history"), {
         date: fullDateStr,
         timestamp: nowObj.getTime(),
         winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank}))
     });
 
-    // WYŚWIETLANIE WYNIKÓW
     winner.style.display = "block";
     let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
     playersWithPoints.forEach(p => {
@@ -300,7 +304,6 @@ stopBtn.onclick = async () => {
     startCelebration();
     setTimeout(() => document.body.style.animation = "none", 7000);
 
-    // AKTUALIZACJA RANKINGU W BAZIE
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
         const snap = await getDoc(ref);
