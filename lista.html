@@ -31,54 +31,50 @@
         
         /* POPRAWIONY PRZYCISK ODKRYWANIA */
         .reveal-btn { 
-            background: #6c5ce7; 
+            background: #007bff; 
             color: white; 
             margin-left: 5px; 
-            width: 140px; /* Stała szerokość */
+            width: 150px; /* Stała szerokość */
             transition: background 0.3s;
         }
-        .reveal-btn:hover { background: #5849c4; }
+        .reveal-btn:hover { background: #0056b3; }
 
-        /* --- STYLE DLA BLURA GODZINY --- */
+        /* --- STYL DLA UKRYTEGO IMIENIA (SKELETON) --- */
+        .name-placeholder {
+            display: inline-block;
+            width: 80px;
+            height: 14px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            animation: pulse 1.5s infinite ease-in-out;
+            vertical-align: middle;
+        }
+        body.dark .name-placeholder { background-color: #444; }
+
+        @keyframes pulse {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+
+        /* --- BLUR DLA GODZINY --- */
         .hidden-hour {
             filter: blur(5px);
             user-select: none;
             transition: filter 0.5s ease;
         }
-
-        .reveal-data {
-            filter: blur(0) !important;
-        }
+        .reveal-data { filter: blur(0) !important; }
 
         #darkModeBtn, #rankingBtn { 
-            position: fixed; 
-            right: 15px; 
-            width: 165px; 
-            height: 45px; 
-            padding: 0; 
-            border-radius: 30px; 
-            border: none; 
-            cursor: pointer; 
-            font-size: 14px; 
-            font-weight: bold; 
-            z-index: 100000; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-            transition: 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
+            position: fixed; right: 15px; width: 165px; height: 45px; 
+            border-radius: 30px; border: none; cursor: pointer; 
+            font-size: 14px; font-weight: bold; z-index: 100000; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s;
+            display: flex; align-items: center; justify-content: center; text-decoration: none;
         }
-        
         #darkModeBtn { top: 15px; background: #111; color: #fff; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
-
-        #rankingBtn { 
-            top: 70px; 
-            background: #ffcc00; 
-            color: #111; 
-        }
-        body.dark #rankingBtn { background: #ffd700; color: #000; }
+        #rankingBtn { top: 70px; background: #ffcc00; color: #111; }
         #rankingBtn:hover, #darkModeBtn:hover { transform: scale(1.05); }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
@@ -193,12 +189,12 @@ setInterval(() => {
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u,i)=>{
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        // Zamiast blura dla imion: jeśli ukryte, pokazuj stały ciąg znaków
-        const displayName = (namesRevealed || isStopped) ? u.name : "??? ???";
+        // Zamiast znaków zapytania - estetyczny placeholder
+        const nameContent = (namesRevealed || isStopped) ? u.name : '<span class="name-placeholder"></span>';
         
         table.innerHTML+=`<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
-            <td>${displayName}</td>
+            <td>${nameContent}</td>
             <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
@@ -252,36 +248,24 @@ function startCelebration() {
 /* STOP BUTTON LOGIC */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
-    
     isStopped = true; 
-
     const nowObj = new Date();
     const nowStr = nowObj.toLocaleTimeString("pl-PL");
     const fullDateStr = nowObj.toLocaleString("pl-PL");
     stoppedTime.textContent = "Zatrzymana godzina: " + nowStr;
-    
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
     let playersWithPoints = [];
     let rank = 1;
-    
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0) {
             const currentDiff = Math.abs(toSec(sorted[i].hour) - s);
             const prevDiff = Math.abs(toSec(sorted[i-1].hour) - s);
-            if (currentDiff !== prevDiff) {
-                rank = i + 1;
-            }
+            if (currentDiff !== prevDiff) rank = i + 1;
         }
-        
         if (rank > 3) break;
-
-        let pts = 0;
-        if (rank === 1) pts = 3;
-        else if (rank === 2) pts = 2;
-        else if (rank === 3) pts = 1;
-
+        let pts = (rank === 1) ? 3 : (rank === 2) ? 2 : 1;
         playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
     }
 
@@ -293,9 +277,7 @@ stopBtn.onclick = async () => {
 
     winner.style.display = "block";
     let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
-    playersWithPoints.forEach(p => {
-        winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`;
-    });
+    playersWithPoints.forEach(p => { winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`; });
     winner.innerHTML = winnerHTML;
 
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
@@ -307,11 +289,8 @@ stopBtn.onclick = async () => {
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
         const snap = await getDoc(ref);
-        if(snap.exists()){
-            await updateDoc(ref, { points: increment(player.points) });
-        } else {
-            await setDoc(ref, { points: player.points });
-        }
+        if(snap.exists()) await updateDoc(ref, { points: increment(player.points) });
+        else await setDoc(ref, { points: player.points });
     }
 };
 </script>
