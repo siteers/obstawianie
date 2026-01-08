@@ -25,19 +25,21 @@
         #stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
         #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
-        button.clear { margin-bottom: 10px; padding: 10px 14px; background: #444; color: white; border-radius: 6px; border: none; cursor: pointer; }
         
-        /* --- NOWE STYLE DLA BLURA --- */
-        .hidden-hour {
+        .clear, .reveal-btn { margin-bottom: 10px; padding: 10px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .clear { background: #444; color: white; }
+        .reveal-btn { background: #007bff; color: white; margin-left: 5px; }
+
+        /* --- STYLE DLA BLURA --- */
+        .hidden-data {
             filter: blur(5px);
-            user-select: none; /* Zapobiega kopiowaniu tekstu, żeby podejrzeć godzinę */
+            user-select: none;
             transition: filter 0.5s ease;
         }
 
-        .reveal-hour {
+        .reveal-data {
             filter: blur(0) !important;
         }
-        /* ---------------------------- */
 
         #darkModeBtn, #rankingBtn { 
             position: fixed; 
@@ -89,6 +91,7 @@
     <div class="flex">
         <div class="panel">
             <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
+            <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
             <table id="table">
                 <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
             </table>
@@ -131,13 +134,21 @@ const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
-let isStopped = false; // Flag do kontrolowania blura
+let isStopped = false; 
+let namesRevealed = false; // Flag dla przycisku Odkryj imiona
 
 /* DARK MODE */
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
     document.body.classList.toggle("dark");
     darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
+};
+
+/* REVEAL NAMES TOGGLE */
+const revealBtn = document.getElementById("revealNamesBtn");
+revealBtn.onclick = () => {
+    namesRevealed = !namesRevealed;
+    revealBtn.textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona";
 };
 
 /* SYNC USERS */
@@ -148,21 +159,22 @@ onSnapshot(collection(db, "users"), snap => {
 
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 
-/* POPRAWKA CZYSZCZENIA DANYCH */
 window.clearAll = async () => {
     const snap = await getDocs(collection(db,"users"));
     snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
     winner.style.display = "none";
     stoppedTime.textContent = ""; 
-    isStopped = false; // Resetujemy flagę przy czyszczeniu
+    isStopped = false;
+    namesRevealed = false;
+    revealBtn.textContent = "Odkryj imiona";
 };
 
-/* CLOCK & TABLE UPDATE */
 function toSec(t){
     const p=t.split(":").map(Number);
     return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
+/* CLOCK & TABLE UPDATE */
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
@@ -171,13 +183,13 @@ setInterval(() => {
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u,i)=>{
-        // Dodajemy klasę blura, chyba że kliknięto STOP
-        const blurClass = isStopped ? 'reveal-hour' : 'hidden-hour';
+        const hourBlur = isStopped ? 'reveal-data' : 'hidden-data';
+        const nameBlur = (namesRevealed || isStopped) ? 'reveal-data' : 'hidden-data';
         
         table.innerHTML+=`<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
-            <td>${u.name}</td>
-            <td class="${blurClass}">${u.hour}</td>
+            <td class="${nameBlur}">${u.name}</td>
+            <td class="${hourBlur}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
     });
@@ -227,11 +239,11 @@ function startCelebration() {
     }, 7000);
 }
 
-/* STOP BUTTON LOGIC (TOP 3) */
+/* STOP BUTTON LOGIC WITH SPORT RANKING SYSTEM */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
     
-    isStopped = true; // Zmieniamy flagę - godziny zostaną odblurowane przy następnym odświeżeniu tabeli
+    isStopped = true; 
 
     const nowObj = new Date();
     const nowStr = nowObj.toLocaleTimeString("pl-PL");
@@ -239,22 +251,48 @@ stopBtn.onclick = async () => {
     stoppedTime.textContent = "Zatrzymana godzina: " + nowStr;
     
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
+    
+    // Sortowanie po różnicy czasu
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
-    const top3 = sorted.slice(0, 3);
+    // PRZYPISYWANIE MIEJSC I PUNKTÓW (SYSTEM SPORTOWY)
+    let playersWithPoints = [];
+    let rank = 1;
+    
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0) {
+            const currentDiff = Math.abs(toSec(sorted[i].hour) - s);
+            const prevDiff = Math.abs(toSec(sorted[i-1].hour) - s);
+            // Jeśli różnica jest inna, przesuwamy rank do aktualnej pozycji w tablicy (standard sportowy)
+            if (currentDiff !== prevDiff) {
+                rank = i + 1;
+            }
+        }
+        
+        if (rank > 3) break; // Interesują nas tylko miejsca 1, 2 i 3
 
-    // ZAPIS DO HISTORII DLA RANKINGU
+        let pts = 0;
+        if (rank === 1) pts = 3;
+        else if (rank === 2) pts = 2;
+        else if (rank === 3) pts = 1;
+
+        playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
+    }
+
+    // ZAPIS DO HISTORII
     await addDoc(collection(db, "history"), {
         date: fullDateStr,
         timestamp: nowObj.getTime(),
-        winners: top3.map(p => ({name: p.name}))
+        winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank}))
     });
 
+    // WYŚWIETLANIE WYNIKÓW
     winner.style.display = "block";
-    winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>
-        1. ${top3[0].name} (+3 pkt)<br>
-        ${top3[1] ? '2. ' + top3[1].name + ' (+2 pkt)<br>' : ''}
-        ${top3[2] ? '3. ' + top3[2].name + ' (+1 pkt)' : ''}`;
+    let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
+    playersWithPoints.forEach(p => {
+        winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`;
+    });
+    winner.innerHTML = winnerHTML;
 
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.currentTime = 0;
@@ -262,16 +300,14 @@ stopBtn.onclick = async () => {
     startCelebration();
     setTimeout(() => document.body.style.animation = "none", 7000);
 
-    for (let i = 0; i < top3.length; i++) {
-        const player = top3[i];
-        const points = (i === 0) ? 3 : (i === 1) ? 2 : 1;
+    // AKTUALIZACJA RANKINGU W BAZIE
+    for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
         const snap = await getDoc(ref);
-
         if(snap.exists()){
-            await updateDoc(ref, { points: increment(points) });
+            await updateDoc(ref, { points: increment(player.points) });
         } else {
-            await setDoc(ref, { points: points });
+            await setDoc(ref, { points: player.points });
         }
     }
 };
