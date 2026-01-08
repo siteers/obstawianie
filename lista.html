@@ -14,7 +14,7 @@
         .flex { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         table { width: 100%; border-collapse: collapse; background: white; }
         body.dark table { background: #1e1e1e; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; }
         body.dark th, body.dark td { border-color: #333; }
         th { background: #eee; }
         body.dark th { background: #2a2a2a; }
@@ -34,35 +34,30 @@
             background: #007bff; 
             color: white; 
             margin-left: 5px; 
-            width: 150px; /* Stała szerokość */
-            transition: background 0.3s;
+            width: 150px; 
+            transition: 0.3s;
         }
-        .reveal-btn:hover { background: #0056b3; }
+        .reveal-btn:hover { background: #0056b3; box-shadow: 0 0 10px rgba(0,123,255,0.5); }
 
-        /* --- STYL DLA UKRYTEGO IMIENIA (SKELETON) --- */
-        .name-placeholder {
-            display: inline-block;
-            width: 80px;
-            height: 14px;
-            background-color: #e0e0e0;
-            border-radius: 10px;
-            animation: pulse 1.5s infinite ease-in-out;
-            vertical-align: middle;
+        /* --- NOWE STYLE DLA AVATARÓW --- */
+        .user-cell { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-transform: uppercase;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
-        body.dark .name-placeholder { background-color: #444; }
-
-        @keyframes pulse {
-            0% { opacity: 0.5; }
-            50% { opacity: 1; }
-            100% { opacity: 0.5; }
-        }
+        .name-text { font-weight: 500; }
 
         /* --- BLUR DLA GODZINY --- */
-        .hidden-hour {
-            filter: blur(5px);
-            user-select: none;
-            transition: filter 0.5s ease;
-        }
+        .hidden-hour { filter: blur(5px); user-select: none; transition: filter 0.5s ease; }
         .reveal-data { filter: blur(0) !important; }
 
         #darkModeBtn, #rankingBtn { 
@@ -142,12 +137,13 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 
-/* DARK MODE */
-const darkBtn = document.getElementById("darkModeBtn");
-darkBtn.onclick = () => {
-    document.body.classList.toggle("dark");
-    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
-};
+/* GENERATOR KOLORÓW AVATARA */
+function getAvatarColor(name) {
+    const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c", "#f1c40f"];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+}
 
 /* REVEAL NAMES TOGGLE */
 const revealBtn = document.getElementById("revealNamesBtn");
@@ -189,19 +185,28 @@ setInterval(() => {
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u,i)=>{
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        // Zamiast znaków zapytania - estetyczny placeholder
-        const nameContent = (namesRevealed || isStopped) ? u.name : '<span class="name-placeholder"></span>';
+        const initial = u.name.charAt(0);
+        const color = getAvatarColor(u.name);
+        
+        // Estetyczny Avatar + tekst
+        const nameDisplay = (namesRevealed || isStopped) ? u.name : "Uczestnik";
+        const avatarDisplay = (namesRevealed || isStopped) ? initial : "?";
         
         table.innerHTML+=`<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
-            <td>${nameContent}</td>
+            <td>
+                <div class="user-cell">
+                    <div class="avatar" style="background:${color}">${avatarDisplay}</div>
+                    <span class="name-text">${nameDisplay}</span>
+                </div>
+            </td>
             <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
     });
 }, 1000);
 
-/* FIREWORKS LOGIC */
+/* FIREWORKS & STOP LOGIC (Reszta bez zmian) */
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
 let particles = [], fwActive = false;
@@ -212,47 +217,25 @@ function spawnFirework() {
     const x = Math.random() * canvas.width;
     const y = Math.random() * canvas.height * 0.5;
     const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
-    for(let i=0; i<50; i++) {
-        particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
-    }
+    for(let i=0; i<50; i++) particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
 }
 
 function updateFW() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     particles.forEach((p,i) => {
-        p.x += Math.cos(p.a) * p.s;
-        p.y += Math.sin(p.a) * p.s;
-        p.al -= 0.01;
+        p.x += Math.cos(p.a) * p.s; p.y += Math.sin(p.a) * p.s; p.al -= 0.01;
         if(p.al <= 0) particles.splice(i,1);
-        ctx.globalAlpha = p.al;
-        ctx.fillStyle = p.c;
+        ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
         ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
     });
     if(fwActive) requestAnimationFrame(updateFW);
 }
 
-function startCelebration() {
-    document.getElementById("cringeGifs").style.display = "flex";
-    canvas.style.display = "block";
-    fwActive = true;
-    const interval = setInterval(spawnFirework, 400);
-    updateFW();
-    setTimeout(() => {
-        clearInterval(interval);
-        fwActive = false;
-        canvas.style.display = "none";
-        document.getElementById("cringeGifs").style.display = "none";
-    }, 7000);
-}
-
-/* STOP BUTTON LOGIC */
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
     isStopped = true; 
     const nowObj = new Date();
-    const nowStr = nowObj.toLocaleTimeString("pl-PL");
-    const fullDateStr = nowObj.toLocaleString("pl-PL");
-    stoppedTime.textContent = "Zatrzymana godzina: " + nowStr;
+    stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
 
@@ -260,31 +243,23 @@ stopBtn.onclick = async () => {
     let rank = 1;
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0) {
-            const currentDiff = Math.abs(toSec(sorted[i].hour) - s);
-            const prevDiff = Math.abs(toSec(sorted[i-1].hour) - s);
-            if (currentDiff !== prevDiff) rank = i + 1;
+            if (Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
         }
         if (rank > 3) break;
         let pts = (rank === 1) ? 3 : (rank === 2) ? 2 : 1;
         playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
     }
 
-    await addDoc(collection(db, "history"), {
-        date: fullDateStr,
-        timestamp: nowObj.getTime(),
-        winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank}))
-    });
-
     winner.style.display = "block";
     let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
-    playersWithPoints.forEach(p => { winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`; });
+    playersWithPoints.forEach(p => winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`);
     winner.innerHTML = winnerHTML;
 
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
-    fanfareAudio.currentTime = 0;
     fanfareAudio.play().catch(()=>{});
-    startCelebration();
-    setTimeout(() => document.body.style.animation = "none", 7000);
+    canvas.style.display = "block"; fwActive = true;
+    const interval = setInterval(spawnFirework, 400); updateFW();
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
 
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
@@ -292,6 +267,13 @@ stopBtn.onclick = async () => {
         if(snap.exists()) await updateDoc(ref, { points: increment(player.points) });
         else await setDoc(ref, { points: player.points });
     }
+    await addDoc(collection(db, "history"), { date: nowObj.toLocaleString("pl-PL"), timestamp: nowObj.getTime(), winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank})) });
+};
+
+const darkBtn = document.getElementById("darkModeBtn");
+darkBtn.onclick = () => {
+    document.body.classList.toggle("dark");
+    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
 };
 </script>
 </body>
