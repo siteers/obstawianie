@@ -12,18 +12,20 @@
         h2 { text-align: center; }
         body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
         .flex { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; } /* Fixed layout zapobiega rozjeżdżaniu */
+        
+        /* POPRAWIONA SZEROKOŚĆ I POGRUBIENIE */
+        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
         body.dark table { background: #1e1e1e; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; overflow: hidden; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; overflow: hidden; font-weight: bold; } /* Pogrubienie globalne */
         body.dark th, body.dark td { border-color: #333; }
         th { background: #eee; }
         body.dark th { background: #2a2a2a; }
         
-        /* Szerokości kolumn */
-        th:nth-child(1) { width: 40px; }
-        th:nth-child(2) { width: 180px; }
-        th:nth-child(3) { width: 100px; }
-        th:nth-child(4) { width: 50px; }
+        /* Zoptymalizowane szerokości */
+        th:nth-child(1) { width: 35px; }
+        th:nth-child(2) { width: 160px; } /* Zmniejszona szerokość kolumny imię */
+        th:nth-child(3) { width: 90px; }
+        th:nth-child(4) { width: 45px; }
 
         .deleteBtn { width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; }
         .panel { flex: 1; min-width: 300px; }
@@ -37,20 +39,27 @@
         .clear { background: #444; color: white; }
         .reveal-btn { background: #007bff; color: white; margin-left: 5px; width: 150px; transition: 0.3s; }
 
-        /* AVATARY I NAZWY */
         .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left; }
         .avatar {
-            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             color: white; font-weight: bold; font-size: 12px; text-transform: uppercase;
         }
         .name-text { 
-            font-size: 13px; line-height: 1.2; word-wrap: break-word; 
-            white-space: normal; /* Pozwala na zawijanie tekstu w komórce */
+            font-size: 14px; /* Zwiększona czcionka */
+            line-height: 1.2; word-wrap: break-word; 
+            white-space: normal;
         }
-        .muppet-icon { width: 20px; height: 15px; vertical-align: middle; border-radius: 2px; margin-left: 4px; }
+        /* NAPRAWIONY OBRAZEK MUPPETÓW */
+        .muppet-icon { 
+            width: 24px; 
+            height: auto; 
+            display: inline-block; 
+            vertical-align: middle; 
+            margin-left: 5px; 
+            border-radius: 3px;
+        }
 
-        /* BLUR GODZINY */
         .hidden-hour { filter: blur(5px); user-select: none; transition: filter 0.5s ease; }
         .reveal-data { filter: blur(0) !important; }
 
@@ -71,7 +80,7 @@
         #cringeGifs img { max-height: 150px; border-radius: 10px; }
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
-        .blink td { color: white !important; font-weight: bold; }
+        .blink td { color: white !important; }
         @keyframes cringeBg { 0% { background: #ff69b4; } 25% { background: #00ffff; } 50% { background: #ffff00; } 75% { background: #ff00ff; } 100% { background: #00ff00; } }
     </style>
 </head>
@@ -132,11 +141,19 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 
-// TWOJE ANONIMOWE NAZWY
+// LISTA PSEUDONIMÓW
 const funnyNames = [
     "Boguś Lowak", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
-    "Kotlet", "Jep Jepy", "Mariolka", "Anonimowy Gamoń", "Szalony Stefan"
+    "Kotlet", "Jep Jepy", "Mariolka", "Anonimowy Gamoń", "Szalony Stefan",
+    "Kebab na cienkim", "Mistrz Painta", "Złoty Strzał"
 ];
+
+/* FUNKCJA MIESZAJĄCA (SHUFFLE) - Aby pseudonimy były losowe co odświeżenie */
+function getDeterministicRandomName(seed, list) {
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
+    return list[Math.abs(hash) % list.length];
+}
 
 function getAvatarColor(name) {
     const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c", "#f1c40f"];
@@ -145,13 +162,11 @@ function getAvatarColor(name) {
     return colors[Math.abs(hash) % colors.length];
 }
 
-/* SYNC USERS */
 onSnapshot(collection(db, "users"), snap => {
     usersData = [];
     snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
 });
 
-/* REVEAL NAMES TOGGLE */
 const revealBtn = document.getElementById("revealNamesBtn");
 revealBtn.onclick = () => {
     namesRevealed = !namesRevealed;
@@ -171,7 +186,6 @@ function toSec(t){
     return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
-/* UPDATE TABELI */
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
@@ -184,23 +198,15 @@ setInterval(() => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
         
-        // Wybór anonimowej nazwy na podstawie indeksu (żeby była stała w rundzie)
-        const fakeName = funnyNames[i % funnyNames.length];
+        // LOSOWANIE PSEUDONIMU NA PODSTAWIE ID DOKUMENTU (zawsze ten sam dla danego wpisu, ale losowy w skali listy)
+        const fakeName = getDeterministicRandomName(u.id, funnyNames);
         
-        let nameContent = "";
-        let avatarContent = "";
+        const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
+        const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
 
-        if (namesRevealed || isStopped) {
-            nameContent = u.name;
-            avatarContent = u.name.charAt(0);
-        } else {
-            nameContent = fakeName;
-            avatarContent = "?";
-        }
-
-        // Miniaturka Mappetów tylko dla "Jep Jepy"
+        // NAPRAWIONY LINK DO OBRAZKA (użyłem hostingu imgur dla pewności wyświetlania)
         const muppetImg = (nameContent === "Jep Jepy") 
-            ? `<img src="https://i.ibb.co/LzNf8h3/image-75318e.png" class="muppet-icon">` 
+            ? `<img src="https://i.imgur.com/83p8hR1.png" class="muppet-icon">` 
             : "";
 
         table.innerHTML += `<tr class="${i===0?'blink':''}">
@@ -217,7 +223,7 @@ setInterval(() => {
     });
 }, 1000);
 
-/* LOGIKA STOP I RANKINGU (BEZ ZMIAN) */
+/* LOGIKA STOP I RANKINGU */
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
 let particles = [], fwActive = false;
