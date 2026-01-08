@@ -12,12 +12,19 @@
         h2 { text-align: center; }
         body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
         .flex { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
-        table { width: 100%; border-collapse: collapse; background: white; }
+        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; } /* Fixed layout zapobiega rozjeżdżaniu */
         body.dark table { background: #1e1e1e; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; overflow: hidden; }
         body.dark th, body.dark td { border-color: #333; }
         th { background: #eee; }
         body.dark th { background: #2a2a2a; }
+        
+        /* Szerokości kolumn */
+        th:nth-child(1) { width: 40px; }
+        th:nth-child(2) { width: 180px; }
+        th:nth-child(3) { width: 100px; }
+        th:nth-child(4) { width: 50px; }
+
         .deleteBtn { width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; }
         .panel { flex: 1; min-width: 300px; }
         #clock { font-size: 48px; font-weight: bold; text-align: center; }
@@ -28,35 +35,22 @@
         
         .clear, .reveal-btn { margin-bottom: 10px; padding: 10px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
         .clear { background: #444; color: white; }
-        
-        /* POPRAWIONY PRZYCISK ODKRYWANIA */
-        .reveal-btn { 
-            background: #007bff; 
-            color: white; 
-            margin-left: 5px; 
-            width: 150px; 
-            transition: 0.3s;
-        }
-        .reveal-btn:hover { background: #0056b3; box-shadow: 0 0 10px rgba(0,123,255,0.5); }
+        .reveal-btn { background: #007bff; color: white; margin-left: 5px; width: 150px; transition: 0.3s; }
 
-        /* --- NOWE STYLE DLA AVATARÓW --- */
-        .user-cell { display: flex; align-items: center; justify-content: center; gap: 10px; }
+        /* AVATARY I NAZWY */
+        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left; }
         .avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: bold;
-            font-size: 14px;
-            text-transform: uppercase;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; font-size: 12px; text-transform: uppercase;
         }
-        .name-text { font-weight: 500; }
+        .name-text { 
+            font-size: 13px; line-height: 1.2; word-wrap: break-word; 
+            white-space: normal; /* Pozwala na zawijanie tekstu w komórce */
+        }
+        .muppet-icon { width: 20px; height: 15px; vertical-align: middle; border-radius: 2px; margin-left: 4px; }
 
-        /* --- BLUR DLA GODZINY --- */
+        /* BLUR GODZINY */
         .hidden-hour { filter: blur(5px); user-select: none; transition: filter 0.5s ease; }
         .reveal-data { filter: blur(0) !important; }
 
@@ -77,7 +71,7 @@
         #cringeGifs img { max-height: 150px; border-radius: 10px; }
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
-        .blink td { color: white; font-weight: bold; }
+        .blink td { color: white !important; font-weight: bold; }
         @keyframes cringeBg { 0% { background: #ff69b4; } 25% { background: #00ffff; } 50% { background: #ffff00; } 75% { background: #ff00ff; } 100% { background: #00ff00; } }
     </style>
 </head>
@@ -133,17 +127,29 @@ const table = document.getElementById("table");
 const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
+
 let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 
-/* GENERATOR KOLORÓW AVATARA */
+// TWOJE ANONIMOWE NAZWY
+const funnyNames = [
+    "Boguś Lowak", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
+    "Kotlet", "Jep Jepy", "Mariolka", "Anonimowy Gamoń", "Szalony Stefan"
+];
+
 function getAvatarColor(name) {
     const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c", "#f1c40f"];
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
 }
+
+/* SYNC USERS */
+onSnapshot(collection(db, "users"), snap => {
+    usersData = [];
+    snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+});
 
 /* REVEAL NAMES TOGGLE */
 const revealBtn = document.getElementById("revealNamesBtn");
@@ -152,22 +158,12 @@ revealBtn.onclick = () => {
     revealBtn.textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona";
 };
 
-/* SYNC USERS */
-onSnapshot(collection(db, "users"), snap => {
-    usersData = [];
-    snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
-});
-
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
-
 window.clearAll = async () => {
     const snap = await getDocs(collection(db,"users"));
     snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
-    winner.style.display = "none";
-    stoppedTime.textContent = ""; 
-    isStopped = false;
-    namesRevealed = false;
-    revealBtn.textContent = "Odkryj imiona";
+    winner.style.display = "none"; stoppedTime.textContent = ""; 
+    isStopped = false; namesRevealed = false;
 };
 
 function toSec(t){
@@ -175,7 +171,7 @@ function toSec(t){
     return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
-/* CLOCK & TABLE UPDATE */
+/* UPDATE TABELI */
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
@@ -183,21 +179,36 @@ setInterval(() => {
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
-    sorted.forEach((u,i)=>{
+    
+    sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        const initial = u.name.charAt(0);
         const color = getAvatarColor(u.name);
         
-        // Estetyczny Avatar + tekst
-        const nameDisplay = (namesRevealed || isStopped) ? u.name : "Uczestnik";
-        const avatarDisplay = (namesRevealed || isStopped) ? initial : "?";
+        // Wybór anonimowej nazwy na podstawie indeksu (żeby była stała w rundzie)
+        const fakeName = funnyNames[i % funnyNames.length];
         
-        table.innerHTML+=`<tr class="${i===0?'blink':''}">
+        let nameContent = "";
+        let avatarContent = "";
+
+        if (namesRevealed || isStopped) {
+            nameContent = u.name;
+            avatarContent = u.name.charAt(0);
+        } else {
+            nameContent = fakeName;
+            avatarContent = "?";
+        }
+
+        // Miniaturka Mappetów tylko dla "Jep Jepy"
+        const muppetImg = (nameContent === "Jep Jepy") 
+            ? `<img src="https://i.ibb.co/LzNf8h3/image-75318e.png" class="muppet-icon">` 
+            : "";
+
+        table.innerHTML += `<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
             <td>
                 <div class="user-cell">
-                    <div class="avatar" style="background:${color}">${avatarDisplay}</div>
-                    <span class="name-text">${nameDisplay}</span>
+                    <div class="avatar" style="background:${color}">${avatarContent}</div>
+                    <span class="name-text">${nameContent}${muppetImg}</span>
                 </div>
             </td>
             <td class="${hourClass}">${u.hour}</td>
@@ -206,7 +217,7 @@ setInterval(() => {
     });
 }, 1000);
 
-/* FIREWORKS & STOP LOGIC (Reszta bez zmian) */
+/* LOGIKA STOP I RANKINGU (BEZ ZMIAN) */
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
 let particles = [], fwActive = false;
