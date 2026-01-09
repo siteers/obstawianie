@@ -61,26 +61,9 @@
         #rankingBtn { top: 70px; background: #ffcc00; color: #111; }
         #rankingBtn:hover, #darkModeBtn:hover { transform: scale(1.05); }
 
-        /* --- STYL DLA KODU QR --- */
-        .qr-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        #qrcode {
-            padding: 10px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-        .qr-label {
-            margin-top: 8px;
-            font-size: 12px;
-            font-weight: bold;
-            color: #666;
-        }
+        .qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20px; }
+        #qrcode { padding: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .qr-label { margin-top: 8px; font-size: 12px; font-weight: bold; color: #666; }
         body.dark .qr-label { color: #aaa; }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
@@ -114,7 +97,7 @@
             
             <div class="qr-container">
                 <div id="qrcode"></div>
-                <div class="qr-label">REGULAMIN GRY</div>
+                <div class="qr-label">SKANUJ REGULAMIN</div>
             </div>
         </div>
     </div>
@@ -154,15 +137,13 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 
-// TWOJE PSEUDONIMY
 const funnyNames = [
     "leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
     "Jarołd", "Kebab z falafelem", "Mariolka"
 ];
 
-// --- GENEROWANIE KODU QR ---
-// Zmień poniższy adres URL na właściwy link do regulaminu
-const regulaminUrl = window.location.origin + "/regulamin.html";
+// --- POPRAWIONY LINK W KODZIE QR ---
+const regulaminUrl = "https://siteers.github.io/obstawianie/regulamin.html";
 new QRCode(document.getElementById("qrcode"), {
     text: regulaminUrl,
     width: 100,
@@ -193,9 +174,7 @@ revealBtn.onclick = () => {
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
     const snap = await getDocs(collection(db,"users"));
-    for (const d of snap.docs) {
-        await deleteDoc(doc(db,"users",d.id));
-    }
+    for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
 };
@@ -210,19 +189,13 @@ setInterval(() => {
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
-    
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
-    
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
-        
-        // Niepowtarzające się ksywki
         const fakeName = funnyNames[i % funnyNames.length];
-        
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
-
         table.innerHTML += `<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
             <td>
@@ -237,31 +210,6 @@ setInterval(() => {
     });
 }, 1000);
 
-// Logika STOP (bez zmian)
-const canvas = document.getElementById("fireworksCanvas");
-const ctx = canvas.getContext("2d");
-let particles = [], fwActive = false;
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-function spawnFirework() {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height * 0.5;
-    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
-    for(let i=0; i<50; i++) particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
-}
-
-function updateFW() {
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    particles.forEach((p,i) => {
-        p.x += Math.cos(p.a) * p.s; p.y += Math.sin(p.a) * p.s; p.al -= 0.01;
-        if(p.al <= 0) particles.splice(i,1);
-        ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
-    });
-    if(fwActive) requestAnimationFrame(updateFW);
-}
-
 stopBtn.onclick = async () => {
     if(!usersData.length) return;
     isStopped = true; 
@@ -269,7 +217,6 @@ stopBtn.onclick = async () => {
     stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
-
     let playersWithPoints = [];
     let rank = 1;
     for (let i = 0; i < sorted.length; i++) {
@@ -280,18 +227,13 @@ stopBtn.onclick = async () => {
         let pts = (rank === 1) ? 3 : (rank === 2) ? 2 : 1;
         playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
     }
-
     winner.style.display = "block";
     let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
     playersWithPoints.forEach(p => winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`);
     winner.innerHTML = winnerHTML;
-
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
-    canvas.style.display = "block"; fwActive = true;
-    const interval = setInterval(spawnFirework, 400); updateFW();
-    setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
-
+    startCelebration();
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
         const snap = await getDoc(ref);
@@ -300,6 +242,33 @@ stopBtn.onclick = async () => {
     }
     await addDoc(collection(db, "history"), { date: nowObj.toLocaleString("pl-PL"), timestamp: nowObj.getTime(), winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank})) });
 };
+
+const canvas = document.getElementById("fireworksCanvas");
+const ctx = canvas.getContext("2d");
+let particles = [], fwActive = false;
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+function spawnFirework() {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height * 0.5;
+    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
+    for(let i=0; i<50; i++) particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
+}
+function updateFW() {
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    particles.forEach((p,i) => {
+        p.x += Math.cos(p.a) * p.s; p.y += Math.sin(p.a) * p.s; p.al -= 0.01;
+        if(p.al <= 0) particles.splice(i,1);
+        ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
+        ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
+    });
+    if(fwActive) requestAnimationFrame(updateFW);
+}
+function startCelebration() {
+    canvas.style.display = "block"; fwActive = true;
+    const interval = setInterval(spawnFirework, 400); updateFW();
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
+}
 
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
