@@ -64,7 +64,7 @@
         }
 
         #history { margin-top: 40px; }
-        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 10px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 15px; }
         body.dark .sig-entry { border-bottom-color: #333; }
         
         .sig-entry img { 
@@ -99,8 +99,8 @@
     </section>
 
     <section>
-        <h2>2. System Punktacji (Remisy)</h2>
-        <p>Punkty przyznawane są trzem najlepszym wynikom. W przypadku uzyskania identycznego czasu przez wielu graczy, stosujemy sportowy system miejsc dzielonych:</p>
+        <h2>2. System Punktacji (Sportowy)</h2>
+        <p>Punkty przyznawane są trzem najlepszym wynikom. W przypadku remisów stosujemy system sportowy (miejsca dzielone):</p>
         
         <div class="point-box">
             🥇 1. miejsce: <b>3 pkt</b> | 🥈 2. miejsce: <b>2 pkt</b> | 🥉 3. miejsce: <b>1 pkt</b>
@@ -113,15 +113,23 @@
             </tr>
             <tr>
                 <td>2 osoby na 1. miejscu</td>
-                <td>Obie po 3 pkt. Brak 2. miejsca. Kolejna osoba zajmuje 3. miejsce (1 pkt).</td>
+                <td>Obie po <b>3 pkt</b>. Brak 2. miejsca. Kolejna osoba to 3. miejsce (<b>1 pkt</b>).</td>
             </tr>
             <tr>
-                <td>3 osoby na 1. miejscu</td>
-                <td>Wszystkie po 3 pkt. Brak pkt za miejsca 2 i 3.</td>
+                <td>2 osoby na 1. i 2 na 2. msc</td>
+                <td>Pierwsza dwójka po <b>3 pkt</b>. Kolejna dwójka po <b>1 pkt</b> (jako 3. miejsce).</td>
             </tr>
             <tr>
-                <td>1 osoba 1., 2 osoby na 2.</td>
-                <td>Lider 3 pkt, obie osoby na 2. miejscu po 2 pkt. Brak punktów za 3. miejsce.</td>
+                <td>3 lub więcej osób na 1. msc</td>
+                <td>Wszyscy po <b>3 pkt</b>. Nikt nie otrzymuje punktów za 2. i 3. miejsce.</td>
+            </tr>
+            <tr>
+                <td>1 osoba na 1. i 2 osoby na 2.</td>
+                <td>Lider <b>3 pkt</b>, osoby na 2. miejscu po <b>2 pkt</b>. Brak 3. miejsca.</td>
+            </tr>
+            <tr>
+                <td>1 osoba na 1., 1 na 2. i 2 na 3.</td>
+                <td>1. msc (<b>3 pkt</b>), 2. msc (<b>2 pkt</b>), obie osoby na 3. msc po <b>1 pkt</b>.</td>
             </tr>
         </table>
     </section>
@@ -194,7 +202,7 @@
         scanTimer = setTimeout(() => {
             document.getElementById('step-1').style.display = "none";
             sigSection.style.display = "block";
-        }, 2000); // Zmienione na 2 sekundy
+        }, 2000);
     }
 
     function stopScan() {
