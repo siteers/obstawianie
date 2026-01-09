@@ -69,7 +69,7 @@
         .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 15px; }
         body.dark .sig-entry { border-bottom-color: #333; }
         
-        /* POPRAWKA: UJEDNOLICONE ROZMIARY PODPISÓW */
+        /* UJEDNOLICONE ROZMIARY PODPISÓW */
         .sig-entry img { 
             width: 130px; 
             height: 60px; 
@@ -113,7 +113,7 @@
                 <td>Obie po 3 pkt. Brak 2. miejsca. Kolejna osoba zajmuje 3. miejsce (1 pkt).</td>
             </tr>
             <tr>
-                <td>3 osoby na 1. miejscu</td>
+                <td>Trzy osoby na 1. miejscu</td>
                 <td>Wszystkie po 3 pkt. Brak pkt za miejsca 2 i 3.</td>
             </tr>
             <tr>
@@ -121,6 +121,11 @@
                 <td>Lider 3 pkt, obie osoby na 2. miejscu po 2 pkt. Brak punktów za 3. miejsce.</td>
             </tr>
         </table>
+    </section>
+
+    <section>
+        <h2>3. Anonimowość (Ksywki)</h2>
+        <p>Do momentu zakończenia rundy lub odkrycia imion przez administratora, uczestnicy widnieją pod losowymi pseudonimami (np. <em>leonard bogumił</em> czy <em>Kebab z falafelem</em>), aby zachować pełną anonimowość podczas obstawiania.</p>
     </section>
 
     <div class="acceptance-flow">
@@ -148,8 +153,8 @@
     </div>
 
     <div id="history">
-        <h3>📄 Lista Akceptacji (Świadkowie)</h3>
-        <div id="sig-list">Pobieranie listy świadków...</div>
+        <h3>📄 Lista Akceptacji (Podpisy)</h3>
+        <div id="sig-list">Pobieranie danych...</div>
     </div>
 </div>
 
@@ -166,14 +171,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    /* DARK MODE LOGIC */
     const darkBtn = document.getElementById('darkModeBtn');
     darkBtn.onclick = () => {
         document.body.classList.toggle('dark');
         darkBtn.textContent = document.body.classList.contains('dark') ? "☀️ Light mode" : "🌙 Dark mode";
     };
 
-    /* SCANNER LOGIC */
     const scanZone = document.getElementById('scan-zone');
     const status = document.getElementById('status');
     const sigSection = document.getElementById('signature-section');
@@ -203,7 +206,6 @@
     scanZone.addEventListener('touchstart', startScan);
     scanZone.addEventListener('touchend', stopScan);
 
-    /* SIGNATURE LOGIC */
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -224,7 +226,6 @@
 
     document.getElementById('clear-btn').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    /* FIREBASE SAVE */
     document.getElementById('save-btn').onclick = async () => {
         const name = document.getElementById('signer-name').value;
         if(!name) return alert("Podaj swoje imię lub ksywkę!");
@@ -240,7 +241,6 @@
         document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: #28a745'>✅ Regulamin zaakceptowany pomyślnie!</h3>";
     };
 
-    /* REALTIME LIST */
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
         const list = document.getElementById('sig-list');
         list.innerHTML = "";
