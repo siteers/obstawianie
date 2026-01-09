@@ -126,17 +126,11 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 
-// WYŁĄCZNIE TWOJE PSEUDONIMY
+// TWOJE PSEUDONIMY
 const funnyNames = [
-    "Boguś Lowak", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
-    "Kotlet", "Kebab z falafelem", "Mariolka"
+    "leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
+    "Jarołd", "Kebab z falafelem", "Mariolka"
 ];
-
-function getDeterministicRandomName(seed, list) {
-    let hash = 0;
-    for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + ((hash << 5) - hash);
-    return list[Math.abs(hash) % list.length];
-}
 
 function getAvatarColor(name) {
     const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c", "#f1c40f"];
@@ -159,7 +153,9 @@ revealBtn.onclick = () => {
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
     const snap = await getDocs(collection(db,"users"));
-    snap.forEach(d => deleteDoc(doc(db,"users",d.id)));
+    for (const d of snap.docs) {
+        await deleteDoc(doc(db,"users",d.id));
+    }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
 };
@@ -177,12 +173,20 @@ setInterval(() => {
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     
+    // Tworzymy kopię listy pseudonimów do losowania bez powtórzeń
+    let availableNames = [...funnyNames];
+
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
         
-        // Deterministyczne losowanie pseudonimu na podstawie ID
-        const fakeName = getDeterministicRandomName(u.id, funnyNames);
+        let fakeName;
+        if (availableNames.length > 0) {
+            // Wybieramy pseudonim na podstawie indeksu (i % długość), aby uniknąć powtórzeń w tej samej tabeli
+            fakeName = availableNames[i % funnyNames.length];
+        } else {
+            fakeName = "Anonim";
+        }
         
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
