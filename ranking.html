@@ -47,7 +47,7 @@
 
     <h2>📋 Historia rekordów (Ostatnie zapisy)</h2>
     <table id="historyTable">
-        <tr><th>Data i Godzina</th><th>Wyniki (TOP 3)</th><th>X</th></tr>
+        <tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr>
     </table>
 
     <button class="clear-btn" onclick="clearAllData()">🗑️ Wyczyść wszystko (Ranking i Historię)</button>
@@ -56,7 +56,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { 
             getFirestore, collection, onSnapshot, getDocs, deleteDoc, doc, 
-            updateDoc, increment, getDoc, query, orderBy, limit 
+            updateDoc, getDoc, query, orderBy, limit 
         } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -75,7 +75,7 @@
             darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
         };
 
-        // 1. POBIERANIE RANKINGU
+        // 1. POBIERANIE RANKINGU OGÓLNEGO
         onSnapshot(collection(db, "ranking"), snap => {
             let players = [];
             snap.forEach(d => {
@@ -90,13 +90,21 @@
             });
         });
 
-        // 2. POBIERANIE HISTORII
+        // 2. POBIERANIE HISTORII Z DYNAMICZNYM WYŚWIETLANIEM MIEJSC
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(25)), snap => {
             const historyTable = document.getElementById("historyTable");
-            historyTable.innerHTML = "<tr><th>Data i Godzina</th><th>Wyniki (TOP 3)</th><th>X</th></tr>";
+            historyTable.innerHTML = "<tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr>";
+            
             snap.forEach(d => {
                 const data = d.data();
-                const results = data.winners.map((w, i) => `${i+1}. ${w.name}`).join(", ");
+                
+                // Jeśli dokument zawiera już informację o rankingu (zapisaliśmy ją w stopBtn)
+                const results = data.winners.map(w => {
+                    // Sprawdzamy czy mamy pole 'rank', jeśli nie (stare rekordy), używamy domyślnej kolejności
+                    const rankDisplay = w.rank ? w.rank : (data.winners.indexOf(w) + 1);
+                    return `${rankDisplay}. ${w.name}`;
+                }).join(", ");
+
                 historyTable.innerHTML += `
                     <tr>
                         <td>${data.date}</td>
@@ -106,7 +114,7 @@
             });
         });
 
-        // 3. USUWANIE I COFANIE PUNKTÓW (Z USUWANIEM GRACZA JEŚLI 0 PKT)
+        // 3. USUWANIE I COFANIE PUNKTÓW
         window.deleteHistoryRecord = async (historyId) => {
             if(!confirm("Czy na pewno usunąć ten rzut i odjąć punkty?")) return;
             
@@ -117,14 +125,23 @@
                 const data = recordSnap.data();
                 for (let i = 0; i < data.winners.length; i++) {
                     const player = data.winners[i];
-                    const ptsToSubtract = (i === 0) ? -3 : (i === 1) ? -2 : -1;
+                    
+                    // Wyliczamy punkty do odjęcia na podstawie rangi zapisanej w historii
+                    // Jeśli rangi nie ma (stare rekordy), używamy domyślnego systemu 3-2-1
+                    let ptsToSubtract = 0;
+                    const r = player.rank ? player.rank : (i + 1);
+                    
+                    if(r === 1) ptsToSubtract = -3;
+                    else if(r === 2) ptsToSubtract = -2;
+                    else if(r === 3) ptsToSubtract = -1;
+
                     const rankRef = doc(db, "ranking", player.name);
                     const playerSnap = await getDoc(rankRef);
                     
                     if (playerSnap.exists()) {
                         const newPoints = (playerSnap.data().points || 0) + ptsToSubtract;
                         if (newPoints <= 0) {
-                            await deleteDoc(rankRef); // Usuwa imię z bazy jeśli ma 0 pkt
+                            await deleteDoc(rankRef);
                         } else {
                             await updateDoc(rankRef, { points: newPoints });
                         }
