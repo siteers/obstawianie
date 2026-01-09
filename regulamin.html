@@ -31,7 +31,6 @@
         }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
 
-        /* SEKCJA AKCEPTACJI */
         .acceptance-flow { text-align: center; margin-top: 30px; padding: 20px; border: 2px dashed #007bff; border-radius: 15px; }
         
         #scan-zone {
@@ -52,7 +51,6 @@
         .btn-save { background: #28a745; color: white; }
         .btn-clear { background: #6c757d; color: white; }
         
-        /* POPRAWKA: MNIEJSZY I WYŚRODKOWANY INPUT */
         input#signer-name { 
             padding: 10px; 
             width: 80%; 
@@ -66,10 +64,9 @@
         }
 
         #history { margin-top: 40px; }
-        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 15px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 10px; }
         body.dark .sig-entry { border-bottom-color: #333; }
         
-        /* UJEDNOLICONE ROZMIARY PODPISÓW */
         .sig-entry img { 
             width: 130px; 
             height: 60px; 
@@ -81,6 +78,12 @@
         .sig-info { text-align: left; flex: 1; }
         .sig-info strong { font-size: 15px; display: block; margin-bottom: 2px; }
         .sig-info small { font-size: 11px; color: #777; }
+
+        .btn-delete { 
+            background: none; border: 1px solid #ff4d4d; color: #ff4d4d; 
+            border-radius: 50%; width: 25px; height: 25px; cursor: pointer; 
+            font-weight: bold; font-size: 12px; display: flex; align-items: center; justify-content: center;
+        }
     </style>
 </head>
 <body>
@@ -113,7 +116,7 @@
                 <td>Obie po 3 pkt. Brak 2. miejsca. Kolejna osoba zajmuje 3. miejsce (1 pkt).</td>
             </tr>
             <tr>
-                <td>Trzy osoby na 1. miejscu</td>
+                <td>3 osoby na 1. miejscu</td>
                 <td>Wszystkie po 3 pkt. Brak pkt za miejsca 2 i 3.</td>
             </tr>
             <tr>
@@ -131,7 +134,7 @@
     <div class="acceptance-flow">
         <div id="step-1">
             <h3>🔐 Akceptacja Regulaminu</h3>
-            <p>KROK 1: Przytrzymaj palec na skanerze (1.5 sek), aby zweryfikować tożsamość.</p>
+            <p>KROK 1: Przytrzymaj palec na skanerze (2 sek), aby zweryfikować tożsamość.</p>
             <div id="scan-zone">
                 <div class="pulse" id="pulse-ring"></div>
                 ☝️
@@ -160,7 +163,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -191,7 +194,7 @@
         scanTimer = setTimeout(() => {
             document.getElementById('step-1').style.display = "none";
             sigSection.style.display = "block";
-        }, 1500);
+        }, 2000); // Zmienione na 2 sekundy
     }
 
     function stopScan() {
@@ -244,13 +247,26 @@
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
         const list = document.getElementById('sig-list');
         list.innerHTML = "";
-        snap.forEach(doc => {
-            const d = doc.data();
-            list.innerHTML += `
-                <div class="sig-entry">
-                    <div class="sig-info"><strong>${d.name}</strong><small>${d.date}</small></div>
-                    <img src="${d.sig}">
-                </div>`;
+        snap.forEach(documentDoc => {
+            const d = documentDoc.data();
+            const entry = document.createElement('div');
+            entry.className = 'sig-entry';
+            entry.innerHTML = `
+                <div class="sig-info"><strong>${d.name}</strong><small>${d.date}</small></div>
+                <img src="${d.sig}">
+            `;
+            
+            const delBtn = document.createElement('button');
+            delBtn.className = 'btn-delete';
+            delBtn.textContent = 'X';
+            delBtn.onclick = async () => {
+                if(confirm("Usunąć ten podpis?")) {
+                    await deleteDoc(doc(db, "signatures", documentDoc.id));
+                }
+            };
+            
+            entry.appendChild(delBtn);
+            list.appendChild(entry);
         });
     });
 </script>
