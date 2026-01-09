@@ -5,132 +5,128 @@
     <title>Regulamin & Akceptacja - Obstawianie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f2f2f2; margin: 0; padding: 15px; display: flex; justify-content: center; transition: 0.3s; }
         body.dark { background: #121212; color: #eee; }
         
-        .container { max-width: 800px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        .container { max-width: 800px; width: 100%; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
         body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        h1 { text-align: center; color: #007bff; }
-        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 30px; }
+        h1 { text-align: center; color: #007bff; font-size: 24px; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 25px; font-size: 20px; }
         
-        .point-box { background: #e9f4ff; padding: 15px; border-radius: 8px; border-left: 5px solid #007bff; margin: 15px 0; }
+        .point-box { background: #e9f4ff; padding: 12px; border-radius: 8px; border-left: 5px solid #007bff; margin: 15px 0; }
         body.dark .point-box { background: #253a4e; border-left-color: #0056b3; color: #ccc; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: center; }
         body.dark th, body.dark td { border-color: #444; }
         th { background: #f8f9fa; }
         body.dark th { background: #2a2a2a; }
 
-        /* DARK MODE BTN */
         #darkModeBtn { 
-            position: fixed; top: 15px; right: 15px; padding: 10px 15px; 
+            position: fixed; top: 10px; right: 10px; padding: 8px 12px; 
             border-radius: 20px; border: none; cursor: pointer; 
-            background: #111; color: #fff; font-weight: bold; transition: 0.3s;
+            background: #111; color: #fff; font-weight: bold; font-size: 12px; z-index: 1000;
         }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
 
-        /* AKCEPTACJA SYSTEM */
-        .acceptance-flow { text-align: center; margin-top: 50px; padding: 30px; border: 2px dashed #007bff; border-radius: 15px; }
+        .acceptance-flow { text-align: center; margin-top: 30px; padding: 15px; border: 2px dashed #007bff; border-radius: 15px; }
         
         #scan-zone {
-            width: 100px; height: 100px; background: #fff; border: 4px solid #007bff;
+            width: 90px; height: 90px; background: #fff; border: 4px solid #007bff;
             border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 45px; cursor: pointer; position: relative; transition: 0.3s; margin: 20px auto;
+            font-size: 40px; cursor: pointer; position: relative; transition: 0.3s; margin: 15px auto;
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
         #scan-zone.active { background: #007bff; transform: scale(0.9); }
         .pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #007bff; animation: pulse 1.5s infinite; opacity: 0; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 
-        #signature-section { display: none; margin-top: 20px; }
-        canvas { border: 2px solid #ccc; border-radius: 8px; background: #fafafa; touch-action: none; cursor: crosshair; max-width: 100%; }
-        .btns { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
-        button.action { padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        #signature-section { display: none; margin-top: 15px; }
+        canvas { border: 2px solid #ccc; border-radius: 8px; background: #fafafa; touch-action: none; cursor: crosshair; max-width: 100%; height: auto; }
+        
+        .btns { margin-top: 15px; display: flex; gap: 8px; justify-content: center; }
+        button.action { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; }
         .btn-save { background: #28a745; color: white; }
         .btn-clear { background: #6c757d; color: white; }
-        input#signer-name { padding: 12px; width: 80%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
+        
+        /* POPRAWKA 2: MNIEJSZY INPUT */
+        input#signer-name { 
+            padding: 10px; 
+            width: 70%; 
+            max-width: 250px; 
+            margin-bottom: 12px; 
+            border-radius: 8px; 
+            border: 1px solid #ccc; 
+            font-size: 15px; 
+            text-align: center;
+        }
 
-        /* LISTA ŚWIADKÓW */
-        #history { margin-top: 50px; }
-        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; }
+        #history { margin-top: 40px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid #eee; gap: 10px; }
         body.dark .sig-entry { border-bottom-color: #333; }
-        .sig-entry img { height: 50px; background: white; border-radius: 5px; padding: 2px; }
-        .sig-info { text-align: left; }
+        
+        /* POPRAWKA 1: UJEDNOLICONE PODPISY */
+        .sig-entry img { 
+            width: 120px; 
+            height: 50px; 
+            object-fit: contain; 
+            background: white; 
+            border-radius: 5px; 
+            border: 1px solid #ddd;
+        }
+        .sig-info { text-align: left; flex: 1; }
+        .sig-info strong { font-size: 14px; }
+        .sig-info small { font-size: 10px; color: #777; }
     </style>
 </head>
 <body>
 
-<button id="darkModeBtn">🌙 Dark mode</button>
+<button id="darkModeBtn">🌙 Dark</button>
 
 <div class="container">
     <h1>📜 Regulamin Gry</h1>
 
     <section>
         <h2>1. Zasady Ogólne</h2>
-        <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP).</p>
+        <p style="font-size: 14px;">Celem gry jest wytypowanie godziny najbliższej momentowi zatrzymania zegara przez administratora.</p>
     </section>
 
     <section>
         <h2>2. System Punktacji (Remisy)</h2>
-        <p>W przypadku uzyskania identycznego wyniku przez wielu graczy, stosujemy sportowy system przyznawania miejsc:</p>
-        
-        <div class="point-box">
-            🥇 1. miejsce: <strong>3 pkt</strong> | 🥈 2. miejsce: <strong>2 pkt</strong> | 🥉 3. miejsce: <strong>1 pkt</strong>
+        <div class="point-box" style="font-size: 14px;">
+            🥇 1. miejsce: <b>3 pkt</b> | 🥈 2. miejsce: <b>2 pkt</b> | 🥉 3. miejsce: <b>1 pkt</b>
         </div>
-
         <table>
-            <tr>
-                <th>Sytuacja</th>
-                <th>Wynik punktowy</th>
-            </tr>
-            <tr>
-                <td>Dwie osoby na 1. miejscu</td>
-                <td>Obie po <strong>3 pkt</strong>. Nie ma 2. miejsca. Następna osoba ma 3. miejsce (<strong>1 pkt</strong>).</td>
-            </tr>
-            <tr>
-                <td>Trzy osoby na 1. miejscu</td>
-                <td>Wszystkie po <strong>3 pkt</strong>. Brak pkt za miejsca 2 i 3.</td>
-            </tr>
-            <tr>
-                <td>Jedna osoba 1., dwie na 2.</td>
-                <td>Lider 3 pkt, osoby na 2. miejscu po <strong>2 pkt</strong>. Brak pkt za 3 miejsce.</td>
-            </tr>
+            <tr><th>Sytuacja</th><th>Wynik</th></tr>
+            <tr><td>2 osoby na 1. msc</td><td>Obie po 3 pkt. Brak 2. msc. 3. msc dostaje 1 pkt.</td></tr>
+            <tr><td>3 osoby na 1. msc</td><td>Wszystkie po 3 pkt. Brak pkt za 2 i 3 msc.</td></tr>
+            <tr><td>1 osoba 1., 2 na 2.</td><td>Lider 3 pkt, obie na 2. po 2 pkt. Brak 3 msc.</td></tr>
         </table>
-    </section>
-
-    <section>
-        <h2>3. Akceptacja i Podpis</h2>
-        <p>Udział w grze wymaga przejścia weryfikacji biometrycznej oraz złożenia podpisu elektronicznego.</p>
     </section>
 
     <div class="acceptance-flow">
         <div id="step-1">
             <h3>KROK 1: Skan kciuka</h3>
-            <p>Przytrzymaj palec na skanerze (2 sekundy)</p>
-            <div id="scan-zone">
-                <div class="pulse" id="pulse-ring"></div>
-                ☝️
-            </div>
-            <div id="status">OCZEKIWANIE...</div>
+            <div id="scan-zone"><div class="pulse" id="pulse-ring"></div>☝️</div>
+            <div id="status" style="font-size: 13px;">DOTKNIJ I PRZYTRZYMAJ</div>
         </div>
 
         <div id="signature-section">
-            <h3>KROK 2: Podpis cyfrowy</h3>
-            <input type="text" id="signer-name" placeholder="Twoje imię lub ksywka">
+            <h3>KROK 2: Podpis</h3>
+            <input type="text" id="signer-name" placeholder="Twoje imię/ksywka">
             <br>
-            <canvas id="sig-canvas" width="350" height="150"></canvas>
+            <canvas id="sig-canvas" width="300" height="120"></canvas>
             <div class="btns">
                 <button class="action btn-clear" id="clear-btn">Wyczyść</button>
-                <button class="action btn-save" id="save-btn">Zatwierdź i Wyślij</button>
+                <button class="action btn-save" id="save-btn">Wyślij</button>
             </div>
         </div>
     </div>
 
     <div id="history">
-        <h3>✍️ Lista Akceptacji (Świadkowie)</h3>
-        <div id="sig-list">Pobieranie danych...</div>
+        <h3>✍️ Świadkowie (Ostatnie 10)</h3>
+        <div id="sig-list">Ładowanie...</div>
     </div>
 </div>
 
@@ -147,14 +143,12 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    /* DARK MODE */
     const darkBtn = document.getElementById('darkModeBtn');
     darkBtn.onclick = () => {
         document.body.classList.toggle('dark');
-        darkBtn.textContent = document.body.classList.contains('dark') ? "☀️ Light mode" : "🌙 Dark mode";
+        darkBtn.textContent = document.body.classList.contains('dark') ? "☀️ Light" : "🌙 Dark";
     };
 
-    /* SKANER */
     const scanZone = document.getElementById('scan-zone');
     const status = document.getElementById('status');
     const sigSection = document.getElementById('signature-section');
@@ -165,18 +159,18 @@
         e.preventDefault();
         pulse.style.opacity = "1";
         scanZone.classList.add('active');
-        status.textContent = "SKANOWANIE BIOMETRYCZNE...";
+        status.textContent = "SKANOWANIE...";
         scanTimer = setTimeout(() => {
             document.getElementById('step-1').style.display = "none";
             sigSection.style.display = "block";
-        }, 2000);
+        }, 1500);
     }
 
     function stopScan() {
         clearTimeout(scanTimer);
         pulse.style.opacity = "0";
         scanZone.classList.remove('active');
-        if (sigSection.style.display !== "block") status.textContent = "SKANOWANIE PRZERWANE!";
+        if (sigSection.style.display !== "block") status.textContent = "PRZERWANO!";
     }
 
     scanZone.addEventListener('mousedown', startScan);
@@ -184,7 +178,6 @@
     scanZone.addEventListener('touchstart', startScan);
     scanZone.addEventListener('touchend', stopScan);
 
-    /* PODPIS (CANVAS) */
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -205,10 +198,9 @@
 
     document.getElementById('clear-btn').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    /* ZAPIS DO FIREBASE */
     document.getElementById('save-btn').onclick = async () => {
         const name = document.getElementById('signer-name').value;
-        if(!name) return alert("Podaj swoje imię!");
+        if(!name) return alert("Podaj imię!");
         
         const imgData = canvas.toDataURL("image/png");
         await addDoc(collection(db, "signatures"), {
@@ -218,10 +210,9 @@
             ts: Date.now()
         });
         
-        document.querySelector('.acceptance-flow').innerHTML = "<h2 style='color: #28a745'>✅ Regulamin zaakceptowany pomyślnie!</h2>";
+        document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: #28a745'>✅ Zaakceptowano!</h3>";
     };
 
-    /* LISTA ŚWIADKÓW */
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
         const list = document.getElementById('sig-list');
         list.innerHTML = "";
