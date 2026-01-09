@@ -143,7 +143,7 @@ const funnyNames = [
 ];
 
 // --- POPRAWIONY LINK W KODZIE QR ---
-const regulaminUrl = "https://siteers.github.io/obstawianie/regulamin.html";
+const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
 new QRCode(document.getElementById("qrcode"), {
     text: regulaminUrl,
     width: 100,
@@ -278,4 +278,5 @@ darkBtn.onclick = () => {
 </script>
 </body>
 </html>
+
 
