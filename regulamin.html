@@ -2,160 +2,180 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Regulamin Gry - Obstawianie</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Regulamin & Cyfrowy Podpis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
+        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
         body.dark { background: #121212; color: #eee; }
         .container { max-width: 800px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body.dark .container { background: #1e1e1e; }
         
-        h1 { text-align: center; color: #007bff; }
-        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 30px; }
+        h1, h2 { color: #007bff; text-align: center; }
+        .rules-box { background: #f9f9f9; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-bottom: 20px; }
+        body.dark .rules-box { background: #2a2a2a; color: #ccc; }
         
-        .point-box { background: #e9f4ff; padding: 15px; border-radius: 8px; border-left: 5px solid #007bff; margin: 15px 0; }
-        body.dark .point-box { background: #253a4e; border-left-color: #0056b3; }
-
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; border: 1px solid #ddd; text-align: left; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
         body.dark th, body.dark td { border-color: #444; }
-        th { background: #f8f9fa; }
-        body.dark th { background: #2a2a2a; }
 
-        /* --- STYLIZACJA AKCEPTACJI (SCANNER) --- */
-        .acceptance-section { text-align: center; margin-top: 50px; padding: 20px; border: 2px dashed #007bff; border-radius: 15px; }
+        /* SEKCJA AKCEPTACJI */
+        .acceptance-flow { text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #eee; }
         
-        #fingerprint-btn {
-            width: 100px; height: 100px; background: #eee; border-radius: 50%;
-            display: inline-flex; align-items: center; justify-content: center;
-            font-size: 50px; cursor: pointer; user-select: none;
-            transition: 0.3s; position: relative; border: 4px solid #007bff;
-            -webkit-tap-highlight-color: transparent;
+        /* SKANER */
+        #scan-zone {
+            width: 100px; height: 100px; background: #fff; border: 4px solid #007bff;
+            border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 40px; cursor: pointer; position: relative; transition: 0.3s; margin: 20px auto;
+            user-select: none; -webkit-tap-highlight-color: transparent;
         }
-        #fingerprint-btn:active { transform: scale(0.9); background: #007bff; }
-        
-        .pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #007bff; animation: pulse-animation 1.5s infinite; opacity: 0; }
-        @keyframes pulse-animation { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+        .pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #007bff; animation: pulse 1.5s infinite; opacity: 0; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 
-        #status-msg { margin-top: 15px; font-weight: bold; font-size: 18px; height: 24px; }
-        .success { color: #28a745; }
+        /* PAD DO PODPISU */
+        #signature-section { display: none; margin-top: 20px; }
+        canvas { border: 2px dashed #ccc; border-radius: 8px; background: #fafafa; touch-action: none; cursor: crosshair; }
+        .btns { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
+        button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-clear { background: #6c757d; color: white; }
+        input[type="text"] { padding: 10px; width: 80%; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
 
-        /* Certyfikat */
-        #cert { display: none; margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 10px; color: #856404; font-style: italic; }
+        /* LISTA PODPISÓW */
+        #history { margin-top: 50px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
+        .sig-entry img { height: 40px; background: white; border-radius: 4px; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📜 Regulamin Gry</h1>
+    <h1>📜 Regulamin & Akceptacja</h1>
     
-    <section>
-        <h2>1. Zasady Ogólne</h2>
-        <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi naciśnięcia przycisku <strong>STOP</strong> przez administratora.</p>
-    </section>
-
-    <section>
-        <h2>2. System Punktacji (Sportowy)</h2>
-        <p>Punkty przyznawane są trzem osobom, których typy są najbliższe zatrzymanemu czasowi. W przypadku remisów stosujemy standardową procedurę sportową:</p>
-        
-        <div class="point-box">
-            <strong>Standardowe punkty:</strong>
-            <ul>
-                <li>🥇 <strong>1. miejsce:</strong> 3 punkty</li>
-                <li>🥈 <strong>2. miejsce:</strong> 2 punkty</li>
-                <li>🥉 <strong>3. miejsce:</strong> 1 punkt</li>
-            </ul>
-        </div>
-
-        <h3>Przykłady Remisów:</h3>
+    <div class="rules-box">
+        <h2>Punktacja w sytuacjach remisowych</h2>
         <table>
-            <tr>
-                <th>Sytuacja</th>
-                <th>Podział punktów</th>
-            </tr>
-            <tr>
-                <td>Dwie osoby na 1. miejscu</td>
-                <td>Obie dostają po <strong>3 pkt</strong>. Nie ma 2. miejsca. Następna osoba zajmuje 3. miejsce i dostaje <strong>1 pkt</strong>.</td>
-            </tr>
-            <tr>
-                <td>Trzy osoby na 1. miejscu</td>
-                <td>Wszystkie dostają po <strong>3 pkt</strong>. Miejsca 2 i 3 nie są przyznawane.</td>
-            </tr>
-            <tr>
-                <td>Jedna osoba 1., dwie osoby 2.</td>
-                <td>Lider 3 pkt, dwie osoby po <strong>2 pkt</strong>. Miejsce 3 nie jest przyznawane.</td>
-            </tr>
+            <tr><th>Sytuacja</th><th>Punkty</th></tr>
+            <tr><td>Dwie osoby 1. miejsce</td><td>Obie po 3 pkt. Miejsce 2. usunięte. 3. miejsce dostaje 1 pkt.</td></tr>
+            <tr><td>Trzy osoby 1. miejsce</td><td>Wszystkie po 3 pkt. Brak pkt za 2 i 3 miejsce.</td></tr>
+            <tr><td>Jedna 1., dwie 2.</td><td>1. miejsce (3 pkt), obie osoby na 2. po 2 pkt. Brak pkt za 3.</td></tr>
         </table>
-    </section>
+    </div>
 
-    <section>
-        <h2>3. Anonimowość</h2>
-        <p>Do momentu zakończenia rundy lub odkrycia imion przez administratora, uczestnicy widnieją pod losowymi pseudonimami (np. <em>Leonard Bogumił</em> czy <em>Kebab z falafelem</em>).</p>
-    </section>
+    <div class="acceptance-flow">
+        <div id="step-1">
+            <h3>KROK 1: Skan biometryczny</h3>
+            <p>Przytrzymaj "kciuk" przez 2 sekundy.</p>
+            <div id="scan-zone"><div class="pulse" id="pulse-ring"></div>☝️</div>
+            <div id="status">OCZEKIWANIE...</div>
+        </div>
 
-    <div class="acceptance-section">
-        <h3>🔐 Akceptacja Regulaminu</h3>
-        <p>Przytrzymaj palec na skanerze (3 sekundy), aby potwierdzić swój udział i zaakceptować zasady.</p>
-        
-        <div id="fingerprint-btn">
-            <div class="pulse"></div>
-            ☝️
+        <div id="signature-section">
+            <h3>KROK 2: Podpis elektroniczny</h3>
+            <input type="text" id="signer-name" placeholder="Wpisz swoje imię / ksywkę">
+            <canvas id="sig-canvas" width="300" height="150"></canvas>
+            <div class="btns">
+                <button class="btn-clear" id="clear-btn">Wyczyść</button>
+                <button class="btn-save" id="save-btn">Wyślij Podpis</button>
+            </div>
         </div>
-        
-        <div id="status-msg">Oczekiwanie na skan...</div>
-        <div id="cert">
-            ✅ <strong>CERTYFIKAT AKTYWNY:</strong> Użytkownik zaakceptował warunki gry. <br>
-            <small id="timestamp"></small>
-        </div>
+    </div>
+
+    <div id="history">
+        <h3>Lista Akceptacji (Świadkowie)</h3>
+        <div id="sig-list">Ładowanie...</div>
     </div>
 </div>
 
-<script>
-    const btn = document.getElementById('fingerprint-btn');
-    const msg = document.getElementById('status-msg');
-    const cert = document.getElementById('cert');
-    const ts = document.getElementById('timestamp');
-    let timer;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // Funkcja obsługująca start skanowania
+    const firebaseConfig = {
+        apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+        authDomain: "obstaiwanie.firebaseapp.com",
+        projectId: "obstaiwanie"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // --- SKANER ---
+    const scanZone = document.getElementById('scan-zone');
+    const status = document.getElementById('status');
+    const sigSection = document.getElementById('signature-section');
+    let scanTimer;
+
     function startScan(e) {
         e.preventDefault();
-        btn.style.background = "#ffc107";
-        msg.textContent = "Skanowanie linii papilarnych...";
-        msg.className = "";
-        
-        timer = setTimeout(() => {
-            btn.style.background = "#28a745";
-            btn.innerHTML = "✅";
-            msg.textContent = "AKCEPTACJA PRZYJĘTA";
-            msg.className = "success";
-            cert.style.display = "block";
-            ts.textContent = "ID transakcji: " + Math.random().toString(36).substr(2, 9).toUpperCase() + " | Data: " + new Date().toLocaleString();
-            
-            // Możesz tutaj dodać zapis do Firebase, że dany użytkownik zaakceptował regulamin
+        document.getElementById('pulse-ring').style.opacity = "1";
+        status.textContent = "SKANOWANIE...";
+        scanTimer = setTimeout(() => {
+            document.getElementById('step-1').style.display = "none";
+            sigSection.style.display = "block";
         }, 2000);
     }
 
-    // Przerwanie skanowania
     function stopScan() {
-        if (btn.innerHTML !== "✅") {
-            clearTimeout(timer);
-            btn.style.background = "#eee";
-            msg.textContent = "Skanowanie przerwane!";
-        }
+        clearTimeout(scanTimer);
+        document.getElementById('pulse-ring').style.opacity = "0";
+        if (sigSection.style.display !== "block") status.textContent = "SKAN PRZERWANY!";
     }
 
-    // Obsługa dotyku i myszki
-    btn.addEventListener('mousedown', startScan);
-    btn.addEventListener('mouseup', stopScan);
-    btn.addEventListener('touchstart', startScan);
-    btn.addEventListener('touchend', stopScan);
+    scanZone.addEventListener('mousedown', startScan);
+    scanZone.addEventListener('mouseup', stopScan);
+    scanZone.addEventListener('touchstart', startScan);
+    scanZone.addEventListener('touchend', stopScan);
 
-    // Dark mode sync (opcjonalnie)
-    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add('dark');
+    // --- CANVAS DO PODPISU ---
+    const canvas = document.getElementById('sig-canvas');
+    const ctx = canvas.getContext('2d');
+    let drawing = false;
+
+    function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return { x: clientX - rect.left, y: clientY - rect.top };
     }
+
+    canvas.addEventListener('mousedown', (e) => { drawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('mousemove', (e) => { if(drawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
+    canvas.addEventListener('mouseup', () => drawing = false);
+    canvas.addEventListener('touchstart', (e) => { e.preventDefault(); drawing = true; ctx.beginPath(); ctx.moveTo(getPos(e).x, getPos(e).y); });
+    canvas.addEventListener('touchmove', (e) => { e.preventDefault(); if(drawing) { ctx.lineTo(getPos(e).x, getPos(e).y); ctx.stroke(); } });
+    canvas.addEventListener('touchend', () => drawing = false);
+
+    document.getElementById('clear-btn').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
+
+    // --- ZAPIS DO FIREBASE ---
+    document.getElementById('save-btn').onclick = async () => {
+        const name = document.getElementById('signer-name').value;
+        if(!name) return alert("Wpisz imię!");
+        
+        const imgData = canvas.toDataURL("image/png");
+        await addDoc(collection(db, "signatures"), {
+            name: name,
+            sig: imgData,
+            date: new Date().toLocaleString("pl-PL"),
+            ts: Date.now()
+        });
+        
+        sigSection.innerHTML = "<h4>✅ Dziękujemy! Regulamin zaakceptowany.</h4>";
+    };
+
+    // --- LISTA ŚWIADKÓW ---
+    onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
+        const list = document.getElementById('sig-list');
+        list.innerHTML = "";
+        snap.forEach(doc => {
+            const d = doc.data();
+            list.innerHTML += `
+                <div class="sig-entry">
+                    <div><strong>${d.name}</strong><br><small>${d.date}</small></div>
+                    <img src="${d.sig}">
+                </div>`;
+        });
+    });
 </script>
-
 </body>
 </html>
