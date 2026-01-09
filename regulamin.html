@@ -2,87 +2,135 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Regulamin & Cyfrowy Podpis</title>
+    <title>Regulamin & Akceptacja - Obstawianie</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
     <style>
-        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: 0.3s; }
         body.dark { background: #121212; color: #eee; }
+        
         .container { max-width: 800px; width: 100%; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
-        body.dark .container { background: #1e1e1e; }
+        body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        h1, h2 { color: #007bff; text-align: center; }
-        .rules-box { background: #f9f9f9; padding: 20px; border-radius: 10px; border-left: 5px solid #007bff; margin-bottom: 20px; }
-        body.dark .rules-box { background: #2a2a2a; color: #ccc; }
+        h1 { text-align: center; color: #007bff; }
+        h2 { border-bottom: 2px solid #007bff; padding-bottom: 5px; margin-top: 30px; }
         
-        table { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 10px; text-align: center; }
-        body.dark th, body.dark td { border-color: #444; }
+        .point-box { background: #e9f4ff; padding: 15px; border-radius: 8px; border-left: 5px solid #007bff; margin: 15px 0; }
+        body.dark .point-box { background: #253a4e; border-left-color: #0056b3; color: #ccc; }
 
-        /* SEKCJA AKCEPTACJI */
-        .acceptance-flow { text-align: center; margin-top: 40px; padding: 20px; border-top: 2px solid #eee; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        th, td { padding: 12px; border: 1px solid #ddd; text-align: center; }
+        body.dark th, body.dark td { border-color: #444; }
+        th { background: #f8f9fa; }
+        body.dark th { background: #2a2a2a; }
+
+        /* DARK MODE BTN */
+        #darkModeBtn { 
+            position: fixed; top: 15px; right: 15px; padding: 10px 15px; 
+            border-radius: 20px; border: none; cursor: pointer; 
+            background: #111; color: #fff; font-weight: bold; transition: 0.3s;
+        }
+        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
+
+        /* AKCEPTACJA SYSTEM */
+        .acceptance-flow { text-align: center; margin-top: 50px; padding: 30px; border: 2px dashed #007bff; border-radius: 15px; }
         
-        /* SKANER */
         #scan-zone {
             width: 100px; height: 100px; background: #fff; border: 4px solid #007bff;
             border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
-            font-size: 40px; cursor: pointer; position: relative; transition: 0.3s; margin: 20px auto;
+            font-size: 45px; cursor: pointer; position: relative; transition: 0.3s; margin: 20px auto;
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
+        #scan-zone.active { background: #007bff; transform: scale(0.9); }
         .pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid #007bff; animation: pulse 1.5s infinite; opacity: 0; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 
-        /* PAD DO PODPISU */
         #signature-section { display: none; margin-top: 20px; }
-        canvas { border: 2px dashed #ccc; border-radius: 8px; background: #fafafa; touch-action: none; cursor: crosshair; }
-        .btns { margin-top: 10px; display: flex; gap: 10px; justify-content: center; }
-        button { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: bold; }
+        canvas { border: 2px solid #ccc; border-radius: 8px; background: #fafafa; touch-action: none; cursor: crosshair; max-width: 100%; }
+        .btns { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+        button.action { padding: 12px 25px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
         .btn-save { background: #28a745; color: white; }
         .btn-clear { background: #6c757d; color: white; }
-        input[type="text"] { padding: 10px; width: 80%; margin-bottom: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        input#signer-name { padding: 12px; width: 80%; margin-bottom: 15px; border-radius: 8px; border: 1px solid #ccc; font-size: 16px; }
 
-        /* LISTA PODPISÓW */
+        /* LISTA ŚWIADKÓW */
         #history { margin-top: 50px; }
-        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 12px; }
-        .sig-entry img { height: 40px; background: white; border-radius: 4px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-bottom: 1px solid #eee; }
+        body.dark .sig-entry { border-bottom-color: #333; }
+        .sig-entry img { height: 50px; background: white; border-radius: 5px; padding: 2px; }
+        .sig-info { text-align: left; }
     </style>
 </head>
 <body>
 
+<button id="darkModeBtn">🌙 Dark mode</button>
+
 <div class="container">
-    <h1>📜 Regulamin & Akceptacja</h1>
-    
-    <div class="rules-box">
-        <h2>Punktacja w sytuacjach remisowych</h2>
+    <h1>📜 Regulamin Gry</h1>
+
+    <section>
+        <h2>1. Zasady Ogólne</h2>
+        <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP).</p>
+    </section>
+
+    <section>
+        <h2>2. System Punktacji (Remisy)</h2>
+        <p>W przypadku uzyskania identycznego wyniku przez wielu graczy, stosujemy sportowy system przyznawania miejsc:</p>
+        
+        <div class="point-box">
+            🥇 1. miejsce: <strong>3 pkt</strong> | 🥈 2. miejsce: <strong>2 pkt</strong> | 🥉 3. miejsce: <strong>1 pkt</strong>
+        </div>
+
         <table>
-            <tr><th>Sytuacja</th><th>Punkty</th></tr>
-            <tr><td>Dwie osoby 1. miejsce</td><td>Obie po 3 pkt. Miejsce 2. usunięte. 3. miejsce dostaje 1 pkt.</td></tr>
-            <tr><td>Trzy osoby 1. miejsce</td><td>Wszystkie po 3 pkt. Brak pkt za 2 i 3 miejsce.</td></tr>
-            <tr><td>Jedna 1., dwie 2.</td><td>1. miejsce (3 pkt), obie osoby na 2. po 2 pkt. Brak pkt za 3.</td></tr>
+            <tr>
+                <th>Sytuacja</th>
+                <th>Wynik punktowy</th>
+            </tr>
+            <tr>
+                <td>Dwie osoby na 1. miejscu</td>
+                <td>Obie po <strong>3 pkt</strong>. Nie ma 2. miejsca. Następna osoba ma 3. miejsce (<strong>1 pkt</strong>).</td>
+            </tr>
+            <tr>
+                <td>Trzy osoby na 1. miejscu</td>
+                <td>Wszystkie po <strong>3 pkt</strong>. Brak pkt za miejsca 2 i 3.</td>
+            </tr>
+            <tr>
+                <td>Jedna osoba 1., dwie na 2.</td>
+                <td>Lider 3 pkt, osoby na 2. miejscu po <strong>2 pkt</strong>. Brak pkt za 3 miejsce.</td>
+            </tr>
         </table>
-    </div>
+    </section>
+
+    <section>
+        <h2>3. Akceptacja i Podpis</h2>
+        <p>Udział w grze wymaga przejścia weryfikacji biometrycznej oraz złożenia podpisu elektronicznego.</p>
+    </section>
 
     <div class="acceptance-flow">
         <div id="step-1">
-            <h3>KROK 1: Skan biometryczny</h3>
-            <p>Przytrzymaj "kciuk" przez 2 sekundy.</p>
-            <div id="scan-zone"><div class="pulse" id="pulse-ring"></div>☝️</div>
+            <h3>KROK 1: Skan kciuka</h3>
+            <p>Przytrzymaj palec na skanerze (2 sekundy)</p>
+            <div id="scan-zone">
+                <div class="pulse" id="pulse-ring"></div>
+                ☝️
+            </div>
             <div id="status">OCZEKIWANIE...</div>
         </div>
 
         <div id="signature-section">
-            <h3>KROK 2: Podpis elektroniczny</h3>
-            <input type="text" id="signer-name" placeholder="Wpisz swoje imię / ksywkę">
-            <canvas id="sig-canvas" width="300" height="150"></canvas>
+            <h3>KROK 2: Podpis cyfrowy</h3>
+            <input type="text" id="signer-name" placeholder="Twoje imię lub ksywka">
+            <br>
+            <canvas id="sig-canvas" width="350" height="150"></canvas>
             <div class="btns">
-                <button class="btn-clear" id="clear-btn">Wyczyść</button>
-                <button class="btn-save" id="save-btn">Wyślij Podpis</button>
+                <button class="action btn-clear" id="clear-btn">Wyczyść</button>
+                <button class="action btn-save" id="save-btn">Zatwierdź i Wyślij</button>
             </div>
         </div>
     </div>
 
     <div id="history">
-        <h3>Lista Akceptacji (Świadkowie)</h3>
-        <div id="sig-list">Ładowanie...</div>
+        <h3>✍️ Lista Akceptacji (Świadkowie)</h3>
+        <div id="sig-list">Pobieranie danych...</div>
     </div>
 </div>
 
@@ -99,16 +147,25 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- SKANER ---
+    /* DARK MODE */
+    const darkBtn = document.getElementById('darkModeBtn');
+    darkBtn.onclick = () => {
+        document.body.classList.toggle('dark');
+        darkBtn.textContent = document.body.classList.contains('dark') ? "☀️ Light mode" : "🌙 Dark mode";
+    };
+
+    /* SKANER */
     const scanZone = document.getElementById('scan-zone');
     const status = document.getElementById('status');
     const sigSection = document.getElementById('signature-section');
+    const pulse = document.getElementById('pulse-ring');
     let scanTimer;
 
     function startScan(e) {
         e.preventDefault();
-        document.getElementById('pulse-ring').style.opacity = "1";
-        status.textContent = "SKANOWANIE...";
+        pulse.style.opacity = "1";
+        scanZone.classList.add('active');
+        status.textContent = "SKANOWANIE BIOMETRYCZNE...";
         scanTimer = setTimeout(() => {
             document.getElementById('step-1').style.display = "none";
             sigSection.style.display = "block";
@@ -117,8 +174,9 @@
 
     function stopScan() {
         clearTimeout(scanTimer);
-        document.getElementById('pulse-ring').style.opacity = "0";
-        if (sigSection.style.display !== "block") status.textContent = "SKAN PRZERWANY!";
+        pulse.style.opacity = "0";
+        scanZone.classList.remove('active');
+        if (sigSection.style.display !== "block") status.textContent = "SKANOWANIE PRZERWANE!";
     }
 
     scanZone.addEventListener('mousedown', startScan);
@@ -126,7 +184,7 @@
     scanZone.addEventListener('touchstart', startScan);
     scanZone.addEventListener('touchend', stopScan);
 
-    // --- CANVAS DO PODPISU ---
+    /* PODPIS (CANVAS) */
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
@@ -147,10 +205,10 @@
 
     document.getElementById('clear-btn').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
 
-    // --- ZAPIS DO FIREBASE ---
+    /* ZAPIS DO FIREBASE */
     document.getElementById('save-btn').onclick = async () => {
         const name = document.getElementById('signer-name').value;
-        if(!name) return alert("Wpisz imię!");
+        if(!name) return alert("Podaj swoje imię!");
         
         const imgData = canvas.toDataURL("image/png");
         await addDoc(collection(db, "signatures"), {
@@ -160,10 +218,10 @@
             ts: Date.now()
         });
         
-        sigSection.innerHTML = "<h4>✅ Dziękujemy! Regulamin zaakceptowany.</h4>";
+        document.querySelector('.acceptance-flow').innerHTML = "<h2 style='color: #28a745'>✅ Regulamin zaakceptowany pomyślnie!</h2>";
     };
 
-    // --- LISTA ŚWIADKÓW ---
+    /* LISTA ŚWIADKÓW */
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
         const list = document.getElementById('sig-list');
         list.innerHTML = "";
@@ -171,7 +229,7 @@
             const d = doc.data();
             list.innerHTML += `
                 <div class="sig-entry">
-                    <div><strong>${d.name}</strong><br><small>${d.date}</small></div>
+                    <div class="sig-info"><strong>${d.name}</strong><br><small>${d.date}</small></div>
                     <img src="${d.sig}">
                 </div>`;
         });
