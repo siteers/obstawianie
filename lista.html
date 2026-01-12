@@ -233,7 +233,10 @@ stopBtn.onclick = async () => {
     winner.innerHTML = winnerHTML;
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
-    startCelebration();
+    
+    startCelebration(); // Fajerwerki
+    displayCringeGifs(); // PRZYWRÓCONE GIFY
+    
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
         const snap = await getDoc(ref);
@@ -270,6 +273,13 @@ function startCelebration() {
     setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
 }
 
+// FUNKCJA OBSŁUGUJĄCA WYŚWIETLANIE GIFÓW
+function displayCringeGifs() {
+    const gifs = document.getElementById("cringeGifs");
+    gifs.style.display = "flex";
+    setTimeout(() => { gifs.style.display = "none"; }, 7000);
+}
+
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
     document.body.classList.toggle("dark");
@@ -278,5 +288,3 @@ darkBtn.onclick = () => {
 </script>
 </body>
 </html>
-
-
