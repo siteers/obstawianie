@@ -212,7 +212,7 @@
         scanTimer = setTimeout(() => {
             document.getElementById('step-1').style.display = "none";
             sigSection.style.display = "block";
-        }, 2000);
+        }, 2000); // 2 sekundy
     }
 
     function stopScan() {
@@ -276,7 +276,7 @@
             
             const delBtn = document.createElement('button');
             delBtn.className = 'btn-delete';
-            delBtn.textContent = 'X';
+            delBtn.textContent = 'X'; // Przycisk usuwania
             delBtn.onclick = async () => {
                 if(confirm("Usunąć ten podpis?")) {
                     await deleteDoc(doc(db, "signatures", documentDoc.id));
