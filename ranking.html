@@ -4,32 +4,36 @@
     <meta charset="UTF-8">
     <title>🏆 Ranking Zwycięzców</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f2f2f2; color: #111; padding: 20px; text-align: center; transition: background-color 0.3s, color 0.3s; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f2f2f2; color: #111; padding: 20px; text-align: center; transition: 0.3s; }
         body.dark { background: #111; color: #fff; }
 
-        .points-box { background: white; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #ccc; color: #d4af37; font-weight: bold; transition: 0.3s; }
+        .points-box { background: white; max-width: 500px; margin: 20px auto; padding: 15px; border-radius: 10px; border: 1px solid #ccc; color: #d4af37; font-weight: bold; transition: 0.3s; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         body.dark .points-box { background: #222; border-color: #444; color: #ffcc00; }
 
-        table { width: 100%; max-width: 750px; margin: 20px auto; border-collapse: collapse; background: white; transition: 0.3s; }
+        /* Fancy Wykres Box */
+        .chart-container { background: white; max-width: 750px; margin: 30px auto; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: 0.3s; }
+        body.dark .chart-container { background: #1a1a1a; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+
+        table { width: 100%; max-width: 750px; margin: 20px auto; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; transition: 0.3s; }
         body.dark table { background: #1a1a1a; }
 
         th, td { border: 1px solid #ccc; padding: 12px; text-align: center; }
         body.dark th, body.dark td { border-color: #333; }
-
-        th { background: #eee; }
+        th { background: #eee; font-weight: bold; }
         body.dark th { background: #222; }
 
         .deleteBtn { width: 24px; height: 24px; line-height: 24px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; font-weight: bold; }
-        .deleteBtn:hover { background: red; color: white; }
+        .deleteBtn:hover { background: red; color: white; transform: scale(1.1); }
 
-        .clear-btn { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 40px; font-weight: bold; }
-        .clear-btn:hover { background: #c0392b; }
+        .clear-btn { background: #e74c3c; color: white; border: none; padding: 12px 25px; border-radius: 30px; cursor: pointer; margin-top: 40px; font-weight: bold; transition: 0.3s; }
+        .clear-btn:hover { background: #c0392b; box-shadow: 0 0 15px rgba(231, 76, 60, 0.5); }
 
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s; }
+        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; background: #111; color: #fff; z-index: 100000; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
 
-        h2 { margin-top: 60px; border-top: 1px solid #444; padding-top: 20px; }
+        h2 { margin-top: 60px; border-top: 1px solid #444; padding-top: 30px; }
     </style>
 </head>
 <body class="dark"> 
@@ -44,6 +48,10 @@
     <table id="rankTable">
         <tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>
     </table>
+
+    <div class="chart-container">
+        <canvas id="pointsChart"></canvas>
+    </div>
 
     <h2>📋 Historia rekordów (Ostatnie zapisy)</h2>
     <table id="historyTable">
@@ -68,14 +76,59 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // DARK MODE
+        // INICJALIZACJA WYKRESU
+        const ctx = document.getElementById('pointsChart').getContext('2d');
+        let pointsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Suma Punktów',
+                    data: [],
+                    backgroundColor: 'rgba(212, 175, 55, 0.6)',
+                    borderColor: 'rgba(212, 175, 55, 1)',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    hoverBackgroundColor: 'rgba(255, 204, 0, 0.8)'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { color: '#888' },
+                        grid: { color: 'rgba(128, 128, 128, 0.1)' }
+                    },
+                    x: {
+                        ticks: { color: '#888' },
+                        grid: { display: false }
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeOutQuart'
+                }
+            }
+        });
+
+        // DARK MODE LOGIC + UPDATE CHART COLORS
         const darkBtn = document.getElementById("darkModeBtn");
         darkBtn.onclick = () => {
-            document.body.classList.toggle("dark");
-            darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
+            const isDark = document.body.classList.toggle("dark");
+            darkBtn.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+            
+            // Update chart styling on mode change
+            const textColor = isDark ? '#eee' : '#111';
+            pointsChart.options.scales.x.ticks.color = textColor;
+            pointsChart.options.scales.y.ticks.color = textColor;
+            pointsChart.update();
         };
 
-        // 1. POBIERANIE RANKINGU OGÓLNEGO
+        // 1. POBIERANIE RANKINGU OGÓLNEGO + UPDATE WYKRESU
         onSnapshot(collection(db, "ranking"), snap => {
             let players = [];
             snap.forEach(d => {
@@ -83,24 +136,28 @@
                 players.push({ name: d.id, points: val });
             });
             players.sort((a, b) => b.points - a.points);
+            
+            // Update Tabeli
             const rankTable = document.getElementById("rankTable");
             rankTable.innerHTML = "<tr><th>#</th><th>IMIĘ</th><th>SUMA PUNKTÓW</th></tr>";
             players.forEach((p, i) => {
                 rankTable.innerHTML += `<tr><td>${i+1}</td><td>${p.name}</td><td>${p.points}</td></tr>`;
             });
+
+            // UPDATE WYKRESU
+            pointsChart.data.labels = players.map(p => p.name);
+            pointsChart.data.datasets[0].data = players.map(p => p.points);
+            pointsChart.update();
         });
 
-        // 2. POBIERANIE HISTORII Z DYNAMICZNYM WYŚWIETLANIEM MIEJSC
+        // 2. POBIERANIE HISTORII
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(25)), snap => {
             const historyTable = document.getElementById("historyTable");
             historyTable.innerHTML = "<tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr>";
             
             snap.forEach(d => {
                 const data = d.data();
-                
-                // Jeśli dokument zawiera już informację o rankingu (zapisaliśmy ją w stopBtn)
                 const results = data.winners.map(w => {
-                    // Sprawdzamy czy mamy pole 'rank', jeśli nie (stare rekordy), używamy domyślnej kolejności
                     const rankDisplay = w.rank ? w.rank : (data.winners.indexOf(w) + 1);
                     return `${rankDisplay}. ${w.name}`;
                 }).join(", ");
@@ -117,7 +174,6 @@
         // 3. USUWANIE I COFANIE PUNKTÓW
         window.deleteHistoryRecord = async (historyId) => {
             if(!confirm("Czy na pewno usunąć ten rzut i odjąć punkty?")) return;
-            
             const recordRef = doc(db, "history", historyId);
             const recordSnap = await getDoc(recordRef);
             
@@ -125,9 +181,6 @@
                 const data = recordSnap.data();
                 for (let i = 0; i < data.winners.length; i++) {
                     const player = data.winners[i];
-                    
-                    // Wyliczamy punkty do odjęcia na podstawie rangi zapisanej w historii
-                    // Jeśli rangi nie ma (stare rekordy), używamy domyślnego systemu 3-2-1
                     let ptsToSubtract = 0;
                     const r = player.rank ? player.rank : (i + 1);
                     
