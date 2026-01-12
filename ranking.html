@@ -7,10 +7,12 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --primary: #d4af37;
+            --gold: #d4af37;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
             --bg-dark: #0f0f0f;
             --card-dark: #1a1a1a;
-            --accent: #007bff;
+            --accent: #00d4ff;
         }
 
         body { font-family: 'Inter', -apple-system, sans-serif; background: #f0f2f5; color: #111; margin: 0; padding: 20px; transition: 0.3s; }
@@ -23,19 +25,18 @@
         .stat-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
         body.dark .stat-card { background: var(--card-dark); border: 1px solid #333; }
         .stat-card h3 { margin: 0; font-size: 12px; text-transform: uppercase; color: #888; }
-        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--primary); }
+        .stat-card p { margin: 10px 0 0; font-size: 24px; font-weight: bold; color: var(--accent); }
 
         /* Tabs System */
         .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
         body.dark .tabs { border-bottom-color: #333; }
         .tab-link { padding: 10px 20px; border: none; background: none; color: #888; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; }
-        .tab-link.active { background: var(--primary); color: white; }
+        .tab-link.active { background: var(--accent); color: #000; }
         .tab-content { display: none; animation: fadeIn 0.5s ease; }
         .tab-content.active { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Tables & Charts */
         .glass-panel { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
         body.dark .glass-panel { background: var(--card-dark); border: 1px solid #333; }
         
@@ -45,6 +46,7 @@
         th { color: #888; font-size: 13px; }
 
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .full-width-chart { grid-column: 1 / -1; }
         canvas { width: 100% !important; max-height: 350px; }
 
         #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: var(--card-dark); color: white; z-index: 1000; }
@@ -61,20 +63,20 @@
 
         <div class="stats-grid">
             <div class="stat-card"><h3>Lider Rankingu</h3><p id="top-player">-</p></div>
-            <div class="stat-card"><h3>Suma Punktów</h3><p id="total-points">0</p></div>
-            <div class="stat-card"><h3>Rozegranych Rund</h3><p id="total-rounds">0</p></div>
+            <div class="stat-card"><h3>Ostatni Zwycięzca</h3><p id="last-winner">-</p></div>
+            <div class="stat-card"><h3>Suma Rozegranych Rund</h3><p id="total-rounds">0</p></div>
         </div>
 
         <div class="tabs">
             <button class="tab-link active" onclick="openTab(event, 'ranking-tab')">🏆 Ranking</button>
-            <button class="tab-link" onclick="openTab(event, 'stats-tab')">📈 Analiza</button>
+            <button class="tab-link" onclick="openTab(event, 'stats-tab')">📈 Wykresy</button>
             <button class="tab-link" onclick="openTab(event, 'history-tab')">📋 Historia</button>
         </div>
 
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
-                    <thead><tr><th>#</th><th>Imię</th><th>Punkty</th><th>Udział %</th></tr></thead>
+                    <thead><tr><th>#</th><th>Imię</th><th>Suma Punktów</th><th>Ilość Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
             </div>
@@ -82,12 +84,16 @@
 
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
+                <div class="glass-panel full-width-chart">
+                    <h4>Skuteczność (Ilość zdobytych miejsc)</h4>
+                    <canvas id="medalChart"></canvas>
+                </div>
                 <div class="glass-panel">
-                    <h4>Podział Punktów (Słupki)</h4>
+                    <h4>Ranking Punktowy</h4>
                     <canvas id="barChart"></canvas>
                 </div>
                 <div class="glass-panel">
-                    <h4>Dominacja (Kołowy)</h4>
+                    <h4>Podział Miejsc 1-3 (Ogółem)</h4>
                     <canvas id="pieChart"></canvas>
                 </div>
             </div>
@@ -119,11 +125,19 @@
         // --- CHARTS CONFIG ---
         const barCtx = document.getElementById('barChart').getContext('2d');
         const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const medalCtx = document.getElementById('medalChart').getContext('2d');
         
         let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } } } });
         let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#888' } } } } });
+        let medalChart = new Chart(medalCtx, { 
+            type: 'bar', 
+            options: { 
+                responsive: true, 
+                scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } },
+                plugins: { legend: { position: 'top', labels: { color: '#888' } } }
+            } 
+        });
 
-        // --- TAB LOGIC ---
         window.openTab = (evt, tabName) => {
             const contents = document.getElementsByClassName("tab-content");
             for (let i = 0; i < contents.length; i++) contents[i].classList.remove("active");
@@ -133,57 +147,101 @@
             evt.currentTarget.classList.add("active");
         };
 
-        // --- DATA SYNC ---
-        onSnapshot(collection(db, "ranking"), snap => {
-            let players = [];
-            let totalPts = 0;
-            snap.forEach(d => {
-                const p = d.data().points || 0;
-                players.push({ name: d.id, points: p });
-                totalPts += p;
-            });
-            players.sort((a, b) => b.points - a.points);
+        // Globalne dane do obliczeń statystyk podium
+        let historyData = [];
 
-            // Update KPI
-            if(players.length > 0) document.getElementById('top-player').textContent = players[0].name;
-            document.getElementById('total-points').textContent = totalPts;
-
-            // Update Table
-            const tbody = document.querySelector("#rankTable tbody");
-            tbody.innerHTML = "";
-            players.forEach((p, i) => {
-                const percent = totalPts > 0 ? ((p.points / totalPts) * 100).toFixed(1) : 0;
-                tbody.innerHTML += `<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${p.points}</td><td>${percent}%</td></tr>`;
-            });
-
-            // Update Charts
-            updateCharts(players);
-        });
-
-        function updateCharts(players) {
-            const names = players.map(p => p.name);
-            const pts = players.map(p => p.points);
-            const colors = ['#d4af37', '#c0c0c0', '#cd7f32', '#007bff', '#28a745', '#e83e8c', '#fd7e14'];
-
-            barChart.data = { labels: names, datasets: [{ data: pts, backgroundColor: colors, borderRadius: 5 }] };
-            barChart.update();
-
-            pieChart.data = { labels: names, datasets: [{ data: pts, backgroundColor: colors, borderWidth: 0 }] };
-            pieChart.update();
-        }
-
-        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(20)), snap => {
+        // 1. POBIERANIE HISTORII (najpierw, żeby obliczyć podium)
+        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(50)), snap => {
+            historyData = [];
+            snap.forEach(d => historyData.push(d.data()));
+            
             const tbody = document.querySelector("#historyTable tbody");
             tbody.innerHTML = "";
             document.getElementById('total-rounds').textContent = snap.size;
+
+            if(historyData.length > 0) {
+                const lastRound = historyData[0];
+                const winner = lastRound.winners.find(w => w.rank === 1);
+                document.getElementById('last-winner').textContent = winner ? winner.name : "-";
+            }
+
             snap.forEach(d => {
                 const data = d.data();
                 const winners = data.winners.map(w => `${w.rank}. ${w.name}`).join(", ");
                 tbody.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${winners}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
             });
+            
+            // Po aktualizacji historii, odśwież ranking (onSnapshot rankingu wywoła się i tak)
         });
 
-        // --- ACTIONS ---
+        // 2. POBIERANIE RANKINGU
+        onSnapshot(collection(db, "ranking"), snap => {
+            let players = [];
+            snap.forEach(d => players.push({ name: d.id, points: d.data().points || 0 }));
+            players.sort((a, b) => b.points - a.points);
+
+            if(players.length > 0) document.getElementById('top-player').textContent = players[0].name;
+
+            // Obliczamy statystyki podium dla każdego gracza
+            const playerStats = players.map(p => {
+                let gold = 0, silver = 0, bronze = 0;
+                historyData.forEach(round => {
+                    round.winners.forEach(w => {
+                        if(w.name === p.name) {
+                            if(w.rank === 1) gold++;
+                            else if(w.rank === 2) silver++;
+                            else if(w.rank === 3) bronze++;
+                        }
+                    });
+                });
+                return { ...p, gold, silver, bronze, totalPodiums: gold + silver + bronze };
+            });
+
+            const tbody = document.querySelector("#rankTable tbody");
+            tbody.innerHTML = "";
+            playerStats.forEach((p, i) => {
+                tbody.innerHTML += `<tr><td>${i+1}</td><td><b>${p.name}</b></td><td>${p.points}</td><td>${p.totalPodiums}</td></tr>`;
+            });
+
+            updateCharts(playerStats);
+        });
+
+        function updateCharts(stats) {
+            const names = stats.map(p => p.name);
+            const goldData = stats.map(p => p.gold);
+            const silverData = stats.map(p => p.silver);
+            const bronzeData = stats.map(p => p.bronze);
+            
+            // Wykres 1: Skuteczność (Stacked Bar)
+            medalChart.data = {
+                labels: names,
+                datasets: [
+                    { label: '🥇 Złoto', data: goldData, backgroundColor: '#d4af37' },
+                    { label: '🥈 Srebro', data: silverData, backgroundColor: '#c0c0c0' },
+                    { label: '🥉 Brąz', data: bronzeData, backgroundColor: '#cd7f32' }
+                ]
+            };
+            medalChart.update();
+
+            // Wykres 2: Ranking Punktowy
+            barChart.data = {
+                labels: names,
+                datasets: [{ data: stats.map(p => p.points), backgroundColor: '#00d4ff', borderRadius: 5 }]
+            };
+            barChart.update();
+
+            // Wykres 3: Rozkład wszystkich medali (Doughnut)
+            const totalGold = goldData.reduce((a, b) => a + b, 0);
+            const totalSilver = silverData.reduce((a, b) => a + b, 0);
+            const totalBronze = bronzeData.reduce((a, b) => a + b, 0);
+            
+            pieChart.data = {
+                labels: ['Złoto', 'Srebro', 'Brąz'],
+                datasets: [{ data: [totalGold, totalSilver, totalBronze], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }]
+            };
+            pieChart.update();
+        }
+
         window.deleteHistoryRecord = async (id) => {
             if(!confirm("Cofnąć ten zapis?")) return;
             const snap = await getDoc(doc(db, "history", id));
