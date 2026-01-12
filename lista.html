@@ -68,7 +68,6 @@
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
         
-        /* SEKCJA GIFÓW - STARY KOD */
         #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
         #cringeGifs img { max-height: 150px; border-radius: 10px; }
         
@@ -140,11 +139,23 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
+let assignedFakeNames = {}; // Przechowuje przypisane ksywki: {userId: fakeName}
 
 const funnyNames = [
     "leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
     "Jarołd", "Kebab z falafelem", "Mariolka"
 ];
+
+// Funkcja do losowego mieszania tablicy
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) {
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+    }
+    return array;
+}
 
 const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
 new QRCode(document.getElementById("qrcode"), {
@@ -164,8 +175,18 @@ function getAvatarColor(name) {
 }
 
 onSnapshot(collection(db, "users"), snap => {
-    usersData = [];
-    snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+    let newUsers = [];
+    snap.forEach(d => newUsers.push({ id: d.id, ...d.data() }));
+    
+    // Jeśli zmieniła się liczba osób lub lista jest pusta, przetasuj ksywki
+    if (newUsers.length !== usersData.length) {
+        const shuffledFakes = shuffle([...funnyNames]);
+        assignedFakeNames = {};
+        newUsers.forEach((u, index) => {
+            assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length];
+        });
+    }
+    usersData = newUsers;
 });
 
 const revealBtn = document.getElementById("revealNamesBtn");
@@ -180,6 +201,7 @@ window.clearAll = async () => {
     for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
+    assignedFakeNames = {};
 };
 
 function toSec(t){
@@ -191,14 +213,21 @@ setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
+    
+    // Sortowanie według bliskości do aktualnego czasu
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
+    
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
-        const fakeName = funnyNames[i % funnyNames.length];
+        
+        // Pobierz przypisaną na początku ksywkę dla tego konkretnego ID użytkownika
+        const fakeName = assignedFakeNames[u.id] || "Anonim";
+        
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
+        
         table.innerHTML += `<tr class="${i===0?'blink':''}">
             <td>${i+1}</td>
             <td>
@@ -237,7 +266,7 @@ stopBtn.onclick = async () => {
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
     
-    startCelebration(); // URUCHOMIENIE CELEBRACJI (W TYM GIFÓW)
+    startCelebration();
     
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
@@ -270,14 +299,12 @@ function updateFW() {
     if(fwActive) requestAnimationFrame(updateFW);
 }
 
-// STARA FUNKCJA CELEBRACJI Z GIFAMI
 function startCelebration() {
     canvas.style.display = "block"; 
     fwActive = true;
     const interval = setInterval(spawnFirework, 400); 
     updateFW();
     
-    // POKAZANIE GIFÓW
     const gifs = document.getElementById("cringeGifs");
     gifs.style.display = "flex";
 
