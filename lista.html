@@ -68,7 +68,7 @@
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
         #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
-        #cringeGifs img { max-height: 150px; border-radius: 10px; }
+        #cringeGifs img { max-height: 150px; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
         .blink td { color: white !important; }
@@ -106,9 +106,9 @@
 
 <canvas id="fireworksCanvas"></canvas>
 <div id="cringeGifs">
-    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
-    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
-    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
+    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHN3Znd5MGZ4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHN3Znd5MGZ4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHN3Znd5MGZ4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4eHh4JmVwPXYxX2ludGVybmFsX2dpZl9ieV9pZCZjdD1n/xT5LMHxhOfscxPfIfm/giphy.gif">
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
@@ -142,7 +142,6 @@ const funnyNames = [
     "Jarołd", "Kebab z falafelem", "Mariolka"
 ];
 
-// --- POPRAWIONY LINK W KODZIE QR ---
 const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
 new QRCode(document.getElementById("qrcode"), {
     text: regulaminUrl,
@@ -234,8 +233,8 @@ stopBtn.onclick = async () => {
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
     
-    startCelebration(); // Fajerwerki
-    displayCringeGifs(); // PRZYWRÓCONE GIFY
+    startCelebration(); 
+    displayCringeGifs(); // WYWOŁANIE GIFÓW
     
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
@@ -273,7 +272,7 @@ function startCelebration() {
     setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
 }
 
-// FUNKCJA OBSŁUGUJĄCA WYŚWIETLANIE GIFÓW
+// PRZYWRÓCONA LOGIKA GIFÓW
 function displayCringeGifs() {
     const gifs = document.getElementById("cringeGifs");
     gifs.style.display = "flex";
