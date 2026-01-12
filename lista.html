@@ -67,9 +67,10 @@
         body.dark .qr-label { color: #aaa; }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
-        /* POPRAWIONY STYL GIFÓW */
-        #cringeGifs { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: none; gap: 15px; z-index: 99999; justify-content: center; width: 90%; }
-        #cringeGifs img { max-height: 150px; border-radius: 12px; border: 3px solid white; box-shadow: 0 10px 25px rgba(0,0,0,0.4); }
+        
+        /* SEKCJA GIFÓW - STARY KOD */
+        #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
+        #cringeGifs img { max-height: 150px; border-radius: 10px; }
         
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
@@ -109,9 +110,9 @@
 <canvas id="fireworksCanvas"></canvas>
 
 <div id="cringeGifs">
-    <img id="gif1" src="">
-    <img id="gif2" src="">
-    <img id="gif3" src="">
+    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
@@ -236,8 +237,7 @@ stopBtn.onclick = async () => {
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
     
-    startCelebration(); 
-    displayCringeGifs(); // PRZEŁADOWANIE GIFÓW
+    startCelebration(); // URUCHOMIENIE CELEBRACJI (W TYM GIFÓW)
     
     for (const player of playersWithPoints) {
         const ref = doc(db, "ranking", player.name);
@@ -269,27 +269,25 @@ function updateFW() {
     });
     if(fwActive) requestAnimationFrame(updateFW);
 }
+
+// STARA FUNKCJA CELEBRACJI Z GIFAMI
 function startCelebration() {
-    canvas.style.display = "block"; fwActive = true;
-    const interval = setInterval(spawnFirework, 400); updateFW();
-    setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.body.style.animation = "none"; }, 7000);
-}
+    canvas.style.display = "block"; 
+    fwActive = true;
+    const interval = setInterval(spawnFirework, 400); 
+    updateFW();
+    
+    // POKAZANIE GIFÓW
+    const gifs = document.getElementById("cringeGifs");
+    gifs.style.display = "flex";
 
-// NOWA FUNKCJA GIFÓW Z WYMUSZANIEM PRZEŁADOWANIA
-function displayCringeGifs() {
-    const gifContainer = document.getElementById("cringeGifs");
-    const g1 = document.getElementById("gif1");
-    const g2 = document.getElementById("gif2");
-    const g3 = document.getElementById("gif3");
-
-    // Adresy GIF z unikalnym numerem na końcu, aby oszukać cache
-    const ts = Date.now();
-    g1.src = `https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif?v=${ts}`;
-    g2.src = `https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif?v=${ts}`;
-    g3.src = `https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif?v=${ts}`;
-
-    gifContainer.style.display = "flex";
-    setTimeout(() => { gifContainer.style.display = "none"; }, 7000);
+    setTimeout(() => { 
+        clearInterval(interval); 
+        fwActive = false; 
+        canvas.style.display = "none"; 
+        gifs.style.display = "none"; 
+        document.body.style.animation = "none"; 
+    }, 7000);
 }
 
 const darkBtn = document.getElementById("darkModeBtn");
