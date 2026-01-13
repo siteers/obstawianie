@@ -2,18 +2,18 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Cyber Add - Protokół XXII</title>
+  <title>Dodaj zgłoszenie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
       --gold: #d4af37;
       --cyan: #00d4ff;
       --bg: #050810;
-      --glass: rgba(30, 41, 59, 0.7);
+      --glass: rgba(30, 41, 59, 0.6);
     }
 
     body {
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', -apple-system, sans-serif;
       background: var(--bg);
       color: #fff;
       margin: 0;
@@ -26,79 +26,111 @@
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-    .header-system {
-      position: fixed;
-      top: 10%;
-      text-align: center;
-      z-index: 2;
+    /* HOLOGRAFICZNY PODGLĄD */
+    .preview-wrap {
+      position: absolute;
+      top: -80px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 60px;
+      background: rgba(0, 212, 255, 0.1);
+      border: 1px border: 1px solid var(--cyan);
+      border-radius: 15px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(5px);
+      opacity: 0;
+      transition: 0.5s;
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
     }
-
-    .header-system h1 { 
-      margin: 0; font-size: clamp(24px, 8vw, 32px); letter-spacing: 4px;
-      background: linear-gradient(to right, var(--gold), #fff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-transform: uppercase;
-    }
+    .preview-wrap.visible { opacity: 1; top: -100px; }
+    .preview-label { font-size: 10px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; }
+    .preview-val { font-size: 18px; font-weight: bold; color: #fff; }
 
     .container {
       background: var(--glass);
-      backdrop-filter: blur(15px);
-      padding: clamp(20px, 5vw, 40px);
+      backdrop-filter: blur(20px);
+      padding: 30px;
       border-radius: 30px;
       width: 90%;
       max-width: 400px;
-      border: 1px solid rgba(212, 175, 55, 0.3);
-      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
       z-index: 10;
       text-align: center;
+      position: relative;
     }
 
-    .input-box { margin-bottom: 25px; text-align: left; }
+    h2 { 
+      margin-bottom: 30px; 
+      font-size: 24px; 
+      letter-spacing: 1px;
+      background: linear-gradient(to right, var(--gold), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .input-box { margin-bottom: 20px; text-align: left; }
     .input-box label {
-      font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
-      color: var(--gold); font-weight: bold; margin-bottom: 10px; display: block;
+      font-size: 12px;
+      color: var(--gold);
+      font-weight: bold;
+      margin-bottom: 8px;
+      display: block;
+      margin-left: 5px;
     }
 
     select, input {
       width: 100%; padding: 15px; font-size: 16px; border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
 
     select:focus, input:focus {
       border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
     }
 
-    .btn-cyber {
-      width: 100%; padding: 18px; background: none; color: var(--gold);
-      border: 2px solid var(--gold); border-radius: 15px;
+    /* WYBÓR GODZINY - CUSTOM LOOK */
+    input[type="time"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      cursor: pointer;
+    }
+
+    .btn-save {
+      width: 100%; padding: 18px; background: var(--gold); color: #000;
+      border: none; border-radius: 15px;
       font-size: 16px; font-weight: 900; cursor: pointer;
-      position: relative; overflow: hidden; transition: 0.3s;
-      text-transform: uppercase; letter-spacing: 3px;
+      transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
+      margin-top: 10px;
     }
 
-    .btn-cyber:hover { background: rgba(212, 175, 55, 0.15); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
-
-    .scan-line {
-      position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+    .btn-save:hover { 
+      background: #fff; 
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
     }
 
-    .processing .scan-line { animation: scan 1.5s infinite; }
-    @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
+    .btn-save:disabled {
+      background: #333;
+      color: #666;
+      cursor: not-allowed;
+      transform: none;
+    }
 
-    #msg { margin-top: 25px; font-size: 14px; letter-spacing: 1px; font-weight: bold; min-height: 20px; }
+    #msg { margin-top: 20px; font-size: 14px; font-weight: bold; min-height: 20px; }
 
-    .status-panel {
-      margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(212, 175, 55, 0.2);
-      font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;
+    .counter {
+      margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 12px; color: #888;
     }
 
     @media (max-width: 480px) {
-      .container { padding: 25px 20px; }
-      .header-system { top: 5%; }
+      .container { padding: 25px; }
+      .preview-wrap { width: 160px; }
     }
   </style>
 </head>
@@ -106,15 +138,17 @@
 
   <canvas id="bg-canvas"></canvas>
 
-  <div class="header-system">
-    <h1 id="greeting">Protokół_Aktywny</h1>
-    <p style="font-size: 10px; color: var(--cyan); margin-top: 5px; letter-spacing: 1px;">AUTORYZOWANO PRZEZ SYSTEM OBSTAWIANIA</p>
-  </div>
-
   <div class="container">
+    <div id="hologram" class="preview-wrap">
+      <span class="preview-label">Twoje dane:</span>
+      <span id="preview-text" class="preview-val">---</span>
+    </div>
+
+    <h2>Dodaj swoje dane</h2>
+
     <div class="input-box">
-      <label>Identyfikacja Jednostki</label>
-      <select id="name">
+      <label>Wybierz imię</label>
+      <select id="name" onchange="updatePreview()">
         <option value="">Wybierz...</option>
         <option value="Arek">Arek</option>
         <option value="Paweł">Paweł</option>
@@ -127,19 +161,16 @@
     </div>
 
     <div class="input-box">
-      <label>Współrzędne Czasowe (Godzina)</label>
-      <input id="hour" type="time">
+      <label>Godzina zakończenia</label>
+      <input id="hour" type="time" oninput="updatePreview()">
     </div>
 
-    <button class="btn-cyber" id="saveBtn" onclick="saveData()">
-      <span class="btn-text">Transferuj Dane</span>
-      <div class="scan-line"></div>
-    </button>
+    <button class="btn-save" id="saveBtn" onclick="saveData()">Zapisz dane</button>
 
     <p id="msg"></p>
 
-    <div class="status-panel">
-      Aktywne transfery w sesji: <span id="playerCount" style="color: var(--cyan);">0</span>
+    <div class="counter">
+      Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--gold);">0</span>
     </div>
   </div>
 
@@ -156,7 +187,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- ANIMACJA TŁA XXII WIEK ---
+// --- ANIMACJA TŁA ---
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -167,21 +198,22 @@ class Particle {
   constructor() {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
-    this.speed = Math.random() * 0.5 + 0.2;
-    this.size = Math.random() * 1.5;
+    this.speed = Math.random() * 0.3 + 0.1;
+    this.size = Math.random() * 1.2;
+    this.opacity = Math.random();
   }
   update() {
     this.y -= this.speed;
-    if (this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; }
+    if (this.y < 0) this.y = canvas.height;
   }
   draw() {
-    ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+    ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
     ctx.fill();
   }
 }
-for (let i = 0; i < 100; i++) particles.push(new Particle());
+for (let i = 0; i < 60; i++) particles.push(new Particle());
 function animate() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   particles.forEach(p => { p.update(); p.draw(); });
@@ -189,7 +221,22 @@ function animate() {
 }
 animate();
 
-// --- LOGIKA FORMULARZA ---
+// --- INTERAKCJA FANCY PODGLĄDU ---
+window.updatePreview = function() {
+  const name = document.getElementById("name").value;
+  const hour = document.getElementById("hour").value;
+  const hologram = document.getElementById("hologram");
+  const previewText = document.getElementById("preview-text");
+
+  if(name && hour) {
+    previewText.innerText = `${name} • ${hour}`;
+    hologram.classList.add("visible");
+  } else {
+    hologram.classList.remove("visible");
+  }
+}
+
+// --- LOGIKA FIREBASE ---
 onSnapshot(collection(db, "users"), (snapshot) => {
     document.getElementById("playerCount").innerText = snapshot.size;
 });
@@ -202,33 +249,33 @@ window.saveData = async function() {
 
   if (!name || !hour) {
     msg.style.color = "#ff4d4d";
-    msg.innerText = "BŁĄD: BRAK DANYCH WEJŚCIOWYCH";
+    msg.innerText = "Uzupełnij wszystkie pola!";
     return;
   }
 
-  btn.classList.add("processing");
-  btn.querySelector(".btn-text").innerText = "TRANSFEROWANIE...";
+  btn.disabled = true;
+  btn.innerText = "Zapisywanie...";
 
   try {
     await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
 
-    setTimeout(() => {
-        btn.classList.remove("processing");
-        btn.querySelector(".btn-text").innerText = "TRANSFER ZAKOŃCZONY";
-        msg.style.color = "var(--cyan)";
-        msg.innerText = "DANE ZOSTAŁY ZAPISANE W CHMURZE";
-        document.getElementById("name").value = "";
-        document.getElementById("hour").value = "";
-    }, 1500);
+    msg.style.color = "var(--cyan)";
+    msg.innerText = "Dane zostały wysłane!";
+    
+    document.getElementById("name").value = "";
+    document.getElementById("hour").value = "";
+    updatePreview();
 
-    setTimeout(() => { 
-        msg.innerText = ""; 
-        btn.querySelector(".btn-text").innerText = "Transferuj Dane";
-    }, 4500);
+    setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = "Zapisz dane";
+        msg.innerText = "";
+    }, 3000);
 
   } catch (e) {
-    btn.classList.remove("processing");
-    msg.innerText = "CRITICAL ERROR: TRANSFER PRZERWANY";
+    btn.disabled = false;
+    btn.innerText = "Zapisz dane";
+    msg.innerText = "Błąd połączenia z bazą.";
   }
 };
 </script>
