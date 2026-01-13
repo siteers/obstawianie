@@ -2,105 +2,103 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Cyber Add - Obstawianie</title>
+  <title>Cyber Add - Protokół XXII</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
-      --primary: #d4af37;
-      --accent: #00d4ff;
-      --bg-dark: #050810;
-      --card-dark: rgba(30, 41, 59, 0.7);
+      --gold: #d4af37;
+      --cyan: #00d4ff;
+      --bg: #050810;
+      --glass: rgba(30, 41, 59, 0.7);
     }
 
     body {
       font-family: 'Inter', sans-serif;
-      background: var(--bg-dark);
+      background: var(--bg);
       color: #fff;
       margin: 0;
-      overflow: hidden; /* Ukrywamy suwak, bo tło zajmuje cały ekran */
+      overflow: hidden;
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
     }
 
-    /* KOSMICZNE TŁO CZĄSTECZKOWE */
-    #bg-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      z-index: 1;
-    }
+    #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-    .welcome-text {
+    .header-system {
       position: fixed;
       top: 10%;
       text-align: center;
       z-index: 2;
     }
 
-    .welcome-text h1 { 
-        margin: 0; font-size: 28px; letter-spacing: 2px;
-        background: linear-gradient(to right, var(--primary), #fff);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .header-system h1 { 
+      margin: 0; font-size: clamp(24px, 8vw, 32px); letter-spacing: 4px;
+      background: linear-gradient(to right, var(--gold), #fff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-transform: uppercase;
     }
 
     .container {
-      background: var(--card-dark);
-      backdrop-filter: blur(15px); /* Efekt mrożonego szkła */
-      padding: 40px;
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      padding: clamp(20px, 5vw, 40px);
       border-radius: 30px;
       width: 90%;
-      max-width: 380px;
+      max-width: 400px;
       border: 1px solid rgba(212, 175, 55, 0.3);
-      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
-      z-index: 2;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+      z-index: 10;
       text-align: center;
     }
 
-    .input-group { margin-bottom: 25px; text-align: left; }
-    .input-group label {
-      font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
-      color: var(--primary); font-weight: bold; margin-bottom: 8px; display: block;
+    .input-box { margin-bottom: 25px; text-align: left; }
+    .input-box label {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+      color: var(--gold); font-weight: bold; margin-bottom: 10px; display: block;
     }
 
     select, input {
       width: 100%; padding: 15px; font-size: 16px; border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
 
     select:focus, input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
     }
 
-    /* PRZYCISK Z EFEKTEM SKANOWANIA */
-    .save-btn {
-      width: 100%; padding: 18px; background: none; color: var(--primary);
-      border: 2px solid var(--primary); border-radius: 15px;
-      font-size: 16px; font-weight: 800; cursor: pointer;
+    .btn-cyber {
+      width: 100%; padding: 18px; background: none; color: var(--gold);
+      border: 2px solid var(--gold); border-radius: 15px;
+      font-size: 16px; font-weight: 900; cursor: pointer;
       position: relative; overflow: hidden; transition: 0.3s;
-      text-transform: uppercase; letter-spacing: 2px;
+      text-transform: uppercase; letter-spacing: 3px;
     }
 
-    .save-btn:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+    .btn-cyber:hover { background: rgba(212, 175, 55, 0.15); box-shadow: 0 0 25px rgba(212, 175, 55, 0.5); }
 
-    /* Pasek ładowania wewnątrz przycisku */
-    .btn-loader {
+    .scan-line {
       position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
-      transition: 0.5s;
     }
 
-    .loading .btn-loader { left: 100%; transition: 1.5s; }
+    .processing .scan-line { animation: scan 1.5s infinite; }
+    @keyframes scan { 0% { left: -100%; } 100% { left: 100%; } }
 
-    #msg { margin-top: 20px; font-size: 14px; letter-spacing: 1px; font-weight: bold; }
+    #msg { margin-top: 25px; font-size: 14px; letter-spacing: 1px; font-weight: bold; min-height: 20px; }
 
-    #darkModeBtn { display: none; } /* W tej wersji Dark Mode jest wymuszony jako "Cyber" */
+    .status-panel {
+      margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(212, 175, 55, 0.2);
+      font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;
+    }
 
-    .anon-counter {
-        margin-top: 20px; font-size: 11px; opacity: 0.5; text-transform: uppercase;
+    @media (max-width: 480px) {
+      .container { padding: 25px 20px; }
+      .header-system { top: 5%; }
     }
   </style>
 </head>
@@ -108,14 +106,14 @@
 
   <canvas id="bg-canvas"></canvas>
 
-  <div class="welcome-text">
-    <h1 id="greeting">SYSTEM_ONLINE</h1>
-    <p style="font-size: 12px; color: var(--accent);">ZALOGOWANO DO PROTOKOŁU OBSTAWIANIA</p>
+  <div class="header-system">
+    <h1 id="greeting">Protokół_Aktywny</h1>
+    <p style="font-size: 10px; color: var(--cyan); margin-top: 5px; letter-spacing: 1px;">AUTORYZOWANO PRZEZ SYSTEM OBSTAWIANIA</p>
   </div>
 
   <div class="container">
-    <div class="input-group">
-      <label>Identyfikator użytkownika</label>
+    <div class="input-box">
+      <label>Identyfikacja Jednostki</label>
       <select id="name">
         <option value="">Wybierz...</option>
         <option value="Arek">Arek</option>
@@ -128,20 +126,20 @@
       </select>
     </div>
 
-    <div class="input-group">
-      <label>Parametr czasowy (Godzina)</label>
+    <div class="input-box">
+      <label>Współrzędne Czasowe (Godzina)</label>
       <input id="hour" type="time">
     </div>
 
-    <button class="save-btn" id="saveBtn" onclick="saveData()">
-      <span class="btn-text">Autoryzuj zapis</span>
-      <div class="btn-loader"></div>
+    <button class="btn-cyber" id="saveBtn" onclick="saveData()">
+      <span class="btn-text">Transferuj Dane</span>
+      <div class="scan-line"></div>
     </button>
 
     <p id="msg"></p>
 
-    <div class="anon-counter">
-      Aktywnych zgłoszeń w sesji: <span id="playerCount" style="color: var(--accent);">0</span>
+    <div class="status-panel">
+      Aktywne transfery w sesji: <span id="playerCount" style="color: var(--cyan);">0</span>
     </div>
   </div>
 
@@ -158,49 +156,40 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- TŁO CZĄSTECZKOWE ---
+// --- ANIMACJA TŁA XXII WIEK ---
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+window.onresize = resize; resize();
 
 class Particle {
-    constructor() {
-        this.x = Math.random() * canvas.width;
-        this.y = Math.random() * canvas.height;
-        this.size = Math.random() * 2 + 0.5;
-        this.speedX = Math.random() * 1 - 0.5;
-        this.speedY = Math.random() * 1 - 0.5;
-    }
-    update() {
-        this.x += this.speedX;
-        this.y += this.speedY;
-        if (this.x > canvas.width) this.x = 0;
-        if (this.x < 0) this.x = canvas.width;
-        if (this.y > canvas.height) this.y = 0;
-        if (this.y < 0) this.y = canvas.height;
-    }
-    draw() {
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fill();
-    }
+  constructor() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.speed = Math.random() * 0.5 + 0.2;
+    this.size = Math.random() * 1.5;
+  }
+  update() {
+    this.y -= this.speed;
+    if (this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; }
+  }
+  draw() {
+    ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fill();
+  }
 }
-
-function init() {
-    for (let i = 0; i < 80; i++) particles.push(new Particle());
-}
-
+for (let i = 0; i < 100; i++) particles.push(new Particle());
 function animate() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach(p => { p.update(); p.draw(); });
-    requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animate);
 }
-init(); animate();
+animate();
 
-// --- LOGIKA ZAPISU ---
+// --- LOGIKA FORMULARZA ---
 onSnapshot(collection(db, "users"), (snapshot) => {
     document.getElementById("playerCount").innerText = snapshot.size;
 });
@@ -213,38 +202,33 @@ window.saveData = async function() {
 
   if (!name || !hour) {
     msg.style.color = "#ff4d4d";
-    msg.innerText = "BŁĄD: BRAK PARAMETRÓW";
+    msg.innerText = "BŁĄD: BRAK DANYCH WEJŚCIOWYCH";
     return;
   }
 
-  btn.classList.add("loading");
-  document.querySelector(".btn-text").innerText = "PRZETWARZANIE...";
+  btn.classList.add("processing");
+  btn.querySelector(".btn-text").innerText = "TRANSFEROWANIE...";
 
   try {
-    await addDoc(collection(db, "users"), {
-      name: name,
-      hour: hour,
-      timestamp: new Date().getTime()
-    });
+    await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
 
     setTimeout(() => {
-        btn.classList.remove("loading");
-        document.querySelector(".btn-text").innerText = "AUTORYZOWANO";
-        msg.style.color = "var(--accent)";
-        msg.innerText = "TRANSFER DANYCH ZAKOŃCZONY";
-        
+        btn.classList.remove("processing");
+        btn.querySelector(".btn-text").innerText = "TRANSFER ZAKOŃCZONY";
+        msg.style.color = "var(--cyan)";
+        msg.innerText = "DANE ZOSTAŁY ZAPISANE W CHMURZE";
         document.getElementById("name").value = "";
         document.getElementById("hour").value = "";
     }, 1500);
 
     setTimeout(() => { 
         msg.innerText = ""; 
-        document.querySelector(".btn-text").innerText = "AUTORYZUJ ZAPIS";
-    }, 4000);
+        btn.querySelector(".btn-text").innerText = "Transferuj Dane";
+    }, 4500);
 
   } catch (e) {
-    btn.classList.remove("loading");
-    alert("CRITICAL ERROR: " + e.message);
+    btn.classList.remove("processing");
+    msg.innerText = "CRITICAL ERROR: TRANSFER PRZERWANY";
   }
 };
 </script>
