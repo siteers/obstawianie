@@ -6,91 +6,98 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; justify-content: center; transition: background-color 0.3s; }
+        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; transition: background-color 0.3s; }
         body.dark { background: #121212; }
-        .container { max-width: 1100px; width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(255,255,255,0.05); }
-        h2 { text-align: center; }
-        body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
-        .flex { display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; }
         
-        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
+        /* Kontener na przyciski górne */
+        .top-nav { width: 100%; max-width: 1100px; display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+
+        .container { max-width: 1100px; width: 100%; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); box-sizing: border-box; }
+        body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(255,255,255,0.05); }
+        
+        h2 { text-align: center; margin-top: 0; font-size: 1.5rem; }
+        body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
+        
+        .flex { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; }
+        
+        /* Responsywność tabeli */
+        .table-wrapper { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; background: white; min-width: 320px; }
         body.dark table { background: #1e1e1e; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; overflow: hidden; font-weight: bold; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: center; vertical-align: middle; font-weight: bold; font-size: 14px; }
         body.dark th, body.dark td { border-color: #333; }
         th { background: #eee; }
         body.dark th { background: #2a2a2a; }
-        
-        th:nth-child(1) { width: 35px; }
-        th:nth-child(2) { width: 160px; }
-        th:nth-child(3) { width: 90px; }
-        th:nth-child(4) { width: 45px; }
 
         .deleteBtn { width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; }
-        .panel { flex: 1; min-width: 300px; }
-        #clock { font-size: 48px; font-weight: bold; text-align: center; }
-        #stopBtn { background: red; color: white; padding: 20px 45px; font-size: 28px; border-radius: 60px; border: none; cursor: pointer; display: block; margin: 15px auto; }
-        #stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
-        #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
+        .panel { flex: 1; min-width: 280px; width: 100%; }
+        
+        #clock { font-size: clamp(32px, 10vw, 48px); font-weight: bold; text-align: center; margin: 10px 0; }
+        #stopBtn { background: red; color: white; padding: 15px 35px; font-size: 24px; border-radius: 60px; border: none; cursor: pointer; display: block; margin: 15px auto; width: 80%; max-width: 200px; }
+        #stoppedTime { font-size: 20px; text-align: center; margin-top: 10px; }
+        
+        #winner { margin-top: 20px; padding: 15px; font-size: 18px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
         body.dark #winner { background: #1f3d1f; color: #aaffaa; }
         
-        .clear, .reveal-btn { margin-bottom: 10px; padding: 10px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; }
+        .clear, .reveal-btn { padding: 10px 12px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; font-size: 13px; flex: 1; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
         .clear { background: #444; color: white; }
-        .reveal-btn { background: #007bff; color: white; margin-left: 5px; width: 150px; transition: 0.3s; }
+        .reveal-btn { background: #007bff; color: white; }
 
         .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left; }
-        .avatar {
-            flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: white; font-weight: bold; font-size: 12px; text-transform: uppercase;
-        }
-        .name-text { font-size: 14px; line-height: 1.2; word-wrap: break-word; white-space: normal; }
+        .avatar { flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+        .name-text { font-size: 13px; line-height: 1.2; word-wrap: break-word; }
 
-        .hidden-hour { filter: blur(5px); user-select: none; transition: filter 0.5s ease; }
+        .hidden-hour { filter: blur(5px); user-select: none; }
         .reveal-data { filter: blur(0) !important; }
 
+        /* Nowe style przycisków funkcyjnych (nie-fixed) */
         #darkModeBtn, #rankingBtn { 
-            position: fixed; right: 15px; width: 165px; height: 45px; 
-            border-radius: 30px; border: none; cursor: pointer; 
-            font-size: 14px; font-weight: bold; z-index: 100000; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2); transition: 0.3s;
-            display: flex; align-items: center; justify-content: center; text-decoration: none;
+            padding: 8px 16px; border-radius: 20px; border: none; cursor: pointer; 
+            font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center;
         }
-        #darkModeBtn { top: 15px; background: #111; color: #fff; }
+        #darkModeBtn { background: #111; color: #fff; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
-        #rankingBtn { top: 70px; background: #ffcc00; color: #111; }
-        #rankingBtn:hover, #darkModeBtn:hover { transform: scale(1.05); }
+        #rankingBtn { background: #ffcc00; color: #111; }
 
-        .qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20px; }
-        #qrcode { padding: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .qr-label { margin-top: 8px; font-size: 12px; font-weight: bold; color: #666; }
-        body.dark .qr-label { color: #aaa; }
+        .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 20px; }
+        #qrcode { padding: 10px; background: white; border-radius: 8px; }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
-        
-        #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
-        #cringeGifs img { max-height: 150px; border-radius: 10px; }
+        #cringeGifs { position: fixed; bottom: 10px; left: 0; width: 100%; display: none; justify-content: center; gap: 5px; z-index: 99999; flex-wrap: wrap; }
+        #cringeGifs img { max-height: 80px; border-radius: 8px; }
         
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
-        .blink td { color: white !important; }
-        @keyframes cringeBg { 0% { background: #ff69b4; } 25% { background: #00ffff; } 50% { background: #ffff00; } 75% { background: #ff00ff; } 100% { background: #00ff00; } }
+        @keyframes cringeBg { 0% { background: #ff69b4; } 50% { background: #00ffff; } 100% { background: #00ff00; } }
+
+        @media (max-width: 600px) {
+            .flex { flex-direction: column-reverse; }
+            .top-nav { justify-content: center; }
+            #cringeGifs img { max-height: 60px; }
+        }
     </style>
 </head>
 <body>
 
-<button id="darkModeBtn">🌙 Dark mode</button>
-<a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
+<div class="top-nav">
+    <button id="darkModeBtn">🌙 Dark mode</button>
+    <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
+</div>
 
 <div class="container">
     <h2>Lista zapisanych osób</h2>
     <div class="flex">
         <div class="panel">
-            <button class="clear" onclick="clearAll()">Wyczyść wszystkie dane</button>
-            <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
-            <table id="table">
-                <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
-            </table>
+            <div class="btn-group">
+                <button class="clear" onclick="clearAll()">Wyczyść dane</button>
+                <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
+            </div>
+            <div class="table-wrapper">
+                <table id="table">
+                    <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
+                </table>
+            </div>
         </div>
         <div class="panel">
             <div id="clock">--:--:--</div>
@@ -99,7 +106,7 @@
             
             <div class="qr-container">
                 <div id="qrcode"></div>
-                <div class="qr-label">SKANUJ REGULAMIN</div>
+                <div style="margin-top:5px; font-size:10px; font-weight:bold; color:#888;">SKANUJ REGULAMIN</div>
             </div>
         </div>
     </div>
@@ -107,7 +114,6 @@
 </div>
 
 <canvas id="fireworksCanvas"></canvas>
-
 <div id="cringeGifs">
     <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
     <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
@@ -139,14 +145,10 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
-let assignedFakeNames = {}; // Przechowuje przypisane ksywki: {userId: fakeName}
+let assignedFakeNames = {};
 
-const funnyNames = [
-    "leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", 
-    "Jarołd", "Kebab z falafelem", "Mariolka"
-];
+const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
 
-// Funkcja do losowego mieszania tablicy
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
     while (currentIndex != 0) {
@@ -159,16 +161,11 @@ function shuffle(array) {
 
 const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
 new QRCode(document.getElementById("qrcode"), {
-    text: regulaminUrl,
-    width: 100,
-    height: 100,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
+    text: regulaminUrl, width: 80, height: 80, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
 });
 
 function getAvatarColor(name) {
-    const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c", "#f1c40f"];
+    const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"];
     let hash = 0;
     for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
@@ -177,31 +174,26 @@ function getAvatarColor(name) {
 onSnapshot(collection(db, "users"), snap => {
     let newUsers = [];
     snap.forEach(d => newUsers.push({ id: d.id, ...d.data() }));
-    
-    // Jeśli zmieniła się liczba osób lub lista jest pusta, przetasuj ksywki
     if (newUsers.length !== usersData.length) {
         const shuffledFakes = shuffle([...funnyNames]);
         assignedFakeNames = {};
-        newUsers.forEach((u, index) => {
-            assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length];
-        });
+        newUsers.forEach((u, index) => { assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length]; });
     }
     usersData = newUsers;
 });
 
-const revealBtn = document.getElementById("revealNamesBtn");
-revealBtn.onclick = () => {
+document.getElementById("revealNamesBtn").onclick = function() {
     namesRevealed = !namesRevealed;
-    revealBtn.textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona";
+    this.textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona";
 };
 
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
+    if(!confirm("Wyczyścić wszystkich?")) return;
     const snap = await getDocs(collection(db,"users"));
     for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
-    assignedFakeNames = {};
 };
 
 function toSec(t){
@@ -213,29 +205,19 @@ setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
-    
-    // Sortowanie według bliskości do aktualnego czasu
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
-        
-        // Pobierz przypisaną na początku ksywkę dla tego konkretnego ID użytkownika
         const fakeName = assignedFakeNames[u.id] || "Anonim";
-        
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
         
-        table.innerHTML += `<tr class="${i===0?'blink':''}">
+        table.innerHTML += `<tr class="${i===0 && isStopped ?'blink':''}">
             <td>${i+1}</td>
-            <td>
-                <div class="user-cell">
-                    <div class="avatar" style="background:${color}">${avatarContent}</div>
-                    <span class="name-text">${nameContent}</span>
-                </div>
-            </td>
+            <td><div class="user-cell"><div class="avatar" style="background:${color}">${avatarContent}</div><span class="name-text">${nameContent}</span></div></td>
             <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">X</span></td>
         </tr>`;
@@ -243,78 +225,59 @@ setInterval(() => {
 }, 1000);
 
 stopBtn.onclick = async () => {
-    if(!usersData.length) return;
+    if(!usersData.length || isStopped) return;
     isStopped = true; 
     const nowObj = new Date();
-    stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
+    stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
+    
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     let playersWithPoints = [];
     let rank = 1;
     for (let i = 0; i < sorted.length; i++) {
-        if (i > 0) {
-            if (Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
-        }
+        if (i > 0 && Math.abs(toSec(sorted[i].hour)-s) !== Math.abs(toSec(sorted[i-1].hour)-s)) rank = i+1;
         if (rank > 3) break;
-        let pts = (rank === 1) ? 3 : (rank === 2) ? 2 : 1;
-        playersWithPoints.push({ name: sorted[i].name, points: pts, rank: rank });
+        playersWithPoints.push({ name: sorted[i].name, points: (rank===1?3:rank===2?2:1), rank: rank });
     }
+    
     winner.style.display = "block";
-    let winnerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>`;
-    playersWithPoints.forEach(p => winnerHTML += `${p.rank}. ${p.name} (+${p.points} pkt)<br>`);
-    winner.innerHTML = winnerHTML;
+    winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>` + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
     document.body.style.animation = "cringeBg 0.3s infinite alternate";
     fanfareAudio.play().catch(()=>{});
-    
     startCelebration();
     
-    for (const player of playersWithPoints) {
-        const ref = doc(db, "ranking", player.name);
+    for (const p of playersWithPoints) {
+        const ref = doc(db, "ranking", p.name);
         const snap = await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref, { points: increment(player.points) });
-        else await setDoc(ref, { points: player.points });
+        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) });
+        else await setDoc(ref, { points: p.points });
     }
-    await addDoc(collection(db, "history"), { date: nowObj.toLocaleString("pl-PL"), timestamp: nowObj.getTime(), winners: playersWithPoints.map(p => ({name: p.name, rank: p.rank})) });
+    await addDoc(collection(db, "history"), { date: nowObj.toLocaleString("pl-PL"), timestamp: nowObj.getTime(), winners: playersWithPoints.map(p => ({name:p.name, rank:p.rank})) });
 };
 
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
 let particles = [], fwActive = false;
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-function spawnFirework() {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height * 0.5;
-    const colors = ["#ff0040", "#00ffea", "#ffd700", "#ff7b00", "#9d00ff"];
-    for(let i=0; i<50; i++) particles.push({ x, y, a: Math.random()*Math.PI*2, s: Math.random()*4+1, al: 1, c: colors[Math.floor(Math.random()*colors.length)] });
-}
 function updateFW() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
     particles.forEach((p,i) => {
-        p.x += Math.cos(p.a) * p.s; p.y += Math.sin(p.a) * p.s; p.al -= 0.01;
+        p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.al -= 0.01;
         if(p.al <= 0) particles.splice(i,1);
         ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
         ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
     });
     if(fwActive) requestAnimationFrame(updateFW);
 }
-
 function startCelebration() {
-    canvas.style.display = "block"; 
-    fwActive = true;
-    const interval = setInterval(spawnFirework, 400); 
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    canvas.style.display = "block"; fwActive = true;
+    const interval = setInterval(() => {
+        const x = Math.random()*canvas.width, y = Math.random()*canvas.height*0.5;
+        for(let i=0; i<50; i++) particles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
+    }, 400);
+    document.getElementById("cringeGifs").style.display = "flex";
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvas.style.display = "none"; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 7000);
     updateFW();
-    
-    const gifs = document.getElementById("cringeGifs");
-    gifs.style.display = "flex";
-
-    setTimeout(() => { 
-        clearInterval(interval); 
-        fwActive = false; 
-        canvas.style.display = "none"; 
-        gifs.style.display = "none"; 
-        document.body.style.animation = "none"; 
-    }, 7000);
 }
 
 const darkBtn = document.getElementById("darkModeBtn");
