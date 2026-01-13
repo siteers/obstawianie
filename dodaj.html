@@ -2,182 +2,122 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Dodaj użytkownika</title>
+  <title>Cyber Add - Obstawianie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-
   <style>
     :root {
-      --primary: #0077ff;
-      --success: #00ff88;
-      --bg-light: #f4f7f6;
-      --card-light: #ffffff;
-      --bg-dark: #0f172a;
-      --card-dark: #1e293b;
+      --primary: #d4af37;
+      --accent: #00d4ff;
+      --bg-dark: #050810;
+      --card-dark: rgba(30, 41, 59, 0.7);
     }
 
     body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      background: var(--bg-light);
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-dark);
+      color: #fff;
       margin: 0;
-      padding: 0;
+      overflow: hidden; /* Ukrywamy suwak, bo tło zajmuje cały ekran */
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      transition: all 0.3s ease;
     }
 
-    body.dark {
-      background: var(--bg-dark);
-      color: #f1f5f9;
+    /* KOSMICZNE TŁO CZĄSTECZKOWE */
+    #bg-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      z-index: 1;
     }
 
-    /* NAGŁÓWEK POWITALNY */
     .welcome-text {
-      margin-bottom: 20px;
+      position: fixed;
+      top: 10%;
       text-align: center;
+      z-index: 2;
     }
-    .welcome-text h1 { margin: 0; font-size: 24px; }
-    .welcome-text p { opacity: 0.7; margin: 5px 0; }
+
+    .welcome-text h1 { 
+        margin: 0; font-size: 28px; letter-spacing: 2px;
+        background: linear-gradient(to right, var(--primary), #fff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
 
     .container {
-      background: var(--card-light);
-      padding: 30px;
-      border-radius: 20px;
-      width: 90%;
-      max-width: 400px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-
-    body.dark .container {
       background: var(--card-dark);
-      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
-      border: 1px solid rgba(255,255,255,0.1);
+      backdrop-filter: blur(15px); /* Efekt mrożonego szkła */
+      padding: 40px;
+      border-radius: 30px;
+      width: 90%;
+      max-width: 380px;
+      border: 1px solid rgba(212, 175, 55, 0.3);
+      box-shadow: 0 0 40px rgba(0, 0, 0, 0.5);
+      z-index: 2;
+      text-align: center;
     }
 
-    /* INPUTY I SELECTY */
-    .input-group {
-      margin-bottom: 20px;
-      text-align: left;
-    }
+    .input-group { margin-bottom: 25px; text-align: left; }
     .input-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-size: 14px;
-      font-weight: bold;
-      opacity: 0.8;
+      font-size: 12px; text-transform: uppercase; letter-spacing: 1px;
+      color: var(--primary); font-weight: bold; margin-bottom: 8px; display: block;
     }
 
     select, input {
-      width: 100%;
-      padding: 14px;
-      font-size: 16px;
-      border-radius: 12px;
-      border: 2px solid #e2e8f0;
-      background: #fff;
-      transition: 0.3s;
-      box-sizing: border-box;
-      outline: none;
-    }
-
-    body.dark select, body.dark input {
-      background: #334155;
-      border-color: #475569;
-      color: #fff;
+      width: 100%; padding: 15px; font-size: 16px; border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
+      color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
 
     select:focus, input:focus {
-      border-color: var(--primary);
-      box-shadow: 0 0 0 4px rgba(0,119,255,0.2);
+      border-color: var(--accent);
+      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
     }
 
-    button.save-btn {
-      width: 100%;
-      padding: 16px;
-      background: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 18px;
-      font-weight: bold;
-      transition: 0.3s;
-      box-shadow: 0 4px 12px rgba(0,119,255,0.3);
+    /* PRZYCISK Z EFEKTEM SKANOWANIA */
+    .save-btn {
+      width: 100%; padding: 18px; background: none; color: var(--primary);
+      border: 2px solid var(--primary); border-radius: 15px;
+      font-size: 16px; font-weight: 800; cursor: pointer;
+      position: relative; overflow: hidden; transition: 0.3s;
+      text-transform: uppercase; letter-spacing: 2px;
     }
 
-    button.save-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(0,119,255,0.4);
+    .save-btn:hover { background: rgba(212, 175, 55, 0.1); box-shadow: 0 0 20px rgba(212, 175, 55, 0.4); }
+
+    /* Pasek ładowania wewnątrz przycisku */
+    .btn-loader {
+      position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.4), transparent);
+      transition: 0.5s;
     }
 
-    button.save-btn:active { transform: scale(0.98); }
+    .loading .btn-loader { left: 100%; transition: 1.5s; }
 
-    /* STATUS "KTO JUŻ DODAŁ" */
-    .status-list {
-      margin-top: 25px;
-      font-size: 13px;
-      background: rgba(0,0,0,0.03);
-      padding: 10px;
-      border-radius: 10px;
-    }
-    body.dark .status-list { background: rgba(255,255,255,0.03); }
-    .status-item { display: inline-block; margin: 3px; padding: 4px 8px; background: rgba(0,119,255,0.1); border-radius: 6px; }
+    #msg { margin-top: 20px; font-size: 14px; letter-spacing: 1px; font-weight: bold; }
 
-    #darkModeBtn {
-      position: fixed;
-      top: 15px;
-      right: 15px;
-      padding: 10px 18px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      background: #1e293b;
-      color: #fff;
-      z-index: 1000;
-      transition: 0.3s;
-    }
+    #darkModeBtn { display: none; } /* W tej wersji Dark Mode jest wymuszony jako "Cyber" */
 
-    body.dark #darkModeBtn { background: #f1f5f9; color: #1e293b; }
-
-    #msg {
-      margin-top: 15px;
-      font-weight: bold;
-      min-height: 20px;
-    }
-
-    /* ANIMACJA SUKCESU */
-    .success-pulse { animation: pulse 0.5s ease; }
-    @keyframes pulse {
-      0% { transform: scale(1); }
-      50% { transform: scale(1.02); border-color: var(--success); }
-      100% { transform: scale(1); }
-    }
-
-    @media (max-width: 480px) {
-      .container { padding: 20px; }
-      body { padding: 15px; }
+    .anon-counter {
+        margin-top: 20px; font-size: 11px; opacity: 0.5; text-transform: uppercase;
     }
   </style>
 </head>
+<body>
 
-<body class="dark">
-  <button id="darkModeBtn">☀️ Light mode</button>
+  <canvas id="bg-canvas"></canvas>
 
   <div class="welcome-text">
-    <h1 id="greeting">Dzień dobry!</h1>
-    <p>Gotowy na dzisiejsze obstawianie?</p>
+    <h1 id="greeting">SYSTEM_ONLINE</h1>
+    <p style="font-size: 12px; color: var(--accent);">ZALOGOWANO DO PROTOKOŁU OBSTAWIANIA</p>
   </div>
 
-  <div class="container" id="formContainer">
+  <div class="container">
     <div class="input-group">
-      <label>Kim jesteś?</label>
+      <label>Identyfikator użytkownika</label>
       <select id="name">
-        <option value="">Wybierz swoje imię</option>
+        <option value="">Wybierz...</option>
         <option value="Arek">Arek</option>
         <option value="Paweł">Paweł</option>
         <option value="Grzesiek Sz">Grzesiek Sz</option>
@@ -189,96 +129,122 @@
     </div>
 
     <div class="input-group">
-      <label>O której kończysz?</label>
+      <label>Parametr czasowy (Godzina)</label>
       <input id="hour" type="time">
     </div>
 
-    <button class="save-btn" onclick="saveData()">Zatwierdź zgłoszenie</button>
+    <button class="save-btn" id="saveBtn" onclick="saveData()">
+      <span class="btn-text">Autoryzuj zapis</span>
+      <div class="btn-loader"></div>
+    </button>
 
     <p id="msg"></p>
 
-    <div class="status-list" id="statusList">
-      <div style="margin-bottom: 5px; opacity: 0.6;">Ostatnio dodali:</div>
-      <div id="recentUsers">...</div>
+    <div class="anon-counter">
+      Aktywnych zgłoszeń w sesji: <span id="playerCount" style="color: var(--accent);">0</span>
     </div>
   </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot, query, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
   authDomain: "obstaiwanie.firebaseapp.com",
-  projectId: "obstaiwanie",
-  storageBucket: "obstaiwanie.firebasestorage.app",
-  messagingSenderId: "64783465818",
-  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+  projectId: "obstaiwanie"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// DYNAMICZNE POWITANIE
-const hour = new Date().getHours();
-const greeting = document.getElementById("greeting");
-if (hour < 12) greeting.innerText = "Dzień dobry!";
-else if (hour < 18) greeting.innerText = "Miłego popołudnia!";
-else greeting.innerText = "Dobry wieczór!";
+// --- TŁO CZĄSTECZKOWE ---
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-// DARK MODE
-const darkBtn = document.getElementById("darkModeBtn");
-darkBtn.onclick = () => {
-    document.body.classList.toggle("dark");
-    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
-};
-
-// PODGLĄD "OSTATNIO DODALI" (LIVE)
-onSnapshot(query(collection(db, "users"), limit(5)), (snapshot) => {
-    const recentDiv = document.getElementById("recentUsers");
-    const names = snapshot.docs.map(doc => doc.data().name);
-    if(names.length === 0) {
-      recentDiv.innerText = "Brak zgłoszeń";
-      return;
+class Particle {
+    constructor() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.size = Math.random() * 2 + 0.5;
+        this.speedX = Math.random() * 1 - 0.5;
+        this.speedY = Math.random() * 1 - 0.5;
     }
-    recentDiv.innerHTML = names.map(n => `<span class="status-item">${n}</span>`).join("");
+    update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x > canvas.width) this.x = 0;
+        if (this.x < 0) this.x = canvas.width;
+        if (this.y > canvas.height) this.y = 0;
+        if (this.y < 0) this.y = canvas.height;
+    }
+    draw() {
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+    }
+}
+
+function init() {
+    for (let i = 0; i < 80; i++) particles.push(new Particle());
+}
+
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+}
+init(); animate();
+
+// --- LOGIKA ZAPISU ---
+onSnapshot(collection(db, "users"), (snapshot) => {
+    document.getElementById("playerCount").innerText = snapshot.size;
 });
 
-// ZAPIS DANYCH
 window.saveData = async function() {
-  const nameEl = document.getElementById("name");
-  const hourEl = document.getElementById("hour");
-  const container = document.getElementById("formContainer");
+  const name = document.getElementById("name").value;
+  const hour = document.getElementById("hour").value;
+  const btn = document.getElementById("saveBtn");
   const msg = document.getElementById("msg");
 
-  if (!nameEl.value || !hourEl.value) {
-    msg.style.color = "red";
-    msg.innerText = "Uzupełnij oba pola!";
+  if (!name || !hour) {
+    msg.style.color = "#ff4d4d";
+    msg.innerText = "BŁĄD: BRAK PARAMETRÓW";
     return;
   }
 
+  btn.classList.add("loading");
+  document.querySelector(".btn-text").innerText = "PRZETWARZANIE...";
+
   try {
     await addDoc(collection(db, "users"), {
-      name: nameEl.value,
-      hour: hourEl.value,
-      timestamp: new Date()
+      name: name,
+      hour: hour,
+      timestamp: new Date().getTime()
     });
 
-    // Efekt sukcesu
-    container.classList.add("success-pulse");
-    msg.style.color = "var(--success)";
-    msg.innerText = "Zgłoszenie wysłane! 🚀";
-    
-    nameEl.value = "";
-    hourEl.value = "";
-
     setTimeout(() => {
-      msg.innerText = "";
-      container.classList.remove("success-pulse");
-    }, 3000);
+        btn.classList.remove("loading");
+        document.querySelector(".btn-text").innerText = "AUTORYZOWANO";
+        msg.style.color = "var(--accent)";
+        msg.innerText = "TRANSFER DANYCH ZAKOŃCZONY";
+        
+        document.getElementById("name").value = "";
+        document.getElementById("hour").value = "";
+    }, 1500);
+
+    setTimeout(() => { 
+        msg.innerText = ""; 
+        document.querySelector(".btn-text").innerText = "AUTORYZUJ ZAPIS";
+    }, 4000);
 
   } catch (e) {
-    alert("Błąd: " + e.message);
+    btn.classList.remove("loading");
+    alert("CRITICAL ERROR: " + e.message);
   }
 };
 </script>
