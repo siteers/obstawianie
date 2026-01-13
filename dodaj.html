@@ -26,6 +26,7 @@
       perspective: 1000px;
     }
 
+    /* PRZYWRÓCONE TŁO */
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
     .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
@@ -155,27 +156,27 @@
 
       <div id="auth-section">
         <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">
-          USTAW HASŁO DOSTĘPU (PIERWSZE LOGOWANIE):
+          USTAW HASŁO (PIERWSZE LOGOWANIE):
         </div>
         
         <div class="input-box">
           <label id="pass-label">Hasło</label>
-          <input id="password" type="password" placeholder="••••••••" oninput="validateForm()">
+          <input id="password" type="password" placeholder="••••" oninput="validateForm()">
         </div>
 
         <div class="input-box" id="pass-confirm-box" style="display:none;">
           <label>Potwierdź hasło</label>
-          <input id="password-confirm" type="password" placeholder="••••••••" oninput="validateForm()">
+          <input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()">
         </div>
 
         <div class="pass-hint" id="requirements-hint">
-          Min. 8 znaków, wielka litera, cyfra i znak specjalny.
+          Minimum 4 znaki i przynajmniej jedna cyfra.
         </div>
         
         <span class="reset-link" id="resetBtn" style="display:none;" onclick="handleReset()">Zapomniałeś hasła?</span>
       </div>
 
-      <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapisz</button>
+      <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
     </div>
   </div>
@@ -195,12 +196,12 @@ const db = getFirestore(app);
 
 let isFirstTime = false;
 
-// --- LOGIKA RESETU ---
+// --- RESET HASŁA (KOD: 0000) ---
 window.handleReset = async function() {
     const code = prompt("Podaj kod resetujący od administratora:");
     if (code === "0000") {
         const name = document.getElementById('name').value;
-        alert("Kod poprawny. System umożliwi teraz nadanie nowego hasła.");
+        alert("Kod poprawny. Możesz nadać nowe hasło.");
         isFirstTime = true;
         document.getElementById('pass-confirm-box').style.display = 'block';
         document.getElementById('first-time-msg').style.display = 'block';
@@ -242,6 +243,7 @@ window.checkUserAuth = async function() {
     validateForm();
 }
 
+// --- NOWA WALIDACJA (MIN 4 ZNAKI + CYFRA) ---
 window.validateForm = function() {
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
@@ -250,7 +252,7 @@ window.validateForm = function() {
     const btn = document.getElementById('saveBtn');
     const hint = document.getElementById('requirements-hint');
 
-    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passRegex = /^(?=.*\d).{4,}$/; // Min 4 znaki, przynajmniej jedna cyfra
     let isValid = name && hour && pass;
 
     if (isFirstTime) {
@@ -299,25 +301,26 @@ window.saveData = async function() {
     } catch (e) { alert(e.message); }
 }
 
-// --- ANIMACJA TŁA ---
+// --- ANIMACJA TŁA (CZĄSTECZKI) ---
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let particles = [];
-for (let i = 0; i < 50; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3 });
+for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
         p.x += p.vx; p.y += p.vy;
         if(p.x<0 || p.x>canvas.width) p.vx*=-1;
         if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
         ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
     });
     requestAnimationFrame(draw);
 }
 draw();
 
+// EFEKT TILT (POCHYLENIE)
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 40;
     const y = (window.innerHeight / 2 - e.pageY) / 40;
