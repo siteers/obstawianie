@@ -66,7 +66,6 @@
         #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
         #cringeGifs img { max-height: 150px; border-radius: 10px; }
         
-        /* ANIMACJA MIGANIA */
         @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #008000; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
         .blink td { color: white !important; }
@@ -104,10 +103,12 @@
                 </table>
             </div>
         </div>
+
         <div class="panel">
             <div id="clock">--:--:--</div>
             <button id="stopBtn">STOP</button>
             <div id="stoppedTime"></div>
+            
             <div class="qr-container">
                 <div id="qrcode"></div>
                 <div style="margin-top:8px; font-size:12px; font-weight:bold; color:#666;">SKANUJ REGULAMIN</div>
@@ -186,7 +187,7 @@ document.getElementById("revealNamesBtn").onclick = function() {
 
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
-    if(!confirm("Wyczyścić wszystko?")) return;
+    if(!confirm("Wyczyścić wszystkich?")) return;
     const snap = await getDocs(collection(db,"users"));
     for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
@@ -212,7 +213,7 @@ setInterval(() => {
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
         
-        /* PRZYWRÓCONE MIGANIE: Zawsze dla pierwszej osoby na liście */
+        /* PRZYWRÓCONE MIGANIE: Pierwsza osoba na liście zawsze miga */
         const blinkClass = (i === 0) ? 'blink' : '';
         
         table.innerHTML += `<tr class="${blinkClass}">
