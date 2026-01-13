@@ -6,7 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        /* PODSTAWOWE STYLE */
         body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: background-color 0.3s; }
         body.dark { background: #121212; }
         
@@ -18,12 +17,9 @@
         h2 { text-align: center; margin-top: 0; }
         body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
         
-        /* FLEXBOX - KLUCZ DO WYGLĄDU KOMPUTEROWEGO */
         .flex { display: flex; flex-direction: row; gap: 30px; justify-content: center; align-items: flex-start; }
-        
         .panel { flex: 1; min-width: 300px; }
 
-        /* TABELA */
         .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; }
         table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; }
         body.dark table { background: #1e1e1e; }
@@ -39,10 +35,8 @@
 
         .deleteBtn { width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; }
         
-        /* ZEGAR I STOP */
         #clock { font-size: 48px; font-weight: bold; text-align: center; }
         #stopBtn { background: red; color: white; padding: 20px 45px; font-size: 28px; border-radius: 60px; border: none; cursor: pointer; display: block; margin: 15px auto; transition: 0.2s; }
-        #stopBtn:active { transform: scale(0.95); }
         #stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
         
         #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
@@ -72,11 +66,12 @@
         #cringeGifs { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); display: none; gap: 10px; z-index: 99999; }
         #cringeGifs img { max-height: 150px; border-radius: 10px; }
         
-        @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #006400; } 100% { background: #d1ffd1; } }
+        /* ANIMACJA MIGANIA */
+        @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #008000; } 100% { background: #d1ffd1; } }
         .blink { animation: blinkGreen 1.5s infinite; }
+        .blink td { color: white !important; }
         @keyframes cringeBg { 0% { background: #ff69b4; } 50% { background: #00ffff; } 100% { background: #00ff00; } }
 
-        /* RWD - TELEFON */
         @media (max-width: 850px) {
             body { padding: 10px; }
             .flex { flex-direction: column-reverse; gap: 20px; }
@@ -109,12 +104,10 @@
                 </table>
             </div>
         </div>
-
         <div class="panel">
             <div id="clock">--:--:--</div>
             <button id="stopBtn">STOP</button>
             <div id="stoppedTime"></div>
-            
             <div class="qr-container">
                 <div id="qrcode"></div>
                 <div style="margin-top:8px; font-size:12px; font-weight:bold; color:#666;">SKANUJ REGULAMIN</div>
@@ -140,14 +133,10 @@ import {
     setDoc, getDoc, updateDoc, increment, addDoc 
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-    apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
-    authDomain: "obstaiwanie.firebaseapp.com",
-    projectId: "obstaiwanie"
-};
-
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+
 const table = document.getElementById("table");
 const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
@@ -157,7 +146,6 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 let assignedFakeNames = {};
-
 const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
 
 function shuffle(array) {
@@ -171,9 +159,7 @@ function shuffle(array) {
 }
 
 const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
-new QRCode(document.getElementById("qrcode"), {
-    text: regulaminUrl, width: 100, height: 100, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H
-});
+new QRCode(document.getElementById("qrcode"), { text: regulaminUrl, width: 100, height: 100, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
 
 function getAvatarColor(name) {
     const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"];
@@ -226,7 +212,10 @@ setInterval(() => {
         const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
         const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
         
-        table.innerHTML += `<tr class="${i===0 && isStopped ?'blink':''}">
+        /* PRZYWRÓCONE MIGANIE: Zawsze dla pierwszej osoby na liście */
+        const blinkClass = (i === 0) ? 'blink' : '';
+        
+        table.innerHTML += `<tr class="${blinkClass}">
             <td>${i+1}</td>
             <td><div class="user-cell"><div class="avatar" style="background:${color}">${avatarContent}</div><span class="name-text">${nameContent}</span></div></td>
             <td class="${hourClass}">${u.hour}</td>
