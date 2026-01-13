@@ -2,18 +2,18 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Dodaj zgłoszenie</title>
+  <title>Cyber-Link | XXII</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
       --gold: #d4af37;
       --cyan: #00d4ff;
-      --bg: #050810;
-      --glass: rgba(30, 41, 59, 0.6);
+      --bg: #020408;
+      --glass: rgba(15, 23, 42, 0.8);
     }
 
     body {
-      font-family: 'Inter', -apple-system, sans-serif;
+      font-family: 'Inter', sans-serif;
       background: var(--bg);
       color: #fff;
       margin: 0;
@@ -22,163 +22,146 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      perspective: 1000px; /* Klucz do efektu 3D */
     }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-    /* HOLOGRAFICZNY PODGLĄD */
-    .preview-wrap {
+    /* TRÓJWYMIAROWA KARTA IDENTYFIKACYJNA */
+    .id-card {
       position: absolute;
-      top: -80px;
+      top: -120px;
       left: 50%;
-      transform: translateX(-50%);
-      width: 200px;
-      padding: 10px;
-      background: rgba(0, 212, 255, 0.05);
-      border: 1px solid rgba(0, 212, 255, 0.3);
-      border-radius: 15px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      backdrop-filter: blur(5px);
+      transform: translateX(-50%) rotateX(20deg);
+      width: 240px;
+      padding: 15px;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(212, 175, 55, 0.1));
+      border: 1px solid var(--cyan);
+      border-radius: 10px;
+      backdrop-filter: blur(10px);
       opacity: 0;
-      transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      box-shadow: 0 0 20px rgba(0, 212, 255, 0.1);
+      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
       z-index: 5;
-      pointer-events: none;
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
     }
-    .preview-wrap.visible { opacity: 1; top: -100px; }
-    .preview-label { font-size: 9px; color: var(--cyan); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px; }
-    .preview-val { font-size: 16px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+    .id-card.active { opacity: 1; top: -140px; transform: translateX(-50%) rotateX(0deg); }
+    
+    .scan-laser {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 2px;
+      background: var(--cyan);
+      box-shadow: 0 0 15px var(--cyan);
+      animation: laserMove 2s infinite linear;
+    }
+    @keyframes laserMove { 0% { top: 0; } 100% { top: 100%; } }
+
+    /* GŁÓWNY KONTENER 3D */
+    .tilt-box {
+      z-index: 10;
+      transition: transform 0.1s ease-out;
+      transform-style: preserve-3d;
+    }
 
     .container {
       background: var(--glass);
-      backdrop-filter: blur(20px);
-      padding: 30px;
-      border-radius: 30px;
-      width: 90%;
+      backdrop-filter: blur(25px);
+      padding: 40px;
+      border-radius: 40px;
+      width: 90vw;
       max-width: 400px;
       border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-      z-index: 10;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
       text-align: center;
       position: relative;
+      transform: translateZ(50px); /* Wypchnięcie do przodu */
     }
 
     h2 { 
-      margin-top: 0;
-      margin-bottom: 30px; 
-      font-size: 24px; 
-      letter-spacing: 1px;
-      background: linear-gradient(to right, var(--gold), #fff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      margin: 0 0 30px 0; font-size: 26px; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--gold);
+      text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
     }
 
-    .input-box { margin-bottom: 20px; text-align: left; }
+    .input-box { margin-bottom: 25px; text-align: left; transform: translateZ(30px); }
     .input-box label {
-      font-size: 12px;
-      color: var(--gold);
-      font-weight: bold;
-      margin-bottom: 8px;
-      display: block;
-      margin-left: 5px;
+      font-size: 10px; color: var(--text-gray); font-weight: 800;
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block;
     }
 
     select, input {
-      width: 100%; padding: 15px; font-size: 16px; border-radius: 15px;
-      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5);
+      width: 100%; padding: 16px; font-size: 16px; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
-      -webkit-appearance: none;
     }
 
-    select:focus, input:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-    }
+    select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
 
-    /* FIX DLA IKONY CZASU */
-    input[type="time"]::-webkit-calendar-picker-indicator {
-      filter: invert(1);
-      cursor: pointer;
-    }
-
-    .btn-save {
-      width: 100%; padding: 18px; background: var(--gold); color: #000;
-      border: none; border-radius: 15px;
+    .btn-cyber {
+      width: 100%; padding: 20px; background: linear-gradient(90deg, var(--gold), #f3e09d);
+      color: #000; border: none; border-radius: 18px;
       font-size: 16px; font-weight: 900; cursor: pointer;
-      transition: 0.3s; text-transform: uppercase; letter-spacing: 2px;
-      margin-top: 10px;
-      box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
+      text-transform: uppercase; letter-spacing: 3px;
+      box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
+      transition: 0.3s; transform: translateZ(40px);
+    }
+    .btn-cyber:hover { transform: translateZ(60px) scale(1.02); filter: brightness(1.1); }
+    .btn-cyber:active { transform: translateZ(20px) scale(0.98); }
+
+    .status-badge {
+      margin-top: 30px; font-size: 10px; color: #64748b;
+      letter-spacing: 1px; display: flex; justify-content: center; gap: 10px;
     }
 
-    .btn-save:hover { 
-      background: #fff; 
-      transform: translateY(-3px);
-      box-shadow: 0 10px 20px rgba(212, 175, 55, 0.4);
-    }
-
-    .btn-save:active { transform: scale(0.95); }
-
-    .btn-save:disabled {
-      background: #333;
-      color: #666;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    #msg { margin-top: 20px; font-size: 14px; font-weight: bold; min-height: 20px; }
-
-    .counter {
-      margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
-      font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px;
-    }
-
-    @media (max-width: 480px) {
-      .container { padding: 25px; }
-      .preview-wrap { width: 180px; }
-      h2 { font-size: 20px; }
+    /* PRZYCISK DŹWIĘKU */
+    #soundToggle {
+      position: fixed; bottom: 20px; right: 20px; background: rgba(255,255,255,0.1);
+      border: none; color: #fff; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 100;
     }
   </style>
 </head>
 <body>
 
   <canvas id="bg-canvas"></canvas>
+  <button id="soundToggle">🔊</button>
 
-  <div class="container">
-    <div id="hologram" class="preview-wrap">
-      <span class="preview-label">Twoje dane:</span>
-      <span id="preview-text" class="preview-val">---</span>
+  <div class="tilt-box" id="tiltCard">
+    <div id="hologram" class="id-card">
+      <div class="scan-laser"></div>
+      <div style="font-size: 9px; color: var(--cyan); margin-bottom: 5px;">VERIFYING IDENTITY...</div>
+      <div id="hologram-name" style="font-size: 18px; font-weight: 900; color: #fff;">---</div>
+      <div id="hologram-time" style="font-size: 14px; color: var(--gold);">00:00</div>
     </div>
 
-    <h2>Dodaj swoje dane</h2>
+    <div class="container">
+      <h2>Dodaj swoje dane</h2>
 
-    <div class="input-box">
-      <label>Wybierz imię</label>
-      <select id="name" onchange="updatePreview()">
-        <option value="">Wybierz...</option>
-        <option value="Arek">Arek</option>
-        <option value="Paweł">Paweł</option>
-        <option value="Grzesiek Sz">Grzesiek Sz</option>
-        <option value="Grzesiek P">Grzesiek P</option>
-        <option value="Krzysiek">Krzysiek</option>
-        <option value="Mariusz">Mariusz</option>
-        <option value="Dominik">Dominik</option>
-      </select>
-    </div>
+      <div class="input-box">
+        <label>Użytkownik</label>
+        <select id="name" onchange="updateUI()">
+          <option value="">Wybierz...</option>
+          <option value="Arek">Arek</option>
+          <option value="Paweł">Paweł</option>
+          <option value="Grzesiek Sz">Grzesiek Sz</option>
+          <option value="Grzesiek P">Grzesiek P</option>
+          <option value="Krzysiek">Krzysiek</option>
+          <option value="Mariusz">Mariusz</option>
+          <option value="Dominik">Dominik</option>
+        </select>
+      </div>
 
-    <div class="input-box">
-      <label>Godzina zakończenia</label>
-      <input id="hour" type="time" oninput="updatePreview()">
-    </div>
+      <div class="input-box">
+        <label>Godzina</label>
+        <input id="hour" type="time" oninput="updateUI()">
+      </div>
 
-    <button class="btn-save" id="saveBtn" onclick="saveData()">Zapisz dane</button>
+      <button class="btn-cyber" id="saveBtn" onclick="saveData()">Inicjuj Zapis</button>
 
-    <p id="msg"></p>
+      <p id="msg" style="min-height: 20px; font-weight: bold;"></p>
 
-    <div class="counter">
-      Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--cyan);">0</span>
+      <div class="status-badge">
+        <span>● LIVE_SYNC</span>
+        <span>● AKTYWNYCH: <span id="playerCount" style="color:var(--cyan)">0</span></span>
+      </div>
     </div>
   </div>
 
@@ -195,7 +178,15 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- ANIMACJA TŁA (CZĄSTECZKI) ---
+// --- DŹWIĘKI ---
+const beep = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+let soundEnabled = true;
+document.getElementById('soundToggle').onclick = () => {
+    soundEnabled = !soundEnabled;
+    document.getElementById('soundToggle').innerText = soundEnabled ? '🔊' : '🔇';
+};
+
+// --- ANIMACJA SIECI W TLE ---
 const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 let particles = [];
@@ -206,89 +197,76 @@ class Particle {
   constructor() {
     this.x = Math.random() * canvas.width;
     this.y = Math.random() * canvas.height;
-    this.speed = Math.random() * 0.4 + 0.1;
-    this.size = Math.random() * 1.5;
-    this.opacity = Math.random() * 0.5;
+    this.vx = (Math.random() - 0.5) * 0.5;
+    this.vy = (Math.random() - 0.5) * 0.5;
   }
   update() {
-    this.y -= this.speed;
-    if (this.y < 0) { this.y = canvas.height; this.x = Math.random() * canvas.width; }
-  }
-  draw() {
-    ctx.fillStyle = `rgba(212, 175, 55, ${this.opacity})`;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
+    this.x += this.vx; this.y += this.vy;
+    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
   }
 }
-for (let i = 0; i < 70; i++) particles.push(new Particle());
-function animate() {
+for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach(p => { p.update(); p.draw(); });
-  requestAnimationFrame(animate);
+  particles.forEach((p, i) => {
+    p.update();
+    ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
+    ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI * 2); ctx.fill();
+    for (let j = i + 1; j < particles.length; j++) {
+      const p2 = particles[j];
+      const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+      if (dist < 100) {
+        ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/100})`;
+        ctx.lineWidth = 0.5;
+        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+      }
+    }
+  });
+  requestAnimationFrame(draw);
 }
-animate();
+draw();
 
-// --- AKTUALIZACJA PODGLĄDU ---
-window.updatePreview = function() {
-  const name = document.getElementById("name").value;
-  const hour = document.getElementById("hour").value;
-  const hologram = document.getElementById("hologram");
-  const previewText = document.getElementById("preview-text");
-
-  if(name && hour) {
-    previewText.innerText = `${name} • ${hour}`;
-    hologram.classList.add("visible");
-  } else {
-    hologram.classList.remove("visible");
-  }
-}
-
-// --- LOGIKA ZAPISU I LICZNIK ---
-onSnapshot(collection(db, "users"), (snapshot) => {
-    document.getElementById("playerCount").innerText = snapshot.size;
+// --- EFEKT 3D TILT ---
+const tiltBox = document.getElementById('tiltCard');
+document.addEventListener('mousemove', (e) => {
+    const x = (window.innerWidth / 2 - e.pageX) / 20;
+    const y = (window.innerHeight / 2 - e.pageY) / 20;
+    tiltBox.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
+// --- UI LOGIC ---
+window.updateUI = () => {
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
+    const holo = document.getElementById('hologram');
+    if(name && hour) {
+        document.getElementById('hologram-name').innerText = name;
+        document.getElementById('hologram-time').innerText = hour;
+        holo.classList.add('active');
+        if(soundEnabled) beep.play();
+    } else { holo.classList.remove('active'); }
+};
+
+onSnapshot(collection(db, "users"), (s) => document.getElementById("playerCount").innerText = s.size);
+
 window.saveData = async function() {
-  const nameEl = document.getElementById("name");
-  const hourEl = document.getElementById("hour");
+  const name = document.getElementById("name").value;
+  const hour = document.getElementById("hour").value;
+  if (!name || !hour) return;
+
   const btn = document.getElementById("saveBtn");
-  const msg = document.getElementById("msg");
-
-  if (!nameEl.value || !hourEl.value) {
-    msg.style.color = "#ff4d4d";
-    msg.innerText = "Uzupełnij wszystkie pola!";
-    return;
-  }
-
+  btn.innerText = "PRZESYŁANIE...";
   btn.disabled = true;
-  btn.innerText = "ZAPISYWANIE...";
 
   try {
-    await addDoc(collection(db, "users"), {
-      name: nameEl.value,
-      hour: hourEl.value,
-      timestamp: Date.now()
-    });
-
-    msg.style.color = "var(--cyan)";
-    msg.innerText = "DANE ZOSTAŁY WYSŁANE!";
-    
-    nameEl.value = "";
-    hourEl.value = "";
-    updatePreview();
-
-    setTimeout(() => {
-        btn.disabled = false;
-        btn.innerText = "Zapisz dane";
-        msg.innerText = "";
-    }, 3000);
-
-  } catch (e) {
-    btn.disabled = false;
-    btn.innerText = "Zapisz dane";
-    msg.innerText = "BŁĄD POŁĄCZENIA.";
-  }
+    await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
+    document.getElementById("msg").innerText = "AUTORYZACJA POMYŚLNA ✅";
+    document.getElementById("msg").style.color = "var(--cyan)";
+    if(soundEnabled) beep.play();
+    setTimeout(() => { location.reload(); }, 2000);
+  } catch (e) { alert(e.message); }
 };
 </script>
 </body>
