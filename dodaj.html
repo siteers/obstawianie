@@ -9,7 +9,8 @@
       --gold: #d4af37;
       --cyan: #00d4ff;
       --bg: #020408;
-      --glass: rgba(15, 23, 42, 0.8);
+      --glass: rgba(15, 23, 42, 0.85);
+      --error: #ff4d4d;
     }
 
     body {
@@ -22,12 +23,14 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      perspective: 1000px; /* Klucz do efektu 3D */
+      perspective: 1000px;
     }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
-    /* TRÓJWYMIAROWA KARTA IDENTYFIKACYJNA */
+    .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
+
+    /* HOLOGRAFICZNA KARTA */
     .id-card {
       position: absolute;
       top: -120px;
@@ -43,6 +46,7 @@
       transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
       z-index: 5;
       box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
+      pointer-events: none;
     }
     .id-card.active { opacity: 1; top: -140px; transform: translateX(-50%) rotateX(0deg); }
     
@@ -55,17 +59,10 @@
     }
     @keyframes laserMove { 0% { top: 0; } 100% { top: 100%; } }
 
-    /* GŁÓWNY KONTENER 3D */
-    .tilt-box {
-      z-index: 10;
-      transition: transform 0.1s ease-out;
-      transform-style: preserve-3d;
-    }
-
     .container {
       background: var(--glass);
       backdrop-filter: blur(25px);
-      padding: 40px;
+      padding: 30px;
       border-radius: 40px;
       width: 90vw;
       max-width: 400px;
@@ -73,61 +70,63 @@
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
       text-align: center;
       position: relative;
-      transform: translateZ(50px); /* Wypchnięcie do przodu */
     }
 
-    h2 { 
-      margin: 0 0 30px 0; font-size: 26px; letter-spacing: 2px;
-      text-transform: uppercase; color: var(--gold);
-      text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-    }
+    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
 
-    .input-box { margin-bottom: 25px; text-align: left; transform: translateZ(30px); }
-    .input-box label {
-      font-size: 10px; color: var(--text-gray); font-weight: 800;
-      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; display: block;
-    }
+    .input-box { margin-bottom: 15px; text-align: left; }
+    .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
 
     select, input {
-      width: 100%; padding: 16px; font-size: 16px; border-radius: 16px;
+      width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
+    select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
 
-    select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.4); }
+    #auth-section {
+      display: none;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .pass-hint { font-size: 9px; color: #888; margin-top: 5px; line-height: 1.2; }
+    .valid { color: #00ff88; }
+    .invalid { color: var(--error); }
+
+    .reset-link {
+      display: block;
+      margin-top: 8px;
+      font-size: 10px;
+      color: var(--cyan);
+      cursor: pointer;
+      text-decoration: underline;
+      opacity: 0.7;
+    }
+    .reset-link:hover { opacity: 1; }
 
     .btn-cyber {
-      width: 100%; padding: 20px; background: linear-gradient(90deg, var(--gold), #f3e09d);
-      color: #000; border: none; border-radius: 18px;
+      width: 100%; padding: 18px; background: var(--gold);
+      color: #000; border: none; border-radius: 15px;
       font-size: 16px; font-weight: 900; cursor: pointer;
-      text-transform: uppercase; letter-spacing: 3px;
-      box-shadow: 0 10px 20px rgba(212, 175, 55, 0.3);
-      transition: 0.3s; transform: translateZ(40px);
+      text-transform: uppercase; letter-spacing: 2px;
+      margin-top: 20px; transition: 0.3s;
     }
-    .btn-cyber:hover { transform: translateZ(60px) scale(1.02); filter: brightness(1.1); }
-    .btn-cyber:active { transform: translateZ(20px) scale(0.98); }
+    .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 0 20px rgba(212,175,55,0.4); }
+    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
 
-    .status-badge {
-      margin-top: 30px; font-size: 10px; color: #64748b;
-      letter-spacing: 1px; display: flex; justify-content: center; gap: 10px;
-    }
-
-    /* PRZYCISK DŹWIĘKU */
-    #soundToggle {
-      position: fixed; bottom: 20px; right: 20px; background: rgba(255,255,255,0.1);
-      border: none; color: #fff; padding: 10px; border-radius: 50%; cursor: pointer; z-index: 100;
-    }
+    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
   </style>
 </head>
 <body>
 
   <canvas id="bg-canvas"></canvas>
-  <button id="soundToggle">🔊</button>
 
   <div class="tilt-box" id="tiltCard">
     <div id="hologram" class="id-card">
       <div class="scan-laser"></div>
-      <div style="font-size: 9px; color: var(--cyan); margin-bottom: 5px;">VERIFYING IDENTITY...</div>
+      <div style="font-size: 9px; color: var(--cyan); margin-bottom: 5px;">WERYFIKACJA...</div>
       <div id="hologram-name" style="font-size: 18px; font-weight: 900; color: #fff;">---</div>
       <div id="hologram-time" style="font-size: 14px; color: var(--gold);">00:00</div>
     </div>
@@ -137,7 +136,7 @@
 
       <div class="input-box">
         <label>Użytkownik</label>
-        <select id="name" onchange="updateUI()">
+        <select id="name" onchange="checkUserAuth()">
           <option value="">Wybierz...</option>
           <option value="Arek">Arek</option>
           <option value="Paweł">Paweł</option>
@@ -150,24 +149,40 @@
       </div>
 
       <div class="input-box">
-        <label>Godzina</label>
-        <input id="hour" type="time" oninput="updateUI()">
+        <label>Godzina zakończenia</label>
+        <input id="hour" type="time" oninput="updatePreview()">
       </div>
 
-      <button class="btn-cyber" id="saveBtn" onclick="saveData()">Zapisz</button>
+      <div id="auth-section">
+        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">
+          USTAW HASŁO DOSTĘPU (PIERWSZE LOGOWANIE):
+        </div>
+        
+        <div class="input-box">
+          <label id="pass-label">Hasło</label>
+          <input id="password" type="password" placeholder="••••••••" oninput="validateForm()">
+        </div>
 
-      <p id="msg" style="min-height: 20px; font-weight: bold;"></p>
+        <div class="input-box" id="pass-confirm-box" style="display:none;">
+          <label>Potwierdź hasło</label>
+          <input id="password-confirm" type="password" placeholder="••••••••" oninput="validateForm()">
+        </div>
 
-      <div class="status-badge">
-        <span>● LIVE_SYNC</span>
-        <span>● AKTYWNYCH: <span id="playerCount" style="color:var(--cyan)">0</span></span>
+        <div class="pass-hint" id="requirements-hint">
+          Min. 8 znaków, wielka litera, cyfra i znak specjalny.
+        </div>
+        
+        <span class="reset-link" id="resetBtn" style="display:none;" onclick="handleReset()">Zapomniałeś hasła?</span>
       </div>
+
+      <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapisz</button>
+      <p id="msg"></p>
     </div>
   </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -178,66 +193,78 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// --- DŹWIĘKI ---
-const beep = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
-let soundEnabled = true;
-document.getElementById('soundToggle').onclick = () => {
-    soundEnabled = !soundEnabled;
-    document.getElementById('soundToggle').innerText = soundEnabled ? '🔊' : '🔇';
-};
+let isFirstTime = false;
 
-// --- ANIMACJA SIECI W TLE ---
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-let particles = [];
-function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-window.onresize = resize; resize();
-
-class Particle {
-  constructor() {
-    this.x = Math.random() * canvas.width;
-    this.y = Math.random() * canvas.height;
-    this.vx = (Math.random() - 0.5) * 0.5;
-    this.vy = (Math.random() - 0.5) * 0.5;
-  }
-  update() {
-    this.x += this.vx; this.y += this.vy;
-    if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
-    if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
-  }
-}
-for (let i = 0; i < 60; i++) particles.push(new Particle());
-
-function draw() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  particles.forEach((p, i) => {
-    p.update();
-    ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
-    ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI * 2); ctx.fill();
-    for (let j = i + 1; j < particles.length; j++) {
-      const p2 = particles[j];
-      const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-      if (dist < 100) {
-        ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/100})`;
-        ctx.lineWidth = 0.5;
-        ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-      }
+// --- LOGIKA RESETU ---
+window.handleReset = async function() {
+    const code = prompt("Podaj kod resetujący od administratora:");
+    if (code === "0000") {
+        const name = document.getElementById('name').value;
+        alert("Kod poprawny. System umożliwi teraz nadanie nowego hasła.");
+        isFirstTime = true;
+        document.getElementById('pass-confirm-box').style.display = 'block';
+        document.getElementById('first-time-msg').style.display = 'block';
+        document.getElementById('resetBtn').style.display = 'none';
+        document.getElementById('pass-label').innerText = "Ustaw nowe hasło";
+        validateForm();
+    } else {
+        alert("Błędny kod!");
     }
-  });
-  requestAnimationFrame(draw);
 }
-draw();
 
-// --- EFEKT 3D TILT ---
-const tiltBox = document.getElementById('tiltCard');
-document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 20;
-    const y = (window.innerHeight / 2 - e.pageY) / 20;
-    tiltBox.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
-});
+window.checkUserAuth = async function() {
+    const name = document.getElementById('name').value;
+    const authSection = document.getElementById('auth-section');
+    const passConfirmBox = document.getElementById('pass-confirm-box');
+    const firstTimeMsg = document.getElementById('first-time-msg');
+    const resetBtn = document.getElementById('resetBtn');
+    const passLabel = document.getElementById('pass-label');
 
-// --- UI LOGIC ---
-window.updateUI = () => {
+    updatePreview();
+    if (!name) { authSection.style.display = 'none'; return; }
+
+    const userDoc = await getDoc(doc(db, "passwords", name));
+    authSection.style.display = 'block';
+
+    if (!userDoc.exists()) {
+        isFirstTime = true;
+        passConfirmBox.style.display = 'block';
+        firstTimeMsg.style.display = 'block';
+        resetBtn.style.display = 'none';
+        passLabel.innerText = "Ustaw nowe hasło";
+    } else {
+        isFirstTime = false;
+        passConfirmBox.style.display = 'none';
+        firstTimeMsg.style.display = 'none';
+        resetBtn.style.display = 'block';
+        passLabel.innerText = "Wpisz hasło";
+    }
+    validateForm();
+}
+
+window.validateForm = function() {
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value;
+    const passConf = document.getElementById('password-confirm').value;
+    const btn = document.getElementById('saveBtn');
+    const hint = document.getElementById('requirements-hint');
+
+    const passRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    let isValid = name && hour && pass;
+
+    if (isFirstTime) {
+        const passComplexity = passRegex.test(pass);
+        hint.style.display = 'block';
+        hint.classList.toggle('valid', passComplexity);
+        isValid = isValid && (pass === passConf) && passComplexity;
+    } else {
+        hint.style.display = 'none';
+    }
+    btn.disabled = !isValid;
+}
+
+window.updatePreview = () => {
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
     const holo = document.getElementById('hologram');
@@ -245,30 +272,57 @@ window.updateUI = () => {
         document.getElementById('hologram-name').innerText = name;
         document.getElementById('hologram-time').innerText = hour;
         holo.classList.add('active');
-        if(soundEnabled) beep.play();
     } else { holo.classList.remove('active'); }
-};
-
-onSnapshot(collection(db, "users"), (s) => document.getElementById("playerCount").innerText = s.size);
+}
 
 window.saveData = async function() {
-  const name = document.getElementById("name").value;
-  const hour = document.getElementById("hour").value;
-  if (!name || !hour) return;
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value;
+    const msg = document.getElementById('msg');
 
-  const btn = document.getElementById("saveBtn");
-  btn.innerText = "PRZESYŁANIE...";
-  btn.disabled = true;
+    try {
+        if (isFirstTime) {
+            await setDoc(doc(db, "passwords", name), { password: pass });
+        } else {
+            const userDoc = await getDoc(doc(db, "passwords", name));
+            if (userDoc.data().password !== pass) {
+                msg.style.color = "var(--error)";
+                msg.innerText = "BŁĘDNE HASŁO!";
+                return;
+            }
+        }
+        await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
+        msg.style.color = "var(--cyan)";
+        msg.innerText = "ZAPISANO POMYŚLNIE!";
+        setTimeout(() => location.reload(), 2000);
+    } catch (e) { alert(e.message); }
+}
 
-  try {
-    await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
-    document.getElementById("msg").innerText = "AUTORYZACJA POMYŚLNA ✅";
-    document.getElementById("msg").style.color = "var(--cyan)";
-    if(soundEnabled) beep.play();
-    setTimeout(() => { location.reload(); }, 2000);
-  } catch (e) { alert(e.message); }
-};
+// --- ANIMACJA TŁA ---
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+let particles = [];
+for (let i = 0; i < 50; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3 });
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach(p => {
+        p.x += p.vx; p.y += p.vy;
+        if(p.x<0 || p.x>canvas.width) p.vx*=-1;
+        if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.2)';
+        ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
+    });
+    requestAnimationFrame(draw);
+}
+draw();
+
+document.addEventListener('mousemove', (e) => {
+    const x = (window.innerWidth / 2 - e.pageX) / 40;
+    const y = (window.innerHeight / 2 - e.pageY) / 40;
+    document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+});
 </script>
 </body>
 </html>
-
