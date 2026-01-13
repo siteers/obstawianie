@@ -3,91 +3,130 @@
 <head>
   <meta charset="UTF-8">
   <title>Dodaj użytkownika</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 
   <style>
-    /* PODSTAWOWE STYLE (Light Mode) */
+    :root {
+      --primary: #0077ff;
+      --success: #00ff88;
+      --bg-light: #f4f7f6;
+      --card-light: #ffffff;
+      --bg-dark: #0f172a;
+      --card-dark: #1e293b;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg-light);
       margin: 0;
       padding: 0;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
-      transition: background-color 0.3s, color 0.3s;
+      transition: all 0.3s ease;
     }
 
-    /* DARK MODE */
     body.dark {
-      background: #121212;
-      color: #f1f1f1;
+      background: var(--bg-dark);
+      color: #f1f5f9;
     }
+
+    /* NAGŁÓWEK POWITALNY */
+    .welcome-text {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .welcome-text h1 { margin: 0; font-size: 24px; }
+    .welcome-text p { opacity: 0.7; margin: 5px 0; }
 
     .container {
-      background: white;
-      padding: 25px;
-      border-radius: 12px;
+      background: var(--card-light);
+      padding: 30px;
+      border-radius: 20px;
       width: 90%;
-      max-width: 450px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      max-width: 400px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
       text-align: center;
-      animation: fadeIn 0.4s ease;
-      transition: background-color 0.3s, box-shadow 0.3s;
+      position: relative;
+      overflow: hidden;
     }
 
     body.dark .container {
-      background: #1e1e1e;
-      box-shadow: 0 10px 30px rgba(255,255,255,0.05);
+      background: var(--card-dark);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
-    h2 {
-      margin-top: 0;
+    /* INPUTY I SELECTY */
+    .input-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+    .input-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      opacity: 0.8;
     }
 
     select, input {
-      width: 90%;
-      padding: 12px;
-      margin: 10px 0;
+      width: 100%;
+      padding: 14px;
       font-size: 16px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
-      outline: none;
-      transition: 0.2s;
+      border-radius: 12px;
+      border: 2px solid #e2e8f0;
+      background: #fff;
+      transition: 0.3s;
       box-sizing: border-box;
-      background: white;
-      color: black;
+      outline: none;
     }
 
     body.dark select, body.dark input {
-      background: #2a2a2a;
-      border-color: #444;
-      color: white;
+      background: #334155;
+      border-color: #475569;
+      color: #fff;
     }
 
     select:focus, input:focus {
-      border-color: #0077ff;
-      box-shadow: 0 0 8px rgba(0,123,255,0.4);
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(0,119,255,0.2);
     }
 
     button.save-btn {
-      margin-top: 10px;
-      padding: 12px 25px;
-      background: #0077ff;
+      width: 100%;
+      padding: 16px;
+      background: var(--primary);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       cursor: pointer;
-      font-size: 16px;
-      transition: 0.2s;
+      font-size: 18px;
+      font-weight: bold;
+      transition: 0.3s;
+      box-shadow: 0 4px 12px rgba(0,119,255,0.3);
     }
 
     button.save-btn:hover {
-      background: #005fcc;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(0,119,255,0.4);
     }
 
-    /* PRZYCISK TRYBU (Spójny z pozostałymi stronami) */
+    button.save-btn:active { transform: scale(0.98); }
+
+    /* STATUS "KTO JUŻ DODAŁ" */
+    .status-list {
+      margin-top: 25px;
+      font-size: 13px;
+      background: rgba(0,0,0,0.03);
+      padding: 10px;
+      border-radius: 10px;
+    }
+    body.dark .status-list { background: rgba(255,255,255,0.03); }
+    .status-item { display: inline-block; margin: 3px; padding: 4px 8px; background: rgba(0,119,255,0.1); border-radius: 6px; }
+
     #darkModeBtn {
       position: fixed;
       top: 15px;
@@ -96,63 +135,77 @@
       border-radius: 30px;
       border: none;
       cursor: pointer;
-      font-size: 14px;
       font-weight: bold;
-      background: #111;
+      background: #1e293b;
       color: #fff;
-      z-index: 100000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      z-index: 1000;
       transition: 0.3s;
     }
 
-    body.dark #darkModeBtn {
-      background: #f1f1f1;
-      color: #111;
-    }
+    body.dark #darkModeBtn { background: #f1f5f9; color: #1e293b; }
 
     #msg {
       margin-top: 15px;
       font-weight: bold;
-      color: green;
+      min-height: 20px;
     }
 
-    body.dark #msg {
-      color: #44ff44;
+    /* ANIMACJA SUKCESU */
+    .success-pulse { animation: pulse 0.5s ease; }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); border-color: var(--success); }
+      100% { transform: scale(1); }
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
+    @media (max-width: 480px) {
+      .container { padding: 20px; }
+      body { padding: 15px; }
     }
   </style>
 </head>
 
-<body class="dark"> <button id="darkModeBtn">☀️ Light mode</button>
+<body class="dark">
+  <button id="darkModeBtn">☀️ Light mode</button>
 
-  <div class="container">
-    <h2>Dodaj swoje dane</h2>
+  <div class="welcome-text">
+    <h1 id="greeting">Dzień dobry!</h1>
+    <p>Gotowy na dzisiejsze obstawianie?</p>
+  </div>
 
-    <select id="name">
-      <option value="">Wybierz imię</option>
-      <option value="Arek">Arek</option>
-      <option value="Paweł">Paweł</option>
-      <option value="Grzesiek Sz">Grzesiek Sz</option>
-      <option value="Grzesiek P">Grzesiek P</option>
-      <option value="Krzysiek">Krzysiek</option>
-      <option value="Mariusz">Mariusz</option>
-      <option value="Dominik">Dominik</option>
-    </select>
+  <div class="container" id="formContainer">
+    <div class="input-group">
+      <label>Kim jesteś?</label>
+      <select id="name">
+        <option value="">Wybierz swoje imię</option>
+        <option value="Arek">Arek</option>
+        <option value="Paweł">Paweł</option>
+        <option value="Grzesiek Sz">Grzesiek Sz</option>
+        <option value="Grzesiek P">Grzesiek P</option>
+        <option value="Krzysiek">Krzysiek</option>
+        <option value="Mariusz">Mariusz</option>
+        <option value="Dominik">Dominik</option>
+      </select>
+    </div>
 
-    <input id="hour" type="time" placeholder="Godzina">
+    <div class="input-group">
+      <label>O której kończysz?</label>
+      <input id="hour" type="time">
+    </div>
 
-    <button class="save-btn" onclick="saveData()">Zapisz</button>
+    <button class="save-btn" onclick="saveData()">Zatwierdź zgłoszenie</button>
 
     <p id="msg"></p>
+
+    <div class="status-list" id="statusList">
+      <div style="margin-bottom: 5px; opacity: 0.6;">Ostatnio dodali:</div>
+      <div id="recentUsers">...</div>
+    </div>
   </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, limit, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -166,42 +219,68 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-/* DARK MODE LOGIC */
+// DYNAMICZNE POWITANIE
+const hour = new Date().getHours();
+const greeting = document.getElementById("greeting");
+if (hour < 12) greeting.innerText = "Dzień dobry!";
+else if (hour < 18) greeting.innerText = "Miłego popołudnia!";
+else greeting.innerText = "Dobry wieczór!";
+
+// DARK MODE
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
     document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
-    darkBtn.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
 };
 
-/* Zapis danych */
-window.saveData = async function() {
-  const name = document.getElementById("name").value;
-  const hour = document.getElementById("hour").value;
+// PODGLĄD "OSTATNIO DODALI" (LIVE)
+onSnapshot(query(collection(db, "users"), limit(5)), (snapshot) => {
+    const recentDiv = document.getElementById("recentUsers");
+    const names = snapshot.docs.map(doc => doc.data().name);
+    if(names.length === 0) {
+      recentDiv.innerText = "Brak zgłoszeń";
+      return;
+    }
+    recentDiv.innerHTML = names.map(n => `<span class="status-item">${n}</span>`).join("");
+});
 
-  if (!name || !hour) {
-    alert("Uzupełnij oba pola!");
+// ZAPIS DANYCH
+window.saveData = async function() {
+  const nameEl = document.getElementById("name");
+  const hourEl = document.getElementById("hour");
+  const container = document.getElementById("formContainer");
+  const msg = document.getElementById("msg");
+
+  if (!nameEl.value || !hourEl.value) {
+    msg.style.color = "red";
+    msg.innerText = "Uzupełnij oba pola!";
     return;
   }
 
   try {
     await addDoc(collection(db, "users"), {
-      name: name,
-      hour: hour
+      name: nameEl.value,
+      hour: hourEl.value,
+      timestamp: new Date()
     });
 
-    document.getElementById("msg").innerText = "Zapisano!";
-    document.getElementById("name").value = "";
-    document.getElementById("hour").value = "";
+    // Efekt sukcesu
+    container.classList.add("success-pulse");
+    msg.style.color = "var(--success)";
+    msg.innerText = "Zgłoszenie wysłane! 🚀";
+    
+    nameEl.value = "";
+    hourEl.value = "";
 
     setTimeout(() => {
-      document.getElementById("msg").innerText = "";
-    }, 2000);
+      msg.innerText = "";
+      container.classList.remove("success-pulse");
+    }, 3000);
+
   } catch (e) {
-    alert("Błąd zapisu: " + e.message);
+    alert("Błąd: " + e.message);
   }
 };
 </script>
-
 </body>
 </html>
