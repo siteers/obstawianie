@@ -26,7 +26,6 @@
       perspective: 1000px;
     }
 
-    /* PRZYWRÓCONE TŁO */
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
 
     .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
@@ -118,6 +117,12 @@
     .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
 
     #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
+
+    /* PRZYWRÓCONY LICZNIK */
+    .anon-counter {
+      margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+      font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;
+    }
   </style>
 </head>
 <body>
@@ -178,12 +183,16 @@
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
+
+      <div class="anon-counter">
+        Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--cyan);">0</span>
+      </div>
     </div>
   </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDoc, setDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -212,6 +221,11 @@ window.handleReset = async function() {
         alert("Błędny kod!");
     }
 }
+
+// --- WERYFIKACJA UŻYTKOWNIKA I LICZNIK ---
+onSnapshot(collection(db, "users"), (snapshot) => {
+    document.getElementById("playerCount").innerText = snapshot.size;
+});
 
 window.checkUserAuth = async function() {
     const name = document.getElementById('name').value;
@@ -243,7 +257,7 @@ window.checkUserAuth = async function() {
     validateForm();
 }
 
-// --- NOWA WALIDACJA (MIN 4 ZNAKI + CYFRA) ---
+// --- WALIDACJA (MIN 4 ZNAKI + CYFRA) ---
 window.validateForm = function() {
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
@@ -252,7 +266,7 @@ window.validateForm = function() {
     const btn = document.getElementById('saveBtn');
     const hint = document.getElementById('requirements-hint');
 
-    const passRegex = /^(?=.*\d).{4,}$/; // Min 4 znaki, przynajmniej jedna cyfra
+    const passRegex = /^(?=.*\d).{4,}$/; 
     let isValid = name && hour && pass;
 
     if (isFirstTime) {
@@ -306,21 +320,21 @@ const canvas = document.getElementById('bg-canvas');
 const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let particles = [];
-for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.3, vy: (Math.random()-0.5)*0.3 });
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach(p => {
         p.x += p.vx; p.y += p.vy;
         if(p.x<0 || p.x>canvas.width) p.vx*=-1;
         if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.2)';
         ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
     });
     requestAnimationFrame(draw);
 }
 draw();
 
-// EFEKT TILT (POCHYLENIE)
+// EFEKT TILT
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 40;
     const y = (window.innerHeight / 2 - e.pageY) / 40;
