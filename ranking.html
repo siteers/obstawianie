@@ -3,65 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <title>🏆 Pro Dashboard - Obstawianie</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
             --gold: #d4af37;
-            --silver: #c0c0c0;
-            --bronze: #cd7f32;
-            --bg-dark: #0f0f0f;
+            --cyan: #00d4ff;
+            --bg: #f2f2f2;
+            --text: #111;
+            --glass: rgba(255, 255, 255, 0.9);
+            --border: rgba(0, 0, 0, 0.1);
             --card-dark: #1a1a1a;
         }
 
-        body { font-family: 'Inter', -apple-system, sans-serif; background: #f0f2f5; color: #111; margin: 0; padding: 20px; transition: 0.3s; }
-        body.dark { background: var(--bg-dark); color: #fff; }
+        body.dark {
+            --bg: #020408;
+            --text: #fff;
+            --glass: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.1);
+        }
 
-        .dashboard-container { max-width: 1000px; margin: 0 auto; }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            perspective: 1000px;
+            transition: 0.3s;
+            overflow-x: hidden;
+        }
 
+        /* TŁO SIECI NEURONOWEJ */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        .dashboard-container { 
+            max-width: 1000px; 
+            margin: 0 auto; 
+            z-index: 10; 
+            position: relative;
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
+
+        /* STATS GRID */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); text-align: center; }
-        body.dark .stat-card { background: var(--card-dark); border: 1px solid #333; }
-        .stat-card h3 { margin: 0; font-size: 12px; text-transform: uppercase; color: #888; }
-        .stat-card p { margin: 10px 0 0; font-size: 20px; font-weight: bold; color: var(--gold); line-height: 1.3; }
+        .stat-card { 
+            background: var(--glass); 
+            backdrop-filter: blur(15px);
+            padding: 20px; 
+            border-radius: 20px; 
+            border: 1px solid var(--border);
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+        .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
+        .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
-        .tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
-        body.dark .tabs { border-bottom-color: #333; }
-        .tab-link { padding: 10px 20px; border: none; background: none; color: #888; cursor: pointer; font-weight: bold; border-radius: 8px; transition: 0.3s; }
-        .tab-link.active { background: var(--gold); color: #000; }
+        /* TABS */
+        .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
+        .tab-link { 
+            padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
+            color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; 
+            transition: 0.3s; font-size: 13px;
+        }
+        .tab-link.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+
         .tab-content { display: none; animation: fadeIn 0.5s ease; }
         .tab-content.active { display: block; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .glass-panel { background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); margin-bottom: 20px; }
-        body.dark .glass-panel { background: var(--card-dark); border: 1px solid #333; }
+        /* PANELS & TABLES */
+        .glass-panel { 
+            background: var(--glass); 
+            backdrop-filter: blur(20px);
+            padding: 25px; 
+            border-radius: 25px; 
+            border: 1px solid var(--border);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            margin-bottom: 20px; 
+        }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #eee; }
-        body.dark th, body.dark td { border-bottom-color: #333; }
-        th { color: #888; font-size: 13px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-weight: bold; }
+        th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+        td { font-size: 14px; }
 
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; }
+        /* CHARTS */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
-        canvas { width: 100% !important; max-height: 350px; }
+        h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
 
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: var(--card-dark); color: white; z-index: 1000; }
-        body.dark #darkModeBtn { background: white; color: black; }
+        #darkModeBtn { 
+            position: fixed; top: 15px; right: 15px; padding: 10px 18px; 
+            border-radius: 30px; border: none; cursor: pointer; font-weight: bold; 
+            background: #111; color: white; z-index: 1000; transition: 0.3s;
+        }
+        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
         
-        .deleteBtn { color: #ff4d4d; cursor: pointer; font-weight: bold; font-size: 18px; }
+        .deleteBtn { color: var(--error); cursor: pointer; font-size: 20px; transition: 0.2s; }
+        .deleteBtn:hover { transform: scale(1.2); }
+
+        @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
+            th, td { padding: 10px; font-size: 12px; }
+            .glass-panel { padding: 15px; }
+        }
     </style>
 </head>
 <body class="dark">
+    <canvas id="bg-canvas"></canvas>
     <button id="darkModeBtn">☀️ Light mode</button>
 
-    <div class="dashboard-container">
+    <div class="dashboard-container" id="tilt-wrapper">
         <h1>📊 Game Analytics Dashboard</h1>
 
         <div class="stats-grid">
             <div class="stat-card"><h3>Lider Rankingu</h3><p id="top-player">-</p></div>
             <div class="stat-card"><h3>Ostatni Zwycięzca</h3><p id="last-winner">-</p></div>
-            <div class="stat-card"><h3>Suma Rozegranych Rund</h3><p id="total-rounds">0</p></div>
+            <div class="stat-card"><h3>Rozegrane Rundy</h3><p id="total-rounds">0</p></div>
         </div>
 
         <div class="tabs">
@@ -102,10 +166,12 @@
 
         <div id="history-tab" class="tab-content">
             <div class="glass-panel">
-                <table id="historyTable">
-                    <thead><tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table id="historyTable">
+                        <thead><tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -114,30 +180,75 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
-            authDomain: "obstaiwanie.firebaseapp.com",
-            projectId: "obstaiwanie"
-        };
-
+        const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // --- ANIMACJA TŁA XXII WIEK ---
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+        let particles = [];
+        function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
+        window.onresize = resize; resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * bgCanvas.width;
+                this.y = Math.random() * bgCanvas.height;
+                this.vx = (Math.random() - 0.5) * 0.4;
+                this.vy = (Math.random() - 0.5) * 0.4;
+            }
+            update() {
+                this.x += this.vx; this.y += this.vy;
+                if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1;
+                if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1;
+            }
+        }
+        for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+        function drawBg() {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            if(document.body.classList.contains('dark')) {
+                particles.forEach((p, i) => {
+                    p.update();
+                    bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+                    bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const p2 = particles[j];
+                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                        if (dist < 120) {
+                            bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
+                            bgCtx.lineWidth = 0.5;
+                            bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke();
+                        }
+                    }
+                });
+            }
+            requestAnimationFrame(drawBg);
+        }
+        drawBg();
+
+        // --- EFEKT 3D TILT (SPOWOLNIONY) ---
+        const tiltWrapper = document.getElementById('tilt-wrapper');
+        document.addEventListener('mousemove', (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 100;
+            const y = (window.innerHeight / 2 - e.pageY) / 100;
+            tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+        });
+
+        // --- KONFIGURACJA WYKRESÓW ---
+        const chartColor = '#d4af37';
+        const chartTextColor = '#888';
 
         const barCtx = document.getElementById('barChart').getContext('2d');
         const pieCtx = document.getElementById('pieChart').getContext('2d');
         const medalCtx = document.getElementById('medalChart').getContext('2d');
         const lineCtx = document.getElementById('lineChart').getContext('2d');
         
-        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } } } });
-        let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: '#888' } } } } });
-        let medalChart = new Chart(medalCtx, { 
-            type: 'bar', 
-            options: { responsive: true, scales: { x: { stacked: true }, y: { stacked: true, beginAtZero: true } }, plugins: { legend: { position: 'top', labels: { color: '#888' } } } } 
-        });
-        let lineChart = new Chart(lineCtx, { 
-            type: 'line', 
-            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 3 } } } 
-        });
+        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } } } });
+        let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: chartTextColor } } } } });
+        let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartTextColor } }, y: { stacked: true, beginAtZero: true, ticks: { color: chartTextColor } } }, plugins: { legend: { position: 'top', labels: { color: chartTextColor } } } } });
+        let lineChart = new Chart(lineCtx, { type: 'line', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 3, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } } } });
 
         window.openTab = (evt, tabName) => {
             const contents = document.getElementsByClassName("tab-content");
@@ -153,7 +264,6 @@
 
         function refreshStats() {
             if (!playersData.length) return;
-
             const stats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
                 historyData.forEach(round => {
@@ -170,23 +280,18 @@
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts };
             });
 
-            // LIDER RANKINGU (uwzględnia remisy)
             const maxPoints = stats[0].points;
             const topPlayers = stats.filter(p => p.points === maxPoints).map(p => p.name);
             document.getElementById('top-player').textContent = topPlayers.join(", ");
 
-            // TABELA RANKINGU (miejsce współdzielone - system sportowy)
             const rankTbody = document.querySelector("#rankTable tbody");
             rankTbody.innerHTML = "";
             let currentPlace = 1;
             stats.forEach((p, i) => {
-                if (i > 0 && p.points < stats[i-1].points) {
-                    currentPlace = i + 1;
-                }
-                rankTbody.innerHTML += `<tr><td>${currentPlace}</td><td><b>${p.name}</b></td><td>${p.points}</td><td>${p.totalPodiums}</td></tr>`;
+                if (i > 0 && p.points < stats[i-1].points) currentPlace = i + 1;
+                rankTbody.innerHTML += `<tr><td>${currentPlace}</td><td><b style="color:var(--cyan)">${p.name}</b></td><td>${p.points}</td><td>${p.totalPodiums}</td></tr>`;
             });
 
-            // AKTUALIZACJA WYKRESÓW
             const names = stats.map(s => s.name);
             medalChart.data = {
                 labels: names,
@@ -215,14 +320,7 @@
 
             lineChart.data = {
                 labels: names,
-                datasets: [{ 
-                    data: stats.map(s => s.avgPts), 
-                    borderColor: '#d4af37', 
-                    backgroundColor: 'rgba(212, 175, 55, 0.1)', 
-                    fill: true, 
-                    tension: 0.4, 
-                    pointRadius: 5 
-                }]
+                datasets: [{ data: stats.map(s => s.avgPts), borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)', fill: true, tension: 0.4, pointRadius: 5 }]
             };
             lineChart.update();
         }
@@ -231,30 +329,16 @@
             historyData = [];
             const historyList = document.querySelector("#historyTable tbody");
             historyList.innerHTML = "";
-            
             snap.forEach(documentDoc => {
                 let data = documentDoc.data();
-                data.winners = data.winners.map((w, index) => {
-                    if (w.rank === undefined || w.rank === null) return { ...w, rank: index + 1 };
-                    return w;
-                });
+                data.winners = data.winners.map((w, index) => (w.rank === undefined) ? { ...w, rank: index + 1 } : w);
                 historyData.push(data);
-                
                 const winnersString = data.winners.map(w => `${w.rank}. ${w.name}`).join(", ");
-                historyList.innerHTML += `
-                    <tr>
-                        <td>${data.date}</td>
-                        <td style="font-size:12px">${winnersString}</td>
-                        <td><span class="deleteBtn" onclick="deleteHistoryRecord('${documentDoc.id}')">×</span></td>
-                    </tr>`;
+                historyList.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${winnersString}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${documentDoc.id}')">×</span></td></tr>`;
             });
-
             document.getElementById('total-rounds').textContent = historyData.length;
-            
-            // OSTATNI ZWYCIĘZCA (uwzględnia wielu zwycięzców w rzucie)
             if(historyData.length > 0) {
-                const lastRound = historyData[0];
-                const winners = lastRound.winners.filter(w => w.rank === 1).map(w => w.name);
+                const winners = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name);
                 document.getElementById('last-winner').textContent = winners.join(", ");
             }
             refreshStats();
@@ -274,8 +358,7 @@
                 const data = snap.data();
                 for(let i=0; i<data.winners.length; i++){
                     const w = data.winners[i];
-                    const r = (w.rank !== undefined) ? w.rank : (i+1);
-                    const pts = r == 1 ? -3 : (r == 2 ? -2 : -1);
+                    const pts = ((w.rank !== undefined) ? w.rank : (i+1)) == 1 ? -3 : (((w.rank !== undefined) ? w.rank : (i+1)) == 2 ? -2 : -1);
                     const ref = doc(db, "ranking", w.name);
                     const pSnap = await getDoc(ref);
                     if(pSnap.exists()){
