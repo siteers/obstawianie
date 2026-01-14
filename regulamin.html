@@ -11,6 +11,12 @@
             --bg: #050810;
             --glass: rgba(15, 23, 42, 0.7);
             --border: rgba(255, 255, 255, 0.1);
+            --error: #ff4d4d;
+        }
+
+        body.dark {
+            --bg: #020408;
+            --glass: rgba(15, 23, 42, 0.75);
         }
 
         body {
@@ -26,7 +32,6 @@
             transition: 0.3s;
         }
 
-        /* TŁO SIECI NEURONOWEJ */
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
         #tilt-wrapper {
@@ -48,21 +53,22 @@
         }
 
         h1 { text-align: center; color: var(--gold); font-size: 28px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; }
-        h2 { border-bottom: 2px solid var(--cyan); padding-bottom: 5px; margin-top: 35px; font-size: 18px; color: var(--gold); text-transform: uppercase; }
+        h2 { border-bottom: 2px solid var(--cyan); padding-bottom: 5px; margin-top: 35px; font-size: 20px; color: var(--gold); }
         p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
         .point-box { 
             background: rgba(0, 212, 255, 0.1); 
-            padding: 20px; 
-            border-radius: 15px; 
+            padding: 15px; 
+            border-radius: 12px; 
             border-left: 5px solid var(--cyan); 
             margin: 20px 0; 
-            font-size: 14px; 
+            font-size: 15px;
+            font-weight: bold;
         }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden; }
         th, td { padding: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        th { background: rgba(255,255,255,0.05); color: var(--gold); }
+        th { background: rgba(255, 255, 255, 0.05); color: var(--gold); }
 
         #darkModeBtn { 
             position: fixed; top: 15px; right: 15px; padding: 10px 18px; 
@@ -70,7 +76,6 @@
             background: #fff; color: #111; font-weight: bold; z-index: 1000;
         }
 
-        /* ACCEPTANCE FLOW */
         .acceptance-flow { 
             text-align: center; margin-top: 40px; padding: 30px; 
             border: 2px dashed var(--gold); border-radius: 30px; 
@@ -78,52 +83,38 @@
         }
         
         #scan-zone {
-            width: 100px; height: 100px; background: rgba(0,0,0,0.5); 
+            width: 90px; height: 90px; background: rgba(0,0,0,0.5); 
             border: 4px solid var(--cyan); border-radius: 50%; 
             display: inline-flex; align-items: center; justify-content: center;
-            font-size: 40px; cursor: pointer; position: relative; transition: 0.3s; margin: 20px auto;
+            font-size: 40px; cursor: pointer; position: relative; transition: 0.3s; margin: 15px auto;
             user-select: none; -webkit-tap-highlight-color: transparent;
         }
-        #scan-zone.active { background: var(--cyan); transform: scale(0.95); box-shadow: 0 0 30px var(--cyan); }
+        #scan-zone.active { background: var(--cyan); transform: scale(0.9); box-shadow: 0 0 30px var(--cyan); }
         .pulse { position: absolute; width: 100%; height: 100%; border-radius: 50%; border: 4px solid var(--cyan); animation: pulse 1.5s infinite; opacity: 0; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.6); opacity: 0; } }
 
         #signature-section { display: none; margin-top: 20px; animation: fadeIn 0.5s ease; }
-        canvas { 
-            border: 2px solid var(--border); border-radius: 15px; 
-            background: #fff; touch-action: none; cursor: crosshair; 
-            max-width: 100%; height: auto; margin-top: 10px;
-        }
+        canvas { border: 2px solid var(--border); border-radius: 12px; background: #fafafa; touch-action: none; cursor: crosshair; max-width: 100%; height: auto; }
         
-        .btns { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
-        button.action { padding: 12px 24px; border-radius: 12px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; }
-        .btn-save { background: var(--gold); color: #000; }
-        .btn-clear { background: rgba(255,255,255,0.1); color: #fff; }
+        .btns { margin-top: 15px; display: flex; gap: 10px; justify-content: center; }
+        button.action { padding: 10px 18px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; font-size: 14px; text-transform: uppercase; }
+        .btn-save { background: #28a745; color: white; }
+        .btn-clear { background: #6c757d; color: white; }
         
-        input#signer-name { 
-            padding: 12px; width: 90%; max-width: 250px; margin-bottom: 15px; 
-            border-radius: 12px; border: 1px solid var(--border); 
-            background: rgba(0,0,0,0.5); color: #fff; text-align: center;
-        }
+        input#signer-name { padding: 10px; width: 80%; max-width: 220px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.5); color: #fff; text-align: center; }
 
-        /* HISTORY */
         #history { margin-top: 50px; border-top: 1px solid var(--border); padding-top: 30px; }
-        .sig-entry { 
-            display: flex; align-items: center; justify-content: space-between; 
-            padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.03); 
-            margin-bottom: 10px; border: 1px solid var(--border); gap: 15px; 
-        }
-        .sig-entry img { width: 120px; height: 50px; object-fit: contain; background: #fff; border-radius: 8px; }
+        .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.03); margin-bottom: 10px; border: 1px solid var(--border); gap: 15px; }
+        .sig-entry img { width: 130px; height: 60px; object-fit: contain; background: white; border-radius: 5px; }
         .sig-info { text-align: left; flex: 1; }
         .sig-info strong { font-size: 15px; display: block; color: var(--gold); }
         .sig-info small { font-size: 11px; color: #777; }
-        .btn-delete { background: none; border: 1px solid var(--error); color: var(--error); border-radius: 50%; width: 28px; height: 28px; cursor: pointer; }
+        .btn-delete { background: none; border: 1px solid var(--error); color: var(--error); border-radius: 50%; width: 25px; height: 25px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        @media (max-width: 480px) { .container { padding: 20px; } h1 { font-size: 20px; } }
     </style>
 </head>
-<body>
+<body class="dark">
 
 <canvas id="bg-canvas"></canvas>
 <button id="darkModeBtn">🌙 Dark mode</button>
@@ -134,45 +125,60 @@
 
         <section>
             <h2>1. Zasady Ogólne</h2>
-            <p>Celem gry jest wytypowanie godziny najbliższej momentowi zatrzymania zegara (przycisk STOP). Każdy uczestnik oddaje jeden głos na rundę.</p>
+            <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP). Każdy uczestnik może oddać jeden głos w danej rundzie.</p>
         </section>
 
         <section>
-            <h2>2. Punktacja Sportowa</h2>
+            <h2>2. System Punktacji (Sportowy)</h2>
+            <p>Punkty przyznawane są trzem najlepszym wynikom. W przypadku remisów stosujemy system sportowy (miejsca dzielone):</p>
+            
             <div class="point-box">
-                🥇 1. msc: <b>3 pkt</b> | 🥈 2. msc: <b>2 pkt</b> | 🥉 3. msc: <b>1 pkt</b>
+                🥇 1. miejsce: 3 pkt | 🥈 2. miejsce: 2 pkt | 🥉 3. miejsce: 1 pkt
             </div>
+
             <table>
-                <tr><th>Sytuacja</th><th>Podział Punktów</th></tr>
-                <tr><td>2 osoby na 1. msc</td><td>Obie po 3 pkt. Brak 2. msc. Trzecia osoba ma 1 pkt.</td></tr>
-                <tr><td>3+ osoby na 1. msc</td><td>Wszyscy po 3 pkt. Brak pkt za 2. i 3. msc.</td></tr>
-                <tr><td>1 os. na 1., 2 os. na 2.</td><td>Lider 3 pkt, osoby na 2. msc po 2 pkt. Brak 3. msc.</td></tr>
+                <thead>
+                    <tr><th>Sytuacja</th><th>Podział Punktów</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>2 osoby na 1. miejscu</td><td>Obie po 3 pkt. Brak 2. miejsca. Kolejna osoba to 3. miejsce (1 pkt).</td></tr>
+                    <tr><td>2 osoby na 1. i 2 lub więcej na 2. msc</td><td>Pierwsza dwójka po 3 pkt. Kolejna dwójka po 1 pkt (jako 3. miejsce).</td></tr>
+                    <tr><td>3 lub więcej osób na 1. msc</td><td>Wszyscy po 3 pkt. Nikt nie otrzymuje punktów za 2. i 3. miejsce.</td></tr>
+                    <tr><td>1 osoba na 1. i 2 osoby na 2.</td><td>Lider 3 pkt, osoby na 2. miejscu po 2 pkt. Brak 3. miejsca.</td></tr>
+                    <tr><td>1 osoba na 1., 1 na 2. i 2 na 3.</td><td>1. msc (3 pkt), 2. msc (2 pkt), obie osoby na 3. msc po 1 pkt.</td></tr>
+                </tbody>
             </table>
         </section>
 
         <section>
-            <h2>3. Protokół Anonimowości</h2>
-            <p>Do czasu odkrycia danych przez admina, uczestnicy widnieją pod pseudonimami (np. <em>Jarołd</em>), aby zachować bezstronność obstawiania.</p>
+            <h2>3. Anonimowość (Ksywki)</h2>
+            <p>Do momentu zakończenia rundy lub odkrycia imion przez administratora, uczestnicy widnieją pod losowymi pseudonimami (np. <em>leonard bogumił</em> czy <em>Kebab z falafelem</em>), aby zachować pełną anonimowość podczas obstawiania.</p>
         </section>
 
         <section>
-            <h2>4. Czas Operacyjny</h2>
-            <p>Obstawianie powinno nastąpić niezwłocznie po udostępnieniu formularza, synchronicznie z pozostałymi uczestnikami.</p>
+            <h2>4. Czas Obstawiania</h2>
+            <p>Kwestie maksymalnej godziny obstawiania zależą od średniej godziny przybycia osoby obstawianej i nie są jednoznacznie określone. Wszystkie osoby biorące udział w danym obstawianiu powinny zrobić to w zbliżonej do siebie godzinie. Jako zbliżoną godzinę należy zrozumieć niezwłocznie – w tym samym momencie co wszyscy pozostali uczestnicy.</p>
+        </section>
+
+        <section>
+            <h2>5. Zmiany Regulaminu</h2>
+            <p>Jakiekolwiek zmiany regulaminowe wymagają powołania komisji większościowej uczestników gry (przy 7 osobach są to 4 osoby, które są zgodne w danych zmianach przepisów), aby nadać nowe lub zmienić istniejące przepisy.</p>
         </section>
 
         <div class="acceptance-flow">
             <div id="step-1">
-                <h3>🔐 Weryfikacja Dostępu</h3>
-                <p>Przytrzymaj skaner biometryczny (2 sek), aby odblokować podpis.</p>
+                <h3>🔐 Akceptacja Regulaminu</h3>
+                <p>KROK 1: Przytrzymaj palec na skanerze (2 sek), aby zweryfikować tożsamość.</p>
                 <div id="scan-zone">
                     <div class="pulse" id="pulse-ring"></div>
                     ☝️
                 </div>
-                <div id="status" style="font-size: 11px; font-weight: bold; color: var(--cyan);">OCZEKIWANIE NA DOTYK</div>
+                <div id="status" style="font-size: 13px; font-weight: bold; color: var(--cyan);">DOTKNIJ I PRZYTRZYMAJ</div>
             </div>
 
             <div id="signature-section">
-                <h3>✍️ Podpis Cyfrowy</h3>
+                <h3>✍️ Podpis Elektroniczny</h3>
+                <p>KROK 2: Wpisz imię i złóż podpis palcem na polu poniżej.</p>
                 <input type="text" id="signer-name" placeholder="Twoje imię / ksywka">
                 <br>
                 <canvas id="sig-canvas" width="300" height="130"></canvas>
@@ -184,8 +190,8 @@
         </div>
 
         <div id="history">
-            <h3>📄 Rejestr Akceptacji</h3>
-            <div id="sig-list">Inicjalizacja bazy danych...</div>
+            <h3>📄 Lista Akceptacji (Podpisy)</h3>
+            <div id="sig-list">Pobieranie danych...</div>
         </div>
     </div>
 </div>
@@ -198,7 +204,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // --- TŁO I TILT ---
+    // --- TŁO SIECI NEURONOWEJ ---
     const bgCanvas = document.getElementById('bg-canvas');
     const bgCtx = bgCanvas.getContext('2d');
     let particles = [];
@@ -208,7 +214,7 @@
         constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; }
         update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; }
     }
-    for(let i=0; i<50; i++) particles.push(new Particle());
+    for(let i=0; i<60; i++) particles.push(new Particle());
     function draw() {
         bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
         particles.forEach((p, i) => {
@@ -222,9 +228,11 @@
     }
     draw();
 
+    // --- EFEKT 3D TILT (1000) ---
     const tiltWrapper = document.getElementById('tilt-wrapper');
     document.addEventListener('mousemove', (e) => {
-        let x = (window.innerWidth/2 - e.pageX)/1000; let y = (window.innerHeight/2 - e.pageY)/1000;
+        let x = (window.innerWidth/2 - e.pageX)/1000;
+        let y = (window.innerHeight/2 - e.pageY)/1000;
         tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
     });
 
@@ -240,7 +248,7 @@
         status.textContent = "SKANOWANIE BIOMETRII...";
         scanTimer = setTimeout(() => { document.getElementById('step-1').style.display = "none"; sigSection.style.display = "block"; }, 2000);
     }
-    function stopScan() { clearTimeout(scanTimer); pulse.style.opacity = "0"; scanZone.classList.remove('active'); if (sigSection.style.display !== "block") status.textContent = "SKANOWANIE PRZERWANE!"; }
+    function stopScan() { clearTimeout(scanTimer); pulse.style.opacity = "0"; scanZone.classList.remove('active'); if (sigSection.style.display !== "block") status.textContent = "DOTKNIJ I PRZYTRZYMAJ"; }
 
     scanZone.addEventListener('mousedown', startScan); scanZone.addEventListener('mouseup', stopScan);
     scanZone.addEventListener('touchstart', startScan); scanZone.addEventListener('touchend', stopScan);
@@ -249,7 +257,6 @@
     const canvas = document.getElementById('sig-canvas');
     const ctx = canvas.getContext('2d');
     let drawing = false;
-
     function getPos(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -269,17 +276,17 @@
         if(!name) return alert("Podaj swoje imię!");
         const imgData = canvas.toDataURL("image/png");
         await addDoc(collection(db, "signatures"), { name: name, sig: imgData, date: new Date().toLocaleString("pl-PL"), ts: Date.now() });
-        document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY</h3>";
+        document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY POMYŚLNIE!</h3>";
     };
 
-    // --- HISTORIA I DARK MODE ---
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
         const list = document.getElementById('sig-list'); list.innerHTML = "";
         snap.forEach(docSnap => {
-            const d = docSnap.data(); const entry = document.createElement('div'); entry.className = 'sig-entry';
+            const d = docSnap.data();
+            const entry = document.createElement('div'); entry.className = 'sig-entry';
             entry.innerHTML = `<div class="sig-info"><strong>${d.name}</strong><small>${d.date}</small></div><img src="${d.sig}">`;
             const delBtn = document.createElement('button'); delBtn.className = 'btn-delete'; delBtn.textContent = 'X';
-            delBtn.onclick = async () => { if(confirm("Usunąć podpis?")) await deleteDoc(doc(db, "signatures", docSnap.id)); };
+            delBtn.onclick = async () => { if(confirm("Usunąć ten podpis?")) await deleteDoc(doc(db, "signatures", docSnap.id)); };
             entry.appendChild(delBtn); list.appendChild(entry);
         });
     });
@@ -289,6 +296,3 @@
 </script>
 </body>
 </html>
-
-
-
