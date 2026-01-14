@@ -207,7 +207,7 @@
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
-<audio id="lockSound" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
+<audio id="lockSound" src="https://www.soundjay.com/mechanical/sounds/siren-1.mp3" loop></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -307,12 +307,21 @@ onSnapshot(appStateRef, (snap) => {
         lockBtn.style.background = "linear-gradient(45deg, #d4af37, #8a6d10)";
         lockBtn.style.color = "#000";
         lockBtn.style.borderColor = "#d4af37";
+
         if (!document.body.classList.contains('alarm-active')) {
             document.body.classList.add('alarm-active');
+            
+            // Odtwarzanie alarmu nuklearnego
             lockSound.currentTime = 0;
-            lockSound.play().catch(()=>{});
+            lockSound.play().catch(()=>{ console.log("Wymagana interakcja") });
+
             clearTimeout(alarmTimeout);
-            alarmTimeout = setTimeout(() => { document.body.classList.remove('alarm-active'); }, 5000);
+            alarmTimeout = setTimeout(() => { 
+                document.body.classList.remove('alarm-active');
+                // Zatrzymanie dźwięku po 5 sekundach
+                lockSound.pause();
+                lockSound.currentTime = 0;
+            }, 5000);
         }
     } else {
         document.body.classList.remove('apocalypse');
@@ -321,6 +330,10 @@ onSnapshot(appStateRef, (snap) => {
         lockBtn.style.background = "linear-gradient(45deg, #ff0000, #8b0000)";
         lockBtn.style.color = "#fff";
         lockBtn.style.borderColor = "#ff0000";
+        
+        // Zatrzymanie dźwięku jeśli ktoś odblokuje ręcznie szybciej
+        lockSound.pause();
+        lockSound.currentTime = 0;
     }
 });
 
