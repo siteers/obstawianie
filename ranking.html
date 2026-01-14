@@ -14,7 +14,6 @@
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
             --card-dark: #1a1a1a;
-            --badge-bg: rgba(212, 175, 55, 0.15);
         }
 
         body.dark {
@@ -36,7 +35,6 @@
             overflow-x: hidden;
         }
 
-        /* TŁO SIECI NEURONOWEJ */
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
         .dashboard-container { 
@@ -78,7 +76,6 @@
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* PANELS & TABLES */
         .glass-panel { 
             background: var(--glass); 
             backdrop-filter: blur(20px);
@@ -94,18 +91,15 @@
         th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
         td { font-size: 14px; font-weight: 500; }
 
-        /* BADGES STYLE */
-        .badge-container { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
-        .badge { font-size: 16px; cursor: help; transition: transform 0.2s; }
+        .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
+        .badge { font-size: 18px; cursor: help; transition: transform 0.2s; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
         .badge:hover { transform: scale(1.4); }
         
-        /* LEGENDA STYLE */
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text); padding: 10px; background: rgba(0,0,0,0.05); border-radius: 10px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text); padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
-        .legend-icon { font-size: 20px; }
+        .legend-icon { font-size: 24px; }
 
-        /* CHARTS */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
         h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
@@ -124,6 +118,7 @@
             .stats-grid { grid-template-columns: 1fr; }
             th, td { padding: 10px; font-size: 12px; }
             .glass-panel { padding: 15px; }
+            .legend-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -153,12 +148,12 @@
                     <tbody></tbody>
                 </table>
                 
-                <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
+                <h4 style="margin-top: 30px; margin-bottom: 15px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
                 <div class="legend-grid">
-                    <div class="legend-item"><span class="legend-icon">👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
-                    <div class="legend-item"><span class="legend-icon">🔥</span> <div><b>On Fire</b><br>Zwycięzca ostatniej rundy</div></div>
-                    <div class="legend-item"><span class="legend-icon">🎯</span> <div><b>Snajper</b><br>Najlepsza skuteczność (pkt/podium)</div></div>
-                    <div class="legend-item"><span class="legend-icon">🛡️</span> <div><b>Weteran</b><br>Najwięcej miejsc na podium ogółem</div></div>
+                    <div class="legend-item"><span class="legend-icon">👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc w historii</div></div>
+                    <div class="legend-item"><span class="legend-icon">🔥</span> <div><b>On Fire (Seria)</b><br>Zwycięstwo 3 razy z rzędu</div></div>
+                    <div class="legend-item"><span class="legend-icon">🎯</span> <div><b>Snajper</b><br>Zgadł z dokładnością co do minuty</div></div>
+                    <div class="legend-item"><span class="legend-icon">🛡️</span> <div><b>Weteran</b><br>Najwięcej razy na podium</div></div>
                 </div>
             </div>
         </div>
@@ -204,43 +199,25 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- ANIMACJA TŁA XXII WIEK ---
+        // --- ANIMACJA TŁA ---
         const bgCanvas = document.getElementById('bg-canvas');
         const bgCtx = bgCanvas.getContext('2d');
         let particles = [];
         function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
         window.onresize = resize; resize();
-
         class Particle {
-            constructor() {
-                this.x = Math.random() * bgCanvas.width;
-                this.y = Math.random() * bgCanvas.height;
-                this.vx = (Math.random() - 0.5) * 0.4;
-                this.vy = (Math.random() - 0.5) * 0.4;
-            }
-            update() {
-                this.x += this.vx; this.y += this.vy;
-                if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1;
-                if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1;
-            }
+            constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; }
+            update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; }
         }
-        for (let i = 0; i < 60; i++) particles.push(new Particle());
-
+        for(let i=0; i<60; i++) particles.push(new Particle());
         function drawBg() {
-            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height);
             if(document.body.classList.contains('dark')) {
                 particles.forEach((p, i) => {
-                    p.update();
-                    bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
-                    bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const p2 = particles[j];
-                        const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                        if (dist < 120) {
-                            bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
-                            bgCtx.lineWidth = 0.5;
-                            bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke();
-                        }
+                    p.update(); bgCtx.fillStyle='rgba(212,175,55,0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill();
+                    for(let j=i+1; j<particles.length; j++) {
+                        let p2=particles[j]; let d=Math.hypot(p.x-p2.x,p.y-p2.y);
+                        if(d<120) { bgCtx.strokeStyle=`rgba(0,212,255,${1-d/120})`; bgCtx.lineWidth=0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); }
                     }
                 });
             }
@@ -248,16 +225,15 @@
         }
         drawBg();
 
-        // --- EFEKT 3D TILT (DZIELNIK 100) ---
+        // --- TILT EFFECT ---
         const tiltWrapper = document.getElementById('tilt-wrapper');
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 1000;
-            const y = (window.innerHeight / 2 - e.pageY) / 1000;
+            const x = (window.innerWidth / 2 - e.pageX) / 100;
+            const y = (window.innerHeight / 2 - e.pageY) / 100;
             tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
         });
 
-        // --- CHART.JS CONFIG ---
-        const chartColor = '#d4af37';
+        // --- CHART JS CONFIG ---
         const chartTextColor = '#888';
         const barCtx = document.getElementById('barChart').getContext('2d');
         const pieCtx = document.getElementById('pieChart').getContext('2d');
@@ -281,7 +257,6 @@
         let historyData = [];
         let playersData = [];
 
-        // --- LOGIKA ODZNAK I STATYSTYK ---
         function refreshStats() {
             if (!playersData.length) return;
             const stats = playersData.map(p => {
@@ -300,135 +275,9 @@
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts };
             });
 
-            // WYLICZANIE REKORDÓW DO ODZNAK
+            // OBLICZANIE ODZNAK
             const maxGold = Math.max(...stats.map(s => s.gold));
             const maxPodiums = Math.max(...stats.map(s => s.totalPodiums));
             const maxAvg = Math.max(...stats.map(s => parseFloat(s.avgPts)));
             
-            // Pobranie ostatniego zwycięzcy
-            let lastWinnerName = "";
-            if(historyData.length > 0 && historyData[0].winners.length > 0) {
-                // Szukamy osoby z rank: 1
-                const w1 = historyData[0].winners.find(w => w.rank === 1);
-                if(w1) lastWinnerName = w1.name;
-            }
-
-            const maxPoints = stats[0].points;
-            const topPlayers = stats.filter(p => p.points === maxPoints).map(p => p.name);
-            document.getElementById('top-player').textContent = topPlayers.join(", ");
-
-            const rankTbody = document.querySelector("#rankTable tbody");
-            rankTbody.innerHTML = "";
-            let currentPlace = 1;
-
-            stats.forEach((p, i) => {
-                if (i > 0 && p.points < stats[i-1].points) currentPlace = i + 1;
-                
-                // PRZYDZIELANIE ODZNAK
-                let badgesHtml = "";
-                if(p.name === lastWinnerName) badgesHtml += `<span class="badge" title="On Fire: Zwycięzca ostatniej rundy">🔥</span>`;
-                if(p.gold === maxGold && p.gold > 0) badgesHtml += `<span class="badge" title="Dominator: Najwięcej zwycięstw">👑</span>`;
-                if(p.totalPodiums === maxPodiums && p.totalPodiums > 0) badgesHtml += `<span class="badge" title="Weteran: Najwięcej miejsc na podium">🛡️</span>`;
-                if(parseFloat(p.avgPts) === maxAvg && p.avgPts > 0) badgesHtml += `<span class="badge" title="Snajper: Najwyższa skuteczność">🎯</span>`;
-
-                rankTbody.innerHTML += `
-                    <tr>
-                        <td>${currentPlace}</td>
-                        <td>
-                            <b style="color:var(--cyan); font-size:15px;">${p.name}</b>
-                            <div class="badge-container">${badgesHtml}</div>
-                        </td>
-                        <td style="color:var(--gold); font-size:16px;">${p.points}</td>
-                        <td>${p.totalPodiums}</td>
-                    </tr>`;
-            });
-
-            // AKTUALIZACJA WYKRESÓW
-            const names = stats.map(s => s.name);
-            medalChart.data = {
-                labels: names,
-                datasets: [
-                    { label: 'Złoto', data: stats.map(s => s.gold), backgroundColor: '#d4af37' },
-                    { label: 'Srebro', data: stats.map(s => s.silver), backgroundColor: '#c0c0c0' },
-                    { label: 'Brąz', data: stats.map(s => s.bronze), backgroundColor: '#cd7f32' }
-                ]
-            };
-            medalChart.update();
-
-            barChart.data = {
-                labels: names,
-                datasets: [{ data: stats.map(s => s.points), backgroundColor: '#d4af37', borderRadius: 5 }]
-            };
-            barChart.update();
-
-            const tG = stats.reduce((a,b)=>a+b.gold,0);
-            const tS = stats.reduce((a,b)=>a+b.silver,0);
-            const tB = stats.reduce((a,b)=>a+b.bronze,0);
-            pieChart.data = {
-                labels: ['Złoto', 'Srebro', 'Brąz'],
-                datasets: [{ data: [tG, tS, tB], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }]
-            };
-            pieChart.update();
-
-            lineChart.data = {
-                labels: names,
-                datasets: [{ data: stats.map(s => s.avgPts), borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)', fill: true, tension: 0.4, pointRadius: 5 }]
-            };
-            lineChart.update();
-        }
-
-        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(100)), snap => {
-            historyData = [];
-            const historyList = document.querySelector("#historyTable tbody");
-            historyList.innerHTML = "";
-            snap.forEach(documentDoc => {
-                let data = documentDoc.data();
-                data.winners = data.winners.map((w, index) => (w.rank === undefined) ? { ...w, rank: index + 1 } : w);
-                historyData.push(data);
-                const winnersString = data.winners.map(w => `${w.rank}. ${w.name}`).join(", ");
-                historyList.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${winnersString}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${documentDoc.id}')">×</span></td></tr>`;
-            });
-            document.getElementById('total-rounds').textContent = historyData.length;
-            if(historyData.length > 0) {
-                const w1 = historyData[0].winners.find(w => w.rank === 1);
-                document.getElementById('last-winner').textContent = w1 ? w1.name : "-";
-            }
-            refreshStats();
-        });
-
-        onSnapshot(collection(db, "ranking"), snap => {
-            playersData = [];
-            snap.forEach(d => playersData.push({ name: d.id, points: d.data().points || 0 }));
-            playersData.sort((a, b) => b.points - a.points);
-            refreshStats();
-        });
-
-        window.deleteHistoryRecord = async (id) => {
-            if(!confirm("Cofnąć ten zapis?")) return;
-            const snap = await getDoc(doc(db, "history", id));
-            if(snap.exists()){
-                const data = snap.data();
-                for(let i=0; i<data.winners.length; i++){
-                    const w = data.winners[i];
-                    const pts = ((w.rank !== undefined) ? w.rank : (i+1)) == 1 ? -3 : (((w.rank !== undefined) ? w.rank : (i+1)) == 2 ? -2 : -1);
-                    const ref = doc(db, "ranking", w.name);
-                    const pSnap = await getDoc(ref);
-                    if(pSnap.exists()){
-                        const newP = (pSnap.data().points || 0) + pts;
-                        if(newP <= 0) await deleteDoc(ref);
-                        else await updateDoc(ref, {points: newP});
-                    }
-                }
-                await deleteDoc(doc(db, "history", id));
-            }
-        };
-
-        const darkBtn = document.getElementById("darkModeBtn");
-        darkBtn.onclick = () => {
-            document.body.classList.toggle("dark");
-            darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
-        };
-    </script>
-</body>
-</html>
-
+            // Logika "On Fire
