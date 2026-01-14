@@ -333,10 +333,11 @@ function draw() {
 draw();
 
 document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 45;
-    const y = (window.innerHeight / 2 - e.pageY) / 45;
+    const x = (window.innerWidth / 2 - e.pageX) / 155;
+    const y = (window.innerHeight / 2 - e.pageY) / 155;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 </script>
 </body>
 </html>
+
