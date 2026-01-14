@@ -283,6 +283,20 @@ window.saveData = async function() {
     const hour = document.getElementById('hour').value;
     const pass = document.getElementById('password').value;
     const msg = document.getElementById('msg');
+    const btn = document.getElementById('saveBtn');
+
+    // --- SYNTEZA MOWY AI ---
+    try {
+        const speech = new SpeechSynthesisUtterance();
+        speech.text = `Autoryzacja przyjęta. Witaj, ${name}`;
+        speech.lang = 'pl-PL';
+        speech.pitch = 0.8; // Niższy, bardziej "robotyczny" ton
+        speech.rate = 1.1;  // Lekko szybsze tempo
+        window.speechSynthesis.speak(speech);
+    } catch(e) { console.log("Brak obsługi mowy w przeglądarce"); }
+
+    btn.disabled = true;
+    btn.innerText = "PRZETWARZANIE...";
 
     try {
         if (isFirstTime) {
@@ -292,6 +306,8 @@ window.saveData = async function() {
             if (userDoc.data().password !== pass) {
                 msg.style.color = "var(--error)";
                 msg.innerText = "BŁĘDNE HASŁO!";
+                btn.disabled = false;
+                btn.innerText = "Zapisz";
                 return;
             }
         }
@@ -299,7 +315,7 @@ window.saveData = async function() {
         msg.style.color = "var(--cyan)";
         msg.innerText = "ZAPISANO POMYŚLNIE!";
         setTimeout(() => location.reload(), 2000);
-    } catch (e) { alert(e.message); }
+    } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
 // --- ANIMACJA SIECI (KONSTELACJA) ---
@@ -333,11 +349,10 @@ function draw() {
 draw();
 
 document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 155;
-    const y = (window.innerHeight / 2 - e.pageY) / 155;
+    const x = (window.innerWidth / 2 - e.pageX) / 45;
+    const y = (window.innerHeight / 2 - e.pageY) / 45;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 </script>
 </body>
 </html>
-
