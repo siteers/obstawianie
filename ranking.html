@@ -14,6 +14,7 @@
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
             --card-dark: #1a1a1a;
+            --badge-bg: rgba(212, 175, 55, 0.15);
         }
 
         body.dark {
@@ -89,9 +90,20 @@
         }
         
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-weight: bold; }
-        th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-        td { font-size: 14px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+        td { font-size: 14px; font-weight: 500; }
+
+        /* BADGES STYLE */
+        .badge-container { display: inline-flex; gap: 4px; margin-left: 8px; vertical-align: middle; }
+        .badge { font-size: 16px; cursor: help; transition: transform 0.2s; }
+        .badge:hover { transform: scale(1.4); }
+        
+        /* LEGENDA STYLE */
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text); padding: 10px; background: rgba(0,0,0,0.05); border-radius: 10px; }
+        body.dark .legend-item { background: rgba(255,255,255,0.05); }
+        .legend-icon { font-size: 20px; }
 
         /* CHARTS */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
@@ -137,9 +149,17 @@
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
-                    <thead><tr><th>#</th><th>Imię</th><th>Suma Punktów</th><th>Ilość Podium</th></tr></thead>
+                    <thead><tr><th>#</th><th>Imię i Odznaki</th><th>Punkty</th><th>Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
+                
+                <h4 style="margin-top: 25px; margin-bottom: 10px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
+                <div class="legend-grid">
+                    <div class="legend-item"><span class="legend-icon">👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
+                    <div class="legend-item"><span class="legend-icon">🔥</span> <div><b>On Fire</b><br>Zwycięzca ostatniej rundy</div></div>
+                    <div class="legend-item"><span class="legend-icon">🎯</span> <div><b>Snajper</b><br>Najlepsza skuteczność (pkt/podium)</div></div>
+                    <div class="legend-item"><span class="legend-icon">🛡️</span> <div><b>Weteran</b><br>Najwięcej miejsc na podium ogółem</div></div>
+                </div>
             </div>
         </div>
 
@@ -228,18 +248,17 @@
         }
         drawBg();
 
-        // --- EFEKT 3D TILT (SPOWOLNIONY) ---
+        // --- EFEKT 3D TILT (DZIELNIK 100) ---
         const tiltWrapper = document.getElementById('tilt-wrapper');
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 200;
-            const y = (window.innerHeight / 2 - e.pageY) / 200;
+            const x = (window.innerWidth / 2 - e.pageX) / 100;
+            const y = (window.innerHeight / 2 - e.pageY) / 100;
             tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
         });
 
-        // --- KONFIGURACJA WYKRESÓW ---
+        // --- CHART.JS CONFIG ---
         const chartColor = '#d4af37';
         const chartTextColor = '#888';
-
         const barCtx = document.getElementById('barChart').getContext('2d');
         const pieCtx = document.getElementById('pieChart').getContext('2d');
         const medalCtx = document.getElementById('medalChart').getContext('2d');
@@ -262,6 +281,7 @@
         let historyData = [];
         let playersData = [];
 
+        // --- LOGIKA ODZNAK I STATYSTYK ---
         function refreshStats() {
             if (!playersData.length) return;
             const stats = playersData.map(p => {
@@ -276,9 +296,22 @@
                     });
                 });
                 const totalPodiums = gold + silver + bronze;
-                const avgPts = totalPodiums > 0 ? (p.points / totalPodiums).toFixed(1) : 0;
+                const avgPts = totalPodiums > 0 ? (p.points / totalPodiums).toFixed(2) : 0;
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts };
             });
+
+            // WYLICZANIE REKORDÓW DO ODZNAK
+            const maxGold = Math.max(...stats.map(s => s.gold));
+            const maxPodiums = Math.max(...stats.map(s => s.totalPodiums));
+            const maxAvg = Math.max(...stats.map(s => parseFloat(s.avgPts)));
+            
+            // Pobranie ostatniego zwycięzcy
+            let lastWinnerName = "";
+            if(historyData.length > 0 && historyData[0].winners.length > 0) {
+                // Szukamy osoby z rank: 1
+                const w1 = historyData[0].winners.find(w => w.rank === 1);
+                if(w1) lastWinnerName = w1.name;
+            }
 
             const maxPoints = stats[0].points;
             const topPlayers = stats.filter(p => p.points === maxPoints).map(p => p.name);
@@ -287,11 +320,30 @@
             const rankTbody = document.querySelector("#rankTable tbody");
             rankTbody.innerHTML = "";
             let currentPlace = 1;
+
             stats.forEach((p, i) => {
                 if (i > 0 && p.points < stats[i-1].points) currentPlace = i + 1;
-                rankTbody.innerHTML += `<tr><td>${currentPlace}</td><td><b style="color:var(--cyan)">${p.name}</b></td><td>${p.points}</td><td>${p.totalPodiums}</td></tr>`;
+                
+                // PRZYDZIELANIE ODZNAK
+                let badgesHtml = "";
+                if(p.name === lastWinnerName) badgesHtml += `<span class="badge" title="On Fire: Zwycięzca ostatniej rundy">🔥</span>`;
+                if(p.gold === maxGold && p.gold > 0) badgesHtml += `<span class="badge" title="Dominator: Najwięcej zwycięstw">👑</span>`;
+                if(p.totalPodiums === maxPodiums && p.totalPodiums > 0) badgesHtml += `<span class="badge" title="Weteran: Najwięcej miejsc na podium">🛡️</span>`;
+                if(parseFloat(p.avgPts) === maxAvg && p.avgPts > 0) badgesHtml += `<span class="badge" title="Snajper: Najwyższa skuteczność">🎯</span>`;
+
+                rankTbody.innerHTML += `
+                    <tr>
+                        <td>${currentPlace}</td>
+                        <td>
+                            <b style="color:var(--cyan); font-size:15px;">${p.name}</b>
+                            <div class="badge-container">${badgesHtml}</div>
+                        </td>
+                        <td style="color:var(--gold); font-size:16px;">${p.points}</td>
+                        <td>${p.totalPodiums}</td>
+                    </tr>`;
             });
 
+            // AKTUALIZACJA WYKRESÓW
             const names = stats.map(s => s.name);
             medalChart.data = {
                 labels: names,
@@ -338,8 +390,8 @@
             });
             document.getElementById('total-rounds').textContent = historyData.length;
             if(historyData.length > 0) {
-                const winners = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name);
-                document.getElementById('last-winner').textContent = winners.join(", ");
+                const w1 = historyData[0].winners.find(w => w.rank === 1);
+                document.getElementById('last-winner').textContent = w1 ? w1.name : "-";
             }
             refreshStats();
         });
@@ -379,4 +431,3 @@
     </script>
 </body>
 </html>
-
