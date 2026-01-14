@@ -13,7 +13,7 @@
             --text: #111;
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
-            --error: #ff4d4d;
+            --error: #ff0000; /* Czysta czerwień dla alarmu */
         }
 
         body.dark {
@@ -35,6 +35,7 @@
             min-height: 100vh;
             perspective: 1000px;
             transition: background-color 0.3s, color 0.3s;
+            overflow-x: hidden; /* Zapobiega paskom przewijania przy wibracjach */
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
@@ -61,7 +62,37 @@
             border: 1px solid var(--border);
             box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
             box-sizing: border-box;
+            transition: 0.3s;
         }
+        body.dark .container { box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+
+        /* --- EFEKTY APOKALIPSY --- */
+        @keyframes alarmPulse {
+            0% { box-shadow: 0 0 0 var(--error) inset; border-color: var(--error); }
+            50% { box-shadow: 0 0 100px var(--error) inset; border-color: #ff5555; background: rgba(50, 0, 0, 0.8); }
+            100% { box-shadow: 0 0 0 var(--error) inset; border-color: var(--error); }
+        }
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        
+        body.apocalypse .container {
+            animation: alarmPulse 1s infinite, shake 0.5s infinite;
+            border: 2px solid var(--error);
+        }
+        body.apocalypse h2 { color: var(--error) !important; text-shadow: 0 0 10px var(--error); }
+
+        /* ------------------------ */
 
         h2 { text-align: center; margin-top: 0; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
 
@@ -77,16 +108,33 @@
         table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
         th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
         th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
+        body.dark th { background: rgba(255, 255, 255, 0.05); }
         
         .deleteBtn { width: 26px; height: 26px; line-height: 24px; border-radius: 50%; background: rgba(255, 77, 77, 0.1); border: 1px solid var(--error); color: var(--error); cursor: pointer; }
 
         #clock { font-size: 56px; font-weight: 900; text-align: center; }
+        
         #stopBtn { 
             background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; 
             padding: 20px 45px; font-size: 28px; border-radius: 50px; border: none; 
             cursor: pointer; display: block; margin: 20px auto; transition: 0.3s;
             box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); font-weight: 900;
         }
+
+        /* NOWY PRZYCISK ZAMKNIĘCIA LISTY */
+        #lockBtn {
+            width: 100%; margin-top: 20px; padding: 15px;
+            background: linear-gradient(45deg, #ff0000, #8b0000);
+            color: #fff; border: 2px solid #ff0000; border-radius: 15px;
+            font-size: 18px; font-weight: 900; letter-spacing: 2px;
+            text-transform: uppercase; cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
+            animation: pulseRed 1.5s infinite alternate;
+            transition: 0.3s;
+        }
+        #lockBtn:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
+        #lockBtn:disabled { opacity: 0.6; cursor: not-allowed; animation: none; filter: grayscale(0.8); }
+        @keyframes pulseRed { from { box-shadow: 0 0 10px var(--error); } to { box-shadow: 0 0 30px var(--error), 0 0 10px var(--error) inset; } }
         
         #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
         
@@ -116,14 +164,8 @@
         .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
         #qrcode { padding: 12px; background: #fff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
         
-        /* POPRAWIONE UKRYWANIE GIFÓW */
-        #cringeGifs { 
-            position: fixed; bottom: 20px; left: 0; width: 100%; 
-            display: none !important; /* Wymuszone ukrycie na start */
-            justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap; 
-        }
+        #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none !important; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap; }
         #cringeGifs img { max-height: 100px; border-radius: 15px; border: 2px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
         
         @keyframes blinkGreen { 0% { background: rgba(0, 255, 136, 0.1); } 50% { background: rgba(0, 128, 0, 0.6); } 100% { background: rgba(0, 255, 136, 0.1); } }
@@ -154,6 +196,7 @@
                         <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
                     </table>
                 </div>
+                <button id="lockBtn">!!! ZAMKNIJ LISTĘ !!!</button>
             </div>
             <div class="panel">
                 <div id="clock">--:--:--</div>
@@ -177,6 +220,7 @@
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
+<audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3" loop></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -190,6 +234,9 @@ const table = document.getElementById("table");
 const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
+const alarmAudio = document.getElementById("alarmAudio");
+const lockBtn = document.getElementById("lockBtn");
+const stopBtn = document.getElementById("stopBtn");
 
 let usersData = [];
 let isStopped = false; 
@@ -205,17 +252,8 @@ function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window
 window.onresize = resize; resize();
 
 class Particle {
-    constructor() {
-        this.x = Math.random() * bgCanvas.width;
-        this.y = Math.random() * bgCanvas.height;
-        this.vx = (Math.random() - 0.5) * 0.4;
-        this.vy = (Math.random() - 0.5) * 0.4;
-    }
-    update() {
-        this.x += this.vx; this.y += this.vy;
-        if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1;
-        if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1;
-    }
+    constructor() { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4; }
+    update() { this.x += this.vx; this.y += this.vy; if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1; if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1; }
 }
 for (let i = 0; i < 60; i++) particles.push(new Particle());
 
@@ -223,17 +261,10 @@ function drawBg() {
     bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
     if(document.body.classList.contains('dark')) {
         particles.forEach((p, i) => {
-            p.update();
-            bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
-            bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
+            p.update(); bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
             for (let j = i + 1; j < particles.length; j++) {
-                const p2 = particles[j];
-                const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                if (dist < 120) {
-                    bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
-                    bgCtx.lineWidth = 0.5;
-                    bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke();
-                }
+                const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                if (dist < 120) { bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke(); }
             }
         });
     }
@@ -241,21 +272,17 @@ function drawBg() {
 }
 drawBg();
 
-// --- EFEKT 3D TILT (SPOWOLNIONY) ---
+// --- EFEKT 3D TILT ---
 const tiltWrapper = document.getElementById('tilt-wrapper');
 document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 1000;
-    const y = (window.innerHeight / 2 - e.pageY) / 1000;
+    const x = (window.innerWidth / 2 - e.pageX) / 100;
+    const y = (window.innerHeight / 2 - e.pageY) / 100;
     tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
-    while (currentIndex != 0) {
-        randomIndex = Math.floor(Math.random() * currentIndex);
-        currentIndex--;
-        [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
-    }
+    while (currentIndex != 0) { randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; }
     return array;
 }
 
@@ -264,8 +291,7 @@ new QRCode(document.getElementById("qrcode"), { text: regulaminUrl, width: 100, 
 
 function getAvatarColor(name) {
     const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"];
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
     return colors[Math.abs(hash) % colors.length];
 }
 
@@ -278,6 +304,38 @@ onSnapshot(collection(db, "users"), snap => {
         newUsers.forEach((u, index) => { assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length]; });
     }
     usersData = newUsers;
+});
+
+// --- LOGIKA BLOKADY SYSTEMU (APOKALIPSA) ---
+// Używamy specjalnego dokumentu w bazie do przechowywania stanu blokady
+const appStateRef = doc(db, "appState", "status");
+
+lockBtn.onclick = async () => {
+    if(confirm("JESTEŚ PEWIEN? To zablokuje możliwość dodawania dla wszystkich!")) {
+        // Ustawiamy flagę blokady w bazie
+        await setDoc(appStateRef, { isLocked: true }, { merge: true });
+    }
+};
+
+// Nasłuchujemy zmian stanu blokady
+onSnapshot(appStateRef, (snap) => {
+    const isLocked = snap.data()?.isLocked;
+    
+    if(isLocked && !isStopped) {
+        // TRYB APOKALIPSY WŁĄCZONY
+        document.body.classList.add('apocalypse');
+        lockBtn.textContent = "⛔ SYSTEM ZABLOKOWANY ⛔";
+        lockBtn.disabled = true;
+        alarmAudio.volume = 0.3; // Ustaw głośność syreny
+        alarmAudio.play().catch(()=>{}); // Odtwórz syrenę w pętli
+    } else {
+        // TRYB NORMALNY
+        document.body.classList.remove('apocalypse');
+        if(!isStopped) lockBtn.textContent = "!!! ZAMKNIJ LISTĘ !!!";
+        lockBtn.disabled = isStopped; // Jeśli STOP, to blokujemy przycisk zamknięcia
+        alarmAudio.pause();
+        alarmAudio.currentTime = 0;
+    }
 });
 
 document.getElementById("revealNamesBtn").onclick = function() {
@@ -293,11 +351,12 @@ window.clearAll = async () => {
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
     document.body.style.animation = "none";
+    // Przy czyszczeniu resetujemy też blokadę
+    await setDoc(appStateRef, { isLocked: false }, { merge: true });
 };
 
 function toSec(t){
-    const p=t.split(":").map(Number);
-    return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
+    const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
 }
 
 setInterval(() => {
@@ -326,7 +385,11 @@ setInterval(() => {
 
 stopBtn.onclick = async () => {
     if(!usersData.length || isStopped) return;
-    isStopped = true; 
+    isStopped = true;
+    
+    // Zdejmujemy blokadę systemu i wyłączamy alarm po kliknięciu STOP
+    await setDoc(appStateRef, { isLocked: false }, { merge: true });
+
     const nowObj = new Date();
     const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
     stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
@@ -374,28 +437,16 @@ function startCelebration() {
         const x = Math.random()*canvasFw.width, y = Math.random()*canvasFw.height*0.5;
         for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
     }, 400);
-    // POKAZANIE GIFÓW
     const gifs = document.getElementById("cringeGifs");
     gifs.style.setProperty('display', 'flex', 'important');
-    
-    setTimeout(() => { 
-        clearInterval(interval); 
-        fwActive = false; 
-        canvasFw.style.display = "none"; 
-        gifs.style.setProperty('display', 'none', 'important');
-        document.body.style.animation = "none"; 
-    }, 7000);
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; gifs.style.setProperty('display', 'none', 'important'); document.body.style.animation = "none"; }, 7000);
     updateFW();
 }
-
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
     document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
-    darkBtn.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
 };
 </script>
 </body>
 </html>
-
-
