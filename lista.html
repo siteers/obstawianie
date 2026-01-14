@@ -135,7 +135,7 @@
             border-radius: 15px; font-size: 18px; font-weight: 900;
             letter-spacing: 2px; text-transform: uppercase; 
             cursor: pointer; transition: 0.3s; border: 2px solid transparent;
-            display: none; /* Ukryty domyślnie */
+            display: none; 
         }
         
         #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
@@ -305,20 +305,13 @@ onSnapshot(collection(db, "users"), snap => {
         newUsers.forEach((u, index) => { assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length]; });
     }
     usersData = newUsers;
-    
-    // POKAZYWANIE PRZYCISKU TYLKO GDY SĄ LUDZIE
     lockBtn.style.display = (usersData.length > 0) ? "block" : "none";
 });
 
-// LOGIKA LOCK/UNLOCK
 lockBtn.onclick = async () => {
     const snap = await getDoc(appStateRef);
     const currentlyLocked = snap.data()?.isLocked || false;
-    if (!currentlyLocked) {
-        if(confirm("ZABLOKOWAĆ SYSTEM?")) await setDoc(appStateRef, { isLocked: true }, { merge: true });
-    } else {
-        await setDoc(appStateRef, { isLocked: false }, { merge: true });
-    }
+    await setDoc(appStateRef, { isLocked: !currentlyLocked }, { merge: true });
 };
 
 onSnapshot(appStateRef, (snap) => {
@@ -339,12 +332,10 @@ onSnapshot(appStateRef, (snap) => {
     } else {
         document.body.classList.remove('apocalypse');
         document.body.classList.remove('alarm-active');
-        if(!isStopped) {
-            lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
-            lockBtn.style.background = "linear-gradient(45deg, #ff0000, #8b0000)";
-            lockBtn.style.color = "#fff";
-            lockBtn.style.borderColor = "#ff0000";
-        }
+        lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
+        lockBtn.style.background = "linear-gradient(45deg, #ff0000, #8b0000)";
+        lockBtn.style.color = "#fff";
+        lockBtn.style.borderColor = "#ff0000";
     }
 });
 
@@ -372,7 +363,7 @@ setInterval(() => {
 
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
 window.clearAll = async () => {
-    if(!confirm("Wyczyścić?")) return;
+    if(!confirm("Wyczyścić dane?")) return;
     const snap = await getDocs(collection(db,"users"));
     for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
     winner.style.display = "none"; stoppedTime.textContent = ""; 
