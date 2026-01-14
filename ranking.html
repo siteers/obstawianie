@@ -228,8 +228,8 @@
         // --- TILT EFFECT ---
         const tiltWrapper = document.getElementById('tilt-wrapper');
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 100;
-            const y = (window.innerHeight / 2 - e.pageY) / 100;
+            const x = (window.innerWidth / 2 - e.pageX) / 1000;
+            const y = (window.innerHeight / 2 - e.pageY) / 1000;
             tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
         });
 
@@ -280,4 +280,136 @@
             const maxPodiums = Math.max(...stats.map(s => s.totalPodiums));
             const maxAvg = Math.max(...stats.map(s => parseFloat(s.avgPts)));
             
-            // Logika "On Fire
+            // Logika "On Fire" (3 zwycięstwa z rzędu)
+            let onFirePlayers = [];
+            if (historyData.length >= 3) {
+                // Pobierz zwycięzców (rank 1) z 3 ostatnich gier
+                const w0 = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name);
+                const w1 = historyData[1].winners.filter(w => w.rank === 1).map(w => w.name);
+                const w2 = historyData[2].winners.filter(w => w.rank === 1).map(w => w.name);
+                
+                // Sprawdź czy ktoś jest na wszystkich 3 listach
+                onFirePlayers = w0.filter(name => w1.includes(name) && w2.includes(name));
+            }
+
+            const maxPoints = stats[0].points;
+            const topPlayers = stats.filter(p => p.points === maxPoints).map(p => p.name);
+            document.getElementById('top-player').textContent = topPlayers.join(", ");
+
+            const rankTbody = document.querySelector("#rankTable tbody");
+            rankTbody.innerHTML = "";
+            let currentPlace = 1;
+
+            stats.forEach((p, i) => {
+                if (i > 0 && p.points < stats[i-1].points) currentPlace = i + 1;
+                
+                let badgesHtml = "";
+                // Dominator
+                if(p.gold === maxGold && p.gold > 0) badgesHtml += `<span class="badge" title="Dominator: Najwięcej zwycięstw">👑</span>`;
+                // On Fire (Streak)
+                if(onFirePlayers.includes(p.name)) badgesHtml += `<span class="badge" title="On Fire: Seria 3 zwycięstw z rzędu!">🔥</span>`;
+                // Weteran
+                if(p.totalPodiums === maxPodiums && p.totalPodiums > 0) badgesHtml += `<span class="badge" title="Weteran: Najczęściej na podium">🛡️</span>`;
+                // Snajper
+                if(parseFloat(p.avgPts) === maxAvg && p.avgPts > 0) badgesHtml += `<span class="badge" title="Snajper: Zgadł z dokładnością co do minuty">🎯</span>`;
+
+                rankTbody.innerHTML += `
+                    <tr>
+                        <td>${currentPlace}</td>
+                        <td>
+                            <b style="color:var(--cyan); font-size:15px;">${p.name}</b>
+                            <div class="badge-container">${badgesHtml}</div>
+                        </td>
+                        <td style="color:var(--gold); font-size:16px;">${p.points}</td>
+                        <td>${p.totalPodiums}</td>
+                    </tr>`;
+            });
+
+            // AKTUALIZACJA WYKRESÓW
+            const names = stats.map(s => s.name);
+            medalChart.data = {
+                labels: names,
+                datasets: [
+                    { label: 'Złoto', data: stats.map(s => s.gold), backgroundColor: '#d4af37' },
+                    { label: 'Srebro', data: stats.map(s => s.silver), backgroundColor: '#c0c0c0' },
+                    { label: 'Brąz', data: stats.map(s => s.bronze), backgroundColor: '#cd7f32' }
+                ]
+            };
+            medalChart.update();
+
+            barChart.data = {
+                labels: names,
+                datasets: [{ data: stats.map(s => s.points), backgroundColor: '#d4af37', borderRadius: 5 }]
+            };
+            barChart.update();
+
+            const tG = stats.reduce((a,b)=>a+b.gold,0);
+            const tS = stats.reduce((a,b)=>a+b.silver,0);
+            const tB = stats.reduce((a,b)=>a+b.bronze,0);
+            pieChart.data = {
+                labels: ['Złoto', 'Srebro', 'Brąz'],
+                datasets: [{ data: [tG, tS, tB], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }]
+            };
+            pieChart.update();
+
+            lineChart.data = {
+                labels: names,
+                datasets: [{ data: stats.map(s => s.avgPts), borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)', fill: true, tension: 0.4, pointRadius: 5 }]
+            };
+            lineChart.update();
+        }
+
+        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(100)), snap => {
+            historyData = [];
+            const historyList = document.querySelector("#historyTable tbody");
+            historyList.innerHTML = "";
+            snap.forEach(documentDoc => {
+                let data = documentDoc.data();
+                data.winners = data.winners.map((w, index) => (w.rank === undefined) ? { ...w, rank: index + 1 } : w);
+                historyData.push(data);
+                const winnersString = data.winners.map(w => `${w.rank}. ${w.name}`).join(", ");
+                historyList.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${winnersString}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${documentDoc.id}')">×</span></td></tr>`;
+            });
+            document.getElementById('total-rounds').textContent = historyData.length;
+            if(historyData.length > 0) {
+                const w1 = historyData[0].winners.find(w => w.rank === 1);
+                document.getElementById('last-winner').textContent = w1 ? w1.name : "-";
+            }
+            refreshStats();
+        });
+
+        onSnapshot(collection(db, "ranking"), snap => {
+            playersData = [];
+            snap.forEach(d => playersData.push({ name: d.id, points: d.data().points || 0 }));
+            playersData.sort((a, b) => b.points - a.points);
+            refreshStats();
+        });
+
+        window.deleteHistoryRecord = async (id) => {
+            if(!confirm("Cofnąć ten zapis?")) return;
+            const snap = await getDoc(doc(db, "history", id));
+            if(snap.exists()){
+                const data = snap.data();
+                for(let i=0; i<data.winners.length; i++){
+                    const w = data.winners[i];
+                    const pts = ((w.rank !== undefined) ? w.rank : (i+1)) == 1 ? -3 : (((w.rank !== undefined) ? w.rank : (i+1)) == 2 ? -2 : -1);
+                    const ref = doc(db, "ranking", w.name);
+                    const pSnap = await getDoc(ref);
+                    if(pSnap.exists()){
+                        const newP = (pSnap.data().points || 0) + pts;
+                        if(newP <= 0) await deleteDoc(ref);
+                        else await updateDoc(ref, {points: newP});
+                    }
+                }
+                await deleteDoc(doc(db, "history", id));
+            }
+        };
+
+        const darkBtn = document.getElementById("darkModeBtn");
+        darkBtn.onclick = () => {
+            document.body.classList.toggle("dark");
+            darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
+        };
+    </script>
+</body>
+</html>
