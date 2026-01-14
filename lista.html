@@ -256,8 +256,8 @@ drawBg();
 // --- EFEKT 3D TILT ---
 const tiltWrapper = document.getElementById('tilt-wrapper');
 document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 50;
-    const y = (window.innerHeight / 2 - e.pageY) / 50;
+    const x = (window.innerWidth / 2 - e.pageX) / 100;
+    const y = (window.innerHeight / 2 - e.pageY) / 100;
     tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
@@ -404,3 +404,4 @@ darkBtn.onclick = () => {
 </script>
 </body>
 </html>
+
