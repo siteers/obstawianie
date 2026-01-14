@@ -38,12 +38,13 @@
             overflow-x: hidden;
         }
 
+        /* PRZYWRÓCONE TŁO SIECI NEURONOWEJ */
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
         .top-nav { 
             width: 100%; max-width: 1100px; display: flex; 
             justify-content: flex-end; gap: 10px; margin-bottom: 20px; 
-            z-index: 100;
+            z-index: 100; flex-wrap: wrap; 
         }
 
         #tilt-wrapper {
@@ -64,8 +65,9 @@
             box-sizing: border-box;
             transition: 0.3s;
         }
+        body.dark .container { box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        /* ALARM I DRŻENIE - 5 SEKUND */
+        /* ANIMACJE ALARMU */
         @keyframes alarmPulse {
             0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(255, 0, 0, 0.1); }
             50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(255, 0, 0, 0.4); }
@@ -79,10 +81,8 @@
             80% { transform: translate(-1px, -1px) rotate(1deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
-        
-        body.alarm-active .container {
-            animation: alarmPulse 0.8s infinite, shake 0.2s infinite;
-        }
+        body.alarm-active .container { animation: alarmPulse 0.8s infinite, shake 0.2s infinite; }
+        body.apocalypse .container { border: 2px solid var(--error); }
 
         h2 { text-align: center; margin-top: 0; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
 
@@ -95,27 +95,26 @@
         }
         body.dark .table-wrapper { background: rgba(0,0,0,0.3); }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; }
-        th { background: rgba(0, 0, 0, 0.05); color: var(--gold); font-size: 11px; }
-
-        /* ESTETYCZNY PRZYCISK X */
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
+        th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
+        th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
+        
+        /* POPRAWIONY PRZYCISK X */
         .deleteBtn { 
-            color: #ff4d4d; cursor: pointer; font-size: 20px; font-weight: bold;
-            transition: 0.2s; display: inline-block;
+            color: #ff4d4d; cursor: pointer; font-size: 20px; font-weight: 900;
+            transition: 0.2s; text-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
         }
-        .deleteBtn:hover { transform: scale(1.4); color: #ff0000; text-shadow: 0 0 10px red; }
+        .deleteBtn:hover { transform: scale(1.3); color: #ff0000; }
 
-        #clock { font-size: 56px; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; }
+        #clock { font-size: 56px; font-weight: 900; text-align: center; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
         
         #stopBtn { 
             background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; 
             padding: 20px 45px; font-size: 28px; border-radius: 50px; border: none; 
-            cursor: pointer; display: block; margin: 20px auto; font-weight: 900;
-            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3);
+            cursor: pointer; display: block; margin: 20px auto; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); font-weight: 900;
         }
 
-        /* PRZYCISK LOCK / UNLOCK */
         #lockBtn {
             width: 100%; margin-top: 20px; padding: 15px;
             border-radius: 15px; font-size: 18px; font-weight: 900;
@@ -127,17 +126,26 @@
         
         #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
         
-        .user-cell { display: flex; align-items: center; gap: 10px; }
-        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
-        
+        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        .clear, .reveal-btn { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; transition: 0.3s; font-size: 12px; text-transform: uppercase; }
+        .clear { background: rgba(0,0,0,0.1); color: #555; }
+        body.dark .clear { background: rgba(255,255,255,0.1); color: #ccc; }
+        .reveal-btn { background: var(--gold); color: #000; }
+
+        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; margin: 0 auto; }
         .hidden-hour { filter: blur(8px); opacity: 0.3; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
-        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: none; }
+        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; }
         #darkModeBtn { background: #111; color: #fff; }
         #rankingBtn { background: var(--gold); color: #000; }
 
         .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
+        #qrcode { padding: 12px; background: #fff; border-radius: 15px; }
+        
+        #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
+        @keyframes blinkGreen { 0% { background: rgba(0, 255, 136, 0.1); } 50% { background: rgba(0, 128, 0, 0.6); } 100% { background: rgba(0, 255, 136, 0.1); } }
+        .blink { animation: blinkGreen 1.5s infinite; }
     </style>
 </head>
 <body class="dark">
@@ -146,7 +154,7 @@
 
 <div class="top-nav">
     <button id="darkModeBtn">☀️ Light mode</button>
-    <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Ranking</a>
+    <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
 </div>
 
 <div id="tilt-wrapper">
@@ -154,9 +162,9 @@
         <h2>Lista zapisanych osób</h2>
         <div class="flex">
             <div class="panel">
-                <div style="display:flex; gap:10px; margin-bottom:15px;">
-                    <button style="flex:1; padding:10px; cursor:pointer;" onclick="clearAll()">Wyczyść</button>
-                    <button style="flex:1; padding:10px; cursor:pointer;" id="revealNamesBtn">Odkryj imiona</button>
+                <div class="btn-group">
+                    <button class="clear" onclick="clearAll()">Wyczyść dane</button>
+                    <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
                 </div>
                 <div class="table-wrapper">
                     <table id="table">
@@ -178,7 +186,7 @@
     </div>
 </div>
 
-<audio id="fanfareAudio" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
+<canvas id="fireworksCanvas"></canvas>
 <audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/air-raid-siren-test-01.mp3"></audio>
 
 <script type="module">
@@ -194,10 +202,35 @@ const alarmAudio = document.getElementById("alarmAudio");
 const appStateRef = doc(db, "appState", "status");
 
 let usersData = [];
-let isStopped = false;
+let isStopped = false; 
 let namesRevealed = false;
 
-// TŁO I TILT (1000)
+// PRZYWRÓCONA SIEĆ NEURONOWA
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let particles = [];
+function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
+window.onresize = resize; resize();
+class Particle {
+    constructor() { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4; }
+    update() { this.x += this.vx; this.y += this.vy; if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1; if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1; }
+}
+for (let i = 0; i < 60; i++) particles.push(new Particle());
+function drawBg() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    if(document.body.classList.contains('dark')) {
+        particles.forEach((p, i) => {
+            p.update(); bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
+            for (let j = i + 1; j < particles.length; j++) {
+                const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+                if (dist < 120) { bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke(); }
+            }
+        });
+    }
+    requestAnimationFrame(drawBg);
+} drawBg();
+
+// TILT 1000
 const tiltWrapper = document.getElementById('tilt-wrapper');
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 1000;
@@ -205,75 +238,51 @@ document.addEventListener('mousemove', (e) => {
     tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
-// LOGIKA PRZYCISKU LOCK (TOGGLE)
+// LOCK LOGIC (TOGGLE)
 lockBtn.onclick = async () => {
     const snap = await getDoc(appStateRef);
-    const currentlyLocked = snap.data()?.isLocked || false;
-    
-    if(!currentlyLocked) {
-        if(confirm("Zablokować system?")) {
-            await setDoc(appStateRef, { isLocked: true }, { merge: true });
-        }
-    } else {
-        if(confirm("Odblokować system?")) {
-            await setDoc(appStateRef, { isLocked: false }, { merge: true });
-        }
-    }
+    const locked = snap.data()?.isLocked || false;
+    await setDoc(appStateRef, { isLocked: !locked }, { merge: true });
 };
 
-// OBSŁUGA STANU BLOKADY I ALARMU (5 SEKUND)
-let alarmActive = false;
 onSnapshot(appStateRef, (snap) => {
     const isLocked = snap.data()?.isLocked;
-    
-    if (isLocked) {
+    if(isLocked) {
         lockBtn.textContent = "🔓 Odblokuj listę 🔓";
         lockBtn.className = "btn-is-locked";
-        
-        // Uruchom alarm tylko raz przy zmianie na locked
-        if (!alarmActive && !isStopped) {
-            alarmActive = true;
+        document.body.classList.add('apocalypse');
+        if(!isStopped && !document.body.classList.contains('alarm-active')) {
             document.body.classList.add('alarm-active');
-            alarmAudio.currentTime = 0;
-            alarmAudio.play().catch(() => console.log("Audio waiting for interaction"));
-            
-            setTimeout(() => {
-                document.body.classList.remove('alarm-active');
-                alarmAudio.pause();
-                alarmAudio.currentTime = 0;
-                alarmActive = false;
-            }, 5000);
+            alarmAudio.play().catch(()=>{});
+            setTimeout(() => { document.body.classList.remove('alarm-active'); alarmAudio.pause(); alarmAudio.currentTime = 0; }, 5000);
         }
     } else {
         lockBtn.textContent = "⛔ Zablokuj listę ⛔";
         lockBtn.className = "btn-is-unlocked";
+        document.body.classList.remove('apocalypse');
         document.body.classList.remove('alarm-active');
-        alarmAudio.pause();
+        alarmAudio.pause(); alarmAudio.currentTime = 0;
     }
 });
 
-// RESZTA LOGIKI (ZEGAR, TABELA, STOP)
-onSnapshot(collection(db, "users"), snap => {
-    usersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-});
-
+// REFRESH TABLE
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
-    
     const table = document.getElementById("table");
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
     
     usersData.sort((a,b) => {
         const tA = a.hour.split(":").map(Number);
         const tB = b.hour.split(":").map(Number);
-        const secA = tA[0]*3600 + tA[1]*60 + tA[2];
-        const secB = tB[0]*3600 + tB[1]*60 + tB[2];
+        const secA = (tA[0]||0)*3600 + (tA[1]||0)*60 + (tA[2]||0);
+        const secB = (tB[0]||0)*3600 + (tB[1]||0)*60 + (tB[2]||0);
         return Math.abs(secA - s) - Math.abs(secB - s);
     }).forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        table.innerHTML += `<tr>
+        const blinkClass = (i === 0) ? 'blink' : '';
+        table.innerHTML += `<tr class="${blinkClass}">
             <td>${i+1}</td>
             <td>${(namesRevealed || isStopped) ? u.name : '???'}</td>
             <td class="${hourClass}">${u.hour}</td>
@@ -282,29 +291,19 @@ setInterval(() => {
     });
 }, 1000);
 
+onSnapshot(collection(db, "users"), snap => { usersData = snap.docs.map(d => ({id: d.id, ...d.data()})); });
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
-window.clearAll = async () => { if(confirm("Czyścisz?")) { 
+window.clearAll = async () => { if(confirm("Wyczyścić?")) { 
     const s = await getDocs(collection(db,"users"));
     s.forEach(d => deleteDoc(doc(db,"users",d.id)));
     await setDoc(appStateRef, { isLocked: false }, { merge: true });
     isStopped = false;
 }};
-
-document.getElementById("revealNamesBtn").onclick = () => namesRevealed = !namesRevealed;
-
-document.getElementById("stopBtn").onclick = async () => {
-    isStopped = true;
-    const now = new Date();
-    document.getElementById("stoppedTime").textContent = "STOP: " + now.toLocaleTimeString();
-    document.getElementById("fanfareAudio").play();
-};
-
+document.getElementById("revealNamesBtn").onclick = () => { namesRevealed = !namesRevealed; document.getElementById("revealNamesBtn").textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona"; };
+document.getElementById("stopBtn").onclick = async () => { isStopped = true; await setDoc(appStateRef, { isLocked: false }, { merge: true }); };
 new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 80, height: 80 });
-
 const darkBtn = document.getElementById("darkModeBtn");
-darkBtn.onclick = () => {
-    document.body.classList.toggle("dark");
-};
+darkBtn.onclick = () => { document.body.classList.toggle("dark"); darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
 </script>
 </body>
 </html>
