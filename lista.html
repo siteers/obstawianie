@@ -43,7 +43,7 @@
         .top-nav { 
             width: 100%; max-width: 1100px; display: flex; 
             justify-content: flex-end; gap: 10px; margin-bottom: 20px; 
-            z-index: 100; flex-wrap: wrap; 
+            z-index: 100;
         }
 
         #tilt-wrapper {
@@ -64,35 +64,24 @@
             box-sizing: border-box;
             transition: 0.3s;
         }
-        body.dark .container { box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        body.apocalypse .container {
-            border: 2px solid var(--error);
-            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
-        }
-        body.apocalypse h2 { color: var(--error) !important; text-shadow: 0 0 10px var(--error); }
-
+        /* ALARM I DRŻENIE - 5 SEKUND */
         @keyframes alarmPulse {
-            0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
-            50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(50, 0, 0, 0.6); }
-            100% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
+            0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(255, 0, 0, 0.1); }
+            50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(255, 0, 0, 0.4); }
+            100% { box-shadow: 0 0 0 var(--error) inset; background: rgba(255, 0, 0, 0.1); }
         }
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
             20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
             40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
             60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
             80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
         
         body.alarm-active .container {
-            animation: alarmPulse 1s infinite, shake 0.5s infinite;
+            animation: alarmPulse 0.8s infinite, shake 0.2s infinite;
         }
 
         h2 { text-align: center; margin-top: 0; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
@@ -106,78 +95,49 @@
         }
         body.dark .table-wrapper { background: rgba(0,0,0,0.3); }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
-        th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
-        th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
-        body.dark th { background: rgba(255, 255, 255, 0.05); }
-        
-        /* NOWY STYL PRZYCISKU X */
-        .deleteBtn { 
-            width: 24px; height: 24px; 
-            color: #ff4d4d; cursor: pointer; 
-            font-size: 18px; font-weight: 900;
-            display: inline-flex; align-items: center; justify-content: center;
-            transition: 0.2s;
-            text-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
-        }
-        .deleteBtn:hover { transform: scale(1.3); color: #ff0000; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; }
+        th { background: rgba(0, 0, 0, 0.05); color: var(--gold); font-size: 11px; }
 
-        #clock { font-size: 56px; font-weight: 900; text-align: center; }
+        /* ESTETYCZNY PRZYCISK X */
+        .deleteBtn { 
+            color: #ff4d4d; cursor: pointer; font-size: 20px; font-weight: bold;
+            transition: 0.2s; display: inline-block;
+        }
+        .deleteBtn:hover { transform: scale(1.4); color: #ff0000; text-shadow: 0 0 10px red; }
+
+        #clock { font-size: 56px; font-weight: 900; text-align: center; font-variant-numeric: tabular-nums; }
         
         #stopBtn { 
             background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; 
             padding: 20px 45px; font-size: 28px; border-radius: 50px; border: none; 
-            cursor: pointer; display: block; margin: 20px auto; transition: 0.3s;
-            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); font-weight: 900;
+            cursor: pointer; display: block; margin: 20px auto; font-weight: 900;
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3);
         }
 
+        /* PRZYCISK LOCK / UNLOCK */
         #lockBtn {
             width: 100%; margin-top: 20px; padding: 15px;
-            background: linear-gradient(45deg, #ff0000, #8b0000);
-            color: #fff; border: 2px solid #ff0000; border-radius: 15px;
-            font-size: 18px; font-weight: 900; letter-spacing: 2px;
-            text-transform: uppercase; cursor: pointer;
-            box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-            transition: 0.3s;
+            border-radius: 15px; font-size: 18px; font-weight: 900;
+            text-transform: uppercase; cursor: pointer; transition: 0.3s;
+            border: none; color: white;
         }
-        #lockBtn:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
-        #lockBtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(1); }
+        .btn-is-unlocked { background: linear-gradient(45deg, #ff0000, #8b0000); box-shadow: 0 5px 15px rgba(255,0,0,0.3); }
+        .btn-is-locked { background: linear-gradient(45deg, #d4af37, #8a6d10); color: #000 !important; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
         
         #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
         
-        #winner { 
-            margin-top: 30px; padding: 20px; border-radius: 20px; font-size: 20px; 
-            background: rgba(0, 212, 255, 0.1); border: 1px solid var(--cyan); 
-            display: none; text-align: center;
-        }
-
-        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
-        .clear, .reveal-btn { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; transition: 0.3s; font-size: 12px; text-transform: uppercase; }
-        .clear { background: rgba(0,0,0,0.1); color: #555; }
-        body.dark .clear { background: rgba(255,255,255,0.1); color: #ccc; }
-        .reveal-btn { background: var(--gold); color: #000; }
-
-        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
-        .avatar { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
+        .user-cell { display: flex; align-items: center; gap: 10px; }
+        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; }
         
-        .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
+        .hidden-hour { filter: blur(8px); opacity: 0.3; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
-        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; }
+        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; text-decoration: none; }
         #darkModeBtn { background: #111; color: #fff; }
-        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
         #rankingBtn { background: var(--gold); color: #000; }
 
         .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
-        #qrcode { padding: 12px; background: #fff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        
-        #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none !important; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap; }
-        #cringeGifs img { max-height: 100px; border-radius: 15px; border: 2px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
-        
-        @keyframes blinkGreen { 0% { background: rgba(0, 255, 136, 0.1); } 50% { background: rgba(0, 128, 0, 0.6); } 100% { background: rgba(0, 255, 136, 0.1); } }
-        .blink { animation: blinkGreen 1.5s infinite; }
-        @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
     </style>
 </head>
 <body class="dark">
@@ -186,7 +146,7 @@
 
 <div class="top-nav">
     <button id="darkModeBtn">☀️ Light mode</button>
-    <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
+    <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Ranking</a>
 </div>
 
 <div id="tilt-wrapper">
@@ -194,16 +154,16 @@
         <h2>Lista zapisanych osób</h2>
         <div class="flex">
             <div class="panel">
-                <div class="btn-group">
-                    <button class="clear" onclick="clearAll()">Wyczyść dane</button>
-                    <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <button style="flex:1; padding:10px; cursor:pointer;" onclick="clearAll()">Wyczyść</button>
+                    <button style="flex:1; padding:10px; cursor:pointer;" id="revealNamesBtn">Odkryj imiona</button>
                 </div>
                 <div class="table-wrapper">
                     <table id="table">
                         <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
                     </table>
                 </div>
-                <button id="lockBtn">⛔ ZAMKNIJ LISTĘ ⛔</button>
+                <button id="lockBtn" class="btn-is-unlocked">⛔ Zablokuj listę ⛔</button>
             </div>
             <div class="panel">
                 <div id="clock">--:--:--</div>
@@ -211,7 +171,6 @@
                 <div id="stoppedTime"></div>
                 <div class="qr-container">
                     <div id="qrcode"></div>
-                    <div style="margin-top:10px; font-size:11px; font-weight:bold; color:var(--gold); letter-spacing: 1px;">SKANUJ REGULAMIN</div>
                 </div>
             </div>
         </div>
@@ -219,14 +178,7 @@
     </div>
 </div>
 
-<canvas id="fireworksCanvas"></canvas>
-<div id="cringeGifs">
-    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
-    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
-    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
-</div>
-
-<audio id="fanfareAudio" src="fanfare1.mp3"></audio>
+<audio id="fanfareAudio" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
 <audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/air-raid-siren-test-01.mp3"></audio>
 
 <script type="module">
@@ -237,48 +189,15 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const table = document.getElementById("table");
-const stoppedTime = document.getElementById("stoppedTime");
-const winner = document.getElementById("winner");
-const fanfareAudio = document.getElementById("fanfareAudio");
-const alarmAudio = document.getElementById("alarmAudio");
 const lockBtn = document.getElementById("lockBtn");
-const stopBtn = document.getElementById("stopBtn");
+const alarmAudio = document.getElementById("alarmAudio");
+const appStateRef = doc(db, "appState", "status");
 
 let usersData = [];
-let isStopped = false; 
-let namesRevealed = false; 
-let assignedFakeNames = {};
-let alarmTimeout;
-const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
+let isStopped = false;
+let namesRevealed = false;
 
-const bgCanvas = document.getElementById('bg-canvas');
-const bgCtx = bgCanvas.getContext('2d');
-let particles = [];
-function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
-window.onresize = resize; resize();
-
-class Particle {
-    constructor() { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4; }
-    update() { this.x += this.vx; this.y += this.vy; if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1; if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1; }
-}
-for (let i = 0; i < 60; i++) particles.push(new Particle());
-
-function drawBg() {
-    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
-    if(document.body.classList.contains('dark')) {
-        particles.forEach((p, i) => {
-            p.update(); bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
-            for (let j = i + 1; j < particles.length; j++) {
-                const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-                if (dist < 120) { bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke(); }
-            }
-        });
-    }
-    requestAnimationFrame(drawBg);
-}
-drawBg();
-
+// TŁO I TILT (1000)
 const tiltWrapper = document.getElementById('tilt-wrapper');
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 1000;
@@ -286,176 +205,105 @@ document.addEventListener('mousemove', (e) => {
     tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
-function shuffle(array) {
-    let currentIndex = array.length, randomIndex;
-    while (currentIndex != 0) { randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; }
-    return array;
-}
-
-const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
-new QRCode(document.getElementById("qrcode"), { text: regulaminUrl, width: 100, height: 100, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
-
-function getAvatarColor(name) {
-    const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"];
-    let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    return colors[Math.abs(hash) % colors.length];
-}
-
-onSnapshot(collection(db, "users"), snap => {
-    let newUsers = [];
-    snap.forEach(d => newUsers.push({ id: d.id, ...d.data() }));
-    if (newUsers.length !== usersData.length) {
-        const shuffledFakes = shuffle([...funnyNames]);
-        assignedFakeNames = {};
-        newUsers.forEach((u, index) => { assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length]; });
-    }
-    usersData = newUsers;
-});
-
-const appStateRef = doc(db, "appState", "status");
-
+// LOGIKA PRZYCISKU LOCK (TOGGLE)
 lockBtn.onclick = async () => {
-    if(confirm("ZABLOKOWAĆ SYSTEM? Nikt nie będzie mógł się dopisać!")) {
-        await setDoc(appStateRef, { isLocked: true }, { merge: true });
+    const snap = await getDoc(appStateRef);
+    const currentlyLocked = snap.data()?.isLocked || false;
+    
+    if(!currentlyLocked) {
+        if(confirm("Zablokować system?")) {
+            await setDoc(appStateRef, { isLocked: true }, { merge: true });
+        }
+    } else {
+        if(confirm("Odblokować system?")) {
+            await setDoc(appStateRef, { isLocked: false }, { merge: true });
+        }
     }
 };
 
+// OBSŁUGA STANU BLOKADY I ALARMU (5 SEKUND)
+let alarmActive = false;
 onSnapshot(appStateRef, (snap) => {
     const isLocked = snap.data()?.isLocked;
-    lockBtn.disabled = isStopped;
-
-    if(isLocked && !isStopped) {
-        document.body.classList.add('apocalypse');
-        lockBtn.textContent = "SYSTEM ZABLOKOWANY";
-        lockBtn.disabled = true;
-
-        if (!document.body.classList.contains('alarm-active')) {
+    
+    if (isLocked) {
+        lockBtn.textContent = "🔓 Odblokuj listę 🔓";
+        lockBtn.className = "btn-is-locked";
+        
+        // Uruchom alarm tylko raz przy zmianie na locked
+        if (!alarmActive && !isStopped) {
+            alarmActive = true;
             document.body.classList.add('alarm-active');
             alarmAudio.currentTime = 0;
-            alarmAudio.volume = 0.4;
-            alarmAudio.play().catch(()=>{});
-
-            clearTimeout(alarmTimeout);
-            // ALARM I DRŻENIE NA 5 SEKUND
-            alarmTimeout = setTimeout(() => {
+            alarmAudio.play().catch(() => console.log("Audio waiting for interaction"));
+            
+            setTimeout(() => {
                 document.body.classList.remove('alarm-active');
                 alarmAudio.pause();
                 alarmAudio.currentTime = 0;
+                alarmActive = false;
             }, 5000);
         }
     } else {
-        document.body.classList.remove('apocalypse');
+        lockBtn.textContent = "⛔ Zablokuj listę ⛔";
+        lockBtn.className = "btn-is-unlocked";
         document.body.classList.remove('alarm-active');
-        if(!isStopped) lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
-        
         alarmAudio.pause();
-        alarmAudio.currentTime = 0;
-        clearTimeout(alarmTimeout);
     }
 });
 
-document.getElementById("revealNamesBtn").onclick = function() {
-    namesRevealed = !namesRevealed;
-    this.textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona";
-};
-
-window.deleteOne = async id => deleteDoc(doc(db,"users",id));
-window.clearAll = async () => {
-    if(!confirm("Wyczyścić dane?")) return;
-    const snap = await getDocs(collection(db,"users"));
-    for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
-    winner.style.display = "none"; stoppedTime.textContent = ""; 
-    isStopped = false; namesRevealed = false;
-    document.body.style.animation = "none";
-    await setDoc(appStateRef, { isLocked: false }, { merge: true });
-};
-
-function toSec(t){
-    const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0);
-}
+// RESZTA LOGIKI (ZEGAR, TABELA, STOP)
+onSnapshot(collection(db, "users"), snap => {
+    usersData = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+});
 
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
-    const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     
+    const table = document.getElementById("table");
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
-    sorted.forEach((u, i) => {
+    
+    usersData.sort((a,b) => {
+        const tA = a.hour.split(":").map(Number);
+        const tB = b.hour.split(":").map(Number);
+        const secA = tA[0]*3600 + tA[1]*60 + tA[2];
+        const secB = tB[0]*3600 + tB[1]*60 + tB[2];
+        return Math.abs(secA - s) - Math.abs(secB - s);
+    }).forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        const color = getAvatarColor(u.name);
-        const fakeName = assignedFakeNames[u.id] || "Anonim";
-        const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
-        const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
-        const blinkClass = (i === 0) ? 'blink' : '';
-        
-        table.innerHTML += `<tr class="${blinkClass}">
+        table.innerHTML += `<tr>
             <td>${i+1}</td>
-            <td><div class="user-cell"><div class="avatar" style="background:${color}">${avatarContent}</div><span class="name-text">${nameContent}</span></div></td>
+            <td>${(namesRevealed || isStopped) ? u.name : '???'}</td>
             <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">✕</span></td>
         </tr>`;
     });
 }, 1000);
 
-stopBtn.onclick = async () => {
-    if(!usersData.length || isStopped) return;
-    isStopped = true;
+window.deleteOne = async id => deleteDoc(doc(db,"users",id));
+window.clearAll = async () => { if(confirm("Czyścisz?")) { 
+    const s = await getDocs(collection(db,"users"));
+    s.forEach(d => deleteDoc(doc(db,"users",d.id)));
     await setDoc(appStateRef, { isLocked: false }, { merge: true });
-    const nowObj = new Date();
-    const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
-    stoppedTime.textContent = "Zatrzymana godzina: " + nowObj.toLocaleTimeString("pl-PL");
-    const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
-    let playersWithPoints = [];
-    let rank = 1;
-    for (let i = 0; i < sorted.length; i++) {
-        if (i > 0 && Math.abs(toSec(sorted[i].hour)-s) !== Math.abs(toSec(sorted[i-1].hour)-s)) rank = i+1;
-        if (rank > 3) break;
-        playersWithPoints.push({ name: sorted[i].name, points: (rank===1?3:rank===2?2:1), rank: rank });
-    }
-    winner.style.display = "block";
-    winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>` + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
-    document.body.style.animation = "cringeBg 0.4s infinite alternate";
-    fanfareAudio.play().catch(()=>{});
-    startCelebration();
-    for (const p of playersWithPoints) {
-        const ref = doc(db, "ranking", p.name);
-        const snap = await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) });
-        else await setDoc(ref, { points: p.points });
-    }
-    await addDoc(collection(db, "history"), { date: nowObj.toLocaleString("pl-PL"), timestamp: nowObj.getTime(), winners: playersWithPoints.map(p => ({name:p.name, rank:p.rank})) });
+    isStopped = false;
+}};
+
+document.getElementById("revealNamesBtn").onclick = () => namesRevealed = !namesRevealed;
+
+document.getElementById("stopBtn").onclick = async () => {
+    isStopped = true;
+    const now = new Date();
+    document.getElementById("stoppedTime").textContent = "STOP: " + now.toLocaleTimeString();
+    document.getElementById("fanfareAudio").play();
 };
 
-const canvasFw = document.getElementById("fireworksCanvas");
-const ctxFw = canvasFw.getContext("2d");
-let fwParticles = [], fwActive = false;
-function updateFW() {
-    ctxFw.clearRect(0,0,canvasFw.width,canvasFw.height);
-    fwParticles.forEach((p,i) => {
-        p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.al -= 0.01;
-        if(p.al <= 0) fwParticles.splice(i,1);
-        ctxFw.globalAlpha = p.al; ctxFw.fillStyle = p.c;
-        ctxFw.beginPath(); ctxFw.arc(p.x, p.y, 3, 0, Math.PI*2); ctxFw.fill();
-    });
-    if(fwActive) requestAnimationFrame(updateFW);
-}
-function startCelebration() {
-    canvasFw.width = window.innerWidth; canvasFw.height = window.innerHeight;
-    canvasFw.style.display = "block"; fwActive = true;
-    const interval = setInterval(() => {
-        const x = Math.random()*canvasFw.width, y = Math.random()*canvasFw.height*0.5;
-        for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
-    }, 400);
-    const gifs = document.getElementById("cringeGifs");
-    gifs.style.setProperty('display', 'flex', 'important');
-    setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; gifs.style.setProperty('display', 'none', 'important'); document.body.style.animation = "none"; }, 7000);
-    updateFW();
-}
+new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 80, height: 80 });
+
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => {
     document.body.classList.toggle("dark");
-    darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
 };
 </script>
 </body>
