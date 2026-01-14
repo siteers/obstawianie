@@ -38,7 +38,6 @@
             overflow-x: hidden;
         }
 
-        /* PRZYWRÓCONE TŁO SIECI NEURONOWEJ */
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
 
         .top-nav { 
@@ -67,11 +66,17 @@
         }
         body.dark .container { box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        /* ANIMACJE ALARMU */
+        /* EFEKTY BLOKADY */
+        body.apocalypse .container {
+            border: 2px solid var(--error);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+        }
+        body.apocalypse h2 { color: var(--error) !important; text-shadow: 0 0 10px var(--error); }
+
         @keyframes alarmPulse {
-            0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(255, 0, 0, 0.1); }
-            50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(255, 0, 0, 0.4); }
-            100% { box-shadow: 0 0 0 var(--error) inset; background: rgba(255, 0, 0, 0.1); }
+            0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
+            50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(50, 0, 0, 0.6); }
+            100% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
         }
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
@@ -81,33 +86,28 @@
             80% { transform: translate(-1px, -1px) rotate(1deg); }
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
-        body.alarm-active .container { animation: alarmPulse 0.8s infinite, shake 0.2s infinite; }
-        body.apocalypse .container { border: 2px solid var(--error); }
+        body.alarm-active .container { animation: alarmPulse 1s infinite, shake 0.5s infinite; }
 
         h2 { text-align: center; margin-top: 0; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
-
         .flex { display: flex; flex-direction: row; gap: 30px; justify-content: center; align-items: flex-start; }
         .panel { flex: 1; min-width: 300px; }
 
-        .table-wrapper { 
-            width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 15px; 
-            border: 1px solid var(--border); background: rgba(0,0,0,0.05); 
-        }
+        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
         body.dark .table-wrapper { background: rgba(0,0,0,0.3); }
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
-        th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; }
         th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
-        
-        /* POPRAWIONY PRZYCISK X */
+
+        /* NEONOWY X */
         .deleteBtn { 
-            color: #ff4d4d; cursor: pointer; font-size: 20px; font-weight: 900;
+            color: #ff4d4d; cursor: pointer; font-size: 18px; font-weight: 900;
+            display: inline-flex; align-items: center; justify-content: center;
             transition: 0.2s; text-shadow: 0 0 8px rgba(255, 0, 0, 0.5);
         }
         .deleteBtn:hover { transform: scale(1.3); color: #ff0000; }
 
         #clock { font-size: 56px; font-weight: 900; text-align: center; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
-        
         #stopBtn { 
             background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; 
             padding: 20px 45px; font-size: 28px; border-radius: 50px; border: none; 
@@ -119,33 +119,32 @@
             width: 100%; margin-top: 20px; padding: 15px;
             border-radius: 15px; font-size: 18px; font-weight: 900;
             text-transform: uppercase; cursor: pointer; transition: 0.3s;
-            border: none; color: white;
+            border: 2px solid transparent;
         }
-        .btn-is-unlocked { background: linear-gradient(45deg, #ff0000, #8b0000); box-shadow: 0 5px 15px rgba(255,0,0,0.3); }
-        .btn-is-locked { background: linear-gradient(45deg, #d4af37, #8a6d10); color: #000 !important; box-shadow: 0 5px 15px rgba(212,175,55,0.3); }
-        
-        #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
-        
+
         .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
         .clear, .reveal-btn { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; transition: 0.3s; font-size: 12px; text-transform: uppercase; }
         .clear { background: rgba(0,0,0,0.1); color: #555; }
         body.dark .clear { background: rgba(255,255,255,0.1); color: #ccc; }
         .reveal-btn { background: var(--gold); color: #000; }
 
-        .avatar { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; margin: 0 auto; }
+        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
+        .avatar { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
+        
         .hidden-hour { filter: blur(8px); opacity: 0.3; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
-        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; }
+        #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; }
         #darkModeBtn { background: #111; color: #fff; }
+        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
         #rankingBtn { background: var(--gold); color: #000; }
 
-        .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
-        #qrcode { padding: 12px; background: #fff; border-radius: 15px; }
-        
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
+        #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none !important; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap; }
+        #cringeGifs img { max-height: 100px; border-radius: 15px; border: 2px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         @keyframes blinkGreen { 0% { background: rgba(0, 255, 136, 0.1); } 50% { background: rgba(0, 128, 0, 0.6); } 100% { background: rgba(0, 255, 136, 0.1); } }
         .blink { animation: blinkGreen 1.5s infinite; }
+        @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
     </style>
 </head>
 <body class="dark">
@@ -171,7 +170,7 @@
                         <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
                     </table>
                 </div>
-                <button id="lockBtn" class="btn-is-unlocked">⛔ Zablokuj listę ⛔</button>
+                <button id="lockBtn" style="background: linear-gradient(45deg, #ff0000, #8b0000); color: white; border-color: #ff0000;">⛔ ZAMKNIJ LISTĘ ⛔</button>
             </div>
             <div class="panel">
                 <div id="clock">--:--:--</div>
@@ -179,6 +178,7 @@
                 <div id="stoppedTime"></div>
                 <div class="qr-container">
                     <div id="qrcode"></div>
+                    <div style="margin-top:10px; font-size:11px; font-weight:bold; color:var(--gold); letter-spacing: 1px;">SKANUJ REGULAMIN</div>
                 </div>
             </div>
         </div>
@@ -187,7 +187,14 @@
 </div>
 
 <canvas id="fireworksCanvas"></canvas>
-<audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/air-raid-siren-test-01.mp3"></audio>
+<div id="cringeGifs">
+    <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif">
+</div>
+
+<audio id="fanfareAudio" src="fanfare1.mp3"></audio>
+<audio id="lockSound" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -197,25 +204,35 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
+const table = document.getElementById("table");
+const stoppedTime = document.getElementById("stoppedTime");
+const winner = document.getElementById("winner");
+const fanfareAudio = document.getElementById("fanfareAudio");
+const lockSound = document.getElementById("lockSound");
 const lockBtn = document.getElementById("lockBtn");
-const alarmAudio = document.getElementById("alarmAudio");
+const stopBtn = document.getElementById("stopBtn");
 const appStateRef = doc(db, "appState", "status");
 
 let usersData = [];
 let isStopped = false; 
-let namesRevealed = false;
+let namesRevealed = false; 
+let assignedFakeNames = {};
+let alarmTimeout;
+const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
 
-// PRZYWRÓCONA SIEĆ NEURONOWA
+// KONSTELACJA TŁA
 const bgCanvas = document.getElementById('bg-canvas');
 const bgCtx = bgCanvas.getContext('2d');
 let particles = [];
 function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
 window.onresize = resize; resize();
+
 class Particle {
     constructor() { this.x = Math.random() * bgCanvas.width; this.y = Math.random() * bgCanvas.height; this.vx = (Math.random() - 0.5) * 0.4; this.vy = (Math.random() - 0.5) * 0.4; }
     update() { this.x += this.vx; this.y += this.vy; if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1; if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1; }
 }
 for (let i = 0; i < 60; i++) particles.push(new Particle());
+
 function drawBg() {
     bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
     if(document.body.classList.contains('dark')) {
@@ -238,70 +255,131 @@ document.addEventListener('mousemove', (e) => {
     tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 
-// LOCK LOGIC (TOGGLE)
+function shuffle(array) {
+    let currentIndex = array.length, randomIndex;
+    while (currentIndex != 0) { randomIndex = Math.floor(Math.random() * currentIndex); currentIndex--; [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]]; }
+    return array;
+}
+
+const regulaminUrl = window.location.href.substring(0, window.location.href.lastIndexOf("/")) + "/regulamin.html";
+new QRCode(document.getElementById("qrcode"), { text: regulaminUrl, width: 100, height: 100, colorDark: "#000000", colorLight: "#ffffff", correctLevel: QRCode.CorrectLevel.H });
+
+function getAvatarColor(name) {
+    const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"];
+    let hash = 0; for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    return colors[Math.abs(hash) % colors.length];
+}
+
+onSnapshot(collection(db, "users"), snap => {
+    let newUsers = [];
+    snap.forEach(d => newUsers.push({ id: d.id, ...d.data() }));
+    if (newUsers.length !== usersData.length) {
+        const shuffledFakes = shuffle([...funnyNames]);
+        assignedFakeNames = {};
+        newUsers.forEach((u, index) => { assignedFakeNames[u.id] = shuffledFakes[index % shuffledFakes.length]; });
+    }
+    usersData = newUsers;
+});
+
+// LOGIKA LOCK/UNLOCK
 lockBtn.onclick = async () => {
     const snap = await getDoc(appStateRef);
-    const locked = snap.data()?.isLocked || false;
-    await setDoc(appStateRef, { isLocked: !locked }, { merge: true });
+    const currentlyLocked = snap.data()?.isLocked || false;
+    if (!currentlyLocked) {
+        if(confirm("ZABLOKOWAĆ SYSTEM?")) await setDoc(appStateRef, { isLocked: true }, { merge: true });
+    } else {
+        await setDoc(appStateRef, { isLocked: false }, { merge: true });
+    }
 };
 
 onSnapshot(appStateRef, (snap) => {
     const isLocked = snap.data()?.isLocked;
-    if(isLocked) {
-        lockBtn.textContent = "🔓 Odblokuj listę 🔓";
-        lockBtn.className = "btn-is-locked";
+    if(isLocked && !isStopped) {
         document.body.classList.add('apocalypse');
-        if(!isStopped && !document.body.classList.contains('alarm-active')) {
+        lockBtn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓";
+        lockBtn.style.background = "linear-gradient(45deg, #d4af37, #8a6d10)";
+        lockBtn.style.color = "#000";
+        lockBtn.style.borderColor = "#d4af37";
+        if (!document.body.classList.contains('alarm-active')) {
             document.body.classList.add('alarm-active');
-            alarmAudio.play().catch(()=>{});
-            setTimeout(() => { document.body.classList.remove('alarm-active'); alarmAudio.pause(); alarmAudio.currentTime = 0; }, 5000);
+            lockSound.currentTime = 0;
+            lockSound.play().catch(()=>{});
+            clearTimeout(alarmTimeout);
+            alarmTimeout = setTimeout(() => { document.body.classList.remove('alarm-active'); }, 5000);
         }
     } else {
-        lockBtn.textContent = "⛔ Zablokuj listę ⛔";
-        lockBtn.className = "btn-is-unlocked";
         document.body.classList.remove('apocalypse');
         document.body.classList.remove('alarm-active');
-        alarmAudio.pause(); alarmAudio.currentTime = 0;
+        if(!isStopped) {
+            lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
+            lockBtn.style.background = "linear-gradient(45deg, #ff0000, #8b0000)";
+            lockBtn.style.color = "#fff";
+            lockBtn.style.borderColor = "#ff0000";
+        }
     }
 });
 
-// REFRESH TABLE
 setInterval(() => {
     const n = new Date();
     document.getElementById("clock").textContent = n.toLocaleTimeString("pl-PL");
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
-    const table = document.getElementById("table");
+    const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
-    
-    usersData.sort((a,b) => {
-        const tA = a.hour.split(":").map(Number);
-        const tB = b.hour.split(":").map(Number);
-        const secA = (tA[0]||0)*3600 + (tA[1]||0)*60 + (tA[2]||0);
-        const secB = (tB[0]||0)*3600 + (tB[1]||0)*60 + (tB[2]||0);
-        return Math.abs(secA - s) - Math.abs(secB - s);
-    }).forEach((u, i) => {
+    sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
+        const color = getAvatarColor(u.name);
+        const fakeName = assignedFakeNames[u.id] || "Anonim";
+        const nameContent = (namesRevealed || isStopped) ? u.name : fakeName;
+        const avatarContent = (namesRevealed || isStopped) ? u.name.charAt(0) : "?";
         const blinkClass = (i === 0) ? 'blink' : '';
         table.innerHTML += `<tr class="${blinkClass}">
             <td>${i+1}</td>
-            <td>${(namesRevealed || isStopped) ? u.name : '???'}</td>
+            <td><div class="user-cell"><div class="avatar" style="background:${color}">${avatarContent}</div><span class="name-text">${nameContent}</span></div></td>
             <td class="${hourClass}">${u.hour}</td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">✕</span></td>
         </tr>`;
     });
 }, 1000);
 
-onSnapshot(collection(db, "users"), snap => { usersData = snap.docs.map(d => ({id: d.id, ...d.data()})); });
 window.deleteOne = async id => deleteDoc(doc(db,"users",id));
-window.clearAll = async () => { if(confirm("Wyczyścić?")) { 
-    const s = await getDocs(collection(db,"users"));
-    s.forEach(d => deleteDoc(doc(db,"users",d.id)));
+window.clearAll = async () => {
+    if(!confirm("Wyczyścić?")) return;
+    const snap = await getDocs(collection(db,"users"));
+    for (const d of snap.docs) { await deleteDoc(doc(db,"users",d.id)); }
+    winner.style.display = "none"; stoppedTime.textContent = ""; 
+    isStopped = false; namesRevealed = false;
+    document.body.style.animation = "none";
     await setDoc(appStateRef, { isLocked: false }, { merge: true });
-    isStopped = false;
-}};
+};
+
+function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0); }
+
 document.getElementById("revealNamesBtn").onclick = () => { namesRevealed = !namesRevealed; document.getElementById("revealNamesBtn").textContent = namesRevealed ? "Ukryj imiona" : "Odkryj imiona"; };
-document.getElementById("stopBtn").onclick = async () => { isStopped = true; await setDoc(appStateRef, { isLocked: false }, { merge: true }); };
-new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 80, height: 80 });
+
+stopBtn.onclick = async () => {
+    if(!usersData.length || isStopped) return;
+    isStopped = true;
+    await setDoc(appStateRef, { isLocked: false }, { merge: true });
+    const nowObj = new Date();
+    const s = nowObj.getHours()*3600+nowObj.getMinutes()*60+nowObj.getSeconds();
+    stoppedTime.textContent = "STOP: " + nowObj.toLocaleTimeString("pl-PL");
+    const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
+    let playersWithPoints = [];
+    let rank = 1;
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && Math.abs(toSec(sorted[i].hour)-s) !== Math.abs(toSec(sorted[i-1].hour)-s)) rank = i+1;
+        if (rank > 3) break;
+        playersWithPoints.push({ name: sorted[i].name, points: (rank===1?3:rank===2?2:1), rank: rank });
+    }
+    winner.style.display = "block";
+    winner.innerHTML = `<strong>🏆 WYNIKI:</strong><br>` + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+    document.body.style.animation = "cringeBg 0.4s infinite alternate";
+    fanfareAudio.play().catch(()=>{});
+    const gifs = document.getElementById("cringeGifs");
+    gifs.style.setProperty('display', 'flex', 'important');
+    setTimeout(() => { gifs.style.setProperty('display', 'none', 'important'); document.body.style.animation = "none"; }, 7000);
+};
+
 const darkBtn = document.getElementById("darkModeBtn");
 darkBtn.onclick = () => { document.body.classList.toggle("dark"); darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
 </script>
