@@ -13,7 +13,7 @@
             --text: #111;
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
-            --error: #ff0000; /* Czysta czerwień dla alarmu */
+            --error: #ff0000;
         }
 
         body.dark {
@@ -35,7 +35,7 @@
             min-height: 100vh;
             perspective: 1000px;
             transition: background-color 0.3s, color 0.3s;
-            overflow-x: hidden; /* Zapobiega paskom przewijania przy wibracjach */
+            overflow-x: hidden;
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
@@ -66,11 +66,18 @@
         }
         body.dark .container { box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
 
-        /* --- EFEKTY APOKALIPSY --- */
+        /* --- EFEKTY APOKALIPSY (Stałe - czerwona ramka) --- */
+        body.apocalypse .container {
+            border: 2px solid var(--error);
+            box-shadow: 0 0 30px rgba(255, 0, 0, 0.3);
+        }
+        body.apocalypse h2 { color: var(--error) !important; text-shadow: 0 0 10px var(--error); }
+
+        /* --- EFEKTY AKTYWNEGO ALARMU (Tylko przez 10s) --- */
         @keyframes alarmPulse {
-            0% { box-shadow: 0 0 0 var(--error) inset; border-color: var(--error); }
-            50% { box-shadow: 0 0 100px var(--error) inset; border-color: #ff5555; background: rgba(50, 0, 0, 0.8); }
-            100% { box-shadow: 0 0 0 var(--error) inset; border-color: var(--error); }
+            0% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
+            50% { box-shadow: 0 0 100px var(--error) inset; background: rgba(50, 0, 0, 0.6); }
+            100% { box-shadow: 0 0 0 var(--error) inset; background: rgba(50, 0, 0, 0.1); }
         }
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
@@ -86,11 +93,10 @@
             100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
         
-        body.apocalypse .container {
+        /* Klasa dodawana tylko na 10 sekund */
+        body.alarm-active .container {
             animation: alarmPulse 1s infinite, shake 0.5s infinite;
-            border: 2px solid var(--error);
         }
-        body.apocalypse h2 { color: var(--error) !important; text-shadow: 0 0 10px var(--error); }
 
         /* ------------------------ */
 
@@ -121,7 +127,7 @@
             box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); font-weight: 900;
         }
 
-        /* NOWY PRZYCISK ZAMKNIĘCIA LISTY */
+        /* PRZYCISK ZAMKNIĘCIA LISTY */
         #lockBtn {
             width: 100%; margin-top: 20px; padding: 15px;
             background: linear-gradient(45deg, #ff0000, #8b0000);
@@ -129,12 +135,10 @@
             font-size: 18px; font-weight: 900; letter-spacing: 2px;
             text-transform: uppercase; cursor: pointer;
             box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-            animation: pulseRed 1.5s infinite alternate;
             transition: 0.3s;
         }
         #lockBtn:hover { transform: scale(1.05); box-shadow: 0 0 40px rgba(255, 0, 0, 0.8); }
-        #lockBtn:disabled { opacity: 0.6; cursor: not-allowed; animation: none; filter: grayscale(0.8); }
-        @keyframes pulseRed { from { box-shadow: 0 0 10px var(--error); } to { box-shadow: 0 0 30px var(--error), 0 0 10px var(--error) inset; } }
+        #lockBtn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; filter: grayscale(1); }
         
         #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
         
@@ -196,7 +200,7 @@
                         <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
                     </table>
                 </div>
-                <button id="lockBtn">!!! ZAMKNIJ LISTĘ !!!</button>
+                <button id="lockBtn">⛔ ZAMKNIJ LISTĘ ⛔</button>
             </div>
             <div class="panel">
                 <div id="clock">--:--:--</div>
@@ -220,7 +224,7 @@
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
-<audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3" loop></audio>
+<audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -242,6 +246,7 @@ let usersData = [];
 let isStopped = false; 
 let namesRevealed = false; 
 let assignedFakeNames = {};
+let alarmTimeout; // Do kontrolowania czasu trwania alarmu
 const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
 
 // --- TŁO SIECI NEURONOWEJ ---
@@ -272,7 +277,7 @@ function drawBg() {
 }
 drawBg();
 
-// --- EFEKT 3D TILT ---
+// --- EFEKT 3D TILT (BARDZO SPOWOLNIONY - 1000) ---
 const tiltWrapper = document.getElementById('tilt-wrapper');
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 1000;
@@ -307,34 +312,54 @@ onSnapshot(collection(db, "users"), snap => {
 });
 
 // --- LOGIKA BLOKADY SYSTEMU (APOKALIPSA) ---
-// Używamy specjalnego dokumentu w bazie do przechowywania stanu blokady
 const appStateRef = doc(db, "appState", "status");
 
 lockBtn.onclick = async () => {
     if(confirm("JESTEŚ PEWIEN? To zablokuje możliwość dodawania dla wszystkich!")) {
-        // Ustawiamy flagę blokady w bazie
         await setDoc(appStateRef, { isLocked: true }, { merge: true });
     }
 };
 
-// Nasłuchujemy zmian stanu blokady
 onSnapshot(appStateRef, (snap) => {
     const isLocked = snap.data()?.isLocked;
     
+    // Ustawienie przycisku blokady
+    if (isStopped) {
+        lockBtn.disabled = true; // Zawsze zablokowany jak jest STOP
+    } else {
+        lockBtn.disabled = false; // Po wyczyszczeniu danych znowu aktywny
+    }
+
     if(isLocked && !isStopped) {
         // TRYB APOKALIPSY WŁĄCZONY
         document.body.classList.add('apocalypse');
-        lockBtn.textContent = "⛔ SYSTEM ZABLOKOWANY ⛔";
+        lockBtn.textContent = "SYSTEM ZABLOKOWANY";
         lockBtn.disabled = true;
-        alarmAudio.volume = 0.3; // Ustaw głośność syreny
-        alarmAudio.play().catch(()=>{}); // Odtwórz syrenę w pętli
+
+        // Uruchomienie efektów tylko jeśli jeszcze nie lecą
+        if (!document.body.classList.contains('alarm-active')) {
+            document.body.classList.add('alarm-active');
+            alarmAudio.currentTime = 0;
+            alarmAudio.volume = 0.3;
+            alarmAudio.play().catch(()=>{});
+
+            // STOP ALARM I DRŻENIE PO 10 SEKUNDACH
+            clearTimeout(alarmTimeout);
+            alarmTimeout = setTimeout(() => {
+                document.body.classList.remove('alarm-active');
+                alarmAudio.pause();
+                alarmAudio.currentTime = 0;
+            }, 10000);
+        }
     } else {
-        // TRYB NORMALNY
+        // TRYB NORMALNY / RESET
         document.body.classList.remove('apocalypse');
-        if(!isStopped) lockBtn.textContent = "!!! ZAMKNIJ LISTĘ !!!";
-        lockBtn.disabled = isStopped; // Jeśli STOP, to blokujemy przycisk zamknięcia
+        document.body.classList.remove('alarm-active');
+        if(!isStopped) lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
+        
         alarmAudio.pause();
         alarmAudio.currentTime = 0;
+        clearTimeout(alarmTimeout);
     }
 });
 
@@ -351,8 +376,10 @@ window.clearAll = async () => {
     winner.style.display = "none"; stoppedTime.textContent = ""; 
     isStopped = false; namesRevealed = false;
     document.body.style.animation = "none";
-    // Przy czyszczeniu resetujemy też blokadę
+    
+    // RESET BLOKADY I PRZYCISKU
     await setDoc(appStateRef, { isLocked: false }, { merge: true });
+    lockBtn.disabled = false; // Odblokuj przycisk
 };
 
 function toSec(t){
@@ -387,7 +414,7 @@ stopBtn.onclick = async () => {
     if(!usersData.length || isStopped) return;
     isStopped = true;
     
-    // Zdejmujemy blokadę systemu i wyłączamy alarm po kliknięciu STOP
+    // Zdejmujemy blokadę systemu po STOP
     await setDoc(appStateRef, { isLocked: false }, { merge: true });
 
     const nowObj = new Date();
@@ -450,4 +477,3 @@ darkBtn.onclick = () => {
 </script>
 </body>
 </html>
-
