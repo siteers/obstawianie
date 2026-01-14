@@ -2,119 +2,185 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>Lista użytkowników & Stoper</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; background: #f2f2f2; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; transition: background-color 0.3s; }
-        body.dark { background: #121212; }
-        
-        .top-nav { width: 100%; max-width: 1100px; display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        :root {
+            --gold: #d4af37;
+            --cyan: #00d4ff;
+            --bg: #020408;
+            --glass: rgba(15, 23, 42, 0.7);
+            --error: #ff4d4d;
+        }
 
-        .container { max-width: 1100px; width: 100%; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); box-sizing: border-box; position: relative; z-index: 10; }
-        body.dark .container { background: #1e1e1e; box-shadow: 0 10px 30px rgba(255,255,255,0.05); }
-        
-        h2 { text-align: center; margin-top: 0; }
-        body.dark h2, body.dark th, body.dark td, body.dark #clock, body.dark #stoppedTime { color: #f1f1f1; }
-        
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: #fff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            perspective: 1000px;
+            transition: background-color 0.3s;
+        }
+
+        /* TŁO SIECI NEURONOWEJ */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+
+        .top-nav { 
+            width: 100%; max-width: 1100px; display: flex; 
+            justify-content: flex-end; gap: 10px; margin-bottom: 20px; 
+            z-index: 100; flex-wrap: wrap; 
+        }
+
+        #tilt-wrapper {
+            width: 100%;
+            max-width: 1100px;
+            z-index: 10;
+            transition: transform 0.1s ease-out;
+            transform-style: preserve-3d;
+        }
+
+        .container { 
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            padding: 25px; 
+            border-radius: 30px; 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5); 
+            box-sizing: border-box;
+        }
+
+        h2 { text-align: center; margin-top: 0; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+
         .flex { display: flex; flex-direction: row; gap: 30px; justify-content: center; align-items: flex-start; }
         .panel { flex: 1; min-width: 300px; }
 
-        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 8px; border: 1px solid #ccc; }
-        table { width: 100%; border-collapse: collapse; background: white; table-layout: fixed; min-width: 400px; }
-        body.dark table { background: #1e1e1e; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; vertical-align: middle; overflow: hidden; font-weight: bold; }
-        body.dark th, body.dark td { border-color: #333; }
-        th { background: #eee; }
-        body.dark th { background: #2a2a2a; }
+        /* FUTURYSTYCZNA TABELA */
+        .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
+        th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: bold; }
+        th { background: rgba(255, 255, 255, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
         
         th:nth-child(1) { width: 40px; }
         th:nth-child(2) { width: 180px; }
         th:nth-child(3) { width: 100px; }
         th:nth-child(4) { width: 50px; }
 
-        .deleteBtn { width: 26px; height: 26px; line-height: 26px; border-radius: 50%; background: #ffdddd; border: 1px solid red; color: red; cursor: pointer; display: inline-block; }
+        .deleteBtn { 
+            width: 26px; height: 26px; line-height: 24px; border-radius: 50%; 
+            background: rgba(255, 77, 77, 0.1); border: 1px solid var(--error); 
+            color: var(--error); cursor: pointer; transition: 0.3s;
+        }
+        .deleteBtn:hover { background: var(--error); color: #fff; }
+
+        /* ZEGAR I PRZYCISKI */
+        #clock { font-size: 56px; font-weight: 900; text-align: center; color: #fff; text-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        #stopBtn { 
+            background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; 
+            padding: 20px 45px; font-size: 28px; border-radius: 50px; border: none; 
+            cursor: pointer; display: block; margin: 20px auto; transition: 0.3s;
+            box-shadow: 0 10px 20px rgba(255, 77, 77, 0.3); font-weight: 900;
+        }
+        #stopBtn:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255, 77, 77, 0.5); }
         
-        #clock { font-size: 48px; font-weight: bold; text-align: center; }
-        #stopBtn { background: red; color: white; padding: 20px 45px; font-size: 28px; border-radius: 60px; border: none; cursor: pointer; display: block; margin: 15px auto; transition: 0.2s; }
-        #stoppedTime { font-size: 26px; text-align: center; margin-top: 15px; }
+        #stoppedTime { font-size: 22px; text-align: center; margin-top: 15px; color: var(--cyan); font-weight: bold; }
         
-        #winner { margin-top: 30px; padding: 20px; font-size: 24px; background: #d1ffd1; border-left: 5px solid green; display: none; text-align: center; color: #000; }
-        body.dark #winner { background: #1f3d1f; color: #aaffaa; }
-        
-        .btn-group { display: flex; gap: 8px; margin-bottom: 10px; }
-        .clear, .reveal-btn { padding: 10px 14px; border-radius: 6px; border: none; cursor: pointer; font-weight: bold; flex: 1; }
-        .clear { background: #444; color: white; }
-        .reveal-btn { background: #007bff; color: white; }
+        #winner { 
+            margin-top: 30px; padding: 20px; border-radius: 20px; font-size: 20px; 
+            background: rgba(0, 212, 255, 0.1); border: 1px solid var(--cyan); 
+            display: none; text-align: center; color: #fff; animation: fadeIn 0.5s ease;
+        }
 
-        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left; }
-        .avatar { flex-shrink: 0; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; text-transform: uppercase; }
-        .name-text { font-size: 14px; line-height: 1.2; word-wrap: break-word; }
+        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        .clear, .reveal-btn { 
+            padding: 12px; border-radius: 10px; border: none; cursor: pointer; 
+            font-weight: bold; flex: 1; transition: 0.3s; font-size: 12px; text-transform: uppercase;
+        }
+        .clear { background: rgba(255,255,255,0.1); color: #ccc; border: 1px solid rgba(255,255,255,0.2); }
+        .reveal-btn { background: var(--gold); color: #000; }
+        .clear:hover { background: rgba(255,255,255,0.2); color: #fff; }
 
-        .hidden-hour { filter: blur(5px); user-select: none; }
-        .reveal-data { filter: blur(0) !important; }
+        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
+        .avatar { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; border: 1px solid rgba(255,255,255,0.2); }
+        .name-text { font-size: 14px; }
 
-        #darkModeBtn, #rankingBtn { padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-size: 14px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; }
-        #darkModeBtn { background: #111; color: #fff; }
-        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
-        #rankingBtn { background: #ffcc00; color: #111; }
+        .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
+        .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
-        .qr-container { display: flex; flex-direction: column; align-items: center; justify-content: center; margin-top: 20px; }
-        #qrcode { padding: 10px; background: white; border-radius: 8px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        #darkModeBtn, #rankingBtn { 
+            padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; 
+            font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; 
+            display: flex; align-items: center; backdrop-filter: blur(10px);
+        }
+        #darkModeBtn { background: rgba(255, 255, 255, 0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+        #rankingBtn { background: var(--gold); color: #000; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
+
+        .qr-container { display: flex; flex-direction: column; align-items: center; margin-top: 25px; }
+        #qrcode { padding: 12px; background: #fff; border-radius: 15px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; display: none; z-index: 9999; }
-        #cringeGifs { position: fixed; bottom: 10px; left: 0; width: 100%; display: none; justify-content: center; gap: 10px; z-index: 99999; flex-wrap: wrap; }
-        #cringeGifs img { max-height: 120px; border-radius: 10px; border: 3px solid white; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap; }
+        #cringeGifs img { max-height: 100px; border-radius: 15px; border: 2px solid #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
-        @keyframes blinkGreen { 0% { background: #d1ffd1; } 50% { background: #008000; } 100% { background: #d1ffd1; } }
+        @keyframes blinkGreen { 0% { background: rgba(0, 255, 136, 0.1); } 50% { background: rgba(0, 128, 0, 0.6); } 100% { background: rgba(0, 255, 136, 0.1); } }
         .blink { animation: blinkGreen 1.5s infinite; }
-        .blink td { color: white !important; }
+        .blink td { color: #fff !important; }
         
-        @keyframes cringeBg { 0% { background: #ff69b4; } 25% { background: #00ffff; } 50% { background: #ffff00; } 75% { background: #ff00ff; } 100% { background: #00ff00; } }
+        @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
         @media (max-width: 850px) {
-            body { padding: 10px; }
+            body { padding: 15px; }
             .flex { flex-direction: column-reverse; gap: 20px; }
             .panel { width: 100%; min-width: unset; }
-            .top-nav { justify-content: center; }
-            #clock { font-size: 38px; }
-            #stopBtn { width: 100%; }
-            #cringeGifs img { max-height: 80px; }
+            .top-nav { justify-content: center; margin-bottom: 10px; }
+            #clock { font-size: 42px; }
+            #stopBtn { width: 100%; padding: 15px; }
+            #cringeGifs img { max-height: 70px; }
         }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+
+<canvas id="bg-canvas"></canvas>
 
 <div class="top-nav">
     <button id="darkModeBtn">🌙 Dark mode</button>
     <a href="ranking.html" target="_blank" id="rankingBtn">🏆 Zobacz Ranking</a>
 </div>
 
-<div class="container">
-    <h2>Lista zapisanych osób</h2>
-    <div class="flex">
-        <div class="panel">
-            <div class="btn-group">
-                <button class="clear" onclick="clearAll()">Wyczyść dane</button>
-                <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
+<div id="tilt-wrapper">
+    <div class="container">
+        <h2>Lista zapisanych osób</h2>
+        <div class="flex">
+            <div class="panel">
+                <div class="btn-group">
+                    <button class="clear" onclick="clearAll()">Wyczyść dane</button>
+                    <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
+                </div>
+                <div class="table-wrapper">
+                    <table id="table">
+                        <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
+                    </table>
+                </div>
             </div>
-            <div class="table-wrapper">
-                <table id="table">
-                    <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
-                </table>
+            <div class="panel">
+                <div id="clock">--:--:--</div>
+                <button id="stopBtn">STOP</button>
+                <div id="stoppedTime"></div>
+                <div class="qr-container">
+                    <div id="qrcode"></div>
+                    <div style="margin-top:10px; font-size:11px; font-weight:bold; color:var(--gold); letter-spacing: 1px;">SKANUJ REGULAMIN</div>
+                </div>
             </div>
         </div>
-        <div class="panel">
-            <div id="clock">--:--:--</div>
-            <button id="stopBtn">STOP</button>
-            <div id="stoppedTime"></div>
-            <div class="qr-container">
-                <div id="qrcode"></div>
-                <div style="margin-top:8px; font-size:12px; font-weight:bold; color:#666;">SKANUJ REGULAMIN</div>
-            </div>
-        </div>
+        <div id="winner"></div>
     </div>
-    <div id="winner"></div>
 </div>
 
 <canvas id="fireworksCanvas"></canvas>
@@ -144,6 +210,56 @@ let isStopped = false;
 let namesRevealed = false; 
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Kebab z falafelem", "Mariolka"];
+
+// --- TŁO SIECI NEURONOWEJ ---
+const bgCanvas = document.getElementById('bg-canvas');
+const bgCtx = bgCanvas.getContext('2d');
+let particles = [];
+function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; }
+window.onresize = resize; resize();
+
+class Particle {
+    constructor() {
+        this.x = Math.random() * bgCanvas.width;
+        this.y = Math.random() * bgCanvas.height;
+        this.vx = (Math.random() - 0.5) * 0.4;
+        this.vy = (Math.random() - 0.5) * 0.4;
+    }
+    update() {
+        this.x += this.vx; this.y += this.vy;
+        if(this.x<0 || this.x>bgCanvas.width) this.vx*=-1;
+        if(this.y<0 || this.y>bgCanvas.height) this.vy*=-1;
+    }
+}
+for (let i = 0; i < 60; i++) particles.push(new Particle());
+
+function drawBg() {
+    bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+    particles.forEach((p, i) => {
+        p.update();
+        bgCtx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+        bgCtx.beginPath(); bgCtx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); bgCtx.fill();
+        for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j];
+            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 120) {
+                bgCtx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
+                bgCtx.lineWidth = 0.5;
+                bgCtx.beginPath(); bgCtx.moveTo(p.x, p.y); bgCtx.lineTo(p2.x, p2.y); bgCtx.stroke();
+            }
+        }
+    });
+    requestAnimationFrame(drawBg);
+}
+drawBg();
+
+// --- EFEKT 3D TILT ---
+const tiltWrapper = document.getElementById('tilt-wrapper');
+document.addEventListener('mousemove', (e) => {
+    const x = (window.innerWidth / 2 - e.pageX) / 50;
+    const y = (window.innerHeight / 2 - e.pageY) / 50;
+    tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+});
 
 function shuffle(array) {
     let currentIndex = array.length, randomIndex;
@@ -238,7 +354,7 @@ stopBtn.onclick = async () => {
     
     winner.style.display = "block";
     winner.innerHTML = `<strong>🏆 WYNIKI RUNDY:</strong><br>` + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
-    document.body.style.animation = "cringeBg 0.3s infinite alternate";
+    document.body.style.animation = "cringeBg 0.4s infinite alternate";
     fanfareAudio.play().catch(()=>{});
     startCelebration();
     for (const p of playersWithPoints) {
@@ -252,12 +368,12 @@ stopBtn.onclick = async () => {
 
 const canvas = document.getElementById("fireworksCanvas");
 const ctx = canvas.getContext("2d");
-let particles = [], fwActive = false;
+let fwParticles = [], fwActive = false;
 function updateFW() {
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    particles.forEach((p,i) => {
+    fwParticles.forEach((p,i) => {
         p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.al -= 0.01;
-        if(p.al <= 0) particles.splice(i,1);
+        if(p.al <= 0) fwParticles.splice(i,1);
         ctx.globalAlpha = p.al; ctx.fillStyle = p.c;
         ctx.beginPath(); ctx.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
     });
@@ -268,7 +384,7 @@ function startCelebration() {
     canvas.style.display = "block"; fwActive = true;
     const interval = setInterval(() => {
         const x = Math.random()*canvas.width, y = Math.random()*canvas.height*0.5;
-        for(let i=0; i<50; i++) particles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
+        for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
     }, 400);
     document.getElementById("cringeGifs").style.display = "flex";
     setTimeout(() => { 
