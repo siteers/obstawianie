@@ -251,8 +251,8 @@
         // --- EFEKT 3D TILT (DZIELNIK 100) ---
         const tiltWrapper = document.getElementById('tilt-wrapper');
         document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 100;
-            const y = (window.innerHeight / 2 - e.pageY) / 100;
+            const x = (window.innerWidth / 2 - e.pageX) / 1000;
+            const y = (window.innerHeight / 2 - e.pageY) / 1000;
             tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
         });
 
@@ -431,3 +431,4 @@
     </script>
 </body>
 </html>
+
