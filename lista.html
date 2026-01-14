@@ -111,7 +111,6 @@
         th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
         body.dark th { background: rgba(255, 255, 255, 0.05); }
         
-        /* NOWY STYL PRZYCISKU X */
         .deleteBtn { 
             width: 24px; height: 24px; 
             color: #ff4d4d; cursor: pointer; 
@@ -227,7 +226,7 @@
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
-<audio id="alarmAudio" src="https://www.soundjay.com/mechanical/sounds/air-raid-siren-test-01.mp3"></audio>
+<audio id="lockSound" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -241,7 +240,7 @@ const table = document.getElementById("table");
 const stoppedTime = document.getElementById("stoppedTime");
 const winner = document.getElementById("winner");
 const fanfareAudio = document.getElementById("fanfareAudio");
-const alarmAudio = document.getElementById("alarmAudio");
+const lockSound = document.getElementById("lockSound");
 const lockBtn = document.getElementById("lockBtn");
 const stopBtn = document.getElementById("stopBtn");
 
@@ -315,42 +314,45 @@ onSnapshot(collection(db, "users"), snap => {
 const appStateRef = doc(db, "appState", "status");
 
 lockBtn.onclick = async () => {
-    if(confirm("ZABLOKOWAĆ SYSTEM? Nikt nie będzie mógł się dopisać!")) {
-        await setDoc(appStateRef, { isLocked: true }, { merge: true });
-    }
+    const snap = await getDoc(appStateRef);
+    const currentlyLocked = snap.data()?.isLocked || false;
+    // Toggle stanu blokady
+    await setDoc(appStateRef, { isLocked: !currentlyLocked }, { merge: true });
 };
 
 onSnapshot(appStateRef, (snap) => {
     const isLocked = snap.data()?.isLocked;
-    lockBtn.disabled = isStopped;
-
+    
     if(isLocked && !isStopped) {
         document.body.classList.add('apocalypse');
-        lockBtn.textContent = "SYSTEM ZABLOKOWANY";
-        lockBtn.disabled = true;
+        lockBtn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓";
+        lockBtn.style.background = "linear-gradient(45deg, #d4af37, #8a6d10)";
+        lockBtn.style.color = "#000";
+        lockBtn.style.borderColor = "#d4af37";
 
         if (!document.body.classList.contains('alarm-active')) {
             document.body.classList.add('alarm-active');
-            alarmAudio.currentTime = 0;
-            alarmAudio.volume = 0.4;
-            alarmAudio.play().catch(()=>{});
+            lockSound.currentTime = 0;
+            lockSound.play().catch(()=>{});
 
             clearTimeout(alarmTimeout);
-            // ALARM I DRŻENIE NA 5 SEKUND
             alarmTimeout = setTimeout(() => {
                 document.body.classList.remove('alarm-active');
-                alarmAudio.pause();
-                alarmAudio.currentTime = 0;
+                lockSound.pause();
+                lockSound.currentTime = 0;
             }, 5000);
         }
     } else {
         document.body.classList.remove('apocalypse');
         document.body.classList.remove('alarm-active');
-        if(!isStopped) lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
-        
-        alarmAudio.pause();
-        alarmAudio.currentTime = 0;
-        clearTimeout(alarmTimeout);
+        if(!isStopped) {
+            lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔";
+            lockBtn.style.background = "linear-gradient(45deg, #ff0000, #8b0000)";
+            lockBtn.style.color = "#fff";
+            lockBtn.style.borderColor = "#ff0000";
+        }
+        lockSound.pause();
+        lockSound.currentTime = 0;
     }
 });
 
