@@ -10,7 +10,7 @@
       --cyan: #00d4ff;
       --bg: #020408;
       --glass: rgba(15, 23, 42, 0.85);
-      --error: #ff4d4d;
+      --error: #ff0000;
     }
 
     body {
@@ -24,6 +24,7 @@
       align-items: center;
       min-height: 100vh;
       perspective: 1000px;
+      transition: 0.3s;
     }
 
     /* TŁO SIECI NEURONOWEJ */
@@ -31,33 +32,15 @@
 
     .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
 
-    /* HOLOGRAFICZNA KARTA PODGLĄDU */
     .id-card {
-      position: absolute;
-      top: -120px;
-      left: 50%;
-      transform: translateX(-50%) rotateX(20deg);
-      width: 240px;
-      padding: 15px;
-      background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(212, 175, 55, 0.1));
-      border: 1px solid var(--cyan);
-      border-radius: 10px;
-      backdrop-filter: blur(10px);
-      opacity: 0;
-      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1);
-      z-index: 5;
-      box-shadow: 0 0 30px rgba(0, 212, 255, 0.3);
-      pointer-events: none;
+      position: absolute; top: -120px; left: 50%; transform: translateX(-50%) rotateX(20deg);
+      width: 240px; padding: 15px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(212, 175, 55, 0.1));
+      border: 1px solid var(--cyan); border-radius: 10px; backdrop-filter: blur(10px); opacity: 0;
+      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); z-index: 5; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); pointer-events: none;
     }
     .id-card.active { opacity: 1; top: -140px; transform: translateX(-50%) rotateX(0deg); }
     
-    .scan-laser {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 2px;
-      background: var(--cyan);
-      box-shadow: 0 0 15px var(--cyan);
-      animation: laserMove 2s infinite linear;
-    }
+    .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--cyan); box-shadow: 0 0 15px var(--cyan); animation: laserMove 2s infinite linear; }
     @keyframes laserMove { 0% { top: 0; } 100% { top: 100%; } }
 
     .container {
@@ -71,9 +54,19 @@
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
       text-align: center;
       position: relative;
+      transition: 0.5s;
     }
 
-    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; }
+    /* EFEKT ZABLOKOWANIA (APOKALIPSA) */
+    @keyframes alarmPulseContainer {
+        0% { box-shadow: 0 0 0 var(--error) inset, 0 25px 50px rgba(0,0,0,0.6); border-color: var(--error); }
+        50% { box-shadow: 0 0 50px var(--error) inset, 0 0 30px var(--error); border-color: #ff5555; background: rgba(50, 0, 0, 0.9); }
+        100% { box-shadow: 0 0 0 var(--error) inset, 0 25px 50px rgba(0,0,0,0.6); border-color: var(--error); }
+    }
+    .container.locked { animation: alarmPulseContainer 1.5s infinite; }
+    .container.locked h2 { color: var(--error); text-shadow: 0 0 10px var(--error); }
+    
+    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
 
     .input-box { margin-bottom: 15px; text-align: left; }
     .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
@@ -84,18 +77,12 @@
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
     select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+    select:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--error); background: rgba(50,0,0,0.3); }
 
-    #auth-section {
-      display: none;
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
+    #auth-section { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
     .pass-hint { font-size: 9px; color: #888; margin-top: 5px; line-height: 1.2; }
     .valid { color: #00ff88; }
     .invalid { color: var(--error); }
-
     .reset-link { display: block; margin-top: 8px; font-size: 10px; color: var(--cyan); cursor: pointer; text-decoration: underline; opacity: 0.7; }
     .reset-link:hover { opacity: 1; }
 
@@ -107,14 +94,10 @@
       margin-top: 20px; transition: 0.3s;
     }
     .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
+    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; box-shadow: none; }
 
     #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
-
-    .anon-counter {
-      margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
-      font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px;
-    }
+    .anon-counter { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
 <body>
@@ -129,8 +112,8 @@
       <div id="hologram-time" style="font-size: 14px; color: var(--gold);">00:00</div>
     </div>
 
-    <div class="container">
-      <h2>Dodaj swoje dane</h2>
+    <div class="container" id="mainContainer">
+      <h2 id="mainHeader">Dodaj swoje dane</h2>
 
       <div class="input-box">
         <label>Użytkownik</label>
@@ -152,33 +135,16 @@
       </div>
 
       <div id="auth-section">
-        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">
-          USTAW HASŁO (PIERWSZE LOGOWANIE):
-        </div>
-        
-        <div class="input-box">
-          <label id="pass-label">Hasło</label>
-          <input id="password" type="password" placeholder="••••" oninput="validateForm()">
-        </div>
-
-        <div class="input-box" id="pass-confirm-box" style="display:none;">
-          <label>Potwierdź hasło</label>
-          <input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()">
-        </div>
-
-        <div class="pass-hint" id="requirements-hint">
-          Min. 4 znaki i co najmniej jedna cyfra.
-        </div>
-        
+        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">USTAW HASŁO (PIERWSZE LOGOWANIE):</div>
+        <div class="input-box"><label id="pass-label">Hasło</label><input id="password" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div class="pass-hint" id="requirements-hint">Min. 4 znaki i co najmniej jedna cyfra.</div>
         <span class="reset-link" id="resetBtn" style="display:none;" onclick="handleReset()">Zapomniałeś hasła?</span>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
-
-      <div class="anon-counter">
-        Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--cyan);">0</span>
-      </div>
+      <div class="anon-counter">Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--cyan);">0</span></div>
     </div>
   </div>
 
@@ -186,173 +152,104 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
-  authDomain: "obstaiwanie.firebaseapp.com",
-  projectId: "obstaiwanie"
-};
-
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let isFirstTime = false;
+let isSystemLocked = false; // Nowa zmienna stanu blokady
 
-// --- RESET HASŁA ---
+// --- NASŁUCHIWANIE BLOKADY SYSTEMU ---
+const appStateRef = doc(db, "appState", "status");
+onSnapshot(appStateRef, (snap) => {
+    isSystemLocked = snap.data()?.isLocked;
+    const container = document.getElementById('mainContainer');
+    const header = document.getElementById('mainHeader');
+    const inputs = document.querySelectorAll('input, select');
+    const btn = document.getElementById('saveBtn');
+
+    if(isSystemLocked) {
+        // SYSTEM ZABLOKOWANY
+        container.classList.add('locked');
+        header.innerText = "⛔ SYSTEM ZABLOKOWANY ⛔";
+        inputs.forEach(el => el.disabled = true);
+        btn.disabled = true;
+        btn.innerText = "REJESTRACJA ZAMKNIĘTA";
+        document.getElementById('hologram').classList.remove('active');
+    } else {
+        // SYSTEM ODBLOKOWANY (Przywracanie stanu)
+        if(container.classList.contains('locked')) {
+             // Jeśli system był zablokowany i został odblokowany, przeładuj stronę, aby zresetować formularze
+             window.location.reload();
+        }
+    }
+});
+
+
 window.handleReset = async function() {
     const code = prompt("Podaj kod resetujący od administratora:");
     if (code === "0000") {
-        const name = document.getElementById('name').value;
-        alert("Kod poprawny. System odblokowany.");
-        isFirstTime = true;
-        document.getElementById('pass-confirm-box').style.display = 'block';
-        document.getElementById('first-time-msg').style.display = 'block';
-        document.getElementById('resetBtn').style.display = 'none';
-        document.getElementById('pass-label').innerText = "Ustaw nowe hasło";
-        validateForm();
+        alert("Kod poprawny. System odblokowany."); isFirstTime = true;
+        document.getElementById('pass-confirm-box').style.display = 'block'; document.getElementById('first-time-msg').style.display = 'block';
+        document.getElementById('resetBtn').style.display = 'none'; document.getElementById('pass-label').innerText = "Ustaw nowe hasło"; validateForm();
     } else { alert("Błędny kod!"); }
 }
 
-// --- LICZNIK LIVE ---
-onSnapshot(collection(db, "users"), (s) => {
-    document.getElementById("playerCount").innerText = s.size;
-});
+onSnapshot(collection(db, "users"), (s) => { document.getElementById("playerCount").innerText = s.size; });
 
 window.checkUserAuth = async function() {
-    const name = document.getElementById('name').value;
-    const authSection = document.getElementById('auth-section');
-    const passConfirmBox = document.getElementById('pass-confirm-box');
-    const firstTimeMsg = document.getElementById('first-time-msg');
-    const resetBtn = document.getElementById('resetBtn');
-    const passLabel = document.getElementById('pass-label');
-
+    if(isSystemLocked) return; // Nie sprawdzaj, jeśli zablokowane
+    const name = document.getElementById('name').value; const authSection = document.getElementById('auth-section');
+    const passConfirmBox = document.getElementById('pass-confirm-box'); const firstTimeMsg = document.getElementById('first-time-msg');
+    const resetBtn = document.getElementById('resetBtn'); const passLabel = document.getElementById('pass-label');
     updatePreview();
     if (!name) { authSection.style.display = 'none'; return; }
-
-    const userDoc = await getDoc(doc(db, "passwords", name));
-    authSection.style.display = 'block';
-
-    if (!userDoc.exists()) {
-        isFirstTime = true;
-        passConfirmBox.style.display = 'block';
-        firstTimeMsg.style.display = 'block';
-        resetBtn.style.display = 'none';
-        passLabel.innerText = "Ustaw nowe hasło";
-    } else {
-        isFirstTime = false;
-        passConfirmBox.style.display = 'none';
-        firstTimeMsg.style.display = 'none';
-        resetBtn.style.display = 'block';
-        passLabel.innerText = "Wpisz hasło";
-    }
+    const userDoc = await getDoc(doc(db, "passwords", name)); authSection.style.display = 'block';
+    if (!userDoc.exists()) { isFirstTime = true; passConfirmBox.style.display = 'block'; firstTimeMsg.style.display = 'block'; resetBtn.style.display = 'none'; passLabel.innerText = "Ustaw nowe hasło";
+    } else { isFirstTime = false; passConfirmBox.style.display = 'none'; firstTimeMsg.style.display = 'none'; resetBtn.style.display = 'block'; passLabel.innerText = "Wpisz hasło"; }
     validateForm();
 }
 
 window.validateForm = function() {
-    const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value;
-    const passConf = document.getElementById('password-confirm').value;
-    const btn = document.getElementById('saveBtn');
-    const hint = document.getElementById('requirements-hint');
-
-    const passRegex = /^(?=.*\d).{4,}$/; 
-    let isValid = name && hour && pass;
-
-    if (isFirstTime) {
-        const passComplexity = passRegex.test(pass);
-        hint.style.display = 'block';
-        hint.classList.toggle('valid', passComplexity);
-        isValid = isValid && (pass === passConf) && passComplexity;
+    if(isSystemLocked) return;
+    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value; const passConf = document.getElementById('password-confirm').value;
+    const btn = document.getElementById('saveBtn'); const hint = document.getElementById('requirements-hint');
+    const passRegex = /^(?=.*\d).{4,}$/; let isValid = name && hour && pass;
+    if (isFirstTime) { const passComplexity = passRegex.test(pass); hint.style.display = 'block'; hint.classList.toggle('valid', passComplexity); isValid = isValid && (pass === passConf) && passComplexity;
     } else { hint.style.display = 'none'; }
     btn.disabled = !isValid;
 }
 
 window.updatePreview = () => {
-    const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
+    if(isSystemLocked) return;
+    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
     const holo = document.getElementById('hologram');
-    if(name && hour) {
-        document.getElementById('hologram-name').innerText = name;
-        document.getElementById('hologram-time').innerText = hour;
-        holo.classList.add('active');
+    if(name && hour) { document.getElementById('hologram-name').innerText = name; document.getElementById('hologram-time').innerText = hour; holo.classList.add('active');
     } else { holo.classList.remove('active'); }
 }
 
 window.saveData = async function() {
-    const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value;
-    const msg = document.getElementById('msg');
-    const btn = document.getElementById('saveBtn');
-
-    // --- SYNTEZA MOWY AI ---
+    if(isSystemLocked) { alert("System jest zablokowany!"); return; }
+    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value; const msg = document.getElementById('msg'); const btn = document.getElementById('saveBtn');
+    try { const speech = new SpeechSynthesisUtterance(); speech.text = `Autoryzacja przyjęta. Witaj, ${name}`; speech.lang = 'pl-PL'; speech.pitch = 0.8; speech.rate = 1.1; window.speechSynthesis.speak(speech); } catch(e) {}
+    btn.disabled = true; btn.innerText = "PRZETWARZANIE...";
     try {
-        const speech = new SpeechSynthesisUtterance();
-        speech.text = `Autoryzacja przyjęta. Witaj, ${name}`;
-        speech.lang = 'pl-PL';
-        speech.pitch = 0.8; // Niższy, bardziej "robotyczny" ton
-        speech.rate = 1.1;  // Lekko szybsze tempo
-        window.speechSynthesis.speak(speech);
-    } catch(e) { console.log("Brak obsługi mowy w przeglądarce"); }
-
-    btn.disabled = true;
-    btn.innerText = "PRZETWARZANIE...";
-
-    try {
-        if (isFirstTime) {
-            await setDoc(doc(db, "passwords", name), { password: pass });
-        } else {
-            const userDoc = await getDoc(doc(db, "passwords", name));
-            if (userDoc.data().password !== pass) {
-                msg.style.color = "var(--error)";
-                msg.innerText = "BŁĘDNE HASŁO!";
-                btn.disabled = false;
-                btn.innerText = "Zapisz";
-                return;
-            }
-        }
+        if (isFirstTime) { await setDoc(doc(db, "passwords", name), { password: pass });
+        } else { const userDoc = await getDoc(doc(db, "passwords", name)); if (userDoc.data().password !== pass) { msg.style.color = "var(--error)"; msg.innerText = "BŁĘDNE HASŁO!"; btn.disabled = false; btn.innerText = "Zapisz"; return; } }
         await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
-        msg.style.color = "var(--cyan)";
-        msg.innerText = "ZAPISANO POMYŚLNIE!";
-        setTimeout(() => location.reload(), 2000);
+        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO POMYŚLNIE!"; setTimeout(() => location.reload(), 2000);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
-// --- ANIMACJA SIECI (KONSTELACJA) ---
-const canvas = document.getElementById('bg-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let particles = [];
-for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
-
+const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+let particles = []; for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy;
-        if(p.x<0 || p.x>canvas.width) p.vx*=-1;
-        if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
-        ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-
-        for (let j = i + 1; j < particles.length; j++) {
-            const p2 = particles[j];
-            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 120) {
-                ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
-                ctx.lineWidth = 0.5;
-                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-            }
-        }
-    });
-    requestAnimationFrame(draw);
-}
-draw();
-
-document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 45;
-    const y = (window.innerHeight / 2 - e.pageY) / 45;
-    document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
-});
+    ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1; ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+        for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw);
+} draw();
+document.addEventListener('mousemove', (e) => { const x = (window.innerWidth / 2 - e.pageX) / 45; const y = (window.innerHeight / 2 - e.pageY) / 45; document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`; });
 </script>
 </body>
 </html>
