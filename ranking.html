@@ -44,7 +44,6 @@
 
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
-        /* GÓRNE STATYSTYKI */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { 
             background: var(--glass); 
@@ -57,7 +56,6 @@
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
-        /* TABS */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { 
             padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
@@ -88,12 +86,10 @@
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
 
-        /* LEGENDA */
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
-        /* WYKRESY */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
         h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
@@ -156,7 +152,7 @@
                 <div class="legend-grid">
                     <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
                     <div class="legend-item"><span>🔥</span> <div><b>On Fire</b><br>3 zwycięstwa z rzędu</div></div>
-                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie w 00:00</div></div>
+                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Najlepsza średnia pkt</div></div>
                     <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
                 </div>
             </div>
@@ -167,6 +163,10 @@
                 <div class="glass-panel full-width-chart">
                     <h4>Skuteczność Medalowa</h4>
                     <canvas id="medalChart"></canvas>
+                </div>
+                <div class="glass-panel">
+                    <h4>Ranking Punktowy</h4>
+                    <canvas id="barChart"></canvas>
                 </div>
                 <div class="glass-panel">
                     <h4>Dominacja Medalowa</h4>
@@ -192,7 +192,7 @@
     </div>
 
     <div id="playerCardOverlay">
-        <div class="character-card">
+        <div class="character-card" id="characterCard">
             <span class="close-card" onclick="closePlayerCard()">×</span>
             <div class="card-header">
                 <div id="playerLevel" style="color: var(--cyan); font-weight: bold; font-size: 12px;">LEVEL 1</div>
@@ -247,11 +247,13 @@
         // --- WYKRESY ---
         const chartColor = '#888';
         const medalCtx = document.getElementById('medalChart').getContext('2d');
+        const barCtx = document.getElementById('barChart').getContext('2d');
         const pieCtx = document.getElementById('pieChart').getContext('2d');
         const lineCtx = document.getElementById('lineChart').getContext('2d');
         const radarCtx = document.getElementById('radarChart').getContext('2d');
         
         let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
+        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
         let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { labels: { color: chartColor } } } } });
         let lineChart = new Chart(lineCtx, { type: 'line', options: { responsive: true, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
         let radarChart;
@@ -267,6 +269,7 @@
 
         let historyData = [], playersData = [], globalStats = [];
 
+        // --- KARTA POSTACI LOGIKA ---
         window.showPlayerCard = (name) => {
             const p = globalStats.find(s => s.name === name);
             if(!p) return;
@@ -289,6 +292,11 @@
         };
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
+        
+        // Zamykanie przy kliknięciu poza ramkę
+        document.getElementById('playerCardOverlay').addEventListener('click', (e) => {
+            if (e.target.id === 'playerCardOverlay') closePlayerCard();
+        });
 
         function refreshStats() {
             if (!playersData.length) return;
@@ -307,14 +315,16 @@
             tbody.innerHTML = "";
             globalStats.forEach((p, i) => {
                 let bHtml = "";
-                if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge">👑</span>`;
-                if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge">🛡️</span>`;
+                if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge" title="Dominator">👑</span>`;
+                if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge" title="Weteran">🛡️</span>`;
                 tbody.innerHTML += `<tr><td>${i+1}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
             });
 
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
+            barChart.data = { labels: names, datasets: [{ data: globalStats.map(s=>s.points), backgroundColor: '#d4af37' }] };
+            barChart.update();
             pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.gold,0), globalStats.reduce((a,b)=>a+b.silver,0), globalStats.reduce((a,b)=>a+b.bronze,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }] };
             pieChart.update();
             lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avgPts), borderColor: '#d4af37', tension: 0.4 }] };
