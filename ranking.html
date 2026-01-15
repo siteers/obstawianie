@@ -13,7 +13,6 @@
             --text: #111;
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
-            --card-dark: #1a1a1a;
         }
 
         body.dark {
@@ -24,13 +23,12 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
-            perspective: 1000px;
             transition: 0.3s;
             overflow-x: hidden;
         }
@@ -42,13 +40,10 @@
             margin: 0 auto; 
             z-index: 10; 
             position: relative;
-            transition: transform 0.1s ease-out;
-            transform-style: preserve-3d;
         }
 
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
-        /* STATS GRID */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { 
             background: var(--glass); 
@@ -57,24 +52,19 @@
             border-radius: 20px; 
             border: 1px solid var(--border);
             text-align: center; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
         }
-        .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
-        /* TABS */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { 
             padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
             color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; 
-            transition: 0.3s; font-size: 13px;
+            transition: 0.3s;
         }
-        .tab-link.active { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
+        .tab-link.active { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
-        .tab-content { display: none; animation: fadeIn 0.5s ease; }
+        .tab-content { display: none; }
         .tab-content.active { display: block; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .glass-panel { 
             background: var(--glass); 
@@ -82,61 +72,47 @@
             padding: 25px; 
             border-radius: 25px; 
             border: 1px solid var(--border);
-            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
             margin-bottom: 20px; 
         }
         
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: middle; }
-        th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-        td { font-size: 14px; font-weight: 500; }
-
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
         .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
-        .player-name:hover { color: var(--gold); }
-
-        .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
-        .badge { font-size: 18px; cursor: help; transition: transform 0.2s; filter: drop-shadow(0 0 5px rgba(255,255,255,0.3)); }
-        .badge:hover { transform: scale(1.4); }
-        
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--text); padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
-        body.dark .legend-item { background: rgba(255,255,255,0.05); }
-        .legend-icon { font-size: 24px; }
-
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .full-width-chart { grid-column: 1 / -1; }
-        h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
 
         /* --- CHARACTER CARD MODAL --- */
         #playerCardOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.8);
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px);
         }
         .character-card {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
             border: 2px solid var(--cyan); border-radius: 30px;
-            width: 90%; max-width: 450px; padding: 30px; position: relative;
-            box-shadow: 0 0 50px rgba(0, 212, 255, 0.3); text-align: center;
+            width: 95%; max-width: 500px; padding: 25px; position: relative;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff;
         }
-        .close-card { position: absolute; top: 15px; right: 20px; font-size: 24px; color: #888; cursor: pointer; }
-        .close-card:hover { color: #fff; }
-        .card-header h2 { color: var(--gold); margin: 0; text-transform: uppercase; letter-spacing: 2px; }
-        .card-stats-radar { width: 100%; margin: 20px 0; }
+        .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
 
-        #darkModeBtn { 
-            position: fixed; top: 15px; right: 15px; padding: 10px 18px; 
-            border-radius: 30px; border: none; cursor: pointer; font-weight: bold; 
-            background: #111; color: white; z-index: 1000; transition: 0.3s;
+        .class-tag { 
+            background: var(--gold); color: #000; padding: 4px 12px; 
+            border-radius: 20px; font-size: 11px; font-weight: 900; 
+            text-transform: uppercase; display: inline-block; margin-top: 5px;
         }
-        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
         
-        .deleteBtn { color: var(--error); cursor: pointer; font-size: 20px; transition: 0.2s; }
-        .deleteBtn:hover { transform: scale(1.2); }
+        .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .xp-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--cyan); }
+
+        .attr-legend { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
+            text-align: left; font-size: 11px; margin-top: 20px; 
+            padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
+        }
+        .attr-legend b { color: var(--gold); }
+
+        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; z-index: 1000; cursor: pointer; }
 
         @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            th, td { padding: 10px; font-size: 12px; }
-            .glass-panel { padding: 15px; }
+            .attr-legend { grid-template-columns: 1fr; }
+            .character-card { padding: 15px; }
         }
     </style>
 </head>
@@ -144,7 +120,7 @@
     <canvas id="bg-canvas"></canvas>
     <button id="darkModeBtn">☀️ Light mode</button>
 
-    <div class="dashboard-container" id="tilt-wrapper">
+    <div class="dashboard-container">
         <h1>📊 Game Analytics Dashboard</h1>
 
         <div class="stats-grid">
@@ -162,49 +138,23 @@
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
-                    <thead><tr><th>#</th><th>Imię i Odznaki</th><th>Punkty</th><th>Podium</th></tr></thead>
+                    <thead><tr><th>#</th><th>Imię</th><th>Punkty</th><th>Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
-                
-                <h4 style="margin-top: 30px; margin-bottom: 15px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
-                <div class="legend-grid">
-                    <div class="legend-item"><span class="legend-icon">👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc w historii</div></div>
-                    <div class="legend-item"><span class="legend-icon">🔥</span> <div><b>On Fire (Seria)</b><br>Zwycięstwo 3 razy z rzędu</div></div>
-                    <div class="legend-item"><span class="legend-icon">🎯</span> <div><b>Snajper</b><br>Zgadł z dokładnością co do minuty</div></div>
-                    <div class="legend-item"><span class="legend-icon">🛡️</span> <div><b>Weteran</b><br>Najwięcej razy na podium</div></div>
-                </div>
             </div>
         </div>
 
         <div id="stats-tab" class="tab-content">
-            <div class="charts-grid">
-                <div class="glass-panel full-width-chart">
-                    <h4>Skuteczność (Ilość zdobytych miejsc)</h4>
-                    <canvas id="medalChart"></canvas>
-                </div>
-                <div class="glass-panel">
-                    <h4>Ranking Punktowy</h4>
-                    <canvas id="barChart"></canvas>
-                </div>
-                <div class="glass-panel">
-                    <h4>Dominacja Medalowa</h4>
-                    <canvas id="pieChart"></canvas>
-                </div>
-                <div class="glass-panel">
-                    <h4>Forma (Średnia pkt na podium)</h4>
-                    <canvas id="lineChart"></canvas>
-                </div>
-            </div>
+            <div class="glass-panel"><canvas id="medalChart"></canvas></div>
+            <div class="glass-panel"><canvas id="barChart"></canvas></div>
         </div>
 
         <div id="history-tab" class="tab-content">
             <div class="glass-panel">
-                <div style="overflow-x: auto;">
-                    <table id="historyTable">
-                        <thead><tr><th>Data i Godzina</th><th>Wyniki (Miejsca)</th><th>X</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
+                <table id="historyTable">
+                    <thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead>
+                    <tbody></tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -213,13 +163,21 @@
         <div class="character-card">
             <span class="close-card" onclick="closePlayerCard()">×</span>
             <div class="card-header">
-                <h2 id="cardPlayerName">NAME</h2>
-                <div id="cardBadges" style="margin-top: 10px;"></div>
+                <div id="playerLevel" style="color: var(--cyan); font-weight: bold; font-size: 12px;">LEVEL 1</div>
+                <h2 id="cardPlayerName" style="margin: 5px 0;">NAME</h2>
+                <div id="playerClass" class="class-tag">REKRUT</div>
+                <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div></div>
             </div>
-            <div class="card-stats-radar">
-                <canvas id="radarChart"></canvas>
+            
+            <div style="height: 250px;"><canvas id="radarChart"></canvas></div>
+
+            <div class="attr-legend">
+                <div><b>🏆 Zwycięstwa:</b> Ilość 1. miejsc.</div>
+                <div><b>🎯 Skuteczność:</b> Średnia pkt na grę.</div>
+                <div><b>🛡️ Stabilność:</b> Częstotliwość podium.</div>
+                <div><b>🎭 Versatility:</b> Zdobywanie różnych miejsc.</div>
+                <div><b>🔥 Aktywność:</b> Ilość rozegranych rund.</div>
             </div>
-            <div id="cardQuote" style="font-style: italic; font-size: 13px; color: var(--cyan); margin-top: 10px;">Analizowanie profilu taktycznego...</div>
         </div>
     </div>
 
@@ -254,29 +212,15 @@
                 });
             }
             requestAnimationFrame(drawBg);
-        }
-        drawBg();
+        } drawBg();
 
-        // --- TILT EFFECT ---
-        const tiltWrapper = document.getElementById('tilt-wrapper');
-        document.addEventListener('mousemove', (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 1000;
-            const y = (window.innerHeight / 2 - e.pageY) / 1000;
-            tiltWrapper.style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
-        });
-
-        // --- CHART JS CONFIG ---
-        const chartTextColor = '#888';
-        const barCtx = document.getElementById('barChart').getContext('2d');
-        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        // --- CHARTS ---
         const medalCtx = document.getElementById('medalChart').getContext('2d');
-        const lineCtx = document.getElementById('lineChart').getContext('2d');
+        const barCtx = document.getElementById('barChart').getContext('2d');
         const radarCtx = document.getElementById('radarChart').getContext('2d');
         
-        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } } } });
-        let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { position: 'bottom', labels: { color: chartTextColor } } } } });
-        let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartTextColor } }, y: { stacked: true, beginAtZero: true, ticks: { color: chartTextColor } } }, plugins: { legend: { position: 'top', labels: { color: chartTextColor } } } } });
-        let lineChart = new Chart(lineCtx, { type: 'line', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, max: 3, ticks: { color: chartTextColor } }, x: { ticks: { color: chartTextColor } } } } });
+        let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, plugins: { title: { display: true, text: 'Zdobycze medalowe', color: '#888' } } } });
+        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { title: { display: true, text: 'Ranking punktowy', color: '#888' } } } });
         let radarChart;
 
         window.openTab = (evt, tabName) => {
@@ -292,7 +236,7 @@
         let playersData = [];
         let globalStats = [];
 
-        // --- FUNKCJA KARTY POSTACI ---
+        // --- KARTA POSTACI LOGIKA ---
         window.showPlayerCard = (name) => {
             const p = globalStats.find(s => s.name === name);
             if(!p) return;
@@ -300,23 +244,36 @@
             document.getElementById('playerCardOverlay').style.display = 'flex';
             document.getElementById('cardPlayerName').textContent = p.name;
             
-            // Generowanie statystyk do radaru (skala 0-100)
+            // LEVEL I XP
+            const level = Math.floor(p.points / 5) + 1;
+            const xpProgress = ((p.points % 5) / 5) * 100;
+            document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
+            document.getElementById('xpBar').style.width = `${xpProgress}%`;
+
+            // ARCHEOTYPY KLAS
+            let archetype = "Rekrut";
+            if (p.gold > 5) archetype = "Dominator";
+            else if (p.totalPodiums > 10) archetype = "Weteran Podium";
+            else if (parseFloat(p.avgPts) > 2.5) archetype = "Snajper";
+            else if (p.gold > 0 && p.silver > 0 && p.bronze > 0) archetype = "Wszechstronny";
+            document.getElementById('playerClass').textContent = archetype;
+
+            // DANE RADARU
             const totalRounds = historyData.length || 1;
             const radarData = [
-                Math.min((p.gold / 5) * 100, 100), // Zwycięstwa
+                Math.min((p.gold / 5) * 100, 100),       // Zwycięstwa
+                Math.min((parseFloat(p.avgPts) / 3) * 100, 100), // Skuteczność
                 Math.min((p.totalPodiums / totalRounds) * 100, 100), // Stabilność
-                Math.min((parseFloat(p.avgPts) / 3) * 100, 100), // Średnia
-                Math.min((p.totalPodiums / 10) * 100, 100), // Doświadczenie
-                (p.gold > 0 && p.silver > 0 && p.bronze > 0) ? 100 : 50 // Wszechstronność
+                (p.gold > 0 && p.silver > 0 && p.bronze > 0) ? 100 : 40, // Versatility
+                Math.min((p.totalPodiums / 15) * 100, 100) // Aktywność
             ];
 
             if(radarChart) radarChart.destroy();
             radarChart = new Chart(radarCtx, {
                 type: 'radar',
                 data: {
-                    labels: ['Zwycięstwa', 'Stabilność', 'Średnia', 'Doświadczenie', 'Wszechstronność'],
+                    labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'],
                     datasets: [{
-                        label: 'Skill Matrix',
                         data: radarData,
                         backgroundColor: 'rgba(0, 212, 255, 0.2)',
                         borderColor: '#00d4ff',
@@ -325,16 +282,16 @@
                     }]
                 },
                 options: {
-                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } },
-                    plugins: { legend: { display: false } }
+                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888', font: { size: 10 } }, ticks: { display: false }, min: 0, max: 100 } },
+                    plugins: { legend: { display: false } },
+                    maintainAspectRatio: false
                 }
             });
         };
 
-        window.closePlayerCard = () => {
-            document.getElementById('playerCardOverlay').style.display = 'none';
-        };
+        window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
+        // --- SYNC Z BAZĄ ---
         function refreshStats() {
             if (!playersData.length) return;
             globalStats = playersData.map(p => {
@@ -353,48 +310,20 @@
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts };
             });
 
-            const maxGold = Math.max(...globalStats.map(s => s.gold));
-            const maxPodiums = Math.max(...globalStats.map(s => s.totalPodiums));
-            const maxAvg = Math.max(...globalStats.map(s => parseFloat(s.avgPts)));
-            
-            let onFirePlayers = [];
-            if (historyData.length >= 3) {
-                const w0 = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name);
-                const w1 = historyData[1].winners.filter(w => w.rank === 1).map(w => w.name);
-                const w2 = historyData[2].winners.filter(w => w.rank === 1).map(w => w.name);
-                onFirePlayers = w0.filter(name => w1.includes(name) && w2.includes(name));
-            }
-
-            const maxPoints = globalStats[0]?.points || 0;
-            const topPlayers = globalStats.filter(p => p.points === maxPoints).map(p => p.name);
-            document.getElementById('top-player').textContent = topPlayers.join(", ");
-
+            // Tabelka rankingu
             const rankTbody = document.querySelector("#rankTable tbody");
             rankTbody.innerHTML = "";
-            let currentPlace = 1;
-
             globalStats.forEach((p, i) => {
-                if (i > 0 && p.points < globalStats[i-1].points) currentPlace = i + 1;
-                
-                let badgesHtml = "";
-                if(p.gold === maxGold && p.gold > 0) badgesHtml += `<span class="badge" title="Dominator">👑</span>`;
-                if(onFirePlayers.includes(p.name)) badgesHtml += `<span class="badge" title="On Fire">🔥</span>`;
-                if(p.totalPodiums === maxPodiums && p.totalPodiums > 0) badgesHtml += `<span class="badge" title="Weteran">🛡️</span>`;
-                if(parseFloat(p.avgPts) === maxAvg && p.avgPts > 0) badgesHtml += `<span class="badge" title="Snajper">🎯</span>`;
-
                 rankTbody.innerHTML += `
                     <tr>
-                        <td>${currentPlace}</td>
-                        <td>
-                            <span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>
-                            <div class="badge-container">${badgesHtml}</div>
-                        </td>
-                        <td style="color:var(--gold); font-size:16px;">${p.points}</td>
+                        <td>${i + 1}</td>
+                        <td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span></td>
+                        <td style="color:var(--gold); font-weight:bold;">${p.points}</td>
                         <td>${p.totalPodiums}</td>
                     </tr>`;
             });
 
-            // AKTUALIZACJA WYKRESÓW
+            // Wykresy pomocnicze
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [
                 { label: 'Złoto', data: globalStats.map(s => s.gold), backgroundColor: '#d4af37' },
@@ -403,64 +332,21 @@
             ]};
             medalChart.update();
 
-            barChart.data = { labels: names, datasets: [{ data: globalStats.map(s => s.points), backgroundColor: '#d4af37', borderRadius: 5 }]};
+            barChart.data = { labels: names, datasets: [{ data: globalStats.map(s => s.points), backgroundColor: '#d4af37' }]};
             barChart.update();
-
-            const tG = globalStats.reduce((a,b)=>a+b.gold,0);
-            const tS = globalStats.reduce((a,b)=>a+b.silver,0);
-            const tB = globalStats.reduce((a,b)=>a+b.bronze,0);
-            pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [tG, tS, tB], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }]};
-            pieChart.update();
-
-            lineChart.data = { labels: names, datasets: [{ data: globalStats.map(s => s.avgPts), borderColor: '#d4af37', backgroundColor: 'rgba(212, 175, 55, 0.1)', fill: true, tension: 0.4, pointRadius: 5 }]};
-            lineChart.update();
         }
 
-        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc"), limit(100)), snap => {
-            historyData = [];
-            const historyList = document.querySelector("#historyTable tbody");
-            historyList.innerHTML = "";
-            snap.forEach(documentDoc => {
-                let data = documentDoc.data();
-                data.winners = data.winners.map((w, index) => (w.rank === undefined) ? { ...w, rank: index + 1 } : w);
-                historyData.push(data);
-                const winnersString = data.winners.map(w => `${w.rank}. ${w.name}`).join(", ");
-                historyList.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${winnersString}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${documentDoc.id}')">×</span></td></tr>`;
-            });
+        onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
+            historyData = snap.docs.map(d => d.data());
             document.getElementById('total-rounds').textContent = historyData.length;
-            if(historyData.length > 0) {
-                const w1 = historyData[0].winners.find(w => w.rank === 1);
-                document.getElementById('last-winner').textContent = w1 ? w1.name : "-";
-            }
             refreshStats();
         });
 
         onSnapshot(collection(db, "ranking"), snap => {
-            playersData = [];
-            snap.forEach(d => playersData.push({ name: d.id, points: d.data().points || 0 }));
+            playersData = snap.docs.map(d => ({ name: d.id, points: d.data().points || 0 }));
             playersData.sort((a, b) => b.points - a.points);
             refreshStats();
         });
-
-        window.deleteHistoryRecord = async (id) => {
-            if(!confirm("Cofnąć ten zapis?")) return;
-            const snap = await getDoc(doc(db, "history", id));
-            if(snap.exists()){
-                const data = snap.data();
-                for(let i=0; i<data.winners.length; i++){
-                    const w = data.winners[i];
-                    const pts = (w.rank == 1) ? -3 : (w.rank == 2 ? -2 : -1);
-                    const ref = doc(db, "ranking", w.name);
-                    const pSnap = await getDoc(ref);
-                    if(pSnap.exists()){
-                        const newP = (pSnap.data().points || 0) + pts;
-                        if(newP <= 0) await deleteDoc(ref);
-                        else await updateDoc(ref, {points: newP});
-                    }
-                }
-                await deleteDoc(doc(db, "history", id));
-            }
-        };
 
         const darkBtn = document.getElementById("darkModeBtn");
         darkBtn.onclick = () => {
