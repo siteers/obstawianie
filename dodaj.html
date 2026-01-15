@@ -18,7 +18,8 @@
       background: var(--bg);
       color: #fff;
       margin: 0;
-      overflow: hidden;
+      /* Zmiana na overflow-x: hidden, aby umożliwić przewijanie pionowe na małych ekranach */
+      overflow-x: hidden; 
       display: flex;
       justify-content: center;
       align-items: center;
@@ -98,6 +99,17 @@
 
     #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
     .anon-counter { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* --- NOWE MEDIA QUERIES DLA MOBILI --- */
+    @media (max-width: 480px) {
+      body { align-items: flex-start; padding-top: 150px; } /* Miejsce na hologram nad kontenerem */
+      .container { padding: 20px; border-radius: 30px; }
+      h2 { font-size: 18px; margin-bottom: 15px; }
+      .id-card { width: 210px; padding: 10px; top: -110px; }
+      .id-card.active { top: -130px; }
+      .btn-cyber { padding: 15px; font-size: 14px; }
+      select, input { padding: 12px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
