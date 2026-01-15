@@ -44,6 +44,7 @@
 
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
+        /* STATS GRID */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { 
             background: var(--glass); 
@@ -56,6 +57,7 @@
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
+        /* TABS */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { 
             padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
@@ -86,15 +88,17 @@
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
 
+        /* LEGENDA */
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
+        /* WYKRESY */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
         h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
 
-        /* --- CHARACTER CARD MODAL --- */
+        /* CHARACTER CARD MODAL */
         #playerCardOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px);
@@ -161,7 +165,7 @@
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
                 <div class="glass-panel full-width-chart">
-                    <h4>Skuteczność Medalowa (Złoto/Srebro/Brąz)</h4>
+                    <h4>Skuteczność Medalowa</h4>
                     <canvas id="medalChart"></canvas>
                 </div>
                 <div class="glass-panel">
@@ -173,7 +177,7 @@
                     <canvas id="pieChart"></canvas>
                 </div>
                 <div class="glass-panel">
-                    <h4>Forma Punktowa (Średnia na grę)</h4>
+                    <h4>Forma Punktowa (Średnia)</h4>
                     <canvas id="lineChart"></canvas>
                 </div>
             </div>
@@ -204,9 +208,9 @@
             <div class="attr-legend">
                 <div><b>🏆 Zwycięstwa:</b> Ilość 1. miejsc.</div>
                 <div><b>🎯 Skuteczność:</b> Średnia pkt na grę.</div>
-                <div><b>🛡️ Stabilność:</b> Częstotliwość bycia w TOP 3.</div>
-                <div><b>🎭 Versatility:</b> Różnorodność zajmowanych miejsc.</div>
-                <div><b>🔥 Aktywność:</b> Łączna liczba rund.</div>
+                <div><b>🛡️ Stabilność:</b> Częstotliwość podium.</div>
+                <div><b>🎭 Versatility:</b> Różnorodność miejsc.</div>
+                <div><b>🔥 Aktywność:</b> Liczba rund.</div>
             </div>
         </div>
     </div>
@@ -219,7 +223,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- TŁO ---
+        // --- BACKGROUND ---
         const bgCanvas = document.getElementById('bg-canvas');
         const bgCtx = bgCanvas.getContext('2d');
         let particles = [];
@@ -244,7 +248,7 @@
             requestAnimationFrame(drawBg);
         } drawBg();
 
-        // --- WYKRESY ---
+        // --- CHARTS ---
         const chartColor = '#888';
         const medalCtx = document.getElementById('medalChart').getContext('2d');
         const barCtx = document.getElementById('barChart').getContext('2d');
@@ -291,49 +295,47 @@
         };
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
-        
-        // ZAMYKANIE KLIKNIĘCIEM POZA RAMKĘ
-        document.getElementById('playerCardOverlay').addEventListener('click', (e) => {
-            if (e.target.id === 'playerCardOverlay') closePlayerCard();
-        });
+        document.getElementById('playerCardOverlay').addEventListener('click', (e) => { if (e.target.id === 'playerCardOverlay') closePlayerCard(); });
 
         function refreshStats() {
             if (!playersData.length) return;
             
-            // Logika Snajpera (Stała) - Sprawdzamy historię pod kątem idealnych trafień
             const sniperList = new Set();
-            historyData.forEach(round => {
-                round.winners.forEach(w => {
-                    if (w.isSniperHit === true) sniperList.add(w.name);
-                });
-            });
+            historyData.forEach(round => round.winners.forEach(w => { if (w.isSniperHit) sniperList.add(w.name); }));
 
             globalStats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
-                historyData.forEach(r => r.winners.forEach(w => { 
-                    if(w.name===p.name){ 
-                        if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; 
-                    } 
-                }));
+                historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
                 const totalPodiums = gold + silver + bronze;
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0, isSniper: sniperList.has(p.name) };
             });
 
-            const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
-            document.getElementById('top-player').textContent = globalStats[0]?.name || "-";
+            // LOGIKA WIELU LIDERÓW
+            const maxPoints = globalStats[0]?.points || 0;
+            const topPlayers = globalStats.filter(p => p.points === maxPoints).map(p => p.name).join(", ");
+            document.getElementById('top-player').textContent = topPlayers || "-";
 
+            // LOGIKA OSTATNICH ZWYCIĘZCÓW
+            if(historyData.length > 0) {
+                const winnersLast = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name).join(", ");
+                document.getElementById('last-winner').textContent = winnersLast || "-";
+            }
+
+            const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
             const tbody = document.querySelector("#rankTable tbody");
             tbody.innerHTML = "";
+            
+            // LOGIKA REMISÓW W #
+            let displayRank = 1;
             globalStats.forEach((p, i) => {
+                if (i > 0 && p.points < globalStats[i-1].points) displayRank = i + 1;
                 let bHtml = "";
                 if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge" title="Dominator">👑</span>`;
                 if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge" title="Weteran">🛡️</span>`;
-                if(p.isSniper) bHtml += `<span class="badge" title="Snajper: Trafienie idealne!">🎯</span>`;
-                
-                tbody.innerHTML += `<tr><td>${i+1}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
+                if(p.isSniper) bHtml += `<span class="badge" title="Snajper (Na stałe)">🎯</span>`;
+                tbody.innerHTML += `<tr><td>${displayRank}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
             });
 
-            // UPDATE WYKRESÓW
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
@@ -354,7 +356,6 @@
                 hbody.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${data.winners.map(w=>`${w.rank}.${w.name}`).join(", ")}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
             });
             document.getElementById('total-rounds').textContent = historyData.length;
-            if(historyData.length>0) document.getElementById('last-winner').textContent = historyData[0].winners.find(w=>w.rank===1)?.name || "-";
             refreshStats();
         });
 
