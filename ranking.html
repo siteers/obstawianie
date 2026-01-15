@@ -44,6 +44,7 @@
 
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
+        /* GÓRNE STATYSTYKI */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { 
             background: var(--glass); 
@@ -53,18 +54,21 @@
             border: 1px solid var(--border);
             text-align: center; 
         }
+        .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
+        /* TABS */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { 
             padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
             color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; 
-            transition: 0.3s;
+            transition: 0.3s; font-size: 13px;
         }
         .tab-link.active { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
-        .tab-content { display: none; }
+        .tab-content { display: none; animation: fadeIn 0.5s ease; }
         .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .glass-panel { 
             background: var(--glass); 
@@ -77,9 +81,24 @@
         
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
-        .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
+        th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* --- CHARACTER CARD MODAL --- */
+        .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
+        .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
+        .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
+        .badge:hover { transform: scale(1.4); }
+
+        /* LEGENDA */
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
+        body.dark .legend-item { background: rgba(255,255,255,0.05); }
+
+        /* WYKRESY */
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .full-width-chart { grid-column: 1 / -1; }
+        h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
+
+        /* CHARACTER CARD MODAL */
         #playerCardOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px);
@@ -88,31 +107,22 @@
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
             border: 2px solid var(--cyan); border-radius: 30px;
             width: 95%; max-width: 500px; padding: 25px; position: relative;
-            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff;
+            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center;
         }
         .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
-
-        .class-tag { 
-            background: var(--gold); color: #000; padding: 4px 12px; 
-            border-radius: 20px; font-size: 11px; font-weight: 900; 
-            text-transform: uppercase; display: inline-block; margin-top: 5px;
-        }
-        
+        .class-tag { background: var(--gold); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; display: inline-block; margin-top: 5px; }
         .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         .xp-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--cyan); }
-
-        .attr-legend { 
-            display: grid; grid-template-columns: 1fr 1fr; gap: 10px; 
-            text-align: left; font-size: 11px; margin-top: 20px; 
-            padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);
-        }
+        .attr-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 11px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
         .attr-legend b { color: var(--gold); }
 
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; z-index: 1000; cursor: pointer; }
+        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; }
+        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
+        .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
 
         @media (max-width: 600px) {
+            .stats-grid { grid-template-columns: 1fr; }
             .attr-legend { grid-template-columns: 1fr; }
-            .character-card { padding: 15px; }
         }
     </style>
 </head>
@@ -138,23 +148,45 @@
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
-                    <thead><tr><th>#</th><th>Imię</th><th>Punkty</th><th>Podium</th></tr></thead>
+                    <thead><tr><th>#</th><th>Imię i Odznaki</th><th>Punkty</th><th>Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
+
+                <h4 style="margin-top: 30px; margin-bottom: 15px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
+                <div class="legend-grid">
+                    <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
+                    <div class="legend-item"><span>🔥</span> <div><b>On Fire</b><br>3 zwycięstwa z rzędu</div></div>
+                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie w 00:00</div></div>
+                    <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
+                </div>
             </div>
         </div>
 
         <div id="stats-tab" class="tab-content">
-            <div class="glass-panel"><canvas id="medalChart"></canvas></div>
-            <div class="glass-panel"><canvas id="barChart"></canvas></div>
+            <div class="charts-grid">
+                <div class="glass-panel full-width-chart">
+                    <h4>Skuteczność Medalowa</h4>
+                    <canvas id="medalChart"></canvas>
+                </div>
+                <div class="glass-panel">
+                    <h4>Dominacja Medalowa</h4>
+                    <canvas id="pieChart"></canvas>
+                </div>
+                <div class="glass-panel">
+                    <h4>Forma Punktowa</h4>
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
         </div>
 
         <div id="history-tab" class="tab-content">
             <div class="glass-panel">
-                <table id="historyTable">
-                    <thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead>
-                    <tbody></tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table id="historyTable">
+                        <thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -168,15 +200,13 @@
                 <div id="playerClass" class="class-tag">REKRUT</div>
                 <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div></div>
             </div>
-            
             <div style="height: 250px;"><canvas id="radarChart"></canvas></div>
-
             <div class="attr-legend">
                 <div><b>🏆 Zwycięstwa:</b> Ilość 1. miejsc.</div>
-                <div><b>🎯 Skuteczność:</b> Średnia pkt na grę.</div>
-                <div><b>🛡️ Stabilność:</b> Częstotliwość podium.</div>
-                <div><b>🎭 Versatility:</b> Zdobywanie różnych miejsc.</div>
-                <div><b>🔥 Aktywność:</b> Ilość rozegranych rund.</div>
+                <div><b>🎯 Skuteczność:</b> Średnia pkt na podium.</div>
+                <div><b>🛡️ Stabilność:</b> Częstotliwość bycia w TOP 3.</div>
+                <div><b>🎭 Versatility:</b> Różnorodność zajmowanych miejsc.</div>
+                <div><b>🔥 Aktywność:</b> Łączna liczba rozegranych rund.</div>
             </div>
         </div>
     </div>
@@ -189,7 +219,7 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- ANIMACJA TŁA ---
+        // --- TŁO ---
         const bgCanvas = document.getElementById('bg-canvas');
         const bgCtx = bgCanvas.getContext('2d');
         let particles = [];
@@ -214,13 +244,16 @@
             requestAnimationFrame(drawBg);
         } drawBg();
 
-        // --- CHARTS ---
+        // --- WYKRESY ---
+        const chartColor = '#888';
         const medalCtx = document.getElementById('medalChart').getContext('2d');
-        const barCtx = document.getElementById('barChart').getContext('2d');
+        const pieCtx = document.getElementById('pieChart').getContext('2d');
+        const lineCtx = document.getElementById('lineChart').getContext('2d');
         const radarCtx = document.getElementById('radarChart').getContext('2d');
         
-        let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, plugins: { title: { display: true, text: 'Zdobycze medalowe', color: '#888' } } } });
-        let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { title: { display: true, text: 'Ranking punktowy', color: '#888' } } } });
+        let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
+        let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { labels: { color: chartColor } } } } });
+        let lineChart = new Chart(lineCtx, { type: 'line', options: { responsive: true, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
         let radarChart;
 
         window.openTab = (evt, tabName) => {
@@ -232,127 +265,98 @@
             evt.currentTarget.classList.add("active");
         };
 
-        let historyData = [];
-        let playersData = [];
-        let globalStats = [];
+        let historyData = [], playersData = [], globalStats = [];
 
-        // --- KARTA POSTACI LOGIKA ---
         window.showPlayerCard = (name) => {
             const p = globalStats.find(s => s.name === name);
             if(!p) return;
-
             document.getElementById('playerCardOverlay').style.display = 'flex';
             document.getElementById('cardPlayerName').textContent = p.name;
-            
-            // LEVEL I XP
             const level = Math.floor(p.points / 5) + 1;
             const xpProgress = ((p.points % 5) / 5) * 100;
             document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
             document.getElementById('xpBar').style.width = `${xpProgress}%`;
-
-            // ARCHEOTYPY KLAS
+            
             let archetype = "Rekrut";
             if (p.gold > 5) archetype = "Dominator";
-            else if (p.totalPodiums > 10) archetype = "Weteran Podium";
+            else if (p.totalPodiums > 10) archetype = "Weteran";
             else if (parseFloat(p.avgPts) > 2.5) archetype = "Snajper";
-            else if (p.gold > 0 && p.silver > 0 && p.bronze > 0) archetype = "Wszechstronny";
             document.getElementById('playerClass').textContent = archetype;
 
-            // DANE RADARU
-            const totalRounds = historyData.length || 1;
-            const radarData = [
-                Math.min((p.gold / 5) * 100, 100),       // Zwycięstwa
-                Math.min((parseFloat(p.avgPts) / 3) * 100, 100), // Skuteczność
-                Math.min((p.totalPodiums / totalRounds) * 100, 100), // Stabilność
-                (p.gold > 0 && p.silver > 0 && p.bronze > 0) ? 100 : 40, // Versatility
-                Math.min((p.totalPodiums / 15) * 100, 100) // Aktywność
-            ];
-
+            const rData = [Math.min((p.gold/5)*100, 100), Math.min((parseFloat(p.avgPts)/3)*100, 100), Math.min((p.totalPodiums/(historyData.length||1))*100, 100), (p.gold>0&&p.silver>0&&p.bronze>0?100:50), Math.min((p.totalPodiums/15)*100, 100)];
             if(radarChart) radarChart.destroy();
-            radarChart = new Chart(radarCtx, {
-                type: 'radar',
-                data: {
-                    labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'],
-                    datasets: [{
-                        data: radarData,
-                        backgroundColor: 'rgba(0, 212, 255, 0.2)',
-                        borderColor: '#00d4ff',
-                        pointBackgroundColor: '#00d4ff',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    scales: { r: { angleLines: { color: 'rgba(255,255,255,0.1)' }, grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888', font: { size: 10 } }, ticks: { display: false }, min: 0, max: 100 } },
-                    plugins: { legend: { display: false } },
-                    maintainAspectRatio: false
-                }
-            });
+            radarChart = new Chart(radarCtx, { type: 'radar', data: { labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
         };
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
-        // --- SYNC Z BAZĄ ---
         function refreshStats() {
             if (!playersData.length) return;
             globalStats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
-                historyData.forEach(round => {
-                    round.winners.forEach(w => {
-                        if(w.name === p.name) {
-                            if(w.rank === 1) gold++;
-                            else if(w.rank === 2) silver++;
-                            else if(w.rank === 3) bronze++;
-                        }
-                    });
-                });
+                historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
                 const totalPodiums = gold + silver + bronze;
-                const avgPts = totalPodiums > 0 ? (p.points / totalPodiums).toFixed(2) : 0;
-                return { ...p, gold, silver, bronze, totalPodiums, avgPts };
+                return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0 };
             });
 
-            // Tabelka rankingu
-            const rankTbody = document.querySelector("#rankTable tbody");
-            rankTbody.innerHTML = "";
+            const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
+            const topPoints = globalStats[0]?.points || 0;
+            document.getElementById('top-player').textContent = globalStats.filter(p=>p.points===topPoints).map(p=>p.name).join(", ");
+
+            const tbody = document.querySelector("#rankTable tbody");
+            tbody.innerHTML = "";
             globalStats.forEach((p, i) => {
-                rankTbody.innerHTML += `
-                    <tr>
-                        <td>${i + 1}</td>
-                        <td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span></td>
-                        <td style="color:var(--gold); font-weight:bold;">${p.points}</td>
-                        <td>${p.totalPodiums}</td>
-                    </tr>`;
+                let bHtml = "";
+                if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge">👑</span>`;
+                if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge">🛡️</span>`;
+                tbody.innerHTML += `<tr><td>${i+1}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
             });
 
-            // Wykresy pomocnicze
             const names = globalStats.map(s => s.name);
-            medalChart.data = { labels: names, datasets: [
-                { label: 'Złoto', data: globalStats.map(s => s.gold), backgroundColor: '#d4af37' },
-                { label: 'Srebro', data: globalStats.map(s => s.silver), backgroundColor: '#c0c0c0' },
-                { label: 'Brąz', data: globalStats.map(s => s.bronze), backgroundColor: '#cd7f32' }
-            ]};
+            medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
-
-            barChart.data = { labels: names, datasets: [{ data: globalStats.map(s => s.points), backgroundColor: '#d4af37' }]};
-            barChart.update();
+            pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.gold,0), globalStats.reduce((a,b)=>a+b.silver,0), globalStats.reduce((a,b)=>a+b.bronze,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }] };
+            pieChart.update();
+            lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avgPts), borderColor: '#d4af37', tension: 0.4 }] };
+            lineChart.update();
         }
 
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
-            historyData = snap.docs.map(d => d.data());
+            historyData = [];
+            const hbody = document.querySelector("#historyTable tbody");
+            hbody.innerHTML = "";
+            snap.forEach(d => {
+                const data = d.data(); historyData.push(data);
+                hbody.innerHTML += `<tr><td>${data.date}</td><td style="font-size:12px">${data.winners.map(w=>`${w.rank}.${w.name}`).join(", ")}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
+            });
             document.getElementById('total-rounds').textContent = historyData.length;
+            if(historyData.length>0) document.getElementById('last-winner').textContent = historyData[0].winners.find(w=>w.rank===1)?.name || "-";
             refreshStats();
         });
 
         onSnapshot(collection(db, "ranking"), snap => {
             playersData = snap.docs.map(d => ({ name: d.id, points: d.data().points || 0 }));
-            playersData.sort((a, b) => b.points - a.points);
+            playersData.sort((a,b) => b.points - a.points);
             refreshStats();
         });
 
-        const darkBtn = document.getElementById("darkModeBtn");
-        darkBtn.onclick = () => {
-            document.body.classList.toggle("dark");
-            darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
+        window.deleteHistoryRecord = async (id) => {
+            if(!confirm("Cofnąć?")) return;
+            const snap = await getDoc(doc(db, "history", id));
+            if(snap.exists()){
+                for(const w of snap.data().winners){
+                    const ref = doc(db, "ranking", w.name), pSnap = await getDoc(ref);
+                    if(pSnap.exists()){
+                        const newP = pSnap.data().points - (w.rank==1?3:w.rank==2?2:1);
+                        if(newP<=0) await deleteDoc(ref); else await updateDoc(ref, {points: newP});
+                    }
+                }
+                await deleteDoc(doc(db, "history", id));
+            }
         };
+
+        const darkBtn = document.getElementById("darkModeBtn");
+        darkBtn.onclick = () => { document.body.classList.toggle("dark"); darkBtn.textContent = document.body.classList.contains("dark")?"☀️ Light mode":"🌙 Dark mode"; };
     </script>
 </body>
 </html>
