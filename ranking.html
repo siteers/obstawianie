@@ -94,7 +94,7 @@
         .full-width-chart { grid-column: 1 / -1; }
         h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
 
-        /* CHARACTER CARD MODAL */
+        /* --- CHARACTER CARD MODAL --- */
         #playerCardOverlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.85);
             display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px);
@@ -102,7 +102,7 @@
         .character-card {
             background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
             border: 2px solid var(--cyan); border-radius: 30px;
-            width: 95%; max-width: 500px; padding: 25px; position: relative;
+            width: 95%; max-width: 480px; padding: 25px; position: relative;
             box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center;
         }
         .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
@@ -152,7 +152,7 @@
                 <div class="legend-grid">
                     <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
                     <div class="legend-item"><span>🔥</span> <div><b>On Fire</b><br>3 zwycięstwa z rzędu</div></div>
-                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Najlepsza średnia pkt</div></div>
+                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie idealne co do sekundy (Na stałe)</div></div>
                     <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
                 </div>
             </div>
@@ -161,7 +161,7 @@
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
                 <div class="glass-panel full-width-chart">
-                    <h4>Skuteczność Medalowa</h4>
+                    <h4>Skuteczność Medalowa (Złoto/Srebro/Brąz)</h4>
                     <canvas id="medalChart"></canvas>
                 </div>
                 <div class="glass-panel">
@@ -173,7 +173,7 @@
                     <canvas id="pieChart"></canvas>
                 </div>
                 <div class="glass-panel">
-                    <h4>Forma Punktowa</h4>
+                    <h4>Forma Punktowa (Średnia na grę)</h4>
                     <canvas id="lineChart"></canvas>
                 </div>
             </div>
@@ -203,10 +203,10 @@
             <div style="height: 250px;"><canvas id="radarChart"></canvas></div>
             <div class="attr-legend">
                 <div><b>🏆 Zwycięstwa:</b> Ilość 1. miejsc.</div>
-                <div><b>🎯 Skuteczność:</b> Średnia pkt na podium.</div>
+                <div><b>🎯 Skuteczność:</b> Średnia pkt na grę.</div>
                 <div><b>🛡️ Stabilność:</b> Częstotliwość bycia w TOP 3.</div>
                 <div><b>🎭 Versatility:</b> Różnorodność zajmowanych miejsc.</div>
-                <div><b>🔥 Aktywność:</b> Łączna liczba rozegranych rund.</div>
+                <div><b>🔥 Aktywność:</b> Łączna liczba rund.</div>
             </div>
         </div>
     </div>
@@ -269,7 +269,6 @@
 
         let historyData = [], playersData = [], globalStats = [];
 
-        // --- KARTA POSTACI LOGIKA ---
         window.showPlayerCard = (name) => {
             const p = globalStats.find(s => s.name === name);
             if(!p) return;
@@ -293,23 +292,35 @@
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
         
-        // Zamykanie przy kliknięciu poza ramkę
+        // ZAMYKANIE KLIKNIĘCIEM POZA RAMKĘ
         document.getElementById('playerCardOverlay').addEventListener('click', (e) => {
             if (e.target.id === 'playerCardOverlay') closePlayerCard();
         });
 
         function refreshStats() {
             if (!playersData.length) return;
+            
+            // Logika Snajpera (Stała) - Sprawdzamy historię pod kątem idealnych trafień
+            const sniperList = new Set();
+            historyData.forEach(round => {
+                round.winners.forEach(w => {
+                    if (w.isSniperHit === true) sniperList.add(w.name);
+                });
+            });
+
             globalStats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
-                historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
+                historyData.forEach(r => r.winners.forEach(w => { 
+                    if(w.name===p.name){ 
+                        if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; 
+                    } 
+                }));
                 const totalPodiums = gold + silver + bronze;
-                return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0 };
+                return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0, isSniper: sniperList.has(p.name) };
             });
 
             const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
-            const topPoints = globalStats[0]?.points || 0;
-            document.getElementById('top-player').textContent = globalStats.filter(p=>p.points===topPoints).map(p=>p.name).join(", ");
+            document.getElementById('top-player').textContent = globalStats[0]?.name || "-";
 
             const tbody = document.querySelector("#rankTable tbody");
             tbody.innerHTML = "";
@@ -317,9 +328,12 @@
                 let bHtml = "";
                 if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge" title="Dominator">👑</span>`;
                 if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge" title="Weteran">🛡️</span>`;
+                if(p.isSniper) bHtml += `<span class="badge" title="Snajper: Trafienie idealne!">🎯</span>`;
+                
                 tbody.innerHTML += `<tr><td>${i+1}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
             });
 
+            // UPDATE WYKRESÓW
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
@@ -351,7 +365,7 @@
         });
 
         window.deleteHistoryRecord = async (id) => {
-            if(!confirm("Cofnąć?")) return;
+            if(!confirm("Cofnąć ten zapis?")) return;
             const snap = await getDoc(doc(db, "history", id));
             if(snap.exists()){
                 for(const w of snap.data().winners){
