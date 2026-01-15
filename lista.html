@@ -97,7 +97,7 @@
         .table-wrapper { width: 100%; overflow-x: auto; margin-top: 10px; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
         body.dark .table-wrapper { background: rgba(0,0,0,0.3); }
 
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 400px; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; min-width: 450px; }
         th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
         th { background: rgba(0, 0, 0, 0.05); color: var(--gold); text-transform: uppercase; font-size: 11px; }
         body.dark th { background: rgba(255, 255, 255, 0.05); }
@@ -144,6 +144,13 @@
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
+        /* STYLE LIVE SYNC */
+        .sync-container { width: 100%; background: rgba(0,0,0,0.1); height: 6px; border-radius: 10px; overflow: hidden; position: relative; }
+        body.dark .sync-container { background: rgba(255,255,255,0.05); }
+        .sync-bar { height: 100%; width: 0%; transition: width 1s ease-in-out, background 1s, box-shadow 0.5s; border-radius: 10px; }
+        @keyframes syncPulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
+        .sync-active { animation: syncPulse 1s infinite; }
+
         #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; }
         #darkModeBtn { background: #111; color: #fff; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
@@ -157,7 +164,6 @@
         .blink { animation: blinkGreen 1.5s infinite; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
-        /* --- NOWE MEDIA QUERIES DLA MOBILI --- */
         @media (max-width: 768px) {
             body { padding: 10px; }
             .flex { flex-direction: column; align-items: center; gap: 20px; }
@@ -165,10 +171,11 @@
             #clock { font-size: 40px; }
             #stopBtn { padding: 15px 30px; font-size: 22px; width: 100%; }
             .container { padding: 15px; border-radius: 20px; }
-            table { min-width: 320px; font-size: 12px; }
+            table { min-width: 320px; font-size: 11px; }
             .top-nav { justify-content: center; margin-bottom: 10px; }
             #lockBtn { font-size: 15px; padding: 12px; }
             h2 { font-size: 18px; }
+            .sync-container { height: 4px; }
         }
     </style>
 </head>
@@ -192,7 +199,7 @@
                 </div>
                 <div class="table-wrapper">
                     <table id="table">
-                        <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>
+                        <tr><th>No.</th><th>Imię</th><th>Godzina</th><th>Sync</th><th>X</th></tr>
                     </table>
                 </div>
                 <button id="lockBtn">⛔ ZAMKNIJ LISTĘ ⛔</button>
@@ -214,7 +221,7 @@
 <canvas id="fireworksCanvas"></canvas>
 <div id="cringeGifs" style="position: fixed; bottom: 20px; left: 0; width: 100%; display: none !important; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap;">
     <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif" style="max-height: 80px; border-radius: 10px;">
-    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif" style="max-height: 80px; border-radius: 10px;">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq" style="max-height: 80px; border-radius: 10px;">
     <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif" style="max-height: 80px; border-radius: 10px;">
 </div>
 
@@ -346,8 +353,17 @@ setInterval(() => {
     const s = n.getHours()*3600+n.getMinutes()*60+n.getSeconds();
     const sorted = [...usersData].sort((a,b)=>Math.abs(toSec(a.hour)-s)-Math.abs(toSec(b.hour)-s));
     
-    table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>X</th></tr>";
+    table.innerHTML="<tr><th>No.</th><th>Imię</th><th>Godzina</th><th>Sync</th><th>X</th></tr>";
     sorted.forEach((u, i) => {
+        const uSec = toSec(u.hour);
+        const diff = Math.abs(uSec - s);
+        // LOGIKA GORĄCA: Okno 30 minut (1800s)
+        const heat = Math.max(0, 100 - (diff / 1800) * 100); 
+        let syncColor = "var(--cyan)";
+        let glow = "none";
+        if (heat > 40) syncColor = "var(--gold)";
+        if (heat > 85) { syncColor = "#ff0000"; glow = "0 0 10px #ff0000"; }
+
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
         const fakeName = assignedFakeNames[u.id] || "Anonim";
@@ -359,6 +375,11 @@ setInterval(() => {
             <td>${i+1}</td>
             <td><div class="user-cell"><div class="avatar" style="background:${color}">${avatarContent}</div><span class="name-text">${nameContent}</span></div></td>
             <td class="${hourClass}">${u.hour}</td>
+            <td>
+                <div class="sync-container">
+                    <div class="sync-bar ${heat > 85 ? 'sync-active' : ''}" style="width: ${heat}%; background: ${syncColor}; box-shadow: ${glow};"></div>
+                </div>
+            </td>
             <td><span class="deleteBtn" onclick="deleteOne('${u.id}')">✕</span></td>
         </tr>`;
     });
