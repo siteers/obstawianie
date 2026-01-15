@@ -131,39 +131,31 @@
             display: none; text-align: center;
         }
 
-        .btn-group { display: flex; gap: 8px; margin-bottom: 15px; }
-        .clear, .reveal-btn { padding: 12px; border-radius: 10px; border: none; cursor: pointer; font-weight: bold; flex: 1; transition: 0.3s; font-size: 12px; text-transform: uppercase; }
-        .clear { background: rgba(0,0,0,0.1); color: #555; }
-        body.dark .clear { background: rgba(255,255,255,0.1); color: #ccc; }
-        .reveal-btn { background: var(--gold); color: #000; }
-
-        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; position: relative; }
+        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 10px; text-align: left; }
         .avatar { flex-shrink: 0; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px; }
         
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
-        /* --- EFEKT PŁOMIENIA PRZY IMIENIU --- */
+        /* --- STYL PŁOMIENIA ENERGII --- */
         .heat-flame {
             display: inline-block;
             width: 12px;
             height: 12px;
-            margin-left: 8px;
+            margin-left: 5px;
             border-radius: 50% 50% 20% 50%;
             transform: rotate(-45deg);
             transition: 0.5s;
-            opacity: 0;
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
         }
-        @keyframes flameWobble {
+
+        @keyframes flameVibrate {
             0% { transform: rotate(-45deg) scale(1); filter: brightness(1); }
-            50% { transform: rotate(-45deg) scale(1.4) translateY(-2px); filter: brightness(1.5); }
+            50% { transform: rotate(-45deg) scale(1.3) translateY(-2px); filter: brightness(1.4); }
             100% { transform: rotate(-45deg) scale(1); filter: brightness(1); }
         }
-        .flame-hot {
-            opacity: 1 !important;
-            animation: flameWobble 0.3s infinite;
-            box-shadow: 0 0 10px #ff4d4d;
-        }
+
+        .flame-active { animation: flameVibrate 0.3s infinite alternate; }
 
         #darkModeBtn, #rankingBtn { padding: 10px 20px; border-radius: 30px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.3s; text-decoration: none; display: flex; align-items: center; }
         #darkModeBtn { background: #111; color: #fff; }
@@ -206,9 +198,9 @@
         <h2>Lista zapisanych osób</h2>
         <div class="flex">
             <div class="panel">
-                <div class="btn-group">
-                    <button class="clear" onclick="clearAll()">Wyczyść dane</button>
-                    <button class="reveal-btn" id="revealNamesBtn">Odkryj imiona</button>
+                <div style="display:flex; gap:10px; margin-bottom:15px;">
+                    <button style="flex:1; padding:12px; cursor:pointer;" onclick="clearAll()">Wyczyść dane</button>
+                    <button style="flex:1; padding:12px; cursor:pointer;" id="revealNamesBtn">Odkryj imiona</button>
                 </div>
                 <div class="table-wrapper">
                     <table id="table">
@@ -370,13 +362,17 @@ setInterval(() => {
     sorted.forEach((u, i) => {
         const uSec = toSec(u.hour);
         const diff = Math.abs(uSec - s);
-        // LOGIKA GORĄCA: Okno 30 minut (1800s)
-        const heat = Math.max(0, 100 - (diff / 1800) * 100); 
         
-        let flameColor = "var(--cyan)";
-        let flameClass = "";
-        if (heat > 40) flameColor = "var(--gold)";
-        if (heat > 85) { flameColor = "#ff4d4d"; flameClass = "flame-hot"; }
+        // --- LOGIKA MIERNIKA GORĄCA ---
+        let flameHtml = "";
+        if (diff <= 1800) { // Pokazuj tylko jeśli poniżej 30 minut
+            let fColor = "var(--cyan)";
+            let fClass = "";
+            if (diff <= 300) { fColor = "#ff0000"; fClass = "flame-active"; } // 5 min
+            else if (diff <= 900) { fColor = "var(--gold)"; fClass = "flame-active"; } // 15 min
+            
+            flameHtml = `<span class="heat-flame ${fClass}" style="background:${fColor}; box-shadow: 0 0 10px ${fColor};"></span>`;
+        }
 
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const color = getAvatarColor(u.name);
@@ -391,7 +387,7 @@ setInterval(() => {
                 <div class="user-cell">
                     <div class="avatar" style="background:${color}">${avatarContent}</div>
                     <span class="name-text">${nameContent}</span>
-                    <span class="heat-flame ${flameClass}" style="background: ${flameColor}; opacity: ${heat/100};"></span>
+                    ${flameHtml}
                 </div>
             </td>
             <td class="${hourClass}">${u.hour}</td>
