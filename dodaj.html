@@ -20,26 +20,27 @@
     .nightmare-mode { background: #400 !important; filter: invert(1) hue-rotate(180deg) contrast(200%) blur(1px) !important; }
     @keyframes glitch {
       0% { transform: translate(0); }
-      20% { transform: translate(-5px, 5px); }
-      40% { transform: translate(-5px, -5px); }
-      60% { transform: translate(5px, 5px); }
-      80% { transform: translate(5px, -5px); }
+      20% { transform: translate(-8px, 8px); }
+      40% { transform: translate(-8px, -8px); }
+      60% { transform: translate(8px, 8px); }
+      80% { transform: translate(8px, -8px); }
       100% { transform: translate(0); }
     }
-    .nightmare-shake { animation: glitch 0.2s infinite !important; }
+    .nightmare-shake { animation: glitch 0.1s infinite !important; }
 
-    /* --- PULSOWANIE ZABLOKOWANEGO SLOTU --- */
+    /* --- PULSOWANIE CZERWONE (ZABLOKOWANE) --- */
     @keyframes slotPulse {
         0% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
-        50% { border-color: #ff0000; box-shadow: 0 0 20px var(--error); background: rgba(255, 0, 0, 0.2); }
+        50% { border-color: #ff0000; box-shadow: 0 0 25px var(--error); background: rgba(255, 0, 0, 0.3); }
         100% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
     }
     .slot-locked {
-        animation: slotPulse 1.5s infinite !important;
-        background: rgba(255, 0, 0, 0.15) !important;
-        color: var(--error) !important;
-        border: 1px solid var(--error) !important;
+        animation: slotPulse 1.2s infinite !important;
+        background: rgba(255, 0, 0, 0.2) !important;
+        color: #fff !important;
+        border: 2px solid var(--error) !important;
         opacity: 1 !important;
+        text-shadow: 0 0 10px var(--error);
     }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
@@ -52,7 +53,6 @@
     }
 
     h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
-
     .input-box { margin-bottom: 15px; text-align: left; }
     .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
 
@@ -115,7 +115,7 @@
             <input id="password" type="password" placeholder="••••" oninput="validateForm()">
             <a id="forgot-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
-        <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź nowe hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div id="pass-confirm-box" style="display:none;" class="input-box"><label>Potwierdź nowe hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
@@ -123,13 +123,14 @@
     </div>
   </div>
 
+  <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/1002/1002-preview.mp3"></audio>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
 let isFirstTime = false, isResetMode = false, selectedSlot = null, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
@@ -137,7 +138,6 @@ onSnapshot(doc(db, "appState", "status"), (snap) => {
     const data = snap.data(); if(!data) return;
     currentTargets.t1 = data.target1; currentTargets.t2 = data.target2;
     slotLocks.l1 = data.isLocked1 || false; slotLocks.l2 = data.isLocked2 || false;
-    
     updateSlotUI(1, data.target1, slotLocks.l1);
     updateSlotUI(2, data.target2, slotLocks.l2);
     updateSlotAvailability();
@@ -146,31 +146,23 @@ onSnapshot(doc(db, "appState", "status"), (snap) => {
 function updateSlotUI(id, name, isLocked) {
     const btn = document.getElementById(`slot${id}Btn`);
     btn.innerText = (name && name !== "Brak") ? name : "NIEAKTYWNY";
-    // PRZYWRÓCENIE PULSOWANIA NA CZERWONO
-    if (isLocked) btn.classList.add('slot-locked');
-    else btn.classList.remove('slot-locked');
+    if (isLocked) btn.classList.add('slot-locked'); else btn.classList.remove('slot-locked');
 }
 
 function updateSlotAvailability() {
-    const name = document.getElementById('name').value;
+    const n = document.getElementById('name').value;
     const s1 = document.getElementById('slot1Btn'), s2 = document.getElementById('slot2Btn');
-    s1.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak" || name === currentTargets.t1 || slotLocks.l1);
-    s2.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak" || name === currentTargets.t2 || slotLocks.l2);
+    s1.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak" || n === currentTargets.t1 || slotLocks.l1);
+    s2.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak" || n === currentTargets.t2 || slotLocks.l2);
     validateForm();
 }
 
-window.selectSlot = (slot) => {
-    selectedSlot = slot;
-    document.getElementById('slot1Btn').classList.toggle('active', slot === 'slot1');
-    document.getElementById('slot2Btn').classList.toggle('active', slot === 'slot2');
-    validateForm();
-};
+window.selectSlot = (s) => { selectedSlot = s; document.getElementById('slot1Btn').classList.toggle('active', s === 'slot1'); document.getElementById('slot2Btn').classList.toggle('active', s === 'slot2'); validateForm(); };
 
 window.checkUserAuth = async function() {
-    const name = document.getElementById('name').value;
-    updateSlotAvailability();
-    if (!name) { document.getElementById('auth-section').style.display = 'none'; return; }
-    const userDoc = await getDoc(doc(db, "passwords", name));
+    const n = document.getElementById('name').value; updateSlotAvailability();
+    if (!n) { document.getElementById('auth-section').style.display = 'none'; return; }
+    const userDoc = await getDoc(doc(db, "passwords", n));
     document.getElementById('auth-section').style.display = 'block';
     isFirstTime = !userDoc.exists(); isResetMode = false;
     document.getElementById('pass-confirm-box').style.display = isFirstTime ? 'block' : 'none';
@@ -179,35 +171,35 @@ window.checkUserAuth = async function() {
 }
 
 window.validateForm = function() {
-    const name = document.getElementById('name').value, hour = document.getElementById('hour').value, pass = document.getElementById('password').value;
-    const pass2 = document.getElementById('password-confirm').value;
-    const btn = document.getElementById('saveBtn');
-    let isValid = name && hour && pass && selectedSlot;
-    if (isFirstTime || isResetMode) isValid = isValid && (pass === pass2);
-    btn.disabled = !isValid;
+    const n = document.getElementById('name').value, h = document.getElementById('hour').value, p = document.getElementById('password').value;
+    const p2 = document.getElementById('password-confirm').value;
+    let v = n && h && p && selectedSlot;
+    if (isFirstTime || isResetMode) v = v && (p === p2);
+    document.getElementById('saveBtn').disabled = !v;
 }
 
 window.forgotPassword = () => {
-    const name = document.getElementById('name').value;
-    if(!name) { alert("Wybierz użytkownika!"); return; }
-    const code = prompt("AUTORYZACJA ADMINA - WPISZ KOD:");
-    if(code === "0000") {
-        isResetMode = true;
-        document.getElementById('pass-confirm-box').style.display = 'block';
+    const n = document.getElementById('name').value; if(!n) return alert("Wybierz użytkownika!");
+    if(prompt("AUTORYZACJA ADMINA - WPISZ KOD:") === "0000") {
+        isResetMode = true; document.getElementById('pass-confirm-box').style.display = 'block';
         document.getElementById('main-pass-label').innerText = "USTAW NOWE HASŁO";
-        alert("Autoryzacja pomyślna. Wprowadź nowe hasło.");
-    } else alert("BŁĘDNY KOD ADMINA.");
+        alert("Autoryzacja pomyślna.");
+    } else alert("BŁĘDNY KOD.");
 }
 
 window.saveData = async function() {
-    const name = document.getElementById('name').value, hour = document.getElementById('hour').value, pass = document.getElementById('password').value;
+    const n = document.getElementById('name').value, h = document.getElementById('hour').value, p = document.getElementById('password').value;
     const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn'), container = document.getElementById('mainContainer');
+    const horrorSound = document.getElementById('horrorSound');
+
     btn.disabled = true;
     try {
-        if (isFirstTime || isResetMode) await setDoc(doc(db, "passwords", name), { password: pass });
+        if (isFirstTime || isResetMode) await setDoc(doc(db, "passwords", n), { password: p });
         else {
-            const userDoc = await getDoc(doc(db, "passwords", name));
-            if (userDoc.data().password !== pass) {
+            const userDoc = await getDoc(doc(db, "passwords", n));
+            if (userDoc.data().password !== p) {
+                // --- KOSZMAR START ---
+                horrorSound.currentTime = 0; horrorSound.play().catch(()=>{});
                 document.body.classList.add('nightmare-mode');
                 container.classList.add('nightmare-shake');
                 document.getElementById('mainHeader').innerText = "FATAL ERROR: BREACH";
@@ -222,7 +214,7 @@ window.saveData = async function() {
                 return;
             }
         }
-        await addDoc(collection(db, "users"), { name, hour, targetSlot: selectedSlot, timestamp: Date.now() });
+        await addDoc(collection(db, "users"), { name: n, hour: h, targetSlot: selectedSlot, timestamp: Date.now() });
         msg.style.color = "var(--cyan)"; msg.innerText = "AUTORYZACJA PRZYJĘTA.";
         setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
@@ -230,21 +222,21 @@ window.saveData = async function() {
 
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let particles = []; for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+let pts = []; for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    particles.forEach((p, i) => {
+    pts.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
         ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-        for (let j = i + 1; j < particles.length; j++) {
-            const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+        for (let j = i + 1; j < pts.length; j++) {
+            const p2 = pts[j]; const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (d < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - d/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
         }
     }); requestAnimationFrame(draw);
 } draw();
 
 document.addEventListener('mousemove', (e) => {
-    // CZUŁOŚĆ OBRACANIA KARTY USTAWIONA NA 500
+    // CZUŁOŚĆ 500
     const x = (window.innerWidth / 2 - e.pageX) / 500;
     const y = (window.innerHeight / 2 - e.pageY) / 500;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
