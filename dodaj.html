@@ -30,16 +30,6 @@
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
     .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; width: 100%; display: flex; justify-content: center; align-items: center; }
 
-    .id-card {
-      position: absolute; top: -120px; left: 50%; transform: translateX(-50%) rotateX(20deg);
-      width: 240px; padding: 15px; background: linear-gradient(135deg, rgba(0, 212, 255, 0.1), rgba(212, 175, 55, 0.1));
-      border: 1px solid var(--cyan); border-radius: 10px; backdrop-filter: blur(10px); opacity: 0;
-      transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); z-index: 5; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); pointer-events: none;
-    }
-    .id-card.active { opacity: 1; top: -140px; transform: translateX(-50%) rotateX(0deg); }
-    .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--cyan); box-shadow: 0 0 15px var(--cyan); animation: laserMove 2s infinite linear; }
-    @keyframes laserMove { 0% { top: 0; } 100% { top: 100%; } }
-
     .container {
       background: var(--glass);
       backdrop-filter: blur(25px);
@@ -55,14 +45,21 @@
       box-sizing: border-box;
     }
 
-    @keyframes alarmPulseContainer {
-        0% { box-shadow: 0 0 0 var(--error) inset, 0 25px 50px rgba(0,0,0,0.6); border-color: var(--error); }
-        50% { box-shadow: 0 0 50px var(--error) inset, 0 0 30px var(--error); border-color: #ff5555; background: rgba(50, 0, 0, 0.9); }
-        100% { box-shadow: 0 0 0 var(--error) inset, 0 25px 50px rgba(0,0,0,0.6); border-color: var(--error); }
+    /* EFEKT ALARMOWY DLA PRZYCISKÓW */
+    @keyframes slotPulse {
+        0% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
+        50% { border-color: #ff0000; box-shadow: 0 0 20px var(--error); background: rgba(255, 0, 0, 0.2); }
+        100% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
     }
-    .container.locked { animation: alarmPulseContainer 1.5s infinite; }
-    .container.locked h2 { color: var(--error); text-shadow: 0 0 10px var(--error); }
-    
+
+    .slot-locked {
+        animation: slotPulse 1.5s infinite !important;
+        background: rgba(255, 0, 0, 0.15) !important;
+        color: var(--error) !important;
+        border: 1px solid var(--error) !important;
+        opacity: 1 !important;
+    }
+
     h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
 
     .input-box { margin-bottom: 15px; text-align: left; width: 100%; }
@@ -92,31 +89,28 @@
         background: rgba(0, 212, 255, 0.2);
         box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
     }
-    .slot-btn:disabled {
+    .slot-btn:disabled:not(.slot-locked) {
         opacity: 0.3;
         cursor: not-allowed;
         background: #1a1a1a;
-        color: #444;
-        border-color: #333;
     }
 
     select, input {
       display: block; width: 100%; max-width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
-      color: #fff; outline: none; transition: 0.3s; box-sizing: border-box; -webkit-appearance: none;
+      color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
     }
     select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
 
-    #auth-section { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
     .btn-cyber {
       width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px;
       font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
       margin-top: 20px; transition: 0.3s;
     }
-    .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
+    .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); }
+    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; }
 
-    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
+    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; text-align: center; }
   </style>
 </head>
 <body>
@@ -124,15 +118,8 @@
   <canvas id="bg-canvas"></canvas>
 
   <div class="tilt-box" id="tiltCard">
-    <div id="hologram" class="id-card">
-      <div class="scan-laser"></div>
-      <div style="font-size: 9px; color: var(--cyan); margin-bottom: 5px;">WERYFIKACJA...</div>
-      <div id="hologram-name" style="font-size: 18px; font-weight: 900; color: #fff;">---</div>
-      <div id="hologram-time" style="font-size: 14px; color: var(--gold);">00:00</div>
-    </div>
-
     <div class="container" id="mainContainer">
-      <h2 id="mainHeader">Dodaj dane</h2>
+      <h2 id="mainHeader">Dodaj swoje dane</h2>
 
       <div class="input-box">
         <label>Użytkownik</label>
@@ -149,16 +136,14 @@
             <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">CEL 1</button>
             <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">CEL 2</button>
         </div>
-        <div id="adminWarn" style="font-size: 9px; color: var(--error); margin-top: 5px; display: none;">Oczekiwanie na wybór celu przez admina...</div>
       </div>
 
       <div class="input-box">
         <label>Godzina zakończenia</label>
-        <input id="hour" type="time" oninput="updatePreview()">
+        <input id="hour" type="time" oninput="validateForm()">
       </div>
 
-      <div id="auth-section">
-        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">USTAW HASŁO:</div>
+      <div id="auth-section" style="display:none;">
         <div class="input-box"><label id="pass-label">Hasło</label><input id="password" type="password" placeholder="••••" oninput="validateForm()"></div>
         <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
       </div>
@@ -183,48 +168,32 @@ let slotLocks = { l1: false, l2: false };
 
 const appStateRef = doc(db, "appState", "status");
 onSnapshot(appStateRef, (snap) => {
-    const data = snap.data();
-    if(!data) return;
-
+    const data = snap.data(); if(!data) return;
     currentTargets.t1 = data.target1;
     currentTargets.t2 = data.target2;
     slotLocks.l1 = data.isLocked1 || false;
     slotLocks.l2 = data.isLocked2 || false;
 
-    // Aktualizacja nazw na przyciskach
-    const s1Btn = document.getElementById('slot1Btn');
-    const s2Btn = document.getElementById('slot2Btn');
-    s1Btn.innerText = (data.target1 && data.target1 !== "Brak") ? data.target1 : "CEL NIEAKTYWNY";
-    s2Btn.innerText = (data.target2 && data.target2 !== "Brak") ? data.target2 : "CEL NIEAKTYWNY";
-
-    // Pokaż ostrzeżenie jeśli oba są puste
-    const noTargets = (!data.target1 || data.target1 === "Brak") && (!data.target2 || data.target2 === "Brak");
-    document.getElementById('adminWarn').style.display = noTargets ? 'block' : 'none';
-
+    updateSlotUI(1, data.target1, slotLocks.l1);
+    updateSlotUI(2, data.target2, slotLocks.l2);
     updateSlotAvailability();
-
-    const container = document.getElementById('mainContainer');
-    if(slotLocks.l1 && slotLocks.l2) {
-        container.classList.add('locked');
-        document.getElementById('mainHeader').innerText = "⛔ REJESTRACJA ZAMKNIĘTA ⛔";
-    } else {
-        container.classList.remove('locked');
-        document.getElementById('mainHeader').innerText = "Dodaj swoje dane";
-    }
 });
+
+function updateSlotUI(id, name, isLocked) {
+    const btn = document.getElementById(`slot${id}Btn`);
+    btn.innerText = (name && name !== "Brak") ? name : "CEL NIEAKTYWNY";
+    // ZASTOSOWANIE KLASY CZERWONEJ
+    if (isLocked) btn.classList.add('slot-locked');
+    else btn.classList.remove('slot-locked');
+}
 
 function updateSlotAvailability() {
     const userName = document.getElementById('name').value;
     const s1Btn = document.getElementById('slot1Btn');
     const s2Btn = document.getElementById('slot2Btn');
 
-    // BLOKADA JEŚLI CEL JEST "BRAK" LUB PUSTY
-    const isInvalidT1 = !currentTargets.t1 || currentTargets.t1 === "Brak";
-    const isInvalidT2 = !currentTargets.t2 || currentTargets.t2 === "Brak";
-
-    // Blokada anty-self-bet oraz blokada czasu
-    s1Btn.disabled = isInvalidT1 || (userName === currentTargets.t1) || slotLocks.l1;
-    s2Btn.disabled = isInvalidT2 || (userName === currentTargets.t2) || slotLocks.l2;
+    s1Btn.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak") || (userName === currentTargets.t1) || slotLocks.l1;
+    s2Btn.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak") || (userName === currentTargets.t2) || slotLocks.l2;
 
     if ((selectedSlot === 'slot1' && s1Btn.disabled) || (selectedSlot === 'slot2' && s2Btn.disabled)) {
         selectedSlot = null;
@@ -244,18 +213,15 @@ window.selectSlot = (slot) => {
 window.checkUserAuth = async function() {
     const name = document.getElementById('name').value;
     updateSlotAvailability();
-    updatePreview();
     if (!name) { document.getElementById('auth-section').style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", name));
     document.getElementById('auth-section').style.display = 'block';
     if (!userDoc.exists()) {
         isFirstTime = true;
         document.getElementById('pass-confirm-box').style.display = 'block';
-        document.getElementById('first-time-msg').style.display = 'block';
     } else {
         isFirstTime = false;
         document.getElementById('pass-confirm-box').style.display = 'none';
-        document.getElementById('first-time-msg').style.display = 'none';
     }
     validateForm();
 }
@@ -265,24 +231,8 @@ window.validateForm = function() {
     const hour = document.getElementById('hour').value;
     const pass = document.getElementById('password').value;
     const btn = document.getElementById('saveBtn');
-    
-    // Walidacja: wymagane imię, godzina, hasło I AKTYWNY SLOT
     let isValid = name && hour && pass && selectedSlot;
-    if (selectedSlot === 'slot1' && (slotLocks.l1 || currentTargets.t1 === "Brak")) isValid = false;
-    if (selectedSlot === 'slot2' && (slotLocks.l2 || currentTargets.t2 === "Brak")) isValid = false;
-
     btn.disabled = !isValid;
-}
-
-window.updatePreview = () => {
-    const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
-    const holo = document.getElementById('hologram');
-    if(name && hour) {
-        document.getElementById('hologram-name').innerText = name;
-        document.getElementById('hologram-time').innerText = hour;
-        holo.classList.add('active');
-    } else { holo.classList.remove('active'); }
 }
 
 window.saveData = async function() {
@@ -291,22 +241,18 @@ window.saveData = async function() {
     const pass = document.getElementById('password').value;
     const msg = document.getElementById('msg');
     const btn = document.getElementById('saveBtn');
-
     btn.disabled = true;
-    btn.innerText = "WERYFIKACJA...";
-
     try {
-        if (isFirstTime) {
-            await setDoc(doc(db, "passwords", name), { password: pass });
-        } else {
+        if (isFirstTime) await setDoc(doc(db, "passwords", name), { password: pass });
+        else {
             const userDoc = await getDoc(doc(db, "passwords", name));
             if (userDoc.data().password !== pass) {
                 msg.style.color = "var(--error)"; msg.innerText = "BŁĘDNE HASŁO!";
-                btn.disabled = false; btn.innerText = "Zapisz"; return;
+                btn.disabled = false; return;
             }
         }
         await addDoc(collection(db, "users"), { name, hour, targetSlot: selectedSlot, timestamp: Date.now() });
-        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO POMYŚLNIE!";
+        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO!";
         setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
