@@ -26,20 +26,31 @@
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
         .container { background: var(--glass); backdrop-filter: blur(20px); padding: 20px; border-radius: 30px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.3s; }
+        
+        /* ALARM PULSE DLA ZABLOKOWANEGO OKNA */
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
+        
         h2 { text-align: center; margin: 0; color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
         .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 10px; text-shadow: 0 0 15px var(--cyan); }
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
         
-        /* NAPRAWA PRZYCISKÓW 50/50 */
+        /* PRZYCISKI 50/50 */
         .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
         
-        .lock-btn-slot { width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; display: none; }
+        /* NOWY STYL PRZYCISKU BLOKADY */
+        .lock-btn-slot { 
+            width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; 
+            cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; 
+            display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff;
+            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4); transition: 0.2s;
+        }
+        .lock-btn-slot:active { transform: scale(0.98); }
+
         .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; }
         #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
         .qr-frame { padding: 10px; background: #fff; border-radius: 15px; display: inline-block; }
@@ -121,20 +132,29 @@ function shuffleArray(array) {
     return a;
 }
 
+// --- FAJERWERKI PRZYWRÓCONE I POPRAWIONE ---
 const canvasFw = document.getElementById("fireworksCanvas");
 const ctxFw = canvasFw.getContext("2d");
 let fwParticles = [], fwActive = false;
 
 function startCelebration() {
     canvasFw.width = window.innerWidth; canvasFw.height = window.innerHeight;
-    canvasFw.style.display = "block"; fwActive = true;
+    canvasFw.style.display = "block"; 
+    fwActive = true; 
+    fwParticles = []; // Reset cząsteczek przy każdym odpaleniu
+
     const interval = setInterval(() => {
         const x = Math.random()*canvasFw.width, y = Math.random()*canvasFw.height*0.5;
         for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
     }, 400);
+
     document.getElementById("cringeGifs").style.display = "flex";
+    document.body.style.animation = "cringeBg 0.4s infinite alternate";
+
     setTimeout(() => { 
-        clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; 
+        clearInterval(interval); 
+        fwActive = false; 
+        canvasFw.style.display = "none"; 
         document.getElementById("cringeGifs").style.display = "none"; 
         document.body.style.animation = "none"; 
     }, 5000);
@@ -142,39 +162,52 @@ function startCelebration() {
 }
 
 function updateFW() {
+    if(!fwActive) return;
     ctxFw.clearRect(0,0,canvasFw.width,canvasFw.height);
     fwParticles.forEach((p,i) => {
         p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.al -= 0.01;
         if(p.al <= 0) fwParticles.splice(i,1);
         ctxFw.globalAlpha = p.al; ctxFw.fillStyle = p.c; ctxFw.beginPath(); ctxFw.arc(p.x, p.y, 3, 0, Math.PI*2); ctx.fill();
     });
-    if(fwActive) requestAnimationFrame(updateFW);
+    requestAnimationFrame(updateFW);
 }
 
+// --- NIEZALEŻNY STOP DLA OKIEN ---
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
+    
+    // Ustawiamy flagę lokalną dla UI
     if(id === 1) isStopped1 = true; else isStopped2 = true;
+    
     const now = new Date(); const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
+    
     let playersWithPoints = [], rank = 1;
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
         if (rank > 3) break;
         playersWithPoints.push({ name: sorted[i].name, points: (rank === 1 ? 3 : rank === 2 ? 2 : 1), rank: rank });
     }
+
     document.getElementById(`winner${id}`).style.display = "block";
     document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
-    document.body.style.animation = "cringeBg 0.4s infinite alternate";
-    fanfareAudio.play().catch(()=>{}); startCelebration();
+    document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + now.toLocaleTimeString("pl-PL");
+
+    fanfareAudio.play().catch(()=>{}); 
+    startCelebration();
+
+    // Przesyłanie danych do bazy
     for(const p of playersWithPoints) {
-        const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
+        const ref = doc(db, "ranking", p.name); 
+        const snap = await getDoc(ref);
+        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); 
+        else await setDoc(ref, { points: p.points });
     }
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
 };
 
-// --- LOGIKA KSYWEK ---
+// --- LOGIKA KSYWEK (RESET PRZY KAŻDYM DODANIU) ---
 onSnapshot(collection(db, "users"), snap => {
     usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
     assignedFakeNames = {};
@@ -184,7 +217,7 @@ onSnapshot(collection(db, "users"), snap => {
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
 });
 
-// Reszta kodu tła i mechaniki (bez zmian)...
+// Reszta kodu bez zmian...
 const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
 let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
 class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
@@ -196,7 +229,7 @@ function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]
 function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
 window.updateTargets = async () => { await setDoc(appStateRef, { target1: document.getElementById("targetSelect1").value, target2: document.getElementById("targetSelect2").value }, { merge: true }); };
 onSnapshot(appStateRef, (snap) => { const data = snap.data(); if(!data) return; document.getElementById("targetName1").textContent = data.target1 || "---"; document.getElementById("targetName2").textContent = data.target2 || "---"; document.getElementById("targetSelect1").value = data.target1 || "Brak"; document.getElementById("targetSelect2").value = data.target2 || "Brak"; isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); });
-function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ"; } }
+function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
 window.toggleLock = async (id) => { const snap = await getDoc(appStateRef); const field = `isLocked${id}`; const newState = !snap.data()[field]; await setDoc(appStateRef, { [field]: newState }, { merge: true }); if(newState) lockSound.play().catch(()=>{}); };
 setInterval(() => { const now = new Date(); document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); renderTable(1, s); renderTable(2, s); }, 1000);
 function renderTable(id, sec) { const slotData = usersData.filter(u => u.targetSlot === `slot${id}`); const isStopped = id === 1 ? isStopped1 : isStopped2; const isLocked = id === 1 ? isLocked1 : isLocked2; const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec)); const table = document.getElementById(`table${id}`); table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>"; sorted.forEach((u, i) => { const hourClass = isStopped ? 'reveal-data' : 'hidden-hour'; const revealThisSlot = isLocked || isStopped; const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim"); table.innerHTML += `<tr><td>${i+1}</td><td><div style="display:flex; align-items:center; gap:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${getAvatarColor(u.name)}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">${revealThisSlot ? u.name[0] : "?"}</div>${nameDisp}</div></td><td class="${hourClass}">${u.hour}</td><td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td></tr>`; }); }
