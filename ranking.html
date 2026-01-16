@@ -13,6 +13,9 @@
             --text: #111;
             --glass: rgba(255, 255, 255, 0.9);
             --border: rgba(0, 0, 0, 0.1);
+            --up: #00ff00;
+            --down: #ff4d4d;
+            --neutral: #ffff00;
         }
 
         body.dark {
@@ -34,81 +37,48 @@
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
-
-        .dashboard-container { 
-            max-width: 1000px; 
-            margin: 0 auto; 
-            z-index: 10; 
-            position: relative;
-        }
-
+        .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
-        /* STATS GRID */
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { 
-            background: var(--glass); 
-            backdrop-filter: blur(15px);
-            padding: 20px; 
-            border-radius: 20px; 
-            border: 1px solid var(--border);
-            text-align: center; 
-        }
+        .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
-        /* TABS */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
-        .tab-link { 
-            padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); 
-            color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; 
-            transition: 0.3s; font-size: 13px;
-        }
+        .tab-link { padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; transition: 0.3s; font-size: 13px; }
         .tab-link.active { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
 
         .tab-content { display: none; animation: fadeIn 0.5s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .glass-panel { 
-            background: var(--glass); 
-            backdrop-filter: blur(20px);
-            padding: 25px; 
-            border-radius: 25px; 
-            border: 1px solid var(--border);
-            margin-bottom: 20px; 
-        }
-        
+        .glass-panel { background: var(--glass); backdrop-filter: blur(20px); padding: 25px; border-radius: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
         th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+
+        /* TREND ARROWS */
+        .trend-icon { font-size: 14px; margin-right: 8px; font-weight: bold; display: inline-block; width: 15px; text-align: center; }
+        .trend-up { color: var(--up); }
+        .trend-down { color: var(--down); }
+        .trend-neutral { color: var(--neutral); }
 
         .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
         .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
 
-        /* LEGENDA */
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
-        /* WYKRESY */
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
         h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
 
-        /* CHARACTER CARD MODAL */
-        #playerCardOverlay {
-            position: fixed; inset: 0; background: rgba(0,0,0,0.85);
-            display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px);
-        }
-        .character-card {
-            background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98));
-            border: 2px solid var(--cyan); border-radius: 30px;
-            width: 95%; max-width: 480px; padding: 25px; position: relative;
-            box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center;
-        }
+        #playerCardOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
+        .character-card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98)); border: 2px solid var(--cyan); border-radius: 30px; width: 95%; max-width: 480px; padding: 25px; position: relative; box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center; }
         .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
         .class-tag { background: var(--gold); color: #000; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 900; text-transform: uppercase; display: inline-block; margin-top: 5px; }
         .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
@@ -119,11 +89,6 @@
         #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
         .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
-
-        @media (max-width: 600px) {
-            .stats-grid { grid-template-columns: 1fr; }
-            .attr-legend { grid-template-columns: 1fr; }
-        }
     </style>
 </head>
 <body class="dark">
@@ -148,7 +113,7 @@
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
-                    <thead><tr><th>#</th><th>Imię i Odznaki</th><th>Punkty</th><th>Podium</th></tr></thead>
+                    <thead><tr><th>#</th><th>Trend / Imię</th><th>Punkty</th><th>Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
 
@@ -156,7 +121,7 @@
                 <div class="legend-grid">
                     <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
                     <div class="legend-item"><span>🔥</span> <div><b>On Fire</b><br>3 zwycięstwa z rzędu</div></div>
-                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie idealne co do sekundy (Na stałe)</div></div>
+                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie idealne co do sekundy</div></div>
                     <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
                 </div>
             </div>
@@ -295,14 +260,15 @@
         };
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
-        document.getElementById('playerCardOverlay').addEventListener('click', (e) => { if (e.target.id === 'playerCardOverlay') closePlayerCard(); });
 
+        // --- GŁÓWNA FUNKCJA ODŚWIEŻANIA Z TRENDAMI ---
         function refreshStats() {
             if (!playersData.length) return;
             
             const sniperList = new Set();
             historyData.forEach(round => round.winners.forEach(w => { if (w.isSniperHit) sniperList.add(w.name); }));
 
+            // 1. Oblicz obecne statystyki
             globalStats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
                 historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
@@ -310,32 +276,67 @@
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0, isSniper: sniperList.has(p.name) };
             });
 
-            // LOGIKA WIELU LIDERÓW
-            const maxPoints = globalStats[0]?.points || 0;
-            const topPlayers = globalStats.filter(p => p.points === maxPoints).map(p => p.name).join(", ");
-            document.getElementById('top-player').textContent = topPlayers || "-";
+            // 2. Oblicz ranking "hipotetyczny" (sprzed ostatniej rundy)
+            const lastRound = historyData[0];
+            const prevStats = playersData.map(p => {
+                let prevPoints = p.points;
+                if (lastRound) {
+                    const win = lastRound.winners.find(w => w.name === p.name);
+                    if (win) prevPoints -= (win.rank === 1 ? 3 : win.rank === 2 ? 2 : 1);
+                }
+                return { name: p.name, points: prevPoints };
+            }).sort((a,b) => b.points - a.points);
 
-            // LOGIKA OSTATNICH ZWYCIĘZCÓW
+            const prevRanks = {};
+            let currentP = -1, currentR = 0;
+            prevStats.forEach((p, i) => {
+                if (p.points !== currentP) { currentR = i + 1; currentP = p.points; }
+                prevRanks[p.name] = currentR;
+            });
+
+            // 3. UI Liderzy
+            const maxPoints = globalStats[0]?.points || 0;
+            document.getElementById('top-player').textContent = globalStats.filter(p => p.points === maxPoints).map(p => p.name).join(", ") || "-";
+
             if(historyData.length > 0) {
-                const winnersLast = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name).join(", ");
-                document.getElementById('last-winner').textContent = winnersLast || "-";
+                document.getElementById('last-winner').textContent = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name).join(", ") || "-";
             }
 
             const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
             const tbody = document.querySelector("#rankTable tbody");
             tbody.innerHTML = "";
             
-            // LOGIKA REMISÓW W #
             let displayRank = 1;
             globalStats.forEach((p, i) => {
                 if (i > 0 && p.points < globalStats[i-1].points) displayRank = i + 1;
+                
+                // --- OBLICZANIE IKONY TRENDU ---
+                let trendIcon = '<span class="trend-icon trend-neutral">―</span>';
+                if (lastRound) {
+                    const oldRank = prevRanks[p.name];
+                    if (displayRank < oldRank) trendIcon = '<span class="trend-icon trend-up">▲</span>';
+                    else if (displayRank > oldRank) trendIcon = '<span class="trend-icon trend-down">▼</span>';
+                }
+
                 let bHtml = "";
                 if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge" title="Dominator">👑</span>`;
                 if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge" title="Weteran">🛡️</span>`;
-                if(p.isSniper) bHtml += `<span class="badge" title="Snajper (Na stałe)">🎯</span>`;
-                tbody.innerHTML += `<tr><td>${displayRank}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span><div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points}</td><td>${p.totalPodiums}</td></tr>`;
+                if(p.isSniper) bHtml += `<span class="badge" title="Snajper">🎯</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${displayRank}</td>
+                        <td>
+                            ${trendIcon}
+                            <span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>
+                            <div class="badge-container">${bHtml}</div>
+                        </td>
+                        <td style="color:var(--gold)">${p.points}</td>
+                        <td>${p.totalPodiums}</td>
+                    </tr>`;
             });
 
+            // Aktualizacja wykresów
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
@@ -347,6 +348,7 @@
             lineChart.update();
         }
 
+        // Snapshoty i usuwanie - bez zmian
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
             historyData = [];
             const hbody = document.querySelector("#historyTable tbody");
