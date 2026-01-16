@@ -68,7 +68,6 @@
     .input-box { margin-bottom: 15px; text-align: left; width: 100%; }
     .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
 
-    /* STYLE DLA WYBORU CELU */
     .slot-selector {
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -92,6 +91,11 @@
         color: #fff;
         background: rgba(0, 212, 255, 0.2);
         box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+    .slot-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+        border-color: var(--error);
     }
 
     select, input {
@@ -172,7 +176,7 @@
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
-      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Wsparcie wielu celów aktywne</div>
+      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Zabezpieczenie anty-self-bet aktywne</div>
     </div>
   </div>
 
@@ -189,7 +193,6 @@ let isSystemLocked = false;
 let selectedSlot = null;
 let currentTargets = { t1: null, t2: null };
 
-// --- NASŁUCHIWANIE BLOKADY I CELÓW ---
 const appStateRef = doc(db, "appState", "status");
 onSnapshot(appStateRef, (snap) => {
     const data = snap.data();
@@ -199,23 +202,11 @@ onSnapshot(appStateRef, (snap) => {
     currentTargets.t1 = data.target1;
     currentTargets.t2 = data.target2;
 
-    // Aktualizacja nazw na przyciskach slotów
     document.getElementById('slot1Btn').innerText = data.target1 || "CEL 1";
     document.getElementById('slot2Btn').innerText = data.target2 || "CEL 2";
 
-    // Logika blokady własnego imienia
-    const options = document.getElementById('name').options;
-    for (let i = 0; i < options.length; i++) {
-        if (options[i].value === data.target1 || options[i].value === data.target2) {
-            options[i].disabled = true;
-            if(document.getElementById('name').value === options[i].value) {
-                document.getElementById('name').value = "";
-                checkUserAuth();
-            }
-        } else {
-            options[i].disabled = false;
-        }
-    }
+    // Wywołaj aktualizację dostępności slotów przy zmianie celów przez admina
+    updateSlotAvailability();
 
     const container = document.getElementById('mainContainer');
     const header = document.getElementById('mainHeader');
@@ -235,6 +226,26 @@ onSnapshot(appStateRef, (snap) => {
     }
 });
 
+// NOWA FUNKCJA: Zarządzanie dostępnością przycisków slotów
+function updateSlotAvailability() {
+    const userName = document.getElementById('name').value;
+    const s1Btn = document.getElementById('slot1Btn');
+    const s2Btn = document.getElementById('slot2Btn');
+
+    // Blokuj przycisk, jeśli wybrane imię to Cel 1
+    s1Btn.disabled = (userName && userName === currentTargets.t1);
+    // Blokuj przycisk, jeśli wybrane imię to Cel 2
+    s2Btn.disabled = (userName && userName === currentTargets.t2);
+
+    // Jeśli wybrany slot został właśnie zablokowany, zresetuj go
+    if ((selectedSlot === 'slot1' && s1Btn.disabled) || (selectedSlot === 'slot2' && s2Btn.disabled)) {
+        selectedSlot = null;
+        s1Btn.classList.remove('active');
+        s2Btn.classList.remove('active');
+    }
+    validateForm();
+}
+
 window.selectSlot = (slot) => {
     if(isSystemLocked) return;
     selectedSlot = slot;
@@ -247,6 +258,10 @@ window.checkUserAuth = async function() {
     if(isSystemLocked) return; 
     const name = document.getElementById('name').value;
     const authSection = document.getElementById('auth-section');
+    
+    updateSlotAvailability(); // Sprawdź blokady przy zmianie użytkownika
+    updatePreview();
+
     if (!name) { authSection.style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", name));
     authSection.style.display = 'block';
@@ -328,7 +343,6 @@ window.saveData = async function() {
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
-// NEURAL BG
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let particles = []; for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
