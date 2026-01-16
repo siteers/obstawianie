@@ -16,19 +16,18 @@
       align-items: center; min-height: 100vh; perspective: 1000px; transition: 0.3s;
     }
 
-    /* --- EFEKTY KOSZMARU I GLITCH --- */
-    .nightmare-mode { background: #400 !important; filter: invert(1) hue-rotate(180deg) contrast(200%) blur(1px) !important; }
+    /* --- EFEKTY KOSZMARU --- */
+    .nightmare-mode { background: #300 !important; filter: invert(1) contrast(300%) blur(2px) !important; }
     @keyframes glitch {
       0% { transform: translate(0); }
-      20% { transform: translate(-8px, 8px); }
-      40% { transform: translate(-8px, -8px); }
-      60% { transform: translate(8px, 8px); }
-      80% { transform: translate(8px, -8px); }
+      25% { transform: translate(-10px, 10px); }
+      50% { transform: translate(10px, -10px); }
+      75% { transform: translate(-10px, -10px); }
       100% { transform: translate(0); }
     }
     .nightmare-shake { animation: glitch 0.1s infinite !important; }
 
-    /* --- PULSOWANIE CZERWONE (ZABLOKOWANE) --- */
+    /* --- PULSOWANIE ZABLOKOWANEGO SLOTU --- */
     @keyframes slotPulse {
         0% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
         50% { border-color: #ff0000; box-shadow: 0 0 25px var(--error); background: rgba(255, 0, 0, 0.3); }
@@ -37,10 +36,8 @@
     .slot-locked {
         animation: slotPulse 1.2s infinite !important;
         background: rgba(255, 0, 0, 0.2) !important;
-        color: #fff !important;
-        border: 2px solid var(--error) !important;
-        opacity: 1 !important;
-        text-shadow: 0 0 10px var(--error);
+        color: #fff !important; border: 2px solid var(--error) !important;
+        opacity: 1 !important; text-shadow: 0 0 10px var(--error);
     }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
@@ -62,7 +59,7 @@
         border-radius: 12px; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase;
     }
     .slot-btn.active { border-color: var(--cyan); color: #fff; background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 15px var(--cyan); }
-    .slot-btn:disabled:not(.slot-locked) { opacity: 0.2; cursor: not-allowed; background: #1a1a1a; }
+    .slot-btn:disabled:not(.slot-locked) { opacity: 0.2; cursor: not-allowed; }
 
     select, input {
       display: block; width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
@@ -123,7 +120,7 @@
     </div>
   </div>
 
-  <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/1002/1002-preview.mp3"></audio>
+  <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -198,14 +195,18 @@ window.saveData = async function() {
         else {
             const userDoc = await getDoc(doc(db, "passwords", n));
             if (userDoc.data().password !== p) {
-                // --- KOSZMAR START ---
-                horrorSound.currentTime = 0; horrorSound.play().catch(()=>{});
+                // --- KOSZMAR START (ZSYNCHRONIZOWANY) ---
+                horrorSound.currentTime = 0; horrorSound.volume = 1.0; horrorSound.play().catch(()=>{});
                 document.body.classList.add('nightmare-mode');
                 container.classList.add('nightmare-shake');
-                document.getElementById('mainHeader').innerText = "FATAL ERROR: BREACH";
-                msg.style.color = "#ff0000"; msg.innerText = "BŁĘDNE HASŁO. NARUSZENIE ZAPISANE.";
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
+                document.getElementById('mainHeader').innerText = "SYSTEM CORRUPTED";
+                msg.style.color = "#ff0000"; msg.innerText = "ACCESS DENIED: WRONG KEY.";
+                if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+
                 setTimeout(() => {
+                    // STOP DŹWIĘKU I WIZUALIZACJI PO 1,5S
+                    horrorSound.pause();
+                    horrorSound.currentTime = 0;
                     document.body.classList.remove('nightmare-mode');
                     container.classList.remove('nightmare-shake');
                     document.getElementById('mainHeader').innerText = "System Logowania";
@@ -215,7 +216,7 @@ window.saveData = async function() {
             }
         }
         await addDoc(collection(db, "users"), { name: n, hour: h, targetSlot: selectedSlot, timestamp: Date.now() });
-        msg.style.color = "var(--cyan)"; msg.innerText = "AUTORYZACJA PRZYJĘTA.";
+        msg.style.color = "var(--cyan)"; msg.innerText = "DATA UPLOADED.";
         setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
