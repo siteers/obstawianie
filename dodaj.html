@@ -27,9 +27,7 @@
       transition: 0.3s;
     }
 
-    /* TŁO SIECI NEURONOWEJ */
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
-
     .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; width: 100%; display: flex; justify-content: center; align-items: center; }
 
     .id-card {
@@ -39,7 +37,6 @@
       transition: 0.6s cubic-bezier(0.23, 1, 0.32, 1); z-index: 5; box-shadow: 0 0 30px rgba(0, 212, 255, 0.3); pointer-events: none;
     }
     .id-card.active { opacity: 1; top: -140px; transform: translateX(-50%) rotateX(0deg); }
-    
     .scan-laser { position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: var(--cyan); box-shadow: 0 0 15px var(--cyan); animation: laserMove 2s infinite linear; }
     @keyframes laserMove { 0% { top: 0; } 100% { top: 100%; } }
 
@@ -55,10 +52,9 @@
       text-align: center;
       position: relative;
       transition: 0.5s;
-      box-sizing: border-box; /* Zapewnia, że padding nie powiększa boxa */
+      box-sizing: border-box;
     }
 
-    /* EFEKT ZABLOKOWANIA (APOKALIPSA) */
     @keyframes alarmPulseContainer {
         0% { box-shadow: 0 0 0 var(--error) inset, 0 25px 50px rgba(0,0,0,0.6); border-color: var(--error); }
         50% { box-shadow: 0 0 50px var(--error) inset, 0 0 30px var(--error); border-color: #ff5555; background: rgba(50, 0, 0, 0.9); }
@@ -72,20 +68,36 @@
     .input-box { margin-bottom: 15px; text-align: left; width: 100%; }
     .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
 
+    /* STYLE DLA WYBORU CELU */
+    .slot-selector {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    .slot-btn {
+        padding: 12px;
+        background: rgba(0,0,0,0.4);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px;
+        color: #888;
+        font-size: 11px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: 0.3s;
+        text-transform: uppercase;
+    }
+    .slot-btn.active {
+        border-color: var(--cyan);
+        color: #fff;
+        background: rgba(0, 212, 255, 0.2);
+        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+    }
+
     select, input {
-      display: block; /* Wymuszenie zachowania blokowego */
-      width: 100%; 
-      max-width: 100%; /* Zapobieganie wychodzeniu poza ramkę */
-      padding: 14px; 
-      font-size: 16px; 
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1); 
-      background: rgba(0,0,0,0.4);
-      color: #fff; 
-      outline: none; 
-      transition: 0.3s; 
-      box-sizing: border-box; /* Padding wliczony w szerokość */
-      -webkit-appearance: none; /* Naprawa szerokości na iOS */
+      display: block; width: 100%; max-width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
+      color: #fff; outline: none; transition: 0.3s; box-sizing: border-box; -webkit-appearance: none;
     }
     select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
     select:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--error); background: rgba(50,0,0,0.3); }
@@ -93,32 +105,19 @@
     #auth-section { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
     .pass-hint { font-size: 9px; color: #888; margin-top: 5px; line-height: 1.2; }
     .valid { color: #00ff88; }
-    .invalid { color: var(--error); }
-    .reset-link { display: block; margin-top: 8px; font-size: 10px; color: var(--cyan); cursor: pointer; text-decoration: underline; opacity: 0.7; }
-    .reset-link:hover { opacity: 1; }
-
     .btn-cyber {
-      width: 100%; padding: 18px; background: var(--gold);
-      color: #000; border: none; border-radius: 15px;
-      font-size: 16px; font-weight: 900; cursor: pointer;
-      text-transform: uppercase; letter-spacing: 2px;
+      width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px;
+      font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
       margin-top: 20px; transition: 0.3s;
     }
     .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); box-shadow: 0 0 20px rgba(212,175,55,0.4); }
-    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
 
     #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
-    .anon-counter { margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-
-    /* --- MEDIA QUERIES DLA MOBILI --- */
     @media (max-width: 480px) {
       body { align-items: flex-start; padding-top: 150px; } 
       .container { padding: 20px; border-radius: 30px; width: 92vw; }
-      h2 { font-size: 18px; margin-bottom: 15px; }
-      .id-card { width: 210px; padding: 10px; top: -110px; }
-      .id-card.active { top: -130px; }
-      .btn-cyber { padding: 15px; font-size: 14px; }
-      select, input { padding: 12px; font-size: 14px; }
+      .id-card { width: 210px; top: -110px; }
     }
   </style>
 </head>
@@ -135,7 +134,7 @@
     </div>
 
     <div class="container" id="mainContainer">
-      <h2 id="mainHeader">Dodaj swoje dane</h2>
+      <h2 id="mainHeader">Dodaj dane</h2>
 
       <div class="input-box">
         <label>Użytkownik</label>
@@ -152,6 +151,14 @@
       </div>
 
       <div class="input-box">
+        <label>Na kogo obstawiasz?</label>
+        <div class="slot-selector">
+            <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">CEL 1</button>
+            <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">CEL 2</button>
+        </div>
+      </div>
+
+      <div class="input-box">
         <label>Godzina zakończenia</label>
         <input id="hour" type="time" oninput="updatePreview()">
       </div>
@@ -161,12 +168,11 @@
         <div class="input-box"><label id="pass-label">Hasło</label><input id="password" type="password" placeholder="••••" oninput="validateForm()"></div>
         <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
         <div class="pass-hint" id="requirements-hint">Min. 4 znaki i co najmniej jedna cyfra.</div>
-        <span class="reset-link" id="resetBtn" style="display:none;" onclick="handleReset()">Zapomniałeś hasła?</span>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
-      <div class="anon-counter">Liczba dzisiejszych zgłoszeń: <span id="playerCount" style="color: var(--cyan);">0</span></div>
+      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Wsparcie wielu celów aktywne</div>
     </div>
   </div>
 
@@ -180,13 +186,40 @@ const db = getFirestore(app);
 
 let isFirstTime = false;
 let isSystemLocked = false; 
+let selectedSlot = null;
+let currentTargets = { t1: null, t2: null };
 
+// --- NASŁUCHIWANIE BLOKADY I CELÓW ---
 const appStateRef = doc(db, "appState", "status");
 onSnapshot(appStateRef, (snap) => {
-    isSystemLocked = snap.data()?.isLocked;
+    const data = snap.data();
+    if(!data) return;
+
+    isSystemLocked = data.isLocked;
+    currentTargets.t1 = data.target1;
+    currentTargets.t2 = data.target2;
+
+    // Aktualizacja nazw na przyciskach slotów
+    document.getElementById('slot1Btn').innerText = data.target1 || "CEL 1";
+    document.getElementById('slot2Btn').innerText = data.target2 || "CEL 2";
+
+    // Logika blokady własnego imienia
+    const options = document.getElementById('name').options;
+    for (let i = 0; i < options.length; i++) {
+        if (options[i].value === data.target1 || options[i].value === data.target2) {
+            options[i].disabled = true;
+            if(document.getElementById('name').value === options[i].value) {
+                document.getElementById('name').value = "";
+                checkUserAuth();
+            }
+        } else {
+            options[i].disabled = false;
+        }
+    }
+
     const container = document.getElementById('mainContainer');
     const header = document.getElementById('mainHeader');
-    const inputs = document.querySelectorAll('input, select');
+    const inputs = document.querySelectorAll('input, select, .slot-btn');
     const btn = document.getElementById('saveBtn');
 
     if(isSystemLocked) {
@@ -195,76 +228,120 @@ onSnapshot(appStateRef, (snap) => {
         inputs.forEach(el => el.disabled = true);
         btn.disabled = true;
         btn.innerText = "REJESTRACJA ZAMKNIĘTA";
-        document.getElementById('hologram').classList.remove('active');
     } else {
-        if(container.classList.contains('locked')) {
-             window.location.reload();
-        }
+        container.classList.remove('locked');
+        header.innerText = "Dodaj swoje dane";
+        btn.innerText = "Zapis";
     }
 });
 
-window.handleReset = async function() {
-    const code = prompt("Podaj kod resetujący od administratora:");
-    if (code === "0000") {
-        alert("Kod poprawny. System odblokowany."); isFirstTime = true;
-        document.getElementById('pass-confirm-box').style.display = 'block'; document.getElementById('first-time-msg').style.display = 'block';
-        document.getElementById('resetBtn').style.display = 'none'; document.getElementById('pass-label').innerText = "Ustaw nowe hasło"; validateForm();
-    } else { alert("Błędny kod!"); }
-}
-
-onSnapshot(collection(db, "users"), (s) => { document.getElementById("playerCount").innerText = s.size; });
+window.selectSlot = (slot) => {
+    if(isSystemLocked) return;
+    selectedSlot = slot;
+    document.getElementById('slot1Btn').classList.toggle('active', slot === 'slot1');
+    document.getElementById('slot2Btn').classList.toggle('active', slot === 'slot2');
+    validateForm();
+};
 
 window.checkUserAuth = async function() {
     if(isSystemLocked) return; 
-    const name = document.getElementById('name').value; const authSection = document.getElementById('auth-section');
-    const passConfirmBox = document.getElementById('pass-confirm-box'); const firstTimeMsg = document.getElementById('first-time-msg');
-    const resetBtn = document.getElementById('resetBtn'); const passLabel = document.getElementById('pass-label');
-    updatePreview();
+    const name = document.getElementById('name').value;
+    const authSection = document.getElementById('auth-section');
     if (!name) { authSection.style.display = 'none'; return; }
-    const userDoc = await getDoc(doc(db, "passwords", name)); authSection.style.display = 'block';
-    if (!userDoc.exists()) { isFirstTime = true; passConfirmBox.style.display = 'block'; firstTimeMsg.style.display = 'block'; resetBtn.style.display = 'none'; passLabel.innerText = "Ustaw nowe hasło";
-    } else { isFirstTime = false; passConfirmBox.style.display = 'none'; firstTimeMsg.style.display = 'none'; resetBtn.style.display = 'block'; passLabel.innerText = "Wpisz hasło"; }
+    const userDoc = await getDoc(doc(db, "passwords", name));
+    authSection.style.display = 'block';
+    if (!userDoc.exists()) {
+        isFirstTime = true;
+        document.getElementById('pass-confirm-box').style.display = 'block';
+        document.getElementById('first-time-msg').style.display = 'block';
+        document.getElementById('pass-label').innerText = "Ustaw nowe hasło";
+    } else {
+        isFirstTime = false;
+        document.getElementById('pass-confirm-box').style.display = 'none';
+        document.getElementById('first-time-msg').style.display = 'none';
+        document.getElementById('pass-label').innerText = "Wpisz hasło";
+    }
     validateForm();
 }
 
 window.validateForm = function() {
     if(isSystemLocked) return;
-    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value; const passConf = document.getElementById('password-confirm').value;
-    const btn = document.getElementById('saveBtn'); const hint = document.getElementById('requirements-hint');
-    const passRegex = /^(?=.*\d).{4,}$/; let isValid = name && hour && pass;
-    if (isFirstTime) { const passComplexity = passRegex.test(pass); hint.style.display = 'block'; hint.classList.toggle('valid', passComplexity); isValid = isValid && (pass === passConf) && passComplexity;
-    } else { hint.style.display = 'none'; }
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value;
+    const passConf = document.getElementById('password-confirm').value;
+    const btn = document.getElementById('saveBtn');
+    const passRegex = /^(?=.*\d).{4,}$/;
+    let isValid = name && hour && pass && selectedSlot;
+    if (isFirstTime) isValid = isValid && (pass === passConf) && passRegex.test(pass);
     btn.disabled = !isValid;
 }
 
 window.updatePreview = () => {
     if(isSystemLocked) return;
-    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
     const holo = document.getElementById('hologram');
-    if(name && hour) { document.getElementById('hologram-name').innerText = name; document.getElementById('hologram-time').innerText = hour; holo.classList.add('active');
+    if(name && hour) {
+        document.getElementById('hologram-name').innerText = name;
+        document.getElementById('hologram-time').innerText = hour;
+        holo.classList.add('active');
     } else { holo.classList.remove('active'); }
 }
 
 window.saveData = async function() {
-    if(isSystemLocked) { alert("System jest zablokowany!"); return; }
-    const name = document.getElementById('name').value; const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value; const msg = document.getElementById('msg'); const btn = document.getElementById('saveBtn');
-    try { const speech = new SpeechSynthesisUtterance(); speech.text = `Autoryzacja przyjęta. Witaj, ${name}`; speech.lang = 'pl-PL'; speech.pitch = 0.8; speech.rate = 1.1; window.speechSynthesis.speak(speech); } catch(e) {}
-    btn.disabled = true; btn.innerText = "PRZETWARZANIE...";
+    if(isSystemLocked) return;
+    const name = document.getElementById('name').value;
+    const hour = document.getElementById('hour').value;
+    const pass = document.getElementById('password').value;
+    const msg = document.getElementById('msg');
+    const btn = document.getElementById('saveBtn');
+
+    btn.disabled = true;
+    btn.innerText = "AUTORYZACJA...";
+
     try {
-        if (isFirstTime) { await setDoc(doc(db, "passwords", name), { password: pass });
-        } else { const userDoc = await getDoc(doc(db, "passwords", name)); if (userDoc.data().password !== pass) { msg.style.color = "var(--error)"; msg.innerText = "BŁĘDNE HASŁO!"; btn.disabled = false; btn.innerText = "Zapisz"; return; } }
-        await addDoc(collection(db, "users"), { name, hour, timestamp: Date.now() });
-        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO POMYŚLNIE!"; setTimeout(() => window.location.reload(), 2000);
+        if (isFirstTime) {
+            await setDoc(doc(db, "passwords", name), { password: pass });
+        } else {
+            const userDoc = await getDoc(doc(db, "passwords", name));
+            if (userDoc.data().password !== pass) {
+                msg.style.color = "var(--error)"; msg.innerText = "BŁĘDNE HASŁO!";
+                btn.disabled = false; btn.innerText = "Zapisz"; return;
+            }
+        }
+        
+        await addDoc(collection(db, "users"), { 
+            name, 
+            hour, 
+            targetSlot: selectedSlot, 
+            timestamp: Date.now() 
+        });
+
+        try { 
+            const speech = new SpeechSynthesisUtterance(`Zapisano. Cel: ${selectedSlot === 'slot1' ? currentTargets.t1 : currentTargets.t2}`);
+            speech.lang = 'pl-PL'; window.speechSynthesis.speak(speech); 
+        } catch(e) {}
+
+        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO POMYŚLNIE!";
+        setTimeout(() => location.reload(), 2000);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
+// NEURAL BG
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let particles = []; for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1; ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-        for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    particles.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+        for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+        }
+    });
+    requestAnimationFrame(draw);
 } draw();
 document.addEventListener('mousemove', (e) => { const x = (window.innerWidth / 2 - e.pageX) / 45; const y = (window.innerHeight / 2 - e.pageY) / 45; document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`; });
 </script>
