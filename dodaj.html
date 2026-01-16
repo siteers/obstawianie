@@ -80,7 +80,7 @@
         border: 1px solid rgba(255,255,255,0.1);
         border-radius: 12px;
         color: #888;
-        font-size: 11px;
+        font-size: 10px;
         font-weight: bold;
         cursor: pointer;
         transition: 0.3s;
@@ -95,8 +95,9 @@
     .slot-btn:disabled {
         opacity: 0.3;
         cursor: not-allowed;
-        border-color: var(--error);
-        background: rgba(255, 77, 77, 0.1);
+        background: #1a1a1a;
+        color: #444;
+        border-color: #333;
     }
 
     select, input {
@@ -105,11 +106,8 @@
       color: #fff; outline: none; transition: 0.3s; box-sizing: border-box; -webkit-appearance: none;
     }
     select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
-    select:disabled, input:disabled { opacity: 0.5; cursor: not-allowed; border-color: var(--error); background: rgba(50,0,0,0.3); }
 
     #auth-section { display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
-    .pass-hint { font-size: 9px; color: #888; margin-top: 5px; line-height: 1.2; }
-    .valid { color: #00ff88; }
     .btn-cyber {
       width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px;
       font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
@@ -119,11 +117,6 @@
     .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; transform: none; }
 
     #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
-    @media (max-width: 480px) {
-      body { align-items: flex-start; padding-top: 150px; } 
-      .container { padding: 20px; border-radius: 30px; width: 92vw; }
-      .id-card { width: 210px; top: -110px; }
-    }
   </style>
 </head>
 <body>
@@ -151,11 +144,12 @@
       </div>
 
       <div class="input-box">
-        <label>Na kogo obstawiasz?</label>
+        <label>Wybierz cel obstawiania</label>
         <div class="slot-selector">
             <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">CEL 1</button>
             <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">CEL 2</button>
         </div>
+        <div id="adminWarn" style="font-size: 9px; color: var(--error); margin-top: 5px; display: none;">Oczekiwanie na wybór celu przez admina...</div>
       </div>
 
       <div class="input-box">
@@ -164,15 +158,13 @@
       </div>
 
       <div id="auth-section">
-        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">USTAW HASŁO (PIERWSZE LOGOWANIE):</div>
+        <div id="first-time-msg" style="display:none; font-size: 10px; color: var(--cyan); margin-bottom: 10px;">USTAW HASŁO:</div>
         <div class="input-box"><label id="pass-label">Hasło</label><input id="password" type="password" placeholder="••••" oninput="validateForm()"></div>
         <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
-        <div class="pass-hint" id="requirements-hint">Min. 4 znaki i co najmniej jedna cyfra.</div>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
-      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Logika niezależnych blokad aktywna</div>
     </div>
   </div>
 
@@ -187,38 +179,37 @@ const db = getFirestore(app);
 let isFirstTime = false;
 let selectedSlot = null;
 let currentTargets = { t1: null, t2: null };
-let slotLocks = { l1: false, l2: false }; // Przechowuje niezależne blokady
+let slotLocks = { l1: false, l2: false };
 
 const appStateRef = doc(db, "appState", "status");
 onSnapshot(appStateRef, (snap) => {
     const data = snap.data();
     if(!data) return;
 
-    // Pobierz cele i statusy blokad z bazy
     currentTargets.t1 = data.target1;
     currentTargets.t2 = data.target2;
     slotLocks.l1 = data.isLocked1 || false;
     slotLocks.l2 = data.isLocked2 || false;
 
-    document.getElementById('slot1Btn').innerText = data.target1 || "CEL 1";
-    document.getElementById('slot2Btn').innerText = data.target2 || "CEL 2";
+    // Aktualizacja nazw na przyciskach
+    const s1Btn = document.getElementById('slot1Btn');
+    const s2Btn = document.getElementById('slot2Btn');
+    s1Btn.innerText = (data.target1 && data.target1 !== "Brak") ? data.target1 : "CEL NIEAKTYWNY";
+    s2Btn.innerText = (data.target2 && data.target2 !== "Brak") ? data.target2 : "CEL NIEAKTYWNY";
+
+    // Pokaż ostrzeżenie jeśli oba są puste
+    const noTargets = (!data.target1 || data.target1 === "Brak") && (!data.target2 || data.target2 === "Brak");
+    document.getElementById('adminWarn').style.display = noTargets ? 'block' : 'none';
 
     updateSlotAvailability();
 
-    // UI Feedback
     const container = document.getElementById('mainContainer');
-    const header = document.getElementById('mainHeader');
-    const btn = document.getElementById('saveBtn');
-
-    // System jest "globalnie" zablokowany tylko jeśli oba sloty są zamknięte
     if(slotLocks.l1 && slotLocks.l2) {
         container.classList.add('locked');
-        header.innerText = "⛔ REJESTRACJA ZAMKNIĘTA ⛔";
-        btn.innerText = "BRAK WOLNYCH CELÓW";
+        document.getElementById('mainHeader').innerText = "⛔ REJESTRACJA ZAMKNIĘTA ⛔";
     } else {
         container.classList.remove('locked');
-        header.innerText = "Dodaj swoje dane";
-        btn.innerText = "Zapis";
+        document.getElementById('mainHeader').innerText = "Dodaj swoje dane";
     }
 });
 
@@ -227,15 +218,14 @@ function updateSlotAvailability() {
     const s1Btn = document.getElementById('slot1Btn');
     const s2Btn = document.getElementById('slot2Btn');
 
-    // 1. Blokada anty-self-bet (wybrany użytkownik jest Celem)
-    const isSelfTarget1 = (userName && userName === currentTargets.t1);
-    const isSelfTarget2 = (userName && userName === currentTargets.t2);
+    // BLOKADA JEŚLI CEL JEST "BRAK" LUB PUSTY
+    const isInvalidT1 = !currentTargets.t1 || currentTargets.t1 === "Brak";
+    const isInvalidT2 = !currentTargets.t2 || currentTargets.t2 === "Brak";
 
-    // 2. Blokada czasowa (Admin zamknął slot w lista.html)
-    s1Btn.disabled = isSelfTarget1 || slotLocks.l1;
-    s2Btn.disabled = isSelfTarget2 || slotLocks.l2;
+    // Blokada anty-self-bet oraz blokada czasu
+    s1Btn.disabled = isInvalidT1 || (userName === currentTargets.t1) || slotLocks.l1;
+    s2Btn.disabled = isInvalidT2 || (userName === currentTargets.t2) || slotLocks.l2;
 
-    // Resetuj wybór jeśli zaznaczony slot właśnie został zablokowany
     if ((selectedSlot === 'slot1' && s1Btn.disabled) || (selectedSlot === 'slot2' && s2Btn.disabled)) {
         selectedSlot = null;
         s1Btn.classList.remove('active');
@@ -253,24 +243,19 @@ window.selectSlot = (slot) => {
 
 window.checkUserAuth = async function() {
     const name = document.getElementById('name').value;
-    const authSection = document.getElementById('auth-section');
-    
     updateSlotAvailability();
     updatePreview();
-
-    if (!name) { authSection.style.display = 'none'; return; }
+    if (!name) { document.getElementById('auth-section').style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", name));
-    authSection.style.display = 'block';
+    document.getElementById('auth-section').style.display = 'block';
     if (!userDoc.exists()) {
         isFirstTime = true;
         document.getElementById('pass-confirm-box').style.display = 'block';
         document.getElementById('first-time-msg').style.display = 'block';
-        document.getElementById('pass-label').innerText = "Ustaw nowe hasło";
     } else {
         isFirstTime = false;
         document.getElementById('pass-confirm-box').style.display = 'none';
         document.getElementById('first-time-msg').style.display = 'none';
-        document.getElementById('pass-label').innerText = "Wpisz hasło";
     }
     validateForm();
 }
@@ -279,16 +264,13 @@ window.validateForm = function() {
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
     const pass = document.getElementById('password').value;
-    const passConf = document.getElementById('password-confirm').value;
     const btn = document.getElementById('saveBtn');
-    const passRegex = /^(?=.*\d).{4,}$/;
     
+    // Walidacja: wymagane imię, godzina, hasło I AKTYWNY SLOT
     let isValid = name && hour && pass && selectedSlot;
-    // Sprawdź czy wybrany slot nie jest przypadkiem zablokowany
-    if (selectedSlot === 'slot1' && slotLocks.l1) isValid = false;
-    if (selectedSlot === 'slot2' && slotLocks.l2) isValid = false;
+    if (selectedSlot === 'slot1' && (slotLocks.l1 || currentTargets.t1 === "Brak")) isValid = false;
+    if (selectedSlot === 'slot2' && (slotLocks.l2 || currentTargets.t2 === "Brak")) isValid = false;
 
-    if (isFirstTime) isValid = isValid && (pass === passConf) && passRegex.test(pass);
     btn.disabled = !isValid;
 }
 
@@ -311,7 +293,7 @@ window.saveData = async function() {
     const btn = document.getElementById('saveBtn');
 
     btn.disabled = true;
-    btn.innerText = "AUTORYZACJA...";
+    btn.innerText = "WERYFIKACJA...";
 
     try {
         if (isFirstTime) {
@@ -323,21 +305,9 @@ window.saveData = async function() {
                 btn.disabled = false; btn.innerText = "Zapisz"; return;
             }
         }
-        
-        await addDoc(collection(db, "users"), { 
-            name, 
-            hour, 
-            targetSlot: selectedSlot, 
-            timestamp: Date.now() 
-        });
-
-        try { 
-            const speech = new SpeechSynthesisUtterance(`Zapisano. Cel: ${selectedSlot === 'slot1' ? currentTargets.t1 : currentTargets.t2}`);
-            speech.lang = 'pl-PL'; window.speechSynthesis.speak(speech); 
-        } catch(e) {}
-
+        await addDoc(collection(db, "users"), { name, hour, targetSlot: selectedSlot, timestamp: Date.now() });
         msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO POMYŚLNIE!";
-        setTimeout(() => location.reload(), 2000);
+        setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
@@ -350,10 +320,7 @@ function draw() {
         ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
         for (let j = i + 1; j < particles.length; j++) {
             const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 120) {
-                ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
-                ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-            }
+            if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
         }
     });
     requestAnimationFrame(draw);
