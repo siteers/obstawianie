@@ -38,7 +38,6 @@
         }
 
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        
         .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; z-index: 100; }
 
         #darkModeBtn { padding: 10px 20px; border-radius: 30px !important; border: 1px solid var(--border); cursor: pointer; background: #fff; color: #111; font-weight: bold; }
@@ -75,20 +74,11 @@
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        .lock-btn-slot { 
-            width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; 
-            font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; 
-            font-size: 14px; display: none; 
-        }
+        .lock-btn-slot { width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; display: none; }
 
-        .winner-box { 
-            margin-top: 15px; padding: 15px; border-radius: 20px; 
-            background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); 
-            display: none; text-align: left; font-size: 13px; color: var(--text);
-        }
+        .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; }
 
         #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
-        
         .qr-frame { padding: 10px; background: #fff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: inline-block; }
 
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
@@ -99,7 +89,6 @@
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
 
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
-
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; } }
     </style>
 </head>
@@ -114,45 +103,25 @@
 
 <div class="admin-config">
     <div style="font-weight: bold; color: var(--gold); font-size: 12px;">CELE DNIA:</div>
-    <select id="targetSelect1" onchange="updateTargets()">
-        <option value="Brak">Osoba 1...</option>
-        <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
-        <option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option>
-    </select>
-    <select id="targetSelect2" onchange="updateTargets()">
-        <option value="Brak">Osoba 2...</option>
-        <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
-        <option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option>
-    </select>
+    <select id="targetSelect1" onchange="updateTargets()"><option value="Brak">Osoba 1...</option><option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option><option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option></select>
+    <select id="targetSelect2" onchange="updateTargets()"><option value="Brak">Osoba 2...</option><option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option><option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option></select>
 </div>
 
 <div class="dashboard-grid">
     <div class="container" id="panel1">
-        <h2>OBSTAWIANIE:</h2>
-        <span class="target-label" id="targetName1">---</span>
-        <div class="table-wrapper">
-            <table id="table1"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table>
-        </div>
+        <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
+        <div class="table-wrapper"><table id="table1"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table></div>
         <div id="stoppedTime1" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
-        <div class="action-group">
-            <button class="stop-btn" onclick="stopSlot(1)">STOP</button>
-            <button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ LISTĘ</button>
-        </div>
+        <div class="action-group"><button class="stop-btn" onclick="stopSlot(1)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ LISTĘ</button></div>
         <button id="lockBtn1" class="lock-btn-slot" onclick="toggleLock(1)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner1" class="winner-box"></div>
     </div>
 
     <div class="container" id="panel2">
-        <h2>OBSTAWIANIE:</h2>
-        <span class="target-label" id="targetName2">---</span>
-        <div class="table-wrapper">
-            <table id="table2"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table>
-        </div>
+        <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
+        <div class="table-wrapper"><table id="table2"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table></div>
         <div id="stoppedTime2" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
-        <div class="action-group">
-            <button class="stop-btn" onclick="stopSlot(2)">STOP</button>
-            <button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ LISTĘ</button>
-        </div>
+        <div class="action-group"><button class="stop-btn" onclick="stopSlot(2)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ LISTĘ</button></div>
         <button id="lockBtn2" class="lock-btn-slot" onclick="toggleLock(2)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner2" class="winner-box"></div>
     </div>
@@ -191,7 +160,6 @@ let usersData = [], isStopped1 = false, isStopped2 = false, namesRevealed = fals
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka"];
 
-// --- TŁO KONSTELACJI ---
 const bgCanvas = document.getElementById('bg-canvas');
 const bgCtx = bgCanvas.getContext('2d');
 let particles = [];
@@ -238,21 +206,15 @@ onSnapshot(appStateRef, (snap) => {
     const data = snap.data(); if(!data) return;
     document.getElementById("targetName1").textContent = data.target1 || "---";
     document.getElementById("targetName2").textContent = data.target2 || "---";
-    updateLockUI(1, data.isLocked1);
-    updateLockUI(2, data.isLocked2);
+    updateLockUI(1, data.isLocked1); updateLockUI(2, data.isLocked2);
     namesRevealed = (data.isLocked1 || data.isLocked2);
 });
 
 function updateLockUI(id, isLocked) {
     const btn = document.getElementById(`lockBtn${id}`);
     const panel = document.getElementById(`panel${id}`);
-    if(isLocked) {
-        panel.classList.add('slot-locked');
-        btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000";
-    } else {
-        panel.classList.remove('slot-locked');
-        btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "var(--error)"; btn.style.color = "#fff";
-    }
+    if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; }
+    else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "var(--error)"; btn.style.color = "#fff"; }
 }
 
 window.toggleLock = async (id) => {
@@ -266,8 +228,6 @@ window.toggleLock = async (id) => {
 onSnapshot(collection(db, "users"), snap => {
     usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
     usersData.forEach((u, i) => { if(!assignedFakeNames[u.id]) assignedFakeNames[u.id] = funnyNames[i % funnyNames.length]; });
-    
-    // Logika przycisków blokady
     document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
 });
@@ -324,21 +284,35 @@ window.stopSlot = async (id) => {
     const now = new Date();
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + now.toLocaleTimeString("pl-PL");
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    
+    // --- RESTORED ORIGINAL SPORTS RANKING LOGIC ---
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
-    let winners = [];
-    for(let i=0; i<Math.min(3, sorted.length); i++) winners.push({ name: sorted[i].name, pts: (i===0?3:i===1?2:1), rank: i+1 });
+    let playersWithPoints = [];
+    let rank = 1;
+    for (let i = 0; i < sorted.length; i++) {
+        const currentDiff = Math.abs(toSec(sorted[i].hour) - s);
+        if (i > 0) {
+            const prevDiff = Math.abs(toSec(sorted[i-1].hour) - s);
+            if (currentDiff !== prevDiff) {
+                rank = i + 1; // Standard sports ranking: 1, 1, 3...
+            }
+        }
+        if (rank > 3) break;
+        playersWithPoints.push({ name: sorted[i].name, points: (rank === 1 ? 3 : rank === 2 ? 2 : 1), rank: rank });
+    }
     
     const winDiv = document.getElementById(`winner${id}`);
     winDiv.style.display = "block";
-    winDiv.innerHTML = "<b>🏆 WYNIKI:</b><br>" + winners.map(w => `${w.rank}. ${w.name} (+${w.pts} pkt)`).join("<br>");
+    winDiv.innerHTML = "<b>🏆 WYNIKI:</b><br>" + playersWithPoints.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
     
     document.body.style.animation = "cringeBg 0.4s infinite alternate";
     fanfareAudio.play().catch(()=>{}); startCelebration();
-    for(const w of winners) {
-        const ref = doc(db, "ranking", w.name); const snap = await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref, { points: increment(w.pts) }); else await setDoc(ref, { points: w.pts });
+    for(const p of playersWithPoints) {
+        const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
+        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
     }
-    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: winners.map(w=>({name:w.name, rank:w.rank})) });
+    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
+    setTimeout(() => document.body.style.animation = "none", 5000);
 };
 
 window.clearSlot = async (id) => {
