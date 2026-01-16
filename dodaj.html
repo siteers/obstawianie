@@ -10,7 +10,7 @@
       --cyan: #00d4ff;
       --bg: #020408;
       --glass: rgba(15, 23, 42, 0.85);
-      --error: #ff0000;
+      --error: #ff4d4d;
     }
 
     body {
@@ -96,6 +96,7 @@
         opacity: 0.3;
         cursor: not-allowed;
         border-color: var(--error);
+        background: rgba(255, 77, 77, 0.1);
     }
 
     select, input {
@@ -144,13 +145,8 @@
         <label>Użytkownik</label>
         <select id="name" onchange="checkUserAuth()">
           <option value="">Wybierz...</option>
-          <option value="Arek">Arek</option>
-          <option value="Paweł">Paweł</option>
-          <option value="Grzesiek Sz">Grzesiek Sz</option>
-          <option value="Grzesiek P">Grzesiek P</option>
-          <option value="Krzysiek">Krzysiek</option>
-          <option value="Mariusz">Mariusz</option>
-          <option value="Dominik">Dominik</option>
+          <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
+          <option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option>
         </select>
       </div>
 
@@ -176,7 +172,7 @@
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
       <p id="msg"></p>
-      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Zabezpieczenie anty-self-bet aktywne</div>
+      <div style="font-size: 9px; color: #555; text-transform: uppercase;">Logika niezależnych blokad aktywna</div>
     </div>
   </div>
 
@@ -189,36 +185,36 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 let isFirstTime = false;
-let isSystemLocked = false; 
 let selectedSlot = null;
 let currentTargets = { t1: null, t2: null };
+let slotLocks = { l1: false, l2: false }; // Przechowuje niezależne blokady
 
 const appStateRef = doc(db, "appState", "status");
 onSnapshot(appStateRef, (snap) => {
     const data = snap.data();
     if(!data) return;
 
-    isSystemLocked = data.isLocked;
+    // Pobierz cele i statusy blokad z bazy
     currentTargets.t1 = data.target1;
     currentTargets.t2 = data.target2;
+    slotLocks.l1 = data.isLocked1 || false;
+    slotLocks.l2 = data.isLocked2 || false;
 
     document.getElementById('slot1Btn').innerText = data.target1 || "CEL 1";
     document.getElementById('slot2Btn').innerText = data.target2 || "CEL 2";
 
-    // Wywołaj aktualizację dostępności slotów przy zmianie celów przez admina
     updateSlotAvailability();
 
+    // UI Feedback
     const container = document.getElementById('mainContainer');
     const header = document.getElementById('mainHeader');
-    const inputs = document.querySelectorAll('input, select, .slot-btn');
     const btn = document.getElementById('saveBtn');
 
-    if(isSystemLocked) {
+    // System jest "globalnie" zablokowany tylko jeśli oba sloty są zamknięte
+    if(slotLocks.l1 && slotLocks.l2) {
         container.classList.add('locked');
-        header.innerText = "⛔ SYSTEM ZABLOKOWANY ⛔";
-        inputs.forEach(el => el.disabled = true);
-        btn.disabled = true;
-        btn.innerText = "REJESTRACJA ZAMKNIĘTA";
+        header.innerText = "⛔ REJESTRACJA ZAMKNIĘTA ⛔";
+        btn.innerText = "BRAK WOLNYCH CELÓW";
     } else {
         container.classList.remove('locked');
         header.innerText = "Dodaj swoje dane";
@@ -226,18 +222,20 @@ onSnapshot(appStateRef, (snap) => {
     }
 });
 
-// NOWA FUNKCJA: Zarządzanie dostępnością przycisków slotów
 function updateSlotAvailability() {
     const userName = document.getElementById('name').value;
     const s1Btn = document.getElementById('slot1Btn');
     const s2Btn = document.getElementById('slot2Btn');
 
-    // Blokuj przycisk, jeśli wybrane imię to Cel 1
-    s1Btn.disabled = (userName && userName === currentTargets.t1);
-    // Blokuj przycisk, jeśli wybrane imię to Cel 2
-    s2Btn.disabled = (userName && userName === currentTargets.t2);
+    // 1. Blokada anty-self-bet (wybrany użytkownik jest Celem)
+    const isSelfTarget1 = (userName && userName === currentTargets.t1);
+    const isSelfTarget2 = (userName && userName === currentTargets.t2);
 
-    // Jeśli wybrany slot został właśnie zablokowany, zresetuj go
+    // 2. Blokada czasowa (Admin zamknął slot w lista.html)
+    s1Btn.disabled = isSelfTarget1 || slotLocks.l1;
+    s2Btn.disabled = isSelfTarget2 || slotLocks.l2;
+
+    // Resetuj wybór jeśli zaznaczony slot właśnie został zablokowany
     if ((selectedSlot === 'slot1' && s1Btn.disabled) || (selectedSlot === 'slot2' && s2Btn.disabled)) {
         selectedSlot = null;
         s1Btn.classList.remove('active');
@@ -247,7 +245,6 @@ function updateSlotAvailability() {
 }
 
 window.selectSlot = (slot) => {
-    if(isSystemLocked) return;
     selectedSlot = slot;
     document.getElementById('slot1Btn').classList.toggle('active', slot === 'slot1');
     document.getElementById('slot2Btn').classList.toggle('active', slot === 'slot2');
@@ -255,11 +252,10 @@ window.selectSlot = (slot) => {
 };
 
 window.checkUserAuth = async function() {
-    if(isSystemLocked) return; 
     const name = document.getElementById('name').value;
     const authSection = document.getElementById('auth-section');
     
-    updateSlotAvailability(); // Sprawdź blokady przy zmianie użytkownika
+    updateSlotAvailability();
     updatePreview();
 
     if (!name) { authSection.style.display = 'none'; return; }
@@ -280,20 +276,23 @@ window.checkUserAuth = async function() {
 }
 
 window.validateForm = function() {
-    if(isSystemLocked) return;
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
     const pass = document.getElementById('password').value;
     const passConf = document.getElementById('password-confirm').value;
     const btn = document.getElementById('saveBtn');
     const passRegex = /^(?=.*\d).{4,}$/;
+    
     let isValid = name && hour && pass && selectedSlot;
+    // Sprawdź czy wybrany slot nie jest przypadkiem zablokowany
+    if (selectedSlot === 'slot1' && slotLocks.l1) isValid = false;
+    if (selectedSlot === 'slot2' && slotLocks.l2) isValid = false;
+
     if (isFirstTime) isValid = isValid && (pass === passConf) && passRegex.test(pass);
     btn.disabled = !isValid;
 }
 
 window.updatePreview = () => {
-    if(isSystemLocked) return;
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
     const holo = document.getElementById('hologram');
@@ -305,7 +304,6 @@ window.updatePreview = () => {
 }
 
 window.saveData = async function() {
-    if(isSystemLocked) return;
     const name = document.getElementById('name').value;
     const hour = document.getElementById('hour').value;
     const pass = document.getElementById('password').value;
@@ -352,7 +350,10 @@ function draw() {
         ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
         for (let j = i + 1; j < particles.length; j++) {
             const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
+            if (dist < 120) {
+                ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`;
+                ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            }
         }
     });
     requestAnimationFrame(draw);
