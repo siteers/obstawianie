@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Cyber-Add | Ultimate Visuals</title>
+  <title>Cyber-Add | Professional Edition</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
@@ -17,7 +17,7 @@
       touch-action: manipulation;
     }
 
-    /* --- EFEKTY KOSZMARU (NIE ZMIENIAĆ) --- */
+    /* --- EFEKTY KOSZMARU --- */
     .nightmare-mode { background: #300 !important; filter: invert(1) contrast(300%) blur(2px) !important; }
     @keyframes glitch {
       0% { transform: translate(0); }
@@ -30,11 +30,11 @@
     /* --- ZSYNCHRONIZOWANE PULSOWANIE (IMIĘ + BOX) --- */
     @keyframes syncPulse {
         0% { opacity: 1; text-shadow: 0 0 5px var(--error); border-color: var(--error); box-shadow: 0 0 5px var(--error); }
-        50% { opacity: 0.4; text-shadow: 0 0 25px var(--error); border-color: #ff5555; background: rgba(255, 0, 0, 0.2); box-shadow: 0 0 20px var(--error); }
+        50% { opacity: 0.3; text-shadow: 0 0 25px var(--error); border-color: #ff5555; background: rgba(255, 0, 0, 0.2); box-shadow: 0 0 20px var(--error); }
         100% { opacity: 1; text-shadow: 0 0 5px var(--error); border-color: var(--error); box-shadow: 0 0 5px var(--error); }
     }
-    .slot-locked .target-name { color: var(--error) !important; animation: syncPulse 1s infinite; }
-    .slot-locked input { animation: syncPulse 1s infinite; border: 2px solid var(--error) !important; pointer-events: none; }
+    .group-locked .target-name { color: var(--error) !important; animation: syncPulse 1s infinite; }
+    .group-locked input { animation: syncPulse 1s infinite; border: 2px solid var(--error) !important; pointer-events: none; }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
     .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transform-style: preserve-3d; }
@@ -53,8 +53,8 @@
     /* GRUPA CELU - WYŚRODKOWANIE */
     .target-group { display: flex; flex-direction: column; align-items: center; gap: 12px; }
     .target-name {
-        font-size: 16px; font-weight: 900; color: var(--cyan); 
-        text-transform: uppercase; transition: 0.3s; height: 20px;
+        font-size: 15px; font-weight: 900; color: var(--cyan); 
+        text-transform: uppercase; transition: 0.3s; height: 18px;
         text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); letter-spacing: 1px;
     }
 
@@ -66,7 +66,7 @@
       transition: 0.2s; text-align: center;
     }
     input:focus { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.25); background: rgba(0, 212, 255, 0.05); }
-    input:disabled { opacity: 0.05; }
+    input:disabled { opacity: 0.05; border-color: rgba(255,255,255,0.05); }
 
     .btn-cyber {
       width: 100%; padding: 20px; background: var(--gold); color: #000; border: none; border-radius: 20px;
@@ -76,7 +76,7 @@
     .btn-cyber:active { transform: scale(0.96); }
     .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; opacity: 0.8; }
 
-    #forgot-link { display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; text-shadow: 0 0 5px rgba(0, 212, 255, 0.3); }
+    #forgot-link { display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
     #msg { margin-top: 20px; font-size: 12px; font-weight: 900; min-height: 20px; text-transform: uppercase; letter-spacing: 1px; }
   </style>
 </head>
@@ -99,11 +99,11 @@
 
       <div class="hour-grid">
           <div class="target-group" id="group1">
-              <span id="targetName1" class="target-name">Cel 1</span>
+              <span id="targetName1" class="target-name">BRAK</span>
               <input id="hour1" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" oninput="formatTime(this)">
           </div>
           <div class="target-group" id="group2">
-              <span id="targetName2" class="target-name">Cel 2</span>
+              <span id="targetName2" class="target-name">BRAK</span>
               <input id="hour2" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" oninput="formatTime(this)">
           </div>
       </div>
@@ -160,16 +160,21 @@ function updateSlotUI(id, name, isLocked) {
     const group = document.getElementById(`group${id}`);
     const userName = document.getElementById('name').value;
 
-    nameDisplay.innerText = (name && name !== "Brak") ? name : "---";
-    const disabled = isLocked || !name || name === "Brak" || userName === name;
+    // Obsługa stanu "Brak"
+    const isEmpty = (!name || name === "Brak");
+    nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
+    
+    // Logika blokowania
+    const disabled = isLocked || isEmpty || userName === name;
     input.disabled = disabled;
     
-    // ZSYNCHRONIZOWANE PULSOWANIE (IMIĘ + BOX)
-    if (isLocked) group.classList.add('slot-locked');
-    else group.classList.remove('slot-locked');
+    // Synchronizacja pulsowania
+    if (isLocked) group.classList.add('group-locked');
+    else group.classList.remove('group-locked');
 
     if (disabled) input.value = "";
-    nameDisplay.style.opacity = (name === "Brak" || !name) ? "0.2" : "1";
+    nameDisplay.style.opacity = isEmpty ? "0.2" : "1";
+    nameDisplay.style.color = isEmpty ? "#64748b" : "var(--cyan)";
 }
 
 window.checkUserAuth = async function() {
@@ -204,7 +209,7 @@ window.forgotPassword = () => {
     if(prompt("AUTORYZACJA ADMINA - KOD:") === "0000") {
         isResetMode = true; document.getElementById('pass-confirm-box').style.display = 'block';
         alert("Autoryzacja pomyślna. Wprowadź nowe hasło.");
-    } else alert("BŁĄD AUTORYZACJI.");
+    } else alert("BŁĘDNY KOD.");
 }
 
 window.saveData = async function() {
