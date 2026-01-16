@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Dodawanie godziny</title>
+  <title>Cyber-Add | Nightmare Edition</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
@@ -10,7 +10,7 @@
       --cyan: #00d4ff;
       --bg: #020408;
       --glass: rgba(15, 23, 42, 0.85);
-      --error: #ff4d4d;
+      --error: #ff0000;
     }
 
     body {
@@ -18,17 +18,34 @@
       background: var(--bg);
       color: #fff;
       margin: 0;
-      overflow-x: hidden; 
+      overflow: hidden; 
       display: flex;
       justify-content: center;
       align-items: center;
       min-height: 100vh;
       perspective: 1000px;
-      transition: 0.3s;
+      transition: filter 0.1s, background 0.5s;
     }
 
+    /* --- EFEKTY KOSZMARU --- */
+    .nightmare-mode {
+      background: #400 !important;
+      filter: invert(1) hue-rotate(180deg) contrast(200%) blur(1px) !important;
+    }
+
+    @keyframes glitch {
+      0% { transform: translate(0); }
+      20% { transform: translate(-5px, 5px); }
+      40% { transform: translate(-5px, -5px); }
+      60% { transform: translate(5px, 5px); }
+      80% { transform: translate(5px, -5px); }
+      100% { transform: translate(0); }
+    }
+
+    .nightmare-shake { animation: glitch 0.2s infinite !important; }
+
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
-    .tilt-box { z-index: 10; transition: transform 0.1s ease-out; transform-style: preserve-3d; width: 100%; display: flex; justify-content: center; align-items: center; }
+    .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; }
 
     .container {
       background: var(--glass);
@@ -41,89 +58,41 @@
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
       text-align: center;
       position: relative;
-      transition: 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+      transition: 0.3s;
       box-sizing: border-box;
     }
 
-    /* --- EFEKT WSTRZĄSU (SHAKE) --- */
-    @keyframes shake {
-      10%, 90% { transform: translate3d(-1px, 0, 0); }
-      20%, 80% { transform: translate3d(2px, 0, 0); }
-      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-      40%, 60% { transform: translate3d(4px, 0, 0); }
-    }
-    .shake-error {
-      animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-      border-color: var(--error) !important;
-      box-shadow: 0 0 30px var(--error) !important;
-    }
+    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
 
-    /* EFEKT ALARMOWY DLA PRZYCISKÓW */
-    @keyframes slotPulse {
-        0% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
-        50% { border-color: #ff0000; box-shadow: 0 0 20px var(--error); background: rgba(255, 0, 0, 0.2); }
-        100% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
-    }
+    .input-box { margin-bottom: 15px; text-align: left; }
+    .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
 
-    .slot-locked {
-        animation: slotPulse 1.5s infinite !important;
-        background: rgba(255, 0, 0, 0.15) !important;
-        color: var(--error) !important;
-        border: 1px solid var(--error) !important;
-        opacity: 1 !important;
-    }
-
-    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 1px; transition: 0.3s; }
-
-    .input-box { margin-bottom: 15px; text-align: left; width: 100%; }
-    .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; display: block; }
-
-    .slot-selector {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-bottom: 15px;
-    }
+    .slot-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
     .slot-btn {
-        padding: 12px;
-        background: rgba(0,0,0,0.4);
-        border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px;
-        color: #888;
-        font-size: 10px;
-        font-weight: bold;
-        cursor: pointer;
-        transition: 0.3s;
-        text-transform: uppercase;
+        padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 12px; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase;
     }
-    .slot-btn.active {
-        border-color: var(--cyan);
-        color: #fff;
-        background: rgba(0, 212, 255, 0.2);
-        box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
-    }
-    .slot-btn:disabled:not(.slot-locked) {
-        opacity: 0.3;
-        cursor: not-allowed;
-        background: #1a1a1a;
-    }
+    .slot-btn.active { border-color: var(--cyan); color: #fff; background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 15px var(--cyan); }
+    .slot-btn:disabled { opacity: 0.2; cursor: not-allowed; }
 
     select, input {
-      display: block; width: 100%; max-width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4);
-      color: #fff; outline: none; transition: 0.3s; box-sizing: border-box;
+      display: block; width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
+      border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff; outline: none; box-sizing: border-box;
     }
-    select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
 
     .btn-cyber {
       width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px;
-      font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; letter-spacing: 2px;
-      margin-top: 20px; transition: 0.3s;
+      font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 20px;
     }
-    .btn-cyber:hover { transform: scale(1.02); filter: brightness(1.1); }
-    .btn-cyber:disabled { background: #334; color: #667; cursor: not-allowed; }
+    .btn-cyber:disabled { background: #334; color: #667; }
 
-    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; text-align: center; }
+    #forgot-link {
+        display: block; margin-top: 10px; font-size: 11px; color: var(--cyan); 
+        text-decoration: none; font-weight: bold; cursor: pointer; opacity: 0.7;
+    }
+    #forgot-link:hover { opacity: 1; text-decoration: underline; }
+
+    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
   </style>
 </head>
 <body>
@@ -132,7 +101,7 @@
 
   <div class="tilt-box" id="tiltCard">
     <div class="container" id="mainContainer">
-      <h2 id="mainHeader">Dodaj swoje dane</h2>
+      <h2 id="mainHeader">System Logowania</h2>
 
       <div class="input-box">
         <label>Użytkownik</label>
@@ -144,24 +113,28 @@
       </div>
 
       <div class="input-box">
-        <label>Wybierz cel obstawiania</label>
+        <label>Cel Obstawiania</label>
         <div class="slot-selector">
-            <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">CEL 1</button>
-            <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">CEL 2</button>
+            <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">---</button>
+            <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">---</button>
         </div>
       </div>
 
       <div class="input-box">
-        <label>Godzina zakończenia</label>
+        <label>Godzina</label>
         <input id="hour" type="time" oninput="validateForm()">
       </div>
 
       <div id="auth-section" style="display:none;">
-        <div class="input-box"><label id="pass-label">Hasło</label><input id="password" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div class="input-box">
+            <label>Hasło Dostępowe</label>
+            <input id="password" type="password" placeholder="••••" oninput="validateForm()">
+            <a id="forgot-link" onclick="forgotPassword()">Zapomniałem hasła</a>
+        </div>
         <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
       </div>
 
-      <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zapis</button>
+      <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
       <p id="msg"></p>
     </div>
   </div>
@@ -174,44 +147,22 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let isFirstTime = false;
-let selectedSlot = null;
-let currentTargets = { t1: null, t2: null };
-let slotLocks = { l1: false, l2: false };
+let isFirstTime = false, selectedSlot = null, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
-const appStateRef = doc(db, "appState", "status");
-onSnapshot(appStateRef, (snap) => {
+onSnapshot(doc(db, "appState", "status"), (snap) => {
     const data = snap.data(); if(!data) return;
-    currentTargets.t1 = data.target1;
-    currentTargets.t2 = data.target2;
-    slotLocks.l1 = data.isLocked1 || false;
-    slotLocks.l2 = data.isLocked2 || false;
-
-    updateSlotUI(1, data.target1, slotLocks.l1);
-    updateSlotUI(2, data.target2, slotLocks.l2);
+    currentTargets.t1 = data.target1; currentTargets.t2 = data.target2;
+    slotLocks.l1 = data.isLocked1 || false; slotLocks.l2 = data.isLocked2 || false;
+    document.getElementById('slot1Btn').innerText = (data.target1 && data.target1 !== "Brak") ? data.target1 : "NIEAKTYWNY";
+    document.getElementById('slot2Btn').innerText = (data.target2 && data.target2 !== "Brak") ? data.target2 : "NIEAKTYWNY";
     updateSlotAvailability();
 });
 
-function updateSlotUI(id, name, isLocked) {
-    const btn = document.getElementById(`slot${id}Btn`);
-    btn.innerText = (name && name !== "Brak") ? name : "CEL NIEAKTYWNY";
-    if (isLocked) btn.classList.add('slot-locked');
-    else btn.classList.remove('slot-locked');
-}
-
 function updateSlotAvailability() {
-    const userName = document.getElementById('name').value;
-    const s1Btn = document.getElementById('slot1Btn');
-    const s2Btn = document.getElementById('slot2Btn');
-
-    s1Btn.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak") || (userName === currentTargets.t1) || slotLocks.l1;
-    s2Btn.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak") || (userName === currentTargets.t2) || slotLocks.l2;
-
-    if ((selectedSlot === 'slot1' && s1Btn.disabled) || (selectedSlot === 'slot2' && s2Btn.disabled)) {
-        selectedSlot = null;
-        s1Btn.classList.remove('active');
-        s2Btn.classList.remove('active');
-    }
+    const name = document.getElementById('name').value;
+    const s1 = document.getElementById('slot1Btn'), s2 = document.getElementById('slot2Btn');
+    s1.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak" || name === currentTargets.t1 || slotLocks.l1);
+    s2.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak" || name === currentTargets.t2 || slotLocks.l2);
     validateForm();
 }
 
@@ -228,32 +179,26 @@ window.checkUserAuth = async function() {
     if (!name) { document.getElementById('auth-section').style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", name));
     document.getElementById('auth-section').style.display = 'block';
-    if (!userDoc.exists()) {
-        isFirstTime = true;
-        document.getElementById('pass-confirm-box').style.display = 'block';
-    } else {
-        isFirstTime = false;
-        document.getElementById('pass-confirm-box').style.display = 'none';
-    }
+    isFirstTime = !userDoc.exists();
+    document.getElementById('pass-confirm-box').style.display = isFirstTime ? 'block' : 'none';
     validateForm();
 }
 
 window.validateForm = function() {
+    const name = document.getElementById('name').value, hour = document.getElementById('hour').value, pass = document.getElementById('password').value;
+    document.getElementById('saveBtn').disabled = !(name && hour && pass && selectedSlot);
+}
+
+// ZAPOMNIAŁEM HASŁA
+window.forgotPassword = () => {
     const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value;
-    const btn = document.getElementById('saveBtn');
-    let isValid = name && hour && pass && selectedSlot;
-    btn.disabled = !isValid;
+    if(!name) { alert("Najpierw wybierz użytkownika!"); return; }
+    alert(`DOSTĘP ZABLOKOWANY.\nUżytkowniku ${name}, musisz zgłosić się do Admina po reset klucza szyfrującego.`);
 }
 
 window.saveData = async function() {
-    const name = document.getElementById('name').value;
-    const hour = document.getElementById('hour').value;
-    const pass = document.getElementById('password').value;
-    const msg = document.getElementById('msg');
-    const btn = document.getElementById('saveBtn');
-    const container = document.getElementById('mainContainer');
+    const name = document.getElementById('name').value, hour = document.getElementById('hour').value, pass = document.getElementById('password').value;
+    const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn'), container = document.getElementById('mainContainer');
     
     btn.disabled = true;
     try {
@@ -261,41 +206,39 @@ window.saveData = async function() {
         else {
             const userDoc = await getDoc(doc(db, "passwords", name));
             if (userDoc.data().password !== pass) {
-                // --- EFEKT BŁĘDU (WSTRZĄS + FLASH + VIBRATE) ---
-                container.classList.add('shake-error');
-                if (navigator.vibrate) navigator.vibrate(200); // Wibracja na mobile
-                
-                msg.style.color = "var(--error)"; 
-                msg.innerText = "BŁĘDNE HASŁO!";
-                
-                setTimeout(() => {
-                    container.classList.remove('shake-error');
-                }, 500);
+                // --- KOSZMAR START ---
+                document.body.classList.add('nightmare-mode');
+                container.classList.add('nightmare-shake');
+                document.getElementById('mainHeader').innerText = "FATAL ERROR: BREACH";
+                msg.style.color = "#ff0000"; msg.innerText = "BŁĘDNE HASŁO. NARUSZENIE ZAPISANE.";
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
 
-                btn.disabled = false; return;
+                setTimeout(() => {
+                    document.body.classList.remove('nightmare-mode');
+                    container.classList.remove('nightmare-shake');
+                    document.getElementById('mainHeader').innerText = "System Logowania";
+                    btn.disabled = false;
+                }, 1500);
+                return;
             }
         }
         await addDoc(collection(db, "users"), { name, hour, targetSlot: selectedSlot, timestamp: Date.now() });
-        msg.style.color = "var(--cyan)"; msg.innerText = "ZAPISANO!";
+        msg.style.color = "var(--cyan)"; msg.innerText = "AUTORYZACJA PRZYJĘTA.";
         setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
-const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d'); canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let particles = []; for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+// TŁO
+const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+let particles = []; for (let i = 0; i < 50; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-        for (let j = i + 1; j < particles.length; j++) {
-            const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (dist < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-        }
-    });
-    requestAnimationFrame(draw);
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
+    }); requestAnimationFrame(draw);
 } draw();
-document.addEventListener('mousemove', (e) => { const x = (window.innerWidth / 2 - e.pageX) / 555; const y = (window.innerHeight / 2 - e.pageY) / 555; document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`; });
 </script>
 </body>
 </html>
