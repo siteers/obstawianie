@@ -59,6 +59,7 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.3s;
         }
 
+        /* EFEKT ALARMU NUKLEARNEGO */
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
 
@@ -141,7 +142,7 @@
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
-<audio id="lockSound" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
+<audio id="nukeAlarm" src="https://assets.mixkit.co/active_storage/sfx/2841/2841-preview.mp3"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -152,26 +153,15 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const appStateRef = doc(db, "appState", "status");
-const lockSound = document.getElementById("lockSound");
+const nukeAlarm = document.getElementById("nukeAlarm");
 const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false;
 let isLocked1 = false, isLocked2 = false;
 let assignedFakeNames = {};
+const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal"];
 
-const funnyNames = [
-    "leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", 
-    "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal"
-];
-
-function shuffleArray(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
-
+// --- TŁO KONSTELACJI ---
 const bgCanvas = document.getElementById('bg-canvas');
 const bgCtx = bgCanvas.getContext('2d');
 let particles = [];
@@ -211,10 +201,7 @@ function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]
 function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
 
 window.updateTargets = async () => {
-    await setDoc(appStateRef, { 
-        target1: document.getElementById("targetSelect1").value, 
-        target2: document.getElementById("targetSelect2").value 
-    }, { merge: true });
+    await setDoc(appStateRef, { target1: document.getElementById("targetSelect1").value, target2: document.getElementById("targetSelect2").value }, { merge: true });
 };
 
 onSnapshot(appStateRef, (snap) => {
@@ -240,22 +227,23 @@ function updateLockUI(id, isLocked) {
 window.toggleLock = async (id) => {
     const snap = await getDoc(appStateRef);
     const field = `isLocked${id}`;
-    const newState = !snap.data()[field];
+    const currentState = snap.data()[field] || false;
+    const newState = !currentState;
+    
     await setDoc(appStateRef, { [field]: newState }, { merge: true });
-    if(newState) lockSound.play().catch(()=>{});
+    
+    // ODTWÓRZ ALARM TYLKO PRZY ZAMYKANIU
+    if(newState) {
+        nukeAlarm.currentTime = 0;
+        nukeAlarm.play().catch(()=>{});
+        // Zatrzymaj po 10 sek, by nie męczyć uszu
+        setTimeout(() => nukeAlarm.pause(), 10000);
+    }
 };
 
 onSnapshot(collection(db, "users"), snap => {
-    usersData = []; 
-    snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
-    
-    const currentShuffled = shuffleArray([...funnyNames]);
-    usersData.forEach((u, i) => { 
-        if(!assignedFakeNames[u.id]) {
-            assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; 
-        }
-    });
-    
+    usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+    usersData.forEach((u, i) => { if(!assignedFakeNames[u.id]) assignedFakeNames[u.id] = funnyNames[i % funnyNames.length]; });
     document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
 });
@@ -349,7 +337,6 @@ window.clearSlot = async (id) => {
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
     
-    // RESET BLOKADY I CELU NA "BRAK"
     const lockField = `isLocked${id}`;
     const targetField = `target${id}`;
     await setDoc(appStateRef, { 
