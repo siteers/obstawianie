@@ -14,9 +14,10 @@
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; perspective: 1000px; transition: 0.3s;
+      touch-action: manipulation;
     }
 
-    /* --- EFEKTY KOSZMARU --- */
+    /* --- EFEKTY KOSZMARU (NIE ZMIENIAĆ) --- */
     .nightmare-mode { background: #300 !important; filter: invert(1) contrast(300%) blur(2px) !important; }
     @keyframes glitch {
       0% { transform: translate(0); }
@@ -33,47 +34,47 @@
         50% { border-color: #ff0000; box-shadow: 0 0 25px var(--error); background: rgba(255, 0, 0, 0.3); }
         100% { border-color: var(--error); box-shadow: 0 0 5px var(--error); }
     }
-    .slot-locked {
+    .input-locked {
         animation: slotPulse 1.2s infinite !important;
-        background: rgba(255, 0, 0, 0.2) !important;
-        color: #fff !important; border: 2px solid var(--error) !important;
-        opacity: 1 !important; text-shadow: 0 0 10px var(--error);
+        border: 2px solid var(--error) !important;
+        pointer-events: none;
+        opacity: 0.6;
     }
 
-    #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
-    .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
+    #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+    .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transition: transform 0.1s ease-out; transform-style: preserve-3d; pointer-events: auto; }
 
     .container {
       background: var(--glass); backdrop-filter: blur(25px); padding: 30px; border-radius: 40px;
-      width: 90vw; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.1);
+      width: 90vw; max-width: 420px; border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); text-align: center; position: relative; box-sizing: border-box;
     }
 
-    h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
-    .input-box { margin-bottom: 15px; text-align: left; }
-    .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; }
+    h2 { margin: 0 0 25px 0; font-size: 22px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
+    .input-box { margin-bottom: 15px; text-align: left; position: relative; }
+    .input-box label { font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 5px; display: block; letter-spacing: 1px; }
 
-    .slot-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
-    .slot-btn {
-        padding: 12px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1);
-        border-radius: 12px; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-transform: uppercase;
-    }
-    .slot-btn.active { border-color: var(--cyan); color: #fff; background: rgba(0, 212, 255, 0.2); box-shadow: 0 0 15px var(--cyan); }
-    .slot-btn:disabled:not(.slot-locked) { opacity: 0.2; cursor: not-allowed; }
+    /* ROZDZIELENIE NA DWIE GODZINY */
+    .hour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
 
     select, input {
       display: block; width: 100%; padding: 14px; font-size: 16px; border-radius: 12px;
       border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.4); color: #fff; outline: none; box-sizing: border-box;
+      transition: border 0.2s;
     }
+    input:focus { border-color: var(--cyan); }
+    input:disabled { opacity: 0.3; background: #111; }
 
     .btn-cyber {
       width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px;
-      font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 20px;
+      font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 10px;
+      transition: 0.2s; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.2);
     }
-    .btn-cyber:disabled { background: #334; color: #667; }
+    .btn-cyber:active { transform: scale(0.96); }
+    .btn-cyber:disabled { background: #223; color: #556; box-shadow: none; cursor: not-allowed; }
 
-    #forgot-link { display: block; margin-top: 10px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; opacity: 0.7; }
-    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; }
+    #forgot-link { display: block; margin-top: 12px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; opacity: 0.7; }
+    #msg { margin-top: 15px; font-size: 13px; font-weight: bold; min-height: 20px; transition: 0.3s; }
   </style>
 </head>
 <body>
@@ -85,7 +86,7 @@
       <h2 id="mainHeader">System Logowania</h2>
 
       <div class="input-box">
-        <label>Użytkownik</label>
+        <label>Wybierz Użytkownika</label>
         <select id="name" onchange="checkUserAuth()">
           <option value="">Wybierz...</option>
           <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
@@ -93,17 +94,15 @@
         </select>
       </div>
 
-      <div class="input-box">
-        <label>Cel Obstawiania</label>
-        <div class="slot-selector">
-            <button class="slot-btn" id="slot1Btn" onclick="selectSlot('slot1')">---</button>
-            <button class="slot-btn" id="slot2Btn" onclick="selectSlot('slot2')">---</button>
-        </div>
-      </div>
-
-      <div class="input-box">
-        <label>Godzina</label>
-        <input id="hour" type="time" oninput="validateForm()">
+      <div class="hour-grid">
+          <div class="input-box">
+              <label id="labelSlot1">Godzina Cel 1</label>
+              <input id="hour1" type="time" oninput="validateForm()">
+          </div>
+          <div class="input-box">
+              <label id="labelSlot2">Godzina Cel 2</label>
+              <input id="hour2" type="time" oninput="validateForm()">
+          </div>
       </div>
 
       <div id="auth-section" style="display:none;">
@@ -112,7 +111,10 @@
             <input id="password" type="password" placeholder="••••" oninput="validateForm()">
             <a id="forgot-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
-        <div id="pass-confirm-box" style="display:none;" class="input-box"><label>Potwierdź nowe hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div id="pass-confirm-box" style="display:none;" class="input-box">
+            <label>Potwierdź Nowe Hasło</label>
+            <input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()">
+        </div>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
@@ -129,35 +131,40 @@ import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot } fro
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-let isFirstTime = false, isResetMode = false, selectedSlot = null, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
+let isFirstTime = false, isResetMode = false, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
 onSnapshot(doc(db, "appState", "status"), (snap) => {
     const data = snap.data(); if(!data) return;
     currentTargets.t1 = data.target1; currentTargets.t2 = data.target2;
     slotLocks.l1 = data.isLocked1 || false; slotLocks.l2 = data.isLocked2 || false;
-    updateSlotUI(1, data.target1, slotLocks.l1);
-    updateSlotUI(2, data.target2, slotLocks.l2);
-    updateSlotAvailability();
+    
+    updateSlotInputUI(1, data.target1, slotLocks.l1);
+    updateSlotInputUI(2, data.target2, slotLocks.l2);
+    validateForm();
 });
 
-function updateSlotUI(id, name, isLocked) {
-    const btn = document.getElementById(`slot${id}Btn`);
-    btn.innerText = (name && name !== "Brak") ? name : "NIEAKTYWNY";
-    if (isLocked) btn.classList.add('slot-locked'); else btn.classList.remove('slot-locked');
-}
+function updateSlotInputUI(id, name, isLocked) {
+    const input = document.getElementById(`hour${id}`);
+    const label = document.getElementById(`labelSlot${id}`);
+    const userName = document.getElementById('name').value;
 
-function updateSlotAvailability() {
-    const n = document.getElementById('name').value;
-    const s1 = document.getElementById('slot1Btn'), s2 = document.getElementById('slot2Btn');
-    s1.disabled = (!currentTargets.t1 || currentTargets.t1 === "Brak" || n === currentTargets.t1 || slotLocks.l1);
-    s2.disabled = (!currentTargets.t2 || currentTargets.t2 === "Brak" || n === currentTargets.t2 || slotLocks.l2);
-    validateForm();
+    label.innerText = (name && name !== "Brak") ? `GODZINA: ${name}` : "CEL NIEAKTYWNY";
+    
+    // Blokada: jeśli locked LUB brak celu LUB użytkownik to cel
+    const shouldDisable = isLocked || !name || name === "Brak" || userName === name;
+    
+    input.disabled = shouldDisable;
+    if (isLocked) input.classList.add('input-locked');
+    else input.classList.remove('input-locked');
+    
+    if (shouldDisable) input.value = "";
 }
-
-window.selectSlot = (s) => { selectedSlot = s; document.getElementById('slot1Btn').classList.toggle('active', s === 'slot1'); document.getElementById('slot2Btn').classList.toggle('active', s === 'slot2'); validateForm(); };
 
 window.checkUserAuth = async function() {
-    const n = document.getElementById('name').value; updateSlotAvailability();
+    const n = document.getElementById('name').value;
+    updateSlotInputUI(1, currentTargets.t1, slotLocks.l1);
+    updateSlotInputUI(2, currentTargets.t2, slotLocks.l2);
+
     if (!n) { document.getElementById('auth-section').style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", n));
     document.getElementById('auth-section').style.display = 'block';
@@ -168,11 +175,15 @@ window.checkUserAuth = async function() {
 }
 
 window.validateForm = function() {
-    const n = document.getElementById('name').value, h = document.getElementById('hour').value, p = document.getElementById('password').value;
+    const n = document.getElementById('name').value, p = document.getElementById('password').value;
+    const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const p2 = document.getElementById('password-confirm').value;
-    let v = n && h && p && selectedSlot;
-    if (isFirstTime || isResetMode) v = v && (p === p2);
-    document.getElementById('saveBtn').disabled = !v;
+    const btn = document.getElementById('saveBtn');
+
+    // Walidacja: wybrany user, hasło wpisane i PRZYNAJMNIEJ jedna godzina wpisana
+    let v = n && p && (h1 || h2);
+    if (isFirstTime || isResetMode) v = v && (p === p2 && p.length > 0);
+    btn.disabled = !v;
 }
 
 window.forgotPassword = () => {
@@ -180,33 +191,30 @@ window.forgotPassword = () => {
     if(prompt("AUTORYZACJA ADMINA - WPISZ KOD:") === "0000") {
         isResetMode = true; document.getElementById('pass-confirm-box').style.display = 'block';
         document.getElementById('main-pass-label').innerText = "USTAW NOWE HASŁO";
-        alert("Autoryzacja pomyślna.");
+        alert("Autoryzacja pomyślna. Wprowadź nowe hasło.");
     } else alert("BŁĘDNY KOD.");
 }
 
 window.saveData = async function() {
-    const n = document.getElementById('name').value, h = document.getElementById('hour').value, p = document.getElementById('password').value;
+    const n = document.getElementById('name').value, p = document.getElementById('password').value;
+    const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn'), container = document.getElementById('mainContainer');
     const horrorSound = document.getElementById('horrorSound');
 
     btn.disabled = true;
     try {
-        if (isFirstTime || isResetMode) await setDoc(doc(db, "passwords", n), { password: p });
-        else {
+        // Weryfikacja hasła
+        if (!isFirstTime && !isResetMode) {
             const userDoc = await getDoc(doc(db, "passwords", n));
             if (userDoc.data().password !== p) {
-                // --- KOSZMAR START (ZSYNCHRONIZOWANY) ---
                 horrorSound.currentTime = 0; horrorSound.volume = 1.0; horrorSound.play().catch(()=>{});
                 document.body.classList.add('nightmare-mode');
                 container.classList.add('nightmare-shake');
                 document.getElementById('mainHeader').innerText = "SYSTEM CORRUPTED";
                 msg.style.color = "#ff0000"; msg.innerText = "ACCESS DENIED: WRONG KEY.";
                 if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
-
                 setTimeout(() => {
-                    // STOP DŹWIĘKU I WIZUALIZACJI PO 1,5S
                     horrorSound.pause();
-                    horrorSound.currentTime = 0;
                     document.body.classList.remove('nightmare-mode');
                     container.classList.remove('nightmare-shake');
                     document.getElementById('mainHeader').innerText = "System Logowania";
@@ -214,13 +222,25 @@ window.saveData = async function() {
                 }, 1500);
                 return;
             }
+        } else {
+            await setDoc(doc(db, "passwords", n), { password: p });
         }
-        await addDoc(collection(db, "users"), { name: n, hour: h, targetSlot: selectedSlot, timestamp: Date.now() });
+
+        // Zapisywanie danych (jeden lub dwa sloty)
+        const timestamp = Date.now();
+        if (h1 && !document.getElementById('hour1').disabled) {
+            await addDoc(collection(db, "users"), { name: n, hour: h1, targetSlot: 'slot1', timestamp });
+        }
+        if (h2 && !document.getElementById('hour2').disabled) {
+            await addDoc(collection(db, "users"), { name: n, hour: h2, targetSlot: 'slot2', timestamp });
+        }
+
         msg.style.color = "var(--cyan)"; msg.innerText = "DATA UPLOADED.";
         setTimeout(() => location.reload(), 1500);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
+// KONSTELACJA (NIE ZMIENIAĆ)
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
@@ -237,7 +257,6 @@ function draw() {
 } draw();
 
 document.addEventListener('mousemove', (e) => {
-    // CZUŁOŚĆ 500
     const x = (window.innerWidth / 2 - e.pageX) / 500;
     const y = (window.innerHeight / 2 - e.pageY) / 500;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
