@@ -24,7 +24,7 @@
         }
 
         body {
-            font-family: 'Inter', -apple-system, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: var(--bg);
             color: var(--text);
             margin: 0;
@@ -37,88 +37,58 @@
             overflow-x: hidden;
         }
 
-        #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; z-index: 100; flex-wrap: wrap; }
+        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        
+        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; z-index: 100; }
+
+        #darkModeBtn { padding: 10px 20px; border-radius: 30px; border: 1px solid var(--border); cursor: pointer; background: #fff; color: #111; font-weight: bold; }
+        body.dark #darkModeBtn { background: #111; color: #fff; }
 
         .admin-config {
             background: var(--glass);
-            padding: 15px;
-            border-radius: 20px;
-            border: 1px solid var(--gold);
-            display: flex;
-            gap: 15px;
-            align-items: center;
-            margin-bottom: 20px;
-            z-index: 100;
-            backdrop-filter: blur(10px);
+            padding: 15px; border-radius: 20px; border: 1px solid var(--gold);
+            display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100;
         }
-        .admin-config select { 
-            padding: 10px; 
-            border-radius: 10px; 
-            background: #1a1a1a; 
-            color: white; 
-            border: 1px solid var(--gold);
-            font-weight: bold;
-            cursor: pointer;
-        }
+        .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         body:not(.dark) .admin-config select { background: white; color: black; }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            width: 100%;
-            max-width: 1300px;
-            z-index: 10;
-        }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
 
         .container { 
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            padding: 20px; 
-            border-radius: 30px; 
-            border: 1px solid var(--border);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15); 
-            box-sizing: border-box;
-            transition: 0.3s;
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 20px; border-radius: 30px; border: 1px solid var(--border);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.3s;
         }
 
-        body.apocalypse .container { border: 2px solid var(--error); }
-        
-        @keyframes alarmPulse {
-            0% { box-shadow: 0 0 0 var(--error) inset; }
-            50% { box-shadow: 0 0 100px var(--error) inset; }
-            100% { box-shadow: 0 0 0 var(--error) inset; }
-        }
-        body.alarm-active .container { animation: alarmPulse 1s infinite; }
+        .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
+        @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
 
-        h2 { text-align: center; margin: 0 0 10px 0; color: var(--gold); text-transform: uppercase; font-size: 14px; letter-spacing: 1px; }
-        .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 15px; text-shadow: 0 0 15px var(--cyan); }
+        h2 { text-align: center; margin: 0; color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
+        .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 10px; text-shadow: 0 0 15px var(--cyan); }
 
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; text-align: center; vertical-align: middle; border-bottom: 1px solid var(--border); font-weight: bold; }
+        th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
         th { color: var(--gold); text-transform: uppercase; font-size: 10px; }
 
-        .user-cell { display: flex; align-items: center; justify-content: flex-start; gap: 8px; text-align: left; }
-        .avatar { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 11px; flex-shrink: 0; }
-        
-        .hidden-hour { filter: blur(8px); opacity: 0.3; }
-        .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
+        .action-group { display: flex; gap: 10px; margin-top: 15px; }
+        .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
+        .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        #clock { font-size: 44px; font-weight: 900; text-align: center; margin: 15px 0; }
-        
-        .action-group { display: flex; gap: 10px; margin-top: 10px; }
-        .stop-btn { flex: 3; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 20px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
-        .clear-slot-btn { flex: 1; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .lock-btn-slot { width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; }
 
         .winner-box { 
-            margin-top: 20px; padding: 15px; border-radius: 20px; font-size: 14px; 
+            margin-top: 15px; padding: 15px; border-radius: 20px; 
             background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); 
-            display: none; text-align: left; line-height: 1.6;
+            display: none; text-align: left; font-size: 13px; color: var(--text);
         }
 
-        #lockBtn { width: 100%; max-width: 450px; margin: 25px auto; padding: 18px; border-radius: 20px; font-size: 20px; font-weight: 900; cursor: pointer; transition: 0.3s; z-index: 100; border: none; }
+        #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
+        
+        .qr-frame { padding: 10px; background: #fff; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); display: inline-block; }
+
+        #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
+        #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
 
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
@@ -135,7 +105,7 @@
 </div>
 
 <div class="admin-config">
-    <div style="font-weight: bold; color: var(--gold); font-size: 12px;">USTAW CELE:</div>
+    <div style="font-weight: bold; color: var(--gold); font-size: 12px;">CELE DNIA:</div>
     <select id="targetSelect1" onchange="updateTargets()">
         <option value="Brak">Osoba 1...</option>
         <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
@@ -148,18 +118,19 @@
     </select>
 </div>
 
-<div id="tilt-wrapper" class="dashboard-grid">
+<div class="dashboard-grid">
     <div class="container" id="panel1">
         <h2>OBSTAWIANIE:</h2>
         <span class="target-label" id="targetName1">---</span>
         <div class="table-wrapper">
             <table id="table1"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table>
         </div>
-        <div id="stoppedTime1" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 12px;"></div>
+        <div id="stoppedTime1" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
         <div class="action-group">
             <button class="stop-btn" onclick="stopSlot(1)">STOP</button>
-            <button class="clear-slot-btn" onclick="clearSlot(1)">Czyść</button>
+            <button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ LISTĘ</button>
         </div>
+        <button id="lockBtn1" class="lock-btn-slot" onclick="toggleLock(1)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner1" class="winner-box"></div>
     </div>
 
@@ -169,28 +140,27 @@
         <div class="table-wrapper">
             <table id="table2"><tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr></table>
         </div>
-        <div id="stoppedTime2" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 12px;"></div>
+        <div id="stoppedTime2" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
         <div class="action-group">
             <button class="stop-btn" onclick="stopSlot(2)">STOP</button>
-            <button class="clear-slot-btn" onclick="clearSlot(2)">Czyść</button>
+            <button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ LISTĘ</button>
         </div>
+        <button id="lockBtn2" class="lock-btn-slot" onclick="toggleLock(2)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner2" class="winner-box"></div>
     </div>
 </div>
 
-<div style="width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100;">
-    <div id="clock">--:--:--</div>
-    <button id="lockBtn">⛔ ZAMKNIJ LISTĘ ⛔</button>
-    <div class="qr-container">
-        <div id="qrcode"></div>
-        <div style="margin-top:8px; font-size:10px; color:var(--gold); font-weight: bold;">SKANUJ REGULAMIN</div>
-    </div>
+<div id="clock">--:--:--</div>
+
+<div style="text-align:center; z-index:100; position:relative; padding-bottom: 40px;">
+    <div class="qr-frame"><div id="qrcode"></div></div>
+    <div style="margin-top:10px; font-size:11px; color:var(--gold); font-weight:bold; text-transform:uppercase;">Skanuj Regulamin</div>
 </div>
 
 <canvas id="fireworksCanvas"></canvas>
-<div id="cringeGifs" style="position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 99999; flex-wrap: wrap;">
+<div id="cringeGifs">
     <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif" style="max-height: 80px; border-radius: 10px;">
-    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq" style="max-height: 80px; border-radius: 10px;">
+    <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif" style="max-height: 80px; border-radius: 10px;">
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
@@ -204,14 +174,11 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-const lockBtn = document.getElementById("lockBtn");
 const appStateRef = doc(db, "appState", "status");
 const lockSound = document.getElementById("lockSound");
 const fanfareAudio = document.getElementById("fanfareAudio");
 
-let usersData = [];
-let isStopped1 = false, isStopped2 = false;
-let namesRevealed = false;
+let usersData = [], isStopped1 = false, isStopped2 = false, namesRevealed = false;
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka"];
 
@@ -233,12 +200,10 @@ function drawBg() {
         p.update();
         bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)';
         bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill();
-        // Linie konstelacji
         for (let j = i + 1; j < particles.length; j++) {
-            const p2 = particles[j];
-            const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
             if (dist < 120) {
-                bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,0,${(1 - dist/120)*0.1})`;
+                bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,0,${(1 - dist/120)*0.15})`;
                 bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke();
             }
         }
@@ -246,15 +211,11 @@ function drawBg() {
     requestAnimationFrame(drawBg);
 } drawBg();
 
-// --- LIGHT MODE FIX ---
-const darkBtn = document.getElementById("darkModeBtn");
-darkBtn.onclick = () => {
+document.getElementById("darkModeBtn").onclick = () => {
     document.body.classList.toggle("dark");
-    const isDark = document.body.classList.contains("dark");
-    darkBtn.textContent = isDark ? "☀️ Light mode" : "🌙 Dark mode";
+    document.getElementById("darkModeBtn").textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode";
 };
 
-// --- QR ---
 new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 90, height: 90 });
 
 function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0); }
@@ -268,30 +229,35 @@ onSnapshot(appStateRef, (snap) => {
     const data = snap.data(); if(!data) return;
     document.getElementById("targetName1").textContent = data.target1 || "---";
     document.getElementById("targetName2").textContent = data.target2 || "---";
-    document.getElementById("targetSelect1").value = data.target1 || "Brak";
-    document.getElementById("targetSelect2").value = data.target2 || "Brak";
-    if(data.isLocked) {
-        document.body.classList.add('apocalypse', 'alarm-active');
-        lockBtn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; lockBtn.style.background = "var(--gold)"; lockBtn.style.color = "#000";
-        namesRevealed = true;
-    } else {
-        document.body.classList.remove('apocalypse', 'alarm-active');
-        lockBtn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; lockBtn.style.background = "var(--error)"; lockBtn.style.color = "#fff";
-        namesRevealed = false;
-    }
+    updateLockUI(1, data.isLocked1);
+    updateLockUI(2, data.isLocked2);
+    namesRevealed = (data.isLocked1 || data.isLocked2);
 });
+
+function updateLockUI(id, isLocked) {
+    const btn = document.getElementById(`lockBtn${id}`);
+    const panel = document.getElementById(`panel${id}`);
+    if(isLocked) {
+        panel.classList.add('slot-locked');
+        btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000";
+    } else {
+        panel.classList.remove('slot-locked');
+        btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "var(--error)"; btn.style.color = "#fff";
+    }
+}
+
+window.toggleLock = async (id) => {
+    const snap = await getDoc(appStateRef);
+    const field = `isLocked${id}`;
+    const newState = !snap.data()[field];
+    await setDoc(appStateRef, { [field]: newState }, { merge: true });
+    if(newState) lockSound.play().catch(()=>{});
+};
 
 onSnapshot(collection(db, "users"), snap => {
     usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
     usersData.forEach((u, i) => { if(!assignedFakeNames[u.id]) assignedFakeNames[u.id] = funnyNames[i % funnyNames.length]; });
 });
-
-lockBtn.onclick = async () => {
-    const snap = await getDoc(appStateRef);
-    const locked = snap.data()?.isLocked || false;
-    await setDoc(appStateRef, { isLocked: !locked }, { merge: true });
-    if(!locked) lockSound.play().catch(()=>{});
-};
 
 setInterval(() => {
     const now = new Date(); document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL");
@@ -299,20 +265,19 @@ setInterval(() => {
     renderTable(1, s); renderTable(2, s);
 }, 1000);
 
-function renderTable(slotId, currentSec) {
-    const slotData = usersData.filter(u => u.targetSlot === `slot${slotId}`);
-    const isStopped = slotId === 1 ? isStopped1 : isStopped2;
-    const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-currentSec) - Math.abs(toSec(b.hour)-currentSec));
-    const table = document.getElementById(`table${slotId}`);
+function renderTable(id, sec) {
+    const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+    const isStopped = id === 1 ? isStopped1 : isStopped2;
+    const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
+    const table = document.getElementById(`table${id}`);
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        const nameDisplay = (namesRevealed || isStopped) ? u.name : (assignedFakeNames[u.id] || "Anonim");
-        table.innerHTML += `<tr><td>${i+1}</td><td><div class="user-cell"><div class="avatar" style="background:${getAvatarColor(u.name)}">${(namesRevealed || isStopped)?u.name[0]:"?"}</div>${nameDisplay}</div></td><td class="${hourClass}">${u.hour}</td><td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td></tr>`;
+        const nameDisp = (namesRevealed || isStopped) ? u.name : (assignedFakeNames[u.id] || "Anonim");
+        table.innerHTML += `<tr><td>${i+1}</td><td><div style="display:flex; align-items:center; gap:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${getAvatarColor(u.name)}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">${(namesRevealed || isStopped)?u.name[0]:"?"}</div>${nameDisp}</div></td><td class="${hourClass}">${u.hour}</td><td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td></tr>`;
     });
 }
 
-// --- FAJERWERKI ---
 const canvasFw = document.getElementById("fireworksCanvas");
 const ctxFw = canvasFw.getContext("2d");
 let fwParticles = [], fwActive = false;
@@ -326,32 +291,33 @@ function updateFW() {
     });
     if(fwActive) requestAnimationFrame(updateFW);
 }
+
 function startCelebration() {
     canvasFw.width = window.innerWidth; canvasFw.height = window.innerHeight;
-    fwActive = true;
+    canvasFw.style.display = "block"; fwActive = true;
     const interval = setInterval(() => {
         const x = Math.random()*canvasFw.width, y = Math.random()*canvasFw.height*0.5;
         for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
     }, 400);
     document.getElementById("cringeGifs").style.display = "flex";
-    setTimeout(() => { clearInterval(interval); fwActive = false; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 7000);
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 6000);
     updateFW();
 }
 
-window.stopSlot = async (slotId) => {
-    const slotData = usersData.filter(u => u.targetSlot === `slot${slotId}`);
+window.stopSlot = async (id) => {
+    const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
-    if(slotId === 1) isStopped1 = true; else isStopped2 = true;
+    if(id === 1) isStopped1 = true; else isStopped2 = true;
     const now = new Date();
-    document.getElementById(`stoppedTime${slotId}`).textContent = "ZATRZYMANO: " + now.toLocaleTimeString("pl-PL");
+    document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + now.toLocaleTimeString("pl-PL");
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     let winners = [];
     for(let i=0; i<Math.min(3, sorted.length); i++) winners.push({ name: sorted[i].name, pts: (i===0?3:i===1?2:1), rank: i+1 });
     
-    const winDiv = document.getElementById(`winner${slotId}`);
+    const winDiv = document.getElementById(`winner${id}`);
     winDiv.style.display = "block";
-    winDiv.innerHTML = "<strong>🏆 WYNIKI:</strong><br>" + winners.map(w => `${w.rank}. ${w.name} (+${w.pts} pkt)`).join("<br>");
+    winDiv.innerHTML = "<b>🏆 WYNIKI:</b><br>" + winners.map(w => `${w.rank}. ${w.name} (+${w.pts} pkt)`).join("<br>");
     
     document.body.style.animation = "cringeBg 0.4s infinite alternate";
     fanfareAudio.play().catch(()=>{}); startCelebration();
@@ -362,17 +328,16 @@ window.stopSlot = async (slotId) => {
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: winners.map(w=>({name:w.name, rank:w.rank})) });
 };
 
-window.clearSlot = async (slotId) => {
-    if(!confirm(`Wyczyścić wyniki slotu ${slotId}?`)) return;
-    const q = query(collection(db, "users"), where("targetSlot", "==", `slot${slotId}`));
+window.clearSlot = async (id) => {
+    if(!confirm(`Wyczyścić listę slotu ${id}?`)) return;
+    const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
-    snap.forEach(async d => await deleteDoc(doc(db, "users", d.id)));
-    if(slotId === 1) { isStopped1 = false; document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
+    for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
+    if(id === 1) { isStopped1 = false; document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
     else { isStopped2 = false; document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
 };
 
 window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
-window.clearAll = async () => { if(confirm("Wyczyścić WSZYSTKIE dane?")) { const snap = await getDocs(collection(db, "users")); snap.forEach(async d => await deleteDoc(doc(db, "users", d.id))); location.reload(); } };
 </script>
 </body>
 </html>
