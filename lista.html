@@ -38,10 +38,9 @@
         }
 
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        
         .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; z-index: 100; }
 
-        #darkModeBtn { padding: 10px 20px; border-radius: 30px; border: 1px solid var(--border); cursor: pointer; background: #fff; color: #111; font-weight: bold; }
+        #darkModeBtn { padding: 10px 20px; border-radius: 30px !important; border: 1px solid var(--border); cursor: pointer; background: #fff; color: #111; font-weight: bold; }
         body.dark #darkModeBtn { background: #111; color: #fff; }
 
         .admin-config {
@@ -75,7 +74,11 @@
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
 
-        .lock-btn-slot { width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; }
+        .lock-btn-slot { 
+            width: 100%; margin-top: 10px; padding: 12px; border-radius: 15px; 
+            font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; 
+            font-size: 14px; display: none; /* Domyślnie ukryty */
+        }
 
         .winner-box { 
             margin-top: 15px; padding: 15px; border-radius: 20px; 
@@ -161,6 +164,7 @@
 <div id="cringeGifs">
     <img src="https://media.giphy.com/media/3oz8xAFtqoOUUrsh7W/giphy.gif" style="max-height: 80px; border-radius: 10px;">
     <img src="https://media.giphy.com/media/l0ExncehJzexFpRHq/giphy.gif" style="max-height: 80px; border-radius: 10px;">
+    <img src="https://media.giphy.com/media/xT5LMHxhOfscxPfIfm/giphy.gif" style="max-height: 80px; border-radius: 10px;">
 </div>
 
 <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
@@ -257,6 +261,12 @@ window.toggleLock = async (id) => {
 onSnapshot(collection(db, "users"), snap => {
     usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
     usersData.forEach((u, i) => { if(!assignedFakeNames[u.id]) assignedFakeNames[u.id] = funnyNames[i % funnyNames.length]; });
+    
+    // Logika widoczności przycisków blokady
+    const hasSlot1 = usersData.some(u => u.targetSlot === 'slot1');
+    const hasSlot2 = usersData.some(u => u.targetSlot === 'slot2');
+    document.getElementById('lockBtn1').style.display = hasSlot1 ? 'block' : 'none';
+    document.getElementById('lockBtn2').style.display = hasSlot2 ? 'block' : 'none';
 });
 
 setInterval(() => {
