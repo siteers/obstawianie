@@ -156,11 +156,30 @@ const lockSound = document.getElementById("lockSound");
 const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false;
-let isLocked1 = false, isLocked2 = false; // Lokalne statusy blokad
+let isLocked1 = false, isLocked2 = false;
 let assignedFakeNames = {};
-const funnyNames = ["leonard bogumił", "Adaś W.", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal"];
 
-// --- TŁO KONSTELACJI ---
+// POPRAWIONA LISTA I LOGIKA
+const funnyNames = [
+    "leonard bogumił", 
+    "Adaś :*", 
+    "Bożenka :*", 
+    "Marcin ufam Tobie", 
+    "Jarołd", 
+    "Mariolka", 
+    "Kebab z falafelem", 
+    "Nooo cześć", 
+    " To jest skandal"
+];
+
+function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
+
 const bgCanvas = document.getElementById('bg-canvas');
 const bgCtx = bgCanvas.getContext('2d');
 let particles = [];
@@ -207,10 +226,8 @@ onSnapshot(appStateRef, (snap) => {
     const data = snap.data(); if(!data) return;
     document.getElementById("targetName1").textContent = data.target1 || "---";
     document.getElementById("targetName2").textContent = data.target2 || "---";
-    
     isLocked1 = data.isLocked1 || false;
     isLocked2 = data.isLocked2 || false;
-
     updateLockUI(1, isLocked1); 
     updateLockUI(2, isLocked2);
 });
@@ -231,8 +248,17 @@ window.toggleLock = async (id) => {
 };
 
 onSnapshot(collection(db, "users"), snap => {
-    usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
-    usersData.forEach((u, i) => { if(!assignedFakeNames[u.id]) assignedFakeNames[u.id] = funnyNames[i % funnyNames.length]; });
+    usersData = []; 
+    snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
+    
+    // NAPRAWIONA LOSOWOŚĆ
+    const currentShuffled = shuffleArray([...funnyNames]);
+    usersData.forEach((u, i) => { 
+        if(!assignedFakeNames[u.id]) {
+            assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; 
+        }
+    });
+    
     document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
 });
@@ -246,15 +272,13 @@ setInterval(() => {
 function renderTable(id, sec) {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     const isStopped = id === 1 ? isStopped1 : isStopped2;
-    const isLocked = id === 1 ? isLocked1 : isLocked2; // Pobierz blokadę specyficzną dla slotu
-    
+    const isLocked = id === 1 ? isLocked1 : isLocked2;
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
     const table = document.getElementById(`table${id}`);
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
     sorted.forEach((u, i) => {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
-        // KLUCZOWA POPRAWKA: Odkrywa imię tylko jeśli TEN slot jest zamknięty lub zatrzymany
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         
