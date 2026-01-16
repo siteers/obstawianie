@@ -159,17 +159,9 @@ let usersData = [], isStopped1 = false, isStopped2 = false;
 let isLocked1 = false, isLocked2 = false;
 let assignedFakeNames = {};
 
-// POPRAWIONA LISTA I LOGIKA
 const funnyNames = [
-    "leonard bogumił", 
-    "Adaś :*", 
-    "Bożenka :*", 
-    "Marcin ufam Tobie", 
-    "Jarołd", 
-    "Mariolka", 
-    "Kebab z falafelem", 
-    "Nooo cześć", 
-    " To jest skandal"
+    "leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", 
+    "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal"
 ];
 
 function shuffleArray(array) {
@@ -219,13 +211,19 @@ function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]
 function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
 
 window.updateTargets = async () => {
-    await setDoc(appStateRef, { target1: document.getElementById("targetSelect1").value, target2: document.getElementById("targetSelect2").value }, { merge: true });
+    await setDoc(appStateRef, { 
+        target1: document.getElementById("targetSelect1").value, 
+        target2: document.getElementById("targetSelect2").value 
+    }, { merge: true });
 };
 
 onSnapshot(appStateRef, (snap) => {
     const data = snap.data(); if(!data) return;
     document.getElementById("targetName1").textContent = data.target1 || "---";
     document.getElementById("targetName2").textContent = data.target2 || "---";
+    document.getElementById("targetSelect1").value = data.target1 || "Brak";
+    document.getElementById("targetSelect2").value = data.target2 || "Brak";
+    
     isLocked1 = data.isLocked1 || false;
     isLocked2 = data.isLocked2 || false;
     updateLockUI(1, isLocked1); 
@@ -251,7 +249,6 @@ onSnapshot(collection(db, "users"), snap => {
     usersData = []; 
     snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
     
-    // NAPRAWIONA LOSOWOŚĆ
     const currentShuffled = shuffleArray([...funnyNames]);
     usersData.forEach((u, i) => { 
         if(!assignedFakeNames[u.id]) {
@@ -308,7 +305,7 @@ function startCelebration() {
         for(let i=0; i<50; i++) fwParticles.push({x,y,a:Math.random()*Math.PI*2,s:Math.random()*4+1,al:1,c:["#ff0","#f0f","#0ff","#f00"][Math.floor(Math.random()*4)]});
     }, 400);
     document.getElementById("cringeGifs").style.display = "flex";
-    setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 6000);
+    setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 5000);
     updateFW();
 }
 
@@ -344,7 +341,6 @@ window.stopSlot = async (id) => {
         if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
     }
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
-    setTimeout(() => document.body.style.animation = "none", 5000);
 };
 
 window.clearSlot = async (id) => {
@@ -352,8 +348,15 @@ window.clearSlot = async (id) => {
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
-    const field = `isLocked${id}`;
-    await setDoc(appStateRef, { [field]: false }, { merge: true });
+    
+    // RESET BLOKADY I CELU NA "BRAK"
+    const lockField = `isLocked${id}`;
+    const targetField = `target${id}`;
+    await setDoc(appStateRef, { 
+        [lockField]: false,
+        [targetField]: "Brak" 
+    }, { merge: true });
+
     if(id === 1) { isStopped1 = false; document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
     else { isStopped2 = false; document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
 };
