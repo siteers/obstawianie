@@ -6,33 +6,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
-      --gold: #d4af37;
-      --cyan: #00d4ff;
-      --bg: #020408;
-      --glass: rgba(15, 23, 42, 0.85);
-      --error: #ff0000;
+      --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+      --glass: rgba(15, 23, 42, 0.85); --error: #ff0000;
     }
 
     body {
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: #fff;
-      margin: 0;
-      overflow: hidden; 
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      perspective: 1000px;
-      transition: filter 0.1s, background 0.5s;
+      font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+      margin: 0; overflow: hidden; display: flex; justify-content: center;
+      align-items: center; min-height: 100vh; perspective: 1000px; transition: 0.3s;
     }
 
     /* --- EFEKTY KOSZMARU --- */
-    .nightmare-mode {
-      background: #400 !important;
-      filter: invert(1) hue-rotate(180deg) contrast(200%) blur(1px) !important;
-    }
-
+    .nightmare-mode { background: #400 !important; filter: invert(1) hue-rotate(180deg) contrast(200%) blur(1px) !important; }
     @keyframes glitch {
       0% { transform: translate(0); }
       20% { transform: translate(-5px, 5px); }
@@ -41,25 +26,15 @@
       80% { transform: translate(5px, -5px); }
       100% { transform: translate(0); }
     }
-
     .nightmare-shake { animation: glitch 0.2s infinite !important; }
 
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; }
-    .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; }
+    .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transition: transform 0.1s ease-out; transform-style: preserve-3d; }
 
     .container {
-      background: var(--glass);
-      backdrop-filter: blur(25px);
-      padding: 30px;
-      border-radius: 40px;
-      width: 90vw;
-      max-width: 400px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6);
-      text-align: center;
-      position: relative;
-      transition: 0.3s;
-      box-sizing: border-box;
+      background: var(--glass); backdrop-filter: blur(25px); padding: 30px; border-radius: 40px;
+      width: 90vw; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); text-align: center; position: relative; box-sizing: border-box;
     }
 
     h2 { margin: 0 0 25px 0; font-size: 24px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
@@ -127,11 +102,11 @@
 
       <div id="auth-section" style="display:none;">
         <div class="input-box">
-            <label>Hasło Dostępowe</label>
+            <label id="main-pass-label">Hasło Dostępowe</label>
             <input id="password" type="password" placeholder="••••" oninput="validateForm()">
             <a id="forgot-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
-        <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
+        <div class="input-box" id="pass-confirm-box" style="display:none;"><label>Potwierdź nowe hasło</label><input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()"></div>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
@@ -147,7 +122,7 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-let isFirstTime = false, selectedSlot = null, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
+let isFirstTime = false, isResetMode = false, selectedSlot = null, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
 onSnapshot(doc(db, "appState", "status"), (snap) => {
     const data = snap.data(); if(!data) return;
@@ -180,20 +155,35 @@ window.checkUserAuth = async function() {
     const userDoc = await getDoc(doc(db, "passwords", name));
     document.getElementById('auth-section').style.display = 'block';
     isFirstTime = !userDoc.exists();
+    isResetMode = false;
     document.getElementById('pass-confirm-box').style.display = isFirstTime ? 'block' : 'none';
+    document.getElementById('main-pass-label').innerText = isFirstTime ? "Ustaw Nowe Hasło" : "Hasło Dostępowe";
     validateForm();
 }
 
 window.validateForm = function() {
     const name = document.getElementById('name').value, hour = document.getElementById('hour').value, pass = document.getElementById('password').value;
-    document.getElementById('saveBtn').disabled = !(name && hour && pass && selectedSlot);
+    const pass2 = document.getElementById('password-confirm').value;
+    const btn = document.getElementById('saveBtn');
+    
+    let isValid = name && hour && pass && selectedSlot;
+    if (isFirstTime || isResetMode) isValid = isValid && (pass === pass2);
+    btn.disabled = !isValid;
 }
 
-// ZAPOMNIAŁEM HASŁA
+// RESET HASŁA KODEM 0000
 window.forgotPassword = () => {
     const name = document.getElementById('name').value;
-    if(!name) { alert("Najpierw wybierz użytkownika!"); return; }
-    alert(`DOSTĘP ZABLOKOWANY.\nUżytkowniku ${name}, musisz zgłosić się do Admina po reset klucza szyfrującego.`);
+    if(!name) { alert("Wybierz użytkownika!"); return; }
+    const code = prompt("AUTORYZACJA ADMINA - WPISZ KOD:");
+    if(code === "0000") {
+        isResetMode = true;
+        document.getElementById('pass-confirm-box').style.display = 'block';
+        document.getElementById('main-pass-label').innerText = "USTAW NOWE HASŁO";
+        alert("Autoryzacja pomyślna. Wprowadź nowe hasło dwukrotnie.");
+    } else {
+        alert("BŁĘDNY KOD ADMINA.");
+    }
 }
 
 window.saveData = async function() {
@@ -202,17 +192,16 @@ window.saveData = async function() {
     
     btn.disabled = true;
     try {
-        if (isFirstTime) await setDoc(doc(db, "passwords", name), { password: pass });
-        else {
+        if (isFirstTime || isResetMode) {
+            await setDoc(doc(db, "passwords", name), { password: pass });
+        } else {
             const userDoc = await getDoc(doc(db, "passwords", name));
             if (userDoc.data().password !== pass) {
-                // --- KOSZMAR START ---
                 document.body.classList.add('nightmare-mode');
                 container.classList.add('nightmare-shake');
                 document.getElementById('mainHeader').innerText = "FATAL ERROR: BREACH";
                 msg.style.color = "#ff0000"; msg.innerText = "BŁĘDNE HASŁO. NARUSZENIE ZAPISANE.";
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 300]);
-
                 setTimeout(() => {
                     document.body.classList.remove('nightmare-mode');
                     container.classList.remove('nightmare-shake');
@@ -228,17 +217,32 @@ window.saveData = async function() {
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
-// TŁO
+// --- KONSTELACJA POWRÓT ---
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let particles = []; for (let i = 0; i < 50; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+let particles = [];
+for (let i = 0; i < 60; i++) particles.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     particles.forEach((p, i) => {
         p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+        for (let j = i + 1; j < particles.length; j++) {
+            const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
+            if (dist < 120) {
+                ctx.strokeStyle = `rgba(0, 212, 255, ${1 - dist/120})`; ctx.lineWidth = 0.5;
+                ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            }
+        }
     }); requestAnimationFrame(draw);
 } draw();
+
+document.addEventListener('mousemove', (e) => {
+    const x = (window.innerWidth / 2 - e.pageX) / 45;
+    const y = (window.innerHeight / 2 - e.pageY) / 45;
+    document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
+});
 </script>
 </body>
 </html>
