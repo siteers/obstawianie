@@ -50,6 +50,23 @@
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
+
+        /* --- RESPONSYWNOŚĆ (MOBILE FIXES) --- */
+        @media (max-width: 850px) { 
+            .dashboard-grid { grid-template-columns: 1fr; } 
+            .admin-config { flex-direction: column; width: 90%; } 
+            #clock { font-size: 42px; margin: 20px 0; }
+            .target-label { font-size: 22px; }
+            .container { padding: 15px; }
+        }
+        @media (max-width: 480px) {
+            #clock { font-size: 32px; }
+            .stop-btn { font-size: 14px; padding: 12px; }
+            .clear-slot-btn { font-size: 9px; }
+            .top-nav { flex-direction: row; align-items: center; justify-content: center; }
+            th, td { padding: 8px; font-size: 11px; }
+            .target-label { font-size: 18px; }
+        }
     </style>
 </head>
 <body class="dark">
@@ -105,7 +122,6 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-// DODANO GETDOCS DO IMPORTÓW
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot, setDoc, getDoc, updateDoc, increment, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
@@ -175,17 +191,12 @@ window.stopSlot = async (id) => {
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
 };
 
-// --- LOGIKA WYCZYŚĆ NAPRAWIONA ---
 window.clearSlot = async (id) => {
     if(!confirm(`Wyczyścić listę slotu ${id}?`)) return;
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
-    const snap = await getDocs(q); // DZIAŁA DZIĘKI POPRAWNEMU IMPORTOWI
+    const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
-    
-    // RESET BLOKADY I CELU W BAZIE
     await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak" }, { merge: true });
-
-    // RESET UI
     if(id === 1) { isStopped1 = false; document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
     else { isStopped2 = false; document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
 };
@@ -199,7 +210,6 @@ onSnapshot(collection(db, "users"), snap => {
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
 });
 
-// Reszta kodu bez zmian
 const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
 let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
 class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
