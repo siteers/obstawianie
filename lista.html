@@ -9,6 +9,7 @@
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
             --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --error: #ff4d4d;
+            --leader: #00ff00;
         }
         body.dark {
             --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
@@ -26,8 +27,17 @@
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
         .container { background: var(--glass); backdrop-filter: blur(20px); padding: 20px; border-radius: 30px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.3s; }
+        
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
+
+        /* MIGANIE LIDERA (ZIELONE) */
+        @keyframes leaderPulse {
+            0%, 100% { color: var(--text); text-shadow: 0 0 0px transparent; }
+            50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); }
+        }
+        .leader-row td { animation: leaderPulse 1.5s infinite; font-weight: 900 !important; }
+
         h2 { text-align: center; margin: 0; color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
         .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 10px; text-shadow: 0 0 15px var(--cyan); }
         .table-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
@@ -36,12 +46,14 @@
         .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        
         .lock-btn-slot { 
             width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; 
             cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; 
             display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff;
             box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
         }
+
         .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; }
         #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
         .qr-frame { padding: 10px; background: #fff; border-radius: 15px; display: inline-block; }
@@ -51,21 +63,16 @@
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
-        /* --- RESPONSYWNOŚĆ (MOBILE FIXES) --- */
+        /* RESPONSYWNOŚĆ */
         @media (max-width: 850px) { 
             .dashboard-grid { grid-template-columns: 1fr; } 
             .admin-config { flex-direction: column; width: 90%; } 
             #clock { font-size: 42px; margin: 20px 0; }
-            .target-label { font-size: 22px; }
-            .container { padding: 15px; }
         }
         @media (max-width: 480px) {
             #clock { font-size: 32px; }
             .stop-btn { font-size: 14px; padding: 12px; }
-            .clear-slot-btn { font-size: 9px; }
-            .top-nav { flex-direction: row; align-items: center; justify-content: center; }
             th, td { padding: 8px; font-size: 11px; }
-            .target-label { font-size: 18px; }
         }
     </style>
 </head>
@@ -192,7 +199,7 @@ window.stopSlot = async (id) => {
 };
 
 window.clearSlot = async (id) => {
-    if(!confirm(`Wyczyścić listę slotu ${id}?`)) return;
+    if(!confirm(`Wyczyścić?`)) return;
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
@@ -224,7 +231,40 @@ onSnapshot(appStateRef, (snap) => { const data = snap.data(); if(!data) return; 
 function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
 window.toggleLock = async (id) => { const snap = await getDoc(appStateRef); const field = `isLocked${id}`; const newState = !snap.data()[field]; await setDoc(appStateRef, { [field]: newState }, { merge: true }); if(newState) lockSound.play().catch(()=>{}); };
 setInterval(() => { const now = new Date(); document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); renderTable(1, s); renderTable(2, s); }, 1000);
-function renderTable(id, sec) { const slotData = usersData.filter(u => u.targetSlot === `slot${id}`); const isStopped = id === 1 ? isStopped1 : isStopped2; const isLocked = id === 1 ? isLocked1 : isLocked2; const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec)); const table = document.getElementById(`table${id}`); table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>"; sorted.forEach((u, i) => { const hourClass = isStopped ? 'reveal-data' : 'hidden-hour'; const revealThisSlot = isLocked || isStopped; const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim"); table.innerHTML += `<tr><td>${i+1}</td><td><div style="display:flex; align-items:center; gap:8px;"><div style="width:24px; height:24px; border-radius:50%; background:${getAvatarColor(u.name)}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">${revealThisSlot ? u.name[0] : "?"}</div>${nameDisp}</div></td><td class="${hourClass}">${u.hour}</td><td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td></tr>`; }); }
+
+function renderTable(id, sec) {
+    const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+    const isStopped = id === 1 ? isStopped1 : isStopped2;
+    const isLocked = id === 1 ? isLocked1 : isLocked2;
+    const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
+    const table = document.getElementById(`table${id}`);
+    table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
+    
+    sorted.forEach((u, i) => {
+        const isLeader = i === 0;
+        const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
+        const revealThisSlot = isLocked || isStopped;
+        const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
+        
+        // KOLOR KROPKI DOPASOWANY DO WYŚWIETLANEGO PSEUDONIMU
+        const avatarColor = getAvatarColor(nameDisp);
+        
+        table.innerHTML += `
+            <tr class="${isLeader ? 'leader-row' : ''}">
+                <td>${i+1}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <div style="width:24px; height:24px; border-radius:50%; background:${avatarColor}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">
+                            ${revealThisSlot ? u.name[0] : "?"}
+                        </div>
+                        ${nameDisp}
+                    </div>
+                </td>
+                <td class="${hourClass}">${u.hour}</td>
+                <td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td>
+            </tr>`;
+    });
+}
 window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
 </script>
 </body>
