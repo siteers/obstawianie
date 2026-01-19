@@ -63,7 +63,6 @@
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
-        /* RESPONSYWNOŚĆ */
         @media (max-width: 850px) { 
             .dashboard-grid { grid-template-columns: 1fr; } 
             .admin-config { flex-direction: column; width: 90%; } 
@@ -139,7 +138,12 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
 let assignedFakeNames = {};
-const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal"];
+// ZAKTUALIZOWANA LISTA KSYWEK
+const funnyNames = [
+    "leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", 
+    "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal",
+    "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"
+];
 
 function shuffleArray(array) {
     const a = [...array];
@@ -172,7 +176,7 @@ function updateFW() {
         if(p.al <= 0) fwParticles.splice(i,1);
         ctxFw.globalAlpha = p.al; ctxFw.fillStyle = p.c; ctxFw.beginPath(); ctxFw.arc(p.x, p.y, 3, 0, Math.PI*2); ctxFw.fill();
     });
-    requestAnimationFrame(updateFW);
+    if(fwActive) requestAnimationFrame(updateFW);
 }
 
 window.stopSlot = async (id) => {
