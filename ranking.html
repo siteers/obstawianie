@@ -7,33 +7,18 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root {
-            --gold: #d4af37;
-            --cyan: #00d4ff;
-            --bg: #f2f2f2;
-            --text: #111;
-            --glass: rgba(255, 255, 255, 0.9);
-            --border: rgba(0, 0, 0, 0.1);
-            --up: #00ff00;
-            --down: #ff4d4d;
-            --neutral: #ffff00;
+            --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
+            --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1);
+            --up: #00ff00; --down: #ff4d4d; --neutral: #ffff00;
         }
 
         body.dark {
-            --bg: #020408;
-            --text: #fff;
-            --glass: rgba(15, 23, 42, 0.75);
-            --border: rgba(255, 255, 255, 0.1);
+            --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 20px;
-            min-height: 100vh;
-            transition: 0.3s;
-            overflow-x: hidden;
+            font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+            margin: 0; padding: 20px; min-height: 100vh; transition: 0.3s; overflow-x: hidden;
         }
 
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
@@ -58,7 +43,6 @@
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
         th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
 
-        /* TREND ARROWS */
         .trend-icon { font-size: 14px; margin-right: 8px; font-weight: bold; display: inline-block; width: 15px; text-align: center; }
         .trend-up { color: var(--up); }
         .trend-down { color: var(--down); }
@@ -129,6 +113,10 @@
 
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
+                <div class="glass-panel full-width-chart">
+                    <h4>Historia Pozycji (Ostatnie 10 rund)</h4>
+                    <canvas id="rankHistoryChart"></canvas>
+                </div>
                 <div class="glass-panel full-width-chart">
                     <h4>Skuteczność Medalowa</h4>
                     <canvas id="medalChart"></canvas>
@@ -220,11 +208,23 @@
         const pieCtx = document.getElementById('pieChart').getContext('2d');
         const lineCtx = document.getElementById('lineChart').getContext('2d');
         const radarCtx = document.getElementById('radarChart').getContext('2d');
+        const historyCtx = document.getElementById('rankHistoryChart').getContext('2d');
         
         let medalChart = new Chart(medalCtx, { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
         let barChart = new Chart(barCtx, { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
         let pieChart = new Chart(pieCtx, { type: 'doughnut', options: { responsive: true, plugins: { legend: { labels: { color: chartColor } } } } });
         let lineChart = new Chart(lineCtx, { type: 'line', options: { responsive: true, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
+        let historyChart = new Chart(historyCtx, { 
+            type: 'line', 
+            options: { 
+                responsive: true, 
+                scales: { 
+                    y: { reverse: true, ticks: { stepSize: 1, color: chartColor } }, 
+                    x: { ticks: { color: chartColor } } 
+                },
+                plugins: { legend: { labels: { color: chartColor } } }
+            } 
+        });
         let radarChart;
 
         window.openTab = (evt, tabName) => {
@@ -261,14 +261,13 @@
 
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
-        // --- GŁÓWNA FUNKCJA ODŚWIEŻANIA Z TRENDAMI ---
         function refreshStats() {
             if (!playersData.length) return;
             
             const sniperList = new Set();
             historyData.forEach(round => round.winners.forEach(w => { if (w.isSniperHit) sniperList.add(w.name); }));
 
-            // 1. Oblicz obecne statystyki
+            // 1. Oblicz statystyki (Punkty + Złote Medale)
             globalStats = playersData.map(p => {
                 let gold = 0, silver = 0, bronze = 0;
                 historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
@@ -276,28 +275,30 @@
                 return { ...p, gold, silver, bronze, totalPodiums, avgPts: totalPodiums>0?(p.points/totalPodiums).toFixed(2):0, isSniper: sniperList.has(p.name) };
             });
 
+            // --- NOWA LOGIKA SORTOWANIA: PUNKTY, A POTEM ZŁOTA ---
+            globalStats.sort((a, b) => (b.points - a.points) || (b.gold - a.gold));
+
             // 2. Oblicz ranking "hipotetyczny" (sprzed ostatniej rundy)
             const lastRound = historyData[0];
             const prevStats = playersData.map(p => {
                 let prevPoints = p.points;
+                let prevGold = 0;
+                historyData.forEach((r, idx) => {
+                    if (idx === 0) return; // Pomiń najnowszą
+                    r.winners.forEach(w => { if(w.name === p.name && w.rank === 1) prevGold++; });
+                });
                 if (lastRound) {
                     const win = lastRound.winners.find(w => w.name === p.name);
                     if (win) prevPoints -= (win.rank === 1 ? 3 : win.rank === 2 ? 2 : 1);
                 }
-                return { name: p.name, points: prevPoints };
-            }).sort((a,b) => b.points - a.points);
+                return { name: p.name, points: prevPoints, gold: prevGold };
+            }).sort((a,b) => (b.points - a.points) || (b.gold - a.gold));
 
             const prevRanks = {};
-            let currentP = -1, currentR = 0;
-            prevStats.forEach((p, i) => {
-                if (p.points !== currentP) { currentR = i + 1; currentP = p.points; }
-                prevRanks[p.name] = currentR;
-            });
+            prevStats.forEach((p, i) => prevRanks[p.name] = i + 1);
 
             // 3. UI Liderzy
-            const maxPoints = globalStats[0]?.points || 0;
-            document.getElementById('top-player').textContent = globalStats.filter(p => p.points === maxPoints).map(p => p.name).join(", ") || "-";
-
+            document.getElementById('top-player').textContent = globalStats[0]?.name || "-";
             if(historyData.length > 0) {
                 document.getElementById('last-winner').textContent = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name).join(", ") || "-";
             }
@@ -306,16 +307,13 @@
             const tbody = document.querySelector("#rankTable tbody");
             tbody.innerHTML = "";
             
-            let displayRank = 1;
             globalStats.forEach((p, i) => {
-                if (i > 0 && p.points < globalStats[i-1].points) displayRank = i + 1;
-                
-                // --- OBLICZANIE IKONY TRENDU ---
                 let trendIcon = '<span class="trend-icon trend-neutral">―</span>';
                 if (lastRound) {
                     const oldRank = prevRanks[p.name];
-                    if (displayRank < oldRank) trendIcon = '<span class="trend-icon trend-up">▲</span>';
-                    else if (displayRank > oldRank) trendIcon = '<span class="trend-icon trend-down">▼</span>';
+                    const currentRank = i + 1;
+                    if (currentRank < oldRank) trendIcon = '<span class="trend-icon trend-up">▲</span>';
+                    else if (currentRank > oldRank) trendIcon = '<span class="trend-icon trend-down">▼</span>';
                 }
 
                 let bHtml = "";
@@ -325,18 +323,21 @@
 
                 tbody.innerHTML += `
                     <tr>
-                        <td>${displayRank}</td>
+                        <td>${i+1}</td>
                         <td>
                             ${trendIcon}
                             <span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>
                             <div class="badge-container">${bHtml}</div>
                         </td>
-                        <td style="color:var(--gold)">${p.points}</td>
+                        <td style="color:var(--gold)">${p.points} <small style="color:#666">(${p.gold}🥇)</small></td>
                         <td>${p.totalPodiums}</td>
                     </tr>`;
             });
 
-            // Aktualizacja wykresów
+            // 4. WYKRES HISTORII POZYCJI (10 OSTATNICH GIER)
+            updateHistoryChart();
+
+            // Reszta wykresów
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.gold), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.silver), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.bronze), backgroundColor: '#cd7f32' }] };
             medalChart.update();
@@ -348,7 +349,56 @@
             lineChart.update();
         }
 
-        // Snapshoty i usuwanie - bez zmian
+        function updateHistoryChart() {
+            const last10 = [...historyData].slice(0, 10).reverse();
+            const players = playersData.map(p => p.name);
+            const datasets = [];
+
+            players.forEach((playerName, pIdx) => {
+                const positions = [];
+                const tempScores = {};
+                const tempGold = {};
+                players.forEach(n => { tempScores[n] = 0; tempGold[n] = 0; });
+
+                // Iteruj przez całą historię od początku, aby obliczyć stany w punktach T-10 do T-0
+                const fullHistoryReversed = [...historyData].reverse();
+                let snapshotCount = 0;
+                const startIdx = Math.max(0, fullHistoryReversed.length - 10);
+
+                fullHistoryReversed.forEach((round, idx) => {
+                    round.winners.forEach(w => {
+                        if(tempScores.hasOwnProperty(w.name)) {
+                            tempScores[w.name] += (w.rank === 1 ? 3 : w.rank === 2 ? 2 : 1);
+                            if(w.rank === 1) tempGold[w.name]++;
+                        }
+                    });
+
+                    if(idx >= startIdx) {
+                        const roundRanking = players
+                            .map(n => ({ name: n, pts: tempScores[n], gold: tempGold[n] }))
+                            .sort((a,b) => (b.pts - a.pts) || (b.gold - a.gold));
+                        
+                        const rank = roundRanking.findIndex(r => r.name === playerName) + 1;
+                        positions.push(rank);
+                    }
+                });
+
+                datasets.push({
+                    label: playerName,
+                    data: positions,
+                    borderColor: `hsl(${(pIdx * 360 / players.length)}, 70%, 50%)`,
+                    tension: 0.3,
+                    fill: false
+                });
+            });
+
+            historyChart.data = {
+                labels: last10.map((_, i) => `Gra ${i+1}`),
+                datasets: datasets
+            };
+            historyChart.update();
+        }
+
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
             historyData = [];
             const hbody = document.querySelector("#historyTable tbody");
@@ -363,7 +413,6 @@
 
         onSnapshot(collection(db, "ranking"), snap => {
             playersData = snap.docs.map(d => ({ name: d.id, points: d.data().points || 0 }));
-            playersData.sort((a,b) => b.points - a.points);
             refreshStats();
         });
 
