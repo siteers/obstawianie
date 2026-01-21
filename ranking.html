@@ -20,12 +20,12 @@
         }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
-        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 4vw, 26px); margin-bottom: 30px; }
+        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
 
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
-        .stat-card p { margin: 10px 0 0; font-size: 18px; font-weight: bold; color: var(--gold); }
+        .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
 
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; transition: 0.3s; font-size: 13px; }
@@ -37,31 +37,39 @@
 
         .glass-panel { background: var(--glass); backdrop-filter: blur(20px); padding: 25px; border-radius: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); font-size: 13px; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
         th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
 
-        .trend-icon { font-size: 14px; margin-right: 8px; display: inline-block; width: 15px; text-align: center; }
+        .trend-icon { font-size: 14px; margin-right: 8px; font-weight: bold; display: inline-block; width: 15px; text-align: center; }
         .trend-up { color: var(--up); } .trend-down { color: var(--down); } .trend-neutral { color: var(--neutral); }
 
         .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
-        .badge { font-size: 18px; margin-left: 5px; cursor: help; }
+        .badge { font-size: 18px; cursor: help; }
 
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 25px; border-top: 1px solid var(--border); padding-top: 20px; }
-        .legend-item { display: flex; align-items: center; gap: 12px; font-size: 11px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 15px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid var(--border); }
 
-        /* COIN FLIP SYSTEM */
+        /* COIN FLIP */
         #coinOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
         .coin-scene { width: 120px; height: 120px; perspective: 1000px; margin: 30px; }
         .coin { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 3s cubic-bezier(0.2, 0.8, 0.2, 1); }
         .coin div { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-size: 50px; border: 6px solid var(--gold); background: #111; box-shadow: inset 0 0 20px var(--gold); }
         .coin .tails { transform: rotateY(180deg); }
         .flipping-heads { transform: rotateY(1800deg); } .flipping-tails { transform: rotateY(1980deg); }
-        .tie-btn { background: var(--gold); color: #000; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 9px; cursor: pointer; margin-left: 10px; animation: pulseRed 1s infinite; }
-        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.7); } 70% { box-shadow: 0 0 0 10px rgba(212,175,55,0); } 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); } }
+        .tie-btn { background: var(--gold); color: #000; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 900; font-size: 9px; cursor: pointer; margin-left: 10px; animation: tiePulse 1s infinite; }
+        @keyframes tiePulse { 0% { box-shadow: 0 0 0 0 rgba(212,175,55,0.7); } 70% { box-shadow: 0 0 0 10px rgba(212,175,55,0); } 100% { box-shadow: 0 0 0 0 rgba(212,175,55,0); } }
 
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 8px 15px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; font-size: 12px; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .full-width-chart { grid-column: 1 / -1; }
+        #playerCardOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
+        .character-card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98)); border: 2px solid var(--cyan); border-radius: 30px; width: 95%; max-width: 480px; padding: 25px; position: relative; box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center; }
+        .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
+        .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
+        .xp-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--cyan); }
+
+        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
-        .deleteBtn { color: var(--down); cursor: pointer; font-weight: bold; }
+        .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body class="dark">
@@ -83,9 +91,9 @@
         <h1>📊 Game Analytics Dashboard</h1>
 
         <div class="stats-grid">
-            <div class="stat-card"><h3>Liderzy</h3><p id="top-player">-</p></div>
+            <div class="stat-card"><h3>Lider Rankingu</h3><p id="top-player">-</p></div>
             <div class="stat-card"><h3>Ostatni Zwycięzca</h3><p id="last-winner">-</p></div>
-            <div class="stat-card"><h3>Rundy</h3><p id="total-rounds">0</p></div>
+            <div class="stat-card"><h3>Rozegrane Rundy</h3><p id="total-rounds">0</p></div>
         </div>
 
         <div class="tabs">
@@ -100,36 +108,35 @@
                     <thead><tr><th>#</th><th>Trend / Imię</th><th>Punkty</th><th>Podium</th></tr></thead>
                     <tbody></tbody>
                 </table>
-
+                <h4 style="margin-top: 30px; margin-bottom: 15px; color: var(--gold);">🏅 Legenda Osiągnięć</h4>
                 <div class="legend-grid">
                     <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
-                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie idealne</div></div>
-                    <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej podium</div></div>
+                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie co do sekundy</div></div>
+                    <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
                 </div>
             </div>
         </div>
 
         <div id="stats-tab" class="tab-content">
-            <div class="glass-panel">
-                <h4>Historia Pozycji (Ostatnie 10 rund)</h4>
-                <canvas id="rankHistoryChart"></canvas>
-            </div>
             <div class="charts-grid">
+                <div class="glass-panel full-width-chart"><h4>Historia Pozycji (Ostatnie 10 rund)</h4><canvas id="rankHistoryChart"></canvas></div>
                 <div class="glass-panel full-width-chart"><h4>Skuteczność Medalowa</h4><canvas id="medalChart"></canvas></div>
                 <div class="glass-panel"><h4>Ranking Punktowy</h4><canvas id="barChart"></canvas></div>
                 <div class="glass-panel"><h4>Dominacja Medalowa</h4><canvas id="pieChart"></canvas></div>
+                <div class="glass-panel"><h4>Forma Punktowa (Średnia)</h4><canvas id="lineChart"></canvas></div>
             </div>
         </div>
 
-        <div id="history-tab" class="tab-content">
-            <div class="glass-panel">
-                <div style="overflow-x: auto;">
-                    <table id="historyTable">
-                        <thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead>
-                        <tbody></tbody>
-                    </table>
-                </div>
-            </div>
+        <div id="history-tab" class="tab-content"><div class="glass-panel"><table id="historyTable"><thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead><tbody></tbody></table></div></div>
+    </div>
+
+    <div id="playerCardOverlay">
+        <div class="character-card" id="characterCard">
+            <span class="close-card" onclick="closePlayerCard()">×</span>
+            <div id="playerLevel" style="color: var(--cyan); font-weight: bold; font-size: 12px;">LEVEL 1</div>
+            <h2 id="cardPlayerName">NAME</h2>
+            <div class="xp-bar-container"><div id="xpBar" class="xp-bar-fill"></div></div>
+            <div style="height: 250px;"><canvas id="radarChart"></canvas></div>
         </div>
     </div>
 
@@ -145,16 +152,18 @@
         // --- BACKGROUND ---
         const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
         let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
-        class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.3; this.vy = (Math.random()-0.5)*0.3; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
+        class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
         for(let i=0; i<60; i++) particles.push(new Particle());
-        function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); if(document.body.classList.contains('dark')) { particles.forEach((p, i) => { p.update(); bgCtx.fillStyle='rgba(212,175,55,0.2)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for(let j=i+1; j<particles.length; j++) { let p2=particles[j]; let d=Math.hypot(p.x-p2.x,p.y-p2.y); if(d<120) { bgCtx.strokeStyle=`rgba(0,212,255,${(1-d/120)*0.4})`; bgCtx.lineWidth=0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); } requestAnimationFrame(drawBg); } drawBg();
+        function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); if(document.body.classList.contains('dark')) { particles.forEach((p, i) => { p.update(); bgCtx.fillStyle='rgba(212,175,55,0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for(let j=i+1; j<particles.length; j++) { let p2=particles[j]; let d=Math.hypot(p.x-p2.x,p.y-p2.y); if(d<120) { bgCtx.strokeStyle=`rgba(0,212,255,${1-d/120})`; bgCtx.lineWidth=0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); } requestAnimationFrame(drawBg); } drawBg();
 
         // --- CHARTS ---
-        const chartOpt = { responsive: true, plugins: { legend: { labels: { color: '#888' } } }, scales: { x: { ticks: { color: '#888' } }, y: { ticks: { color: '#888' } } } };
-        const histChart = new Chart(document.getElementById('rankHistoryChart'), { type: 'line', options: { ...chartOpt, scales: { y: { reverse: true, ticks: { stepSize: 1, color: '#888' } }, x: { ticks: { color: '#888' } } } } });
-        const medalChart = new Chart(document.getElementById('medalChart'), { type: 'bar', options: { ...chartOpt, scales: { x: { stacked: true }, y: { stacked: true } } } });
-        const barChart = new Chart(document.getElementById('barChart'), { type: 'bar', options: { ...chartOpt, plugins: { legend: { display: false } } } });
-        const pieChart = new Chart(document.getElementById('pieChart'), { type: 'doughnut', options: chartOpt });
+        const chartColor = '#888';
+        const medalChart = new Chart(document.getElementById('medalChart'), { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
+        const barChart = new Chart(document.getElementById('barChart'), { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
+        const pieChart = new Chart(document.getElementById('pieChart'), { type: 'doughnut', options: { responsive: true, plugins: { legend: { labels: { color: chartColor } } } } });
+        const lineChart = new Chart(document.getElementById('lineChart'), { type: 'line', options: { responsive: true, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
+        const histChart = new Chart(document.getElementById('rankHistoryChart'), { type: 'line', options: { responsive: true, scales: { y: { reverse: true, ticks: { stepSize: 1, color: chartColor } }, x: { ticks: { color: chartColor } } }, plugins: { legend: { labels: { color: chartColor } } } } });
+        let radarChart;
 
         window.openTab = (evt, tabName) => {
             const contents = document.getElementsByClassName("tab-content"); for (let i=0; i<contents.length; i++) contents[i].classList.remove("active");
@@ -164,7 +173,7 @@
 
         let historyData = [], playersData = [], globalStats = [], coinPlayers = [];
 
-        // --- COIN FLIP LOGIC ---
+        // --- INTERACTIVE COIN FLIP ---
         window.openTieBreaker = (p1, p2) => {
             coinPlayers = [p1, p2];
             document.getElementById('pairInfo').innerText = `${p1} vs ${p2}`;
@@ -184,37 +193,71 @@
                 const result = isHeads ? 'heads' : 'tails';
                 const winner = (choice === result) ? coinPlayers[0] : coinPlayers[1];
                 document.getElementById('coinResult').innerText = `WYGRYWA: ${winner.toUpperCase()}!`;
-                
                 const ref = doc(db, "ranking", winner);
                 const snap = await getDoc(ref);
                 await updateDoc(ref, { coinWins: (snap.data().coinWins || 0) + 0.001 });
-
                 setTimeout(() => document.getElementById('coinOverlay').style.display = 'none', 2000);
             }, 3000);
         };
 
+        window.showPlayerCard = (name) => {
+            const p = globalStats.find(s => s.name === name); if(!p) return;
+            document.getElementById('playerCardOverlay').style.display = 'flex';
+            document.getElementById('cardPlayerName').textContent = p.name;
+            const level = Math.floor(p.points / 5) + 1; const xpProgress = ((p.points % 5) / 5) * 100;
+            document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
+            document.getElementById('xpBar').style.width = `${xpProgress}%`;
+            const rData = [Math.min((p.gold/5)*100, 100), Math.min((parseFloat(p.avgPts)/3)*100, 100), Math.min((p.totalPodiums/(historyData.length||1))*100, 100), 50, 50];
+            if(radarChart) radarChart.destroy();
+            radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), { type: 'radar', data: { labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
+        };
+        window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
+
         function refreshStats() {
             if (!playersData.length) return;
+            const sniperList = new Set();
+            historyData.forEach(round => round.winners.forEach(w => { if (w.isSniperHit) sniperList.add(w.name); }));
+
             globalStats = playersData.map(p => {
                 let gold=0, silver=0, bronze=0;
                 historyData.forEach(r => r.winners.forEach(w => { if(w.name===p.name){ if(w.rank===1) gold++; else if(w.rank===2) silver++; else bronze++; } }));
-                return { ...p, gold, silver, bronze, totalPodiums: gold+silver+bronze };
+                const podiums = gold + silver + bronze;
+                return { ...p, gold, silver, bronze, totalPodiums: podiums, avgPts: podiums>0?(p.points/podiums).toFixed(2):0, isSniper: sniperList.has(p.name) };
             });
 
-            // TIE-BREAKER LOGIC: PUNKTY -> 1 -> 2 -> 3 -> COIN
+            // LOGIKA SORTOWANIA Z TIE-BREAKEREM
             globalStats.sort((a,b) => (b.points - a.points) || (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.coinWins - a.coinWins));
 
-            document.getElementById('top-player').textContent = globalStats.filter(p => p.points === globalStats[0].points).map(p => p.name).join(", ");
+            // LOGIKA TRENDÓW
+            const lastRound = historyData[0];
+            const prevStats = playersData.map(p => {
+                let prevP = p.points, prevG = 0, prevS = 0, prevB = 0;
+                historyData.forEach((r, idx) => { if (idx !== 0) r.winners.forEach(w => { if(w.name === p.name){ if(w.rank===1) prevG++; else if(w.rank===2) prevS++; else prevB++; }}); });
+                if (lastRound) { const win = lastRound.winners.find(w => w.name === p.name); if (win) prevP -= (win.rank === 1 ? 3 : win.rank === 2 ? 2 : 1); }
+                return { name: p.name, points: prevP, gold: prevG, silver: prevS, bronze: prevB, coinWins: p.coinWins || 0 };
+            }).sort((a,b) => (b.points - a.points) || (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.coinWins - a.coinWins));
+            const prevRanks = {}; prevStats.forEach((p, i) => prevRanks[p.name] = i + 1);
+
+            document.getElementById('top-player').textContent = globalStats[0]?.name || "-";
             if(historyData.length > 0) document.getElementById('last-winner').textContent = historyData[0].winners.filter(w => w.rank === 1).map(w => w.name).join(", ");
 
+            const maxG = Math.max(...globalStats.map(s => s.gold)), maxP = Math.max(...globalStats.map(s => s.totalPodiums));
             const tbody = document.querySelector("#rankTable tbody"); tbody.innerHTML = "";
             globalStats.forEach((p, i) => {
-                const next = globalStats[i+1];
-                let tieBtn = "";
-                if(next && p.points === next.points && p.gold === next.gold && p.silver === next.silver && p.bronze === next.bronze) {
-                    tieBtn = `<button class="tie-btn" onclick="openTieBreaker('${p.name}','${next.name}')">REMIS</button>`;
+                let trendIcon = '<span class="trend-icon trend-neutral">―</span>';
+                if (lastRound) {
+                    const currentRank = i + 1, oldRank = prevRanks[p.name];
+                    if (currentRank < oldRank) trendIcon = '<span class="trend-icon trend-up">▲</span>';
+                    else if (currentRank > oldRank) trendIcon = '<span class="trend-icon trend-down">▼</span>';
                 }
-                tbody.innerHTML += `<tr><td>${i+1}</td><td><span class="player-name">${p.name}</span>${tieBtn}</td><td style="color:var(--gold)">${p.points} <small>(${p.gold}🥇)</small></td><td>${p.totalPodiums}</td></tr>`;
+                const next = globalStats[i+1];
+                let tieBtn = (next && p.points===next.points && p.gold===next.gold && p.silver===next.silver && p.bronze===next.bronze) ? `<button class="tie-btn" onclick="openTieBreaker('${p.name}','${next.name}')">REMIS</button>` : "";
+                let bHtml = "";
+                if(p.gold === maxG && p.gold > 0) bHtml += `<span class="badge" title="Dominator">👑</span>`;
+                if(p.totalPodiums === maxP && p.totalPodiums > 0) bHtml += `<span class="badge" title="Weteran">🛡️</span>`;
+                if(p.isSniper) bHtml += `<span class="badge" title="Snajper">🎯</span>`;
+
+                tbody.innerHTML += `<tr><td>${i+1}</td><td>${trendIcon}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}<div class="badge-container">${bHtml}</div></td><td style="color:var(--gold)">${p.points} <small style="color:#666">(${p.gold}🥇)</small></td><td>${p.totalPodiums}</td></tr>`;
             });
 
             updateCharts();
@@ -226,19 +269,17 @@
             medalChart.update();
             barChart.data = { labels: names, datasets: [{ data: globalStats.map(s=>s.points), backgroundColor: cyberColors }] };
             barChart.update();
-            
+            pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.gold,0), globalStats.reduce((a,b)=>a+b.silver,0), globalStats.reduce((a,b)=>a+b.bronze,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'], borderWidth: 0 }] };
+            pieChart.update();
+            lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avgPts), borderColor: '#d4af37', tension: 0.4 }] };
+            lineChart.update();
+
             // HISTORY CHART WITH ROUND NUMBERS
             const rounds = [...historyData].reverse();
             const start = Math.max(0, rounds.length - 10);
             const datasets = playersData.map((p, idx) => {
                 const data = [];
-                let pPts = 0, pG = 0, pS = 0, pB = 0, pC = p.coinWins || 0;
                 rounds.forEach((r, rIdx) => {
-                    const win = r.winners.find(w => w.name === p.name);
-                    if(win) {
-                        pPts += (win.rank === 1 ? 3 : win.rank === 2 ? 2 : 1);
-                        if(win.rank === 1) pG++; else if(win.rank === 2) pS++; else pB++;
-                    }
                     if(rIdx >= start) {
                         const roundRank = playersData.map(pl => {
                             let pts = 0, g=0, s=0, b=0;
@@ -271,7 +312,7 @@
         });
 
         window.deleteHistoryRecord = async (id) => {
-            if(!confirm("Cofnąć?")) return;
+            if(!confirm("Cofnąć ten zapis?")) return;
             const snap = await getDoc(doc(db, "history", id));
             if(snap.exists()){
                 for(const w of snap.data().winners){
