@@ -9,7 +9,7 @@
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
             --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --error: #ff4d4d;
-            --leader: #00ff00; --ice-tint: rgba(176, 226, 255, 0.3);
+            --leader: #00ff00; --ice-blue: #e0f7fa;
         }
         body.dark {
             --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
@@ -34,7 +34,7 @@
             overflow: hidden; 
         }
 
-        /* --- ZMODYFIKOWANY EFEKT LODU (WYRAŹNY TEKST) --- */
+        /* --- EFEKT LODU --- */
         .freeze-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 50;
             background-image: url('image_822d4c.png');
@@ -49,15 +49,18 @@
         .frozen { border: 2px solid #afeeee !important; box-shadow: 0 0 30px rgba(175, 238, 238, 0.4) !important; }
         .frozen .freeze-overlay { opacity: 1; transform: scale(1); }
         .frozen .frost-shimmer { opacity: 1; animation: iceShimmer 3s infinite linear; }
-        
-        /* Tylko minimalne muśnięcie blurem dla klimatu, bez utraty czytelności */
         .frozen .table-wrapper, .frozen .target-label {
             filter: blur(0.5px) contrast(1.1); 
             color: #b0e2ff !important;
             transition: 0.8s;
         }
         @keyframes iceShimmer { 0% { background-position: -200% -200%; } 100% { background-position: 200% 200%; } }
-        /* --------------------------------------------------------- */
+
+        /* --- RAMKA QR --- */
+        .qr-frame { 
+            padding: 10px; background: #fff; border-radius: 15px; 
+            display: inline-block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+        }
 
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
@@ -78,6 +81,10 @@
         #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
+
+        /* MIGAJĄCE KOLORY PO NACIŚNIĘCIU STOP */
+        @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
+
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
     </style>
 </head>
@@ -278,7 +285,7 @@ function renderTable(id, sec) {
                         ${nameDisp}
                     </div>
                 </td>
-                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'};">${u.hour}</td>
+                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isStopped ? '0.5px' : '0'});">${u.hour}</td>
                 <td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td>
             </tr>`;
     });
