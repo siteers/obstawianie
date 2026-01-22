@@ -85,8 +85,12 @@
     .btn-cyber:active { transform: scale(0.96); }
     .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; opacity: 0.7; cursor: not-allowed; }
 
-    #forgot-link { display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
+    #forgot-link, #register-link, #admin-link { display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
+    #admin-link { color: var(--gray); font-size: 9px; }
     #msg { margin-top: 20px; font-size: 12px; font-weight: 900; min-height: 20px; text-transform: uppercase; }
+
+    #admin-panel { display: none; margin-top: 15px; }
+    .btn-delete { background: #600; color: #fff; }
   </style>
 </head>
 <body>
@@ -101,8 +105,6 @@
         <label>Operator Systemu</label>
         <select id="name" onchange="checkUserAuth()">
           <option value="">Wybierz...</option>
-          <option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option>
-          <option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option>
         </select>
       </div>
 
@@ -130,6 +132,14 @@
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
+      
+      <a id="register-link" onclick="publicRegister()">Zarejestruj się (Nowy gracz)</a>
+
+      <div id="admin-panel">
+          <button class="btn-cyber btn-delete" onclick="adminDeleteUser()">- Usuń Gracza z Systemu</button>
+      </div>
+
+      <a id="admin-link" onclick="toggleAdmin()">Terminal Admina</a>
       <p id="msg"></p>
     </div>
   </div>
@@ -138,14 +148,54 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDoc, setDoc, doc, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
 let isFirstTime = false, isResetMode = false, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
-// --- WALIDACJA HH:MM (BLOKADA 11:1) ---
+// --- OBSŁUGA LISTY UŻYTKOWNIKÓW ---
+onSnapshot(collection(db, "passwords"), (snap) => {
+    const select = document.getElementById('name');
+    const currentVal = select.value;
+    select.innerHTML = '<option value="">Wybierz...</option>';
+    snap.forEach(d => {
+        const opt = document.createElement('option');
+        opt.value = d.id; opt.innerText = d.id;
+        select.appendChild(opt);
+    });
+    select.value = currentVal;
+});
+
+// --- PUBLICZNA REJESTRACJA ---
+window.publicRegister = async () => {
+    const n = prompt("Jak chcesz się nazywać w systemie?");
+    if(!n) return;
+    const p = prompt("Ustal swoje hasło (4 cyfry):");
+    if(!p) return;
+    await setDoc(doc(db, "passwords", n), { password: p });
+    alert("Witaj " + n + "! Możesz teraz wybrać się z listy i obstawiać.");
+}
+
+// --- TRYB ADMINA (TYLKO USUWANIE) ---
+window.toggleAdmin = () => {
+    if(prompt("KOD DOSTĘPU TERMINALA:") === "0000") {
+        document.getElementById('admin-panel').style.display = 'block';
+        document.getElementById('admin-link').style.display = 'none';
+    } else alert("ODMOWA DOSTĘPU.");
+}
+
+window.adminDeleteUser = async () => {
+    const n = prompt("Podaj nazwę gracza do usunięcia (nie usunie to jego punktów):");
+    if(!n) return;
+    if(confirm("Czy na pewno zablokować dostęp dla " + n + "?")) {
+        await deleteDoc(doc(db, "passwords", n));
+        alert("Gracz usunięty z terminala.");
+    }
+}
+
+// --- WALIDACJA CZASU ---
 window.formatTime = (input) => {
     let v = input.value.replace(/\D/g, '');
     if (v.length >= 2) {
@@ -177,11 +227,9 @@ function updateSlotUI(id, name, isLocked) {
     const userName = document.getElementById('name').value;
 
     const isEmpty = (!name || name === "Brak");
-    const isSelfBet = (userName === name && !isEmpty); // Gracz jest operatorem i celem
+    const isSelfBet = (userName === name && !isEmpty);
 
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
-    
-    // Logika blokowania i zszarzania
     input.disabled = isLocked || isEmpty || isSelfBet;
     
     if (isLocked) group.className = "target-group group-locked";
@@ -231,7 +279,7 @@ window.forgotPassword = () => {
 window.saveData = async function() {
     const n = document.getElementById('name').value, p = document.getElementById('password').value;
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
-    const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn'), container = document.getElementById('mainContainer');
+    const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn');
     
     btn.disabled = true;
     try {
