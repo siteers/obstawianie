@@ -18,47 +18,35 @@
             font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
             margin: 0; padding: 20px; min-height: 100vh; transition: 0.3s; overflow-x: hidden;
         }
-        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
         .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(20px, 5vw, 28px); margin-bottom: 30px; }
-
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
-
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; transition: 0.3s; font-size: 13px; }
         .tab-link.active { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
-
         .tab-content { display: none; animation: fadeIn 0.5s ease; }
         .tab-content.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         .glass-panel { background: var(--glass); backdrop-filter: blur(20px); padding: 25px; border-radius: 25px; border: 1px solid var(--border); margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border); }
         th { color: #888; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .trend-icon { font-size: 14px; margin-right: 8px; display: inline-block; width: 15px; text-align: center; font-weight: bold; }
+        .trend-icon { font-size: 14px; margin-right: 8px; font-weight: bold; display: inline-block; width: 15px; text-align: center; }
         .trend-up { color: var(--up); } .trend-down { color: var(--down); } .trend-neutral { color: var(--neutral); }
-
         .player-name { color: var(--cyan); cursor: pointer; text-decoration: underline; font-weight: bold; }
-        .badge { font-size: 18px; margin-left: 5px; cursor: help; }
         .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
-
+        .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
+        .badge:hover { transform: scale(1.4); }
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 15px; }
-        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid var(--border); }
-
-        /* FANCY POJEDYNEK OVERLAY */
-        #duelOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; color: var(--gold); font-family: 'JetBrains Mono', monospace; }
-        .matrix-text { font-size: 24px; text-shadow: 0 0 10px var(--gold); height: 60px; text-align: center; }
-        .tie-btn { background: var(--gold); color: #000; border: none; padding: 4px 10px; border-radius: 8px; font-weight: 900; font-size: 10px; cursor: pointer; margin-left: 10px; animation: tiePulse 1s infinite alternate; }
-        @keyframes tiePulse { from { opacity: 0.5; box-shadow: 0 0 0 var(--gold); } to { opacity: 1; box-shadow: 0 0 15px var(--gold); } }
-
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
+        body.dark .legend-item { background: rgba(255,255,255,0.05); }
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
-        
+        h4 { margin: 0 0 15px 0; font-size: 12px; text-transform: uppercase; color: var(--cyan); letter-spacing: 1px; }
         #playerCardOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 2000; backdrop-filter: blur(10px); }
         .character-card { background: linear-gradient(135deg, rgba(15, 23, 42, 0.98), rgba(30, 41, 59, 0.98)); border: 2px solid var(--cyan); border-radius: 30px; width: 95%; max-width: 480px; padding: 25px; position: relative; box-shadow: 0 0 50px rgba(0, 212, 255, 0.2); color: #fff; text-align: center; }
         .close-card { position: absolute; top: 15px; right: 20px; font-size: 28px; color: #888; cursor: pointer; }
@@ -66,22 +54,58 @@
         .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         .xp-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--cyan); }
         .attr-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; font-size: 11px; margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
-
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; font-size: 12px; }
+        .attr-legend b { color: var(--gold); }
+        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; }
         body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
-        .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; font-weight: bold; }
+        .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
+
+        /* --- STYLES DLA REMISU (KPN) --- */
+        .tie-btn { 
+            background: linear-gradient(90deg, var(--gold), #fff); color: #000; 
+            padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; 
+            cursor: pointer; border: none; margin-left: 10px; position: relative; z-index: 100;
+            animation: tiePulse 1s infinite alternate;
+        }
+        @keyframes tiePulse { from { box-shadow: 0 0 5px var(--gold); } to { box-shadow: 0 0 20px var(--gold); transform: scale(1.05); } }
+        #rpsOverlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 5000; display: none; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .rps-arena { display: flex; gap: 50px; text-align: center; }
+        .player-side { padding: 20px; border: 1px solid var(--border); border-radius: 20px; width: 180px; }
+        .choice-btns { display: flex; flex-direction: column; gap: 10px; margin-top: 20px; }
+        .rps-btn { padding: 10px; font-size: 20px; border-radius: 10px; border: none; cursor: pointer; background: var(--glass); color: var(--text); }
+        .rps-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .score-display { font-size: 40px; font-weight: 900; color: var(--gold); margin: 30px 0; }
     </style>
 </head>
 <body class="dark">
     <canvas id="bg-canvas"></canvas>
     <button id="darkModeBtn">☀️ Light mode</button>
 
-    <div id="duelOverlay">
-        <span class="close-card" style="position:absolute; top:20px; right:30px;" onclick="document.getElementById('duelOverlay').style.display='none'">×</span>
-        <h2 style="letter-spacing: 10px;">CONFLICT DETECTED</h2>
-        <div class="matrix-text" id="matrixStream">INITIATING DUEL...</div>
-        <div id="duelResult" style="font-size: 40px; font-weight: 900; margin-top: 20px; display: none;"></div>
-        <button class="tab-link active" id="closeDuelBtn" style="margin-top: 40px; display: none;" onclick="location.reload()">WPISAĆ DO SYSTEMU</button>
+    <div id="rpsOverlay">
+        <span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span>
+        <h1 style="color:var(--gold)">POJEDYNEK O MIEJSCE</h1>
+        <p>Kamień, Papier, Nożyce (Do 3 zwycięstw)</p>
+        <div class="score-display" id="rpsScore">0 : 0</div>
+        <div class="rps-arena">
+            <div class="player-side" id="side1">
+                <h3 id="p1Name">Gracz 1</h3>
+                <div class="choice-btns" id="p1Btns">
+                    <button class="rps-btn" onclick="makeChoice(1, '👊')">👊</button>
+                    <button class="rps-btn" onclick="makeChoice(1, '✋')">✋</button>
+                    <button class="rps-btn" onclick="makeChoice(1, '✌️')">✌️</button>
+                </div>
+                <div id="p1Status" style="font-size: 30px; margin-top:10px;">?</div>
+            </div>
+            <div class="player-side" id="side2">
+                <h3 id="p2Name">Gracz 2</h3>
+                <div class="choice-btns" id="p2Btns" style="display:none;">
+                    <button class="rps-btn" onclick="makeChoice(2, '👊')">👊</button>
+                    <button class="rps-btn" onclick="makeChoice(2, '✋')">✋</button>
+                    <button class="rps-btn" onclick="makeChoice(2, '✌️')">✌️</button>
+                </div>
+                <div id="p2Status" style="font-size: 30px; margin-top:10px;">?</div>
+            </div>
+        </div>
+        <div id="roundResult" style="margin-top: 20px; font-weight: bold; color: var(--cyan); height: 20px;"></div>
     </div>
 
     <div class="dashboard-container">
@@ -96,7 +120,6 @@
             <button class="tab-link" onclick="openTab(event, 'stats-tab')">📈 Wykresy</button>
             <button class="tab-link" onclick="openTab(event, 'history-tab')">📋 Historia</button>
         </div>
-
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
                 <table id="rankTable">
@@ -112,7 +135,6 @@
                 </div>
             </div>
         </div>
-
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
                 <div class="glass-panel full-width-chart"><h4>Historia Pozycji (Ostatnie 10 rund)</h4><canvas id="rankHistoryChart"></canvas></div>
@@ -122,8 +144,7 @@
                 <div class="glass-panel"><h4>Forma Punktowa (Średnia)</h4><canvas id="lineChart"></canvas></div>
             </div>
         </div>
-
-        <div id="history-tab" class="tab-content"><div class="glass-panel"><table id="historyTable"><thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead><tbody></tbody></table></div></div>
+        <div id="history-tab" class="tab-content"><div class="glass-panel"><div style="overflow-x: auto;"><table id="historyTable"><thead><tr><th>Data</th><th>Wyniki</th><th>X</th></tr></thead><tbody></tbody></table></div></div></div>
     </div>
 
     <div id="playerCardOverlay">
@@ -145,7 +166,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
@@ -157,6 +178,7 @@
         for(let i=0; i<60; i++) particles.push(new Particle());
         function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); if(document.body.classList.contains('dark')) { particles.forEach((p, i) => { p.update(); bgCtx.fillStyle='rgba(212,175,55,0.3)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for(let j=i+1; j<particles.length; j++) { let p2=particles[j]; let d=Math.hypot(p.x-p2.x,p.y-p2.y); if(d<120) { bgCtx.strokeStyle=`rgba(0,212,255,${1-d/120})`; bgCtx.lineWidth=0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); } requestAnimationFrame(drawBg); } drawBg();
 
+        // --- CHARTS ---
         const chartColor = '#888';
         const medalChart = new Chart(document.getElementById('medalChart'), { type: 'bar', options: { responsive: true, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
         const barChart = new Chart(document.getElementById('barChart'), { type: 'bar', options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { ticks: { color: chartColor } }, x: { ticks: { color: chartColor } } } } });
@@ -171,16 +193,36 @@
             document.getElementById(tabName).classList.add("active"); evt.currentTarget.classList.add("active");
         };
 
-        let historyData = [], playersData = [], globalStats = [], coinPlayers = [];
+        let historyData = [], playersData = [], globalStats = [];
 
-        // --- CYBER POJEDYNEK LOGIC ---
-        window.startDuel = (p1, p2) => {
-            coinPlayers = [p1, p2]; document.getElementById('pairInfo').innerText = `${p1} vs ${p2}`; document.getElementById('duelOverlay').style.display = 'flex'; document.getElementById('duelResult').style.display = 'none'; document.getElementById('closeDuelBtn').style.display = 'none';
-            let i = 0; const int = setInterval(() => { document.getElementById('matrixStream').innerText = Math.random().toString(16).substring(2, 12).toUpperCase(); i++;
-                if(i > 15) { clearInterval(int); const winner = Math.random() > 0.5 ? p1 : p2; document.getElementById('matrixStream').innerText = "PRIORITY ASSIGNED:"; document.getElementById('duelResult').innerText = winner.toUpperCase(); document.getElementById('duelResult').style.display = 'block'; document.getElementById('closeDuelBtn').style.display = 'block';
-                    updateDoc(doc(db, "ranking", winner), { tbValue: (globalStats.find(x=>x.name===winner).tbValue || 0) + 1 });
-                }
-            }, 100);
+        // --- KPN LOGIKA (KAMIEŃ PAPIER NOŻYCE) ---
+        let currentDuel = { p1: "", p2: "", score1: 0, score2: 0, c1: null, c2: null };
+        window.startKpn = (p1, p2) => {
+            currentDuel = { p1, p2, score1: 0, score2: 0, c1: null, c2: null };
+            document.getElementById('p1Name').innerText = p1; document.getElementById('p2Name').innerText = p2;
+            document.getElementById('rpsScore').innerText = "0 : 0";
+            document.getElementById('p1Status').innerText = "?"; document.getElementById('p2Status').innerText = "?";
+            document.getElementById('p1Btns').style.display = "flex"; document.getElementById('p2Btns').style.display = "none";
+            document.getElementById('rpsOverlay').style.display = 'flex';
+        };
+        window.makeChoice = (player, emoji) => {
+            if(player === 1) { currentDuel.c1 = emoji; document.getElementById('p1Status').innerText = "🔒"; document.getElementById('p1Btns').style.display = "none"; document.getElementById('p2Btns').style.display = "flex"; }
+            else { currentDuel.c2 = emoji; document.getElementById('p2Status').innerText = "🔒"; document.getElementById('p2Btns').style.display = "none"; resolveRound(); }
+        };
+        function resolveRound() {
+            const rules = {"👊":"✌️", "✋":"👊", "✌️":"✋"};
+            document.getElementById('p1Status').innerText = currentDuel.c1; document.getElementById('p2Status').innerText = currentDuel.c2;
+            if(currentDuel.c1 !== currentDuel.c2) { if(rules[currentDuel.c1] === currentDuel.c2) currentDuel.score1++; else currentDuel.score2++; }
+            document.getElementById('rpsScore').innerText = `${currentDuel.score1} : ${currentDuel.score2}`;
+            
+            if(currentDuel.score1 === 3 || currentDuel.score2 === 3) {
+                const winner = currentDuel.score1 === 3 ? currentDuel.p1 : currentDuel.p2;
+                document.getElementById('roundResult').innerText = `KONIEC! WYGRYWA ${winner.toUpperCase()}`;
+                updateDoc(doc(db, "ranking", winner), { tbValue: (globalStats.find(x=>x.name===winner).tbValue || 0) + 1 });
+                setTimeout(() => document.getElementById('rpsOverlay').style.display = 'none', 2000);
+            } else {
+                setTimeout(() => { document.getElementById('p1Status').innerText = "?"; document.getElementById('p2Status').innerText = "?"; document.getElementById('p1Btns').style.display = "flex"; }, 1000);
+            }
         };
 
         window.showPlayerCard = (name) => {
@@ -188,52 +230,37 @@
             document.getElementById('cardPlayerName').textContent = p.name;
             const level = Math.floor(p.points / 5) + 1; document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
             document.getElementById('xpBar').style.width = `${((p.points % 5) / 5) * 100}%`;
-            let arc = "Rekrut"; if (p.gold > 5) arc = "Dominator"; else if (p.podiums > 10) arc = "Weteran"; else if (parseFloat(p.avg) > 2.5) arc = "Snajper";
-            document.getElementById('playerClass').textContent = arc;
-            const rData = [Math.min((p.gold/5)*100, 100), Math.min((parseFloat(p.avg)/3)*100, 100), Math.min((p.podiums/(historyData.length||1))*100, 100), 70];
+            const rData = [Math.min((p.gold/5)*100, 100), Math.min((parseFloat(p.avgPts)/3)*100, 100), Math.min((p.totalPodiums/(historyData.length||1))*100, 100), 50, 50];
             if(radarChart) radarChart.destroy();
-            radarChart = new Chart(document.querySelector('#playerCardOverlay canvas'), { type: 'radar', data: { labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
+            radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), { type: 'radar', data: { labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
             document.getElementById('playerCardOverlay').style.display = 'flex';
         };
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
         function refreshStats() {
             if (!playersData.length) return;
-            const snipers = new Set(); historyData.forEach(r => r.winners.forEach(w => { if(w.isSniperHit) snipers.add(w.name); }));
-
             globalStats = playersData.map(p => {
-                let g=0, s=0, b=0, fire=0;
-                historyData.forEach(r => r.winners.forEach((w, idx) => { if(w.name===p.name){ const rank = w.rank || (idx + 1); // FIXED UNDEFINED FALLBACK
-                    if(rank===1) g++; else if(rank===2) s++; else b++; } }));
-                const pods = g+s+b; return { ...p, gold:g, silver:s, bronze:b, podiums:pods, avg:pods>0?(p.points/pods).toFixed(2):0, sniper: snipers.has(p.name) };
+                let g=0, s=0, b=0; 
+                historyData.forEach(r => r.winners.forEach((w, idx) => { if(w.name===p.name){ const rank = w.rank || (idx + 1); if(rank===1) g++; else if(rank===2) s++; else b++; } }));
+                return { ...p, gold:g, silver:s, bronze:b, totalPodiums: g+s+b, avgPts: (g+s+b)>0?(p.points/(g+s+b)).toFixed(2):0 };
             });
 
-            globalStats.sort((a,b) => (b.points - a.points) || (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || (b.tbValue - a.tbValue));
+            // GŁĘBOKIE SORTOWANIE (Tie-breaker)
+            globalStats.sort((a, b) => (b.points - a.points) || (b.gold - a.gold) || (b.silver - a.silver) || (b.bronze - a.bronze) || ((b.tbValue||0) - (a.tbValue||0)));
 
-            document.getElementById('top-player').textContent = globalStats[0].name; // FIXED SINGLE LEADER
+            document.getElementById('top-player').textContent = globalStats[0]?.name || "-";
             if(historyData.length > 0) document.getElementById('last-winner').textContent = historyData[0].winners.filter(w=>w.rank===1||(!w.rank && historyData[0].winners.indexOf(w)===0)).map(w=>w.name).join(", ");
-
-            // --- TREND LOGIC ---
-            const rounds = [...historyData].reverse();
-            const prevStats = playersData.map(p => {
-                let pts=0, g=0, s=0, b=0; rounds.slice(0, -1).forEach(r => { r.winners.forEach((w, idx) => { if(w.name === p.name){ const rnk = w.rank || (idx + 1); pts += (rnk===1?3:rnk===2?2:1); if(rnk===1) g++; else if(rnk===2) s++; else b++; } }); });
-                return { name:p.name, pts, g, s, b, tb:p.tbValue||0 };
-            }).sort((a,b) => (b.pts-a.pts)||(b.g-a.g)||(b.s-a.s)||(b.b-a.b)||(b.tb-a.tb));
-            const prevRanks = {}; prevStats.forEach((p,i) => { if(i>0 && p.pts===prevStats[i-1].pts && p.g===prevStats[i-1].g && p.s===prevStats[i-1].s && p.b===prevStats[i-1].b && p.tb===prevStats[i-1].tb) prevRanks[p.name]=prevRanks[prevStats[i-1].name]; else prevRanks[p.name]=i+1; });
 
             const tbody = document.querySelector("#rankTable tbody"); tbody.innerHTML = "";
             let lastRankNum = 1;
             globalStats.forEach((p, i) => {
                 if (i > 0) { const prev = globalStats[i-1]; if (!(p.points===prev.points && p.gold===prev.gold && p.silver===prev.silver && p.bronze===prev.bronze && (p.tbValue||0)===(prev.tbValue||0))) lastRankNum = i + 1; }
-                const curR = lastRankNum; const oldR = prevRanks[p.name] || curR;
-                let trend = curR < oldR ? '<span class="trend-icon trend-up">▲</span>' : curR > oldR ? '<span class="trend-icon trend-down">▼</span>' : '<span class="trend-icon trend-neutral">―</span>';
+                const curR = lastRankNum;
                 const next = globalStats[i+1]; const prevP = globalStats[i-1];
                 let isTieN = next && p.points===next.points && p.gold===next.gold && p.silver===next.silver && p.bronze===next.bronze && (p.tbValue||0)===(next.tbValue||0);
                 let isTieP = prevP && p.points===prevP.points && p.gold===prevP.gold && p.silver===prevP.silver && p.bronze===prevP.bronze && (p.tbValue||0)===(prevP.tbValue||0);
-                let tieBtn = (isTieN || isTieP) ? `<button class="tie-btn" onclick="startDuel('${p.name}','${isTieN?next.name:prevP.name}')">REMIS</button>` : "";
-                
-                let badges = ""; if(p.gold===Math.max(...globalStats.map(s=>s.gold)) && p.gold>0) badges += `<span class="badge">👑</span>`; if(p.podiums===Math.max(...globalStats.map(s=>s.podiums)) && p.podiums>0) badges += `<span class="badge">🛡️</span>`; if(p.sniper) badges += `<span class="badge">🎯</span>`;
-                tbody.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}${badges}</td><td style="color:var(--gold)">${p.points} <small>(${p.gold}🥇)</small></td><td>${p.podiums}</td></tr>`;
+                let tieBtn = (isTieN || isTieP) ? `<button class="tie-btn" onclick="startKpn('${p.name}','${isTieN?next.name:prevP.name}')">REMIS</button>` : "";
+                tbody.innerHTML += `<tr><td>${curR}</td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--gold)">${p.points} <small>(${p.gold}🥇)</small></td><td>${p.totalPodiums}</td></tr>`;
             });
             updateCharts();
         }
@@ -244,19 +271,10 @@
             barChart.data = { labels: names, datasets: [{ data: globalStats.map(s=>s.points), backgroundColor: '#d4af37' }] }; barChart.update();
             pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.gold,0), globalStats.reduce((a,b)=>a+b.silver,0), globalStats.reduce((a,b)=>a+b.bronze,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
             lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avg), borderColor: '#d4af37' }] }; lineChart.update();
-
             const rounds = [...historyData].reverse(); const start = Math.max(0, rounds.length - 10);
             const datasets = playersData.map((p, idx) => {
                 const data = [];
-                rounds.forEach((_, rIdx) => {
-                    if(rIdx >= start) {
-                        const snap = playersData.map(pl => {
-                            let pts=0, g=0, s=0, b=0; rounds.slice(0, rIdx+1).forEach(hr => { const hw = hr.winners.find(w => w.name===pl.name); if(hw){ const rnk = hw.rank || (hr.winners.indexOf(hw)+1); pts+=(rnk===1?3:rnk===2?2:1); if(rnk===1) g++; else if(rnk===2) s++; else b++; } });
-                            return { name:pl.name, pts, g, s, b, tb:pl.tbValue||0 };
-                        }).sort((a,b) => (b.pts-a.pts)||(b.g-a.g)||(b.s-a.s)||(b.b-a.b)||(b.tb-a.tb));
-                        data.push(snap.findIndex(x => x.name === p.name) + 1);
-                    }
-                });
+                rounds.forEach((_, rIdx) => { if(rIdx >= start) { const snap = playersData.map(pl => { let pts=0, g=0; rounds.slice(0, rIdx + 1).forEach(hr => { const hw = hr.winners.find(w => w.name===pl.name); if(hw){ const rnk = hw.rank || (hr.winners.indexOf(hw)+1); pts+=(rnk===1?3:rnk===2?2:1); if(rnk===1) g++; } }); return { name:pl.name, pts, g, tb:pl.tbValue||0 }; }).sort((a,b) => (b.pts-a.pts)||(b.g-a.g)||(b.tb-a.tb)); data.push(snap.findIndex(x => x.name === p.name) + 1); } });
                 return { label: p.name, data, borderColor: `hsl(${(idx * 360 / playersData.length)}, 70%, 50%)`, tension: 0.3, fill: false };
             });
             histChart.data = { labels: rounds.slice(start).map((_, i) => `Runda ${start + i + 1}`), datasets }; histChart.update();
@@ -266,22 +284,9 @@
             historyData = []; const hbody = document.querySelector("#historyTable tbody"); hbody.innerHTML = "";
             snap.forEach(d => { const data = d.data(); historyData.push(data);
                 hbody.innerHTML += `<tr><td>${data.date}</td><td>${data.winners.map((w, idx)=>`${w.rank || (idx + 1)}.${w.name}`).join(", ")}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
-            });
-            document.getElementById('total-rounds').textContent = historyData.length; refreshStats();
+            }); refreshStats();
         });
         onSnapshot(collection(db, "ranking"), snap => { playersData = snap.docs.map(d => ({ name: d.id, ...d.data() })); refreshStats(); });
-        window.deleteHistoryRecord = async (id) => {
-            if(!confirm("Cofnąć ten zapis?")) return;
-            const snap = await getDoc(doc(db, "history", id));
-            if(snap.exists()){
-                for(const w of snap.data().winners){
-                    const ref = doc(db, "ranking", w.name), pSnap = await getDoc(ref);
-                    if(pSnap.exists()) await updateDoc(ref, { points: Math.max(0, pSnap.data().points - (w.rank? (w.rank==1?3:w.rank==2?2:1) : (snap.data().winners.indexOf(w)==0?3:snap.data().winners.indexOf(w)==1?2:1))) });
-                }
-                await deleteDoc(doc(db, "history", id));
-            }
-        };
-        const darkBtn = document.getElementById("darkModeBtn"); darkBtn.onclick = () => { document.body.classList.toggle("dark"); darkBtn.textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
     </script>
 </body>
 </html>
