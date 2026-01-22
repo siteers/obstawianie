@@ -9,7 +9,7 @@
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
             --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --error: #ff4d4d;
-            --leader: #00ff00;
+            --leader: #00ff00; --ice: #afeeee;
         }
         body.dark {
             --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
@@ -26,12 +26,25 @@
         .admin-config { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--gold); display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100; }
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
-        .container { background: var(--glass); backdrop-filter: blur(20px); padding: 20px; border-radius: 30px; border: 1px solid var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.3s; }
+        
+        .container { 
+            position: relative; background: var(--glass); backdrop-filter: blur(20px); 
+            padding: 20px; border-radius: 30px; border: 1px solid var(--border); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.5s; overflow: hidden; 
+        }
+
+        /* ANIMACJA ZAMROŻENIA */
+        .freeze-overlay {
+            position: absolute; inset: 0; pointer-events: none; z-index: 5;
+            background: url('image_822d4c.png') no-repeat center;
+            background-size: cover; opacity: 0; transition: 0.8s; border-radius: 30px;
+        }
+        .frozen .freeze-overlay { opacity: 1; }
+        .frozen { border: 2px solid var(--ice) !important; box-shadow: 0 0 40px var(--ice) !important; filter: saturate(0.8); }
         
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
 
-        /* MIGANIE LIDERA (ZIELONE) */
         @keyframes leaderPulse {
             0%, 100% { color: var(--text); text-shadow: 0 0 0px transparent; }
             50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); }
@@ -63,16 +76,7 @@
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
-        @media (max-width: 850px) { 
-            .dashboard-grid { grid-template-columns: 1fr; } 
-            .admin-config { flex-direction: column; width: 90%; } 
-            #clock { font-size: 42px; margin: 20px 0; }
-        }
-        @media (max-width: 480px) {
-            #clock { font-size: 32px; }
-            .stop-btn { font-size: 14px; padding: 12px; }
-            th, td { padding: 8px; font-size: 11px; }
-        }
+        @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
     </style>
 </head>
 <body class="dark">
@@ -92,7 +96,7 @@
 
 <div class="dashboard-grid">
     <div class="container" id="panel1">
-        <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
+        <div class="freeze-overlay"></div> <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
         <div class="table-wrapper"><table id="table1"></table></div>
         <div id="stoppedTime1" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
         <div class="action-group"><button class="stop-btn" onclick="stopSlot(1)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ</button></div>
@@ -100,7 +104,7 @@
         <div id="winner1" class="winner-box"></div>
     </div>
     <div class="container" id="panel2">
-        <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
+        <div class="freeze-overlay"></div> <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
         <div class="table-wrapper"><table id="table2"></table></div>
         <div id="stoppedTime2" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
         <div class="action-group"><button class="stop-btn" onclick="stopSlot(2)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ</button></div>
@@ -137,13 +141,9 @@ const lockSound = document.getElementById("lockSound");
 const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
+let stoppedSec1 = 0, stoppedSec2 = 0; // Zmienne mrożące czas
 let assignedFakeNames = {};
-// ZAKTUALIZOWANA LISTA KSYWEK
-const funnyNames = [
-    "leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", 
-    "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal",
-    "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"
-];
+const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
 
 function shuffleArray(array) {
     const a = [...array];
@@ -182,8 +182,14 @@ function updateFW() {
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
-    if(id === 1) isStopped1 = true; else isStopped2 = true;
-    const now = new Date(); const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    
+    const now = new Date(); 
+    const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
+    
+    // MROŻENIE LOGICZNE I WIZUALNE
+    if(id === 1) { isStopped1 = true; stoppedSec1 = s; document.getElementById('panel1').classList.add('frozen'); } 
+    else { isStopped2 = true; stoppedSec2 = s; document.getElementById('panel2').classList.add('frozen'); }
+    
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     let playersWithPoints = [], rank = 1;
     for (let i = 0; i < sorted.length; i++) {
@@ -208,8 +214,10 @@ window.clearSlot = async (id) => {
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
     await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak" }, { merge: true });
-    if(id === 1) { isStopped1 = false; document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
-    else { isStopped2 = false; document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
+    
+    // RESET MROŻENIA
+    if(id === 1) { isStopped1 = false; document.getElementById("panel1").classList.remove("frozen"); document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
+    else { isStopped2 = false; document.getElementById("panel2").classList.remove("frozen"); document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
 };
 
 onSnapshot(collection(db, "users"), snap => {
@@ -234,7 +242,16 @@ window.updateTargets = async () => { await setDoc(appStateRef, { target1: docume
 onSnapshot(appStateRef, (snap) => { const data = snap.data(); if(!data) return; document.getElementById("targetName1").textContent = data.target1 || "---"; document.getElementById("targetName2").textContent = data.target2 || "---"; document.getElementById("targetSelect1").value = data.target1 || "Brak"; document.getElementById("targetSelect2").value = data.target2 || "Brak"; isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); });
 function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
 window.toggleLock = async (id) => { const snap = await getDoc(appStateRef); const field = `isLocked${id}`; const newState = !snap.data()[field]; await setDoc(appStateRef, { [field]: newState }, { merge: true }); if(newState) lockSound.play().catch(()=>{}); };
-setInterval(() => { const now = new Date(); document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); renderTable(1, s); renderTable(2, s); }, 1000);
+
+setInterval(() => { 
+    const now = new Date(); 
+    document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
+    const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
+    
+    // Renderowanie z uwzględnieniem mrożenia
+    renderTable(1, isStopped1 ? stoppedSec1 : s); 
+    renderTable(2, isStopped2 ? stoppedSec2 : s); 
+}, 1000);
 
 function renderTable(id, sec) {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
@@ -249,8 +266,6 @@ function renderTable(id, sec) {
         const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
-        
-        // KOLOR KROPKI DOPASOWANY DO WYŚWIETLANEGO PSEUDONIMU
         const avatarColor = getAvatarColor(nameDisp);
         
         table.innerHTML += `
