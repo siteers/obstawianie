@@ -79,10 +79,6 @@
         #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
         #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
-        .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
-        .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
-
-        /* MIGAJĄCE KOLORY PO NACIŚNIĘCIU STOP */
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
@@ -274,6 +270,8 @@ function renderTable(id, sec) {
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
         
+        // --- LOGIKA ROZMYCIA GODZINY ---
+        // Zastosowałem duży blur (10px) dla ukrytej godziny i minimalny (0.5px) dla odkrytej.
         table.innerHTML += `
             <tr class="${isLeader ? 'leader-row' : ''}">
                 <td>${i+1}</td>
@@ -285,7 +283,9 @@ function renderTable(id, sec) {
                         ${nameDisp}
                     </div>
                 </td>
-                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isStopped ? '0.5px' : '0'});">${u.hour}</td>
+                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isStopped ? '0.5px' : '10px'}); opacity: ${isStopped ? '1' : '0.2'}; transition: 0.5s;">
+                    ${u.hour}
+                </td>
                 <td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td>
             </tr>`;
     });
