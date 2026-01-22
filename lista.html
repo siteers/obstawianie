@@ -9,7 +9,7 @@
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
             --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --error: #ff4d4d;
-            --leader: #00ff00; --ice-blue: #e0f7fa;
+            --leader: #00ff00; --ice-tint: rgba(176, 226, 255, 0.3);
         }
         body.dark {
             --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
@@ -27,44 +27,38 @@
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
         
-        /* --- KONTENER Z EFEKTEM LODU --- */
         .container { 
             position: relative; background: var(--glass); backdrop-filter: blur(20px); 
             padding: 20px; border-radius: 30px; border: 1px solid var(--border); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); 
             overflow: hidden; 
         }
 
-        /* NAKŁADKA TWOJEGO ZDJĘCIA (image_822d4c.png) */
+        /* --- ZMODYFIKOWANY EFEKT LODU (WYRAŹNY TEKST) --- */
         .freeze-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 50;
             background-image: url('image_822d4c.png');
-            background-size: 100% 100%;
-            background-repeat: no-repeat;
-            opacity: 0; transform: scale(1.1);
-            transition: opacity 1s, transform 1.2s;
+            background-size: 100% 100%; background-repeat: no-repeat;
+            opacity: 0; transform: scale(1.1); transition: 1s ease-out;
         }
-
-        /* DODATKOWA WARSTWA SZRONU */
-        .frost-layer {
+        .frost-shimmer {
             position: absolute; inset: 0; pointer-events: none; z-index: 45;
-            background: radial-gradient(circle, rgba(224, 247, 250, 0.1) 0%, rgba(176, 226, 255, 0.4) 100%);
-            backdrop-filter: blur(0px); opacity: 0; transition: 1s;
+            background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            background-size: 200% 200%; opacity: 0; transition: 1s;
         }
+        .frozen { border: 2px solid #afeeee !important; box-shadow: 0 0 30px rgba(175, 238, 238, 0.4) !important; }
+        .frozen .freeze-overlay { opacity: 1; transform: scale(1); }
+        .frozen .frost-shimmer { opacity: 1; animation: iceShimmer 3s infinite linear; }
+        
+        /* Tylko minimalne muśnięcie blurem dla klimatu, bez utraty czytelności */
+        .frozen .table-wrapper, .frozen .target-label {
+            filter: blur(0.5px) contrast(1.1); 
+            color: #b0e2ff !important;
+            transition: 0.8s;
+        }
+        @keyframes iceShimmer { 0% { background-position: -200% -200%; } 100% { background-position: 200% 200%; } }
+        /* --------------------------------------------------------- */
 
-        /* STAN ZAMROŻONY */
-        .frozen { 
-            border: 2px solid #b0e2ff !important; 
-            box-shadow: 0 0 40px rgba(176, 226, 255, 0.6) !important;
-        }
-        .frozen .freeze-overlay { opacity: 0.9; transform: scale(1); }
-        .frozen .frost-layer { opacity: 1; backdrop-filter: blur(4px); }
-        .frozen .table-wrapper, .frozen .target-label { 
-            filter: saturate(0.5) brightness(1.1); 
-            color: #d1f2ff;
-        }
-
-        /* RESZTA STYLI BEZ ZMIAN */
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
         @keyframes leaderPulse { 0%, 100% { color: var(--text); } 50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); } }
@@ -84,7 +78,6 @@
         #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
-        @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
     </style>
 </head>
@@ -105,7 +98,7 @@
 
 <div class="dashboard-grid">
     <div class="container" id="panel1">
-        <div class="frost-layer"></div>
+        <div class="frost-shimmer"></div>
         <div class="freeze-overlay"></div>
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
         <div class="table-wrapper"><table id="table1"></table></div>
@@ -115,7 +108,7 @@
         <div id="winner1" class="winner-box"></div>
     </div>
     <div class="container" id="panel2">
-        <div class="frost-layer"></div>
+        <div class="frost-shimmer"></div>
         <div class="freeze-overlay"></div>
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
         <div class="table-wrapper"><table id="table2"></table></div>
@@ -198,7 +191,6 @@ window.stopSlot = async (id) => {
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
-    // MROŻENIE WIZUALNE I LOGICZNE
     if(id === 1) { isStopped1 = true; stoppedSec1 = s; document.getElementById('panel1').classList.add('frozen'); } 
     else { isStopped2 = true; stoppedSec2 = s; document.getElementById('panel2').classList.add('frozen'); }
     
@@ -226,8 +218,6 @@ window.clearSlot = async (id) => {
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
     await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak" }, { merge: true });
-    
-    // RESET MROŻENIA
     if(id === 1) { isStopped1 = false; document.getElementById("panel1").classList.remove("frozen"); document.getElementById("winner1").style.display = "none"; document.getElementById("stoppedTime1").textContent = ""; }
     else { isStopped2 = false; document.getElementById("panel2").classList.remove("frozen"); document.getElementById("winner2").style.display = "none"; document.getElementById("stoppedTime2").textContent = ""; }
 };
@@ -273,7 +263,6 @@ function renderTable(id, sec) {
     
     sorted.forEach((u, i) => {
         const isLeader = i === 0;
-        const hourClass = isStopped ? 'reveal-data' : 'hidden-hour';
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
@@ -289,7 +278,7 @@ function renderTable(id, sec) {
                         ${nameDisp}
                     </div>
                 </td>
-                <td class="${hourClass}">${u.hour}</td>
+                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'};">${u.hour}</td>
                 <td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td>
             </tr>`;
     });
