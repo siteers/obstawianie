@@ -9,7 +9,7 @@
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
             --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); --error: #ff4d4d;
-            --leader: #00ff00; --ice-glow: rgba(176, 226, 255, 0.6);
+            --leader: #00ff00; --ice-blue: #e0f7fa;
         }
         body.dark {
             --bg: #020408; --text: #fff; --glass: rgba(15, 23, 42, 0.75); --border: rgba(255, 255, 255, 0.1);
@@ -27,65 +27,64 @@
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
         
+        /* --- KONTENER Z EFEKTEM LODU --- */
         .container { 
             position: relative; background: var(--glass); backdrop-filter: blur(20px); 
             padding: 20px; border-radius: 30px; border: 1px solid var(--border); 
-            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.8s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 20px 50px rgba(0,0,0,0.15); transition: 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); 
             overflow: hidden; 
         }
 
-        /* --- ULEPSZONY EFEKT ZAMROŻENIA --- */
+        /* NAKŁADKA TWOJEGO ZDJĘCIA (image_822d4c.png) */
         .freeze-overlay {
-            position: absolute; inset: 0; pointer-events: none; z-index: 20;
-            background: url('image_822d4c.png') no-repeat center;
-            background-size: 100% 100%; opacity: 0; 
-            transform: scale(1.1); transition: all 1s ease-in-out;
+            position: absolute; inset: 0; pointer-events: none; z-index: 50;
+            background-image: url('image_822d4c.png');
+            background-size: 100% 100%;
+            background-repeat: no-repeat;
+            opacity: 0; transform: scale(1.1);
+            transition: opacity 1s, transform 1.2s;
         }
-        .frozen .freeze-overlay { opacity: 1; transform: scale(1); }
-        .frozen { 
-            border: 3px solid #b0e2ff !important; 
-            box-shadow: 0 0 60px var(--ice-glow) !important; 
-        }
-        .frozen .table-wrapper, .frozen .target-label {
-            filter: blur(1.5px) brightness(1.2) contrast(0.8);
-            transition: 1s;
-        }
-        /* ------------------------------------------- */
 
+        /* DODATKOWA WARSTWA SZRONU */
+        .frost-layer {
+            position: absolute; inset: 0; pointer-events: none; z-index: 45;
+            background: radial-gradient(circle, rgba(224, 247, 250, 0.1) 0%, rgba(176, 226, 255, 0.4) 100%);
+            backdrop-filter: blur(0px); opacity: 0; transition: 1s;
+        }
+
+        /* STAN ZAMROŻONY */
+        .frozen { 
+            border: 2px solid #b0e2ff !important; 
+            box-shadow: 0 0 40px rgba(176, 226, 255, 0.6) !important;
+        }
+        .frozen .freeze-overlay { opacity: 0.9; transform: scale(1); }
+        .frozen .frost-layer { opacity: 1; backdrop-filter: blur(4px); }
+        .frozen .table-wrapper, .frozen .target-label { 
+            filter: saturate(0.5) brightness(1.1); 
+            color: #d1f2ff;
+        }
+
+        /* RESZTA STYLI BEZ ZMIAN */
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
-
-        @keyframes leaderPulse {
-            0%, 100% { color: var(--text); text-shadow: 0 0 0px transparent; }
-            50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); }
-        }
+        @keyframes leaderPulse { 0%, 100% { color: var(--text); } 50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); } }
         .leader-row td { animation: leaderPulse 1.5s infinite; font-weight: 900 !important; }
-
         h2 { text-align: center; margin: 0; color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
-        .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 10px; text-shadow: 0 0 15px var(--cyan); }
-        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); }
+        .target-label { font-size: 26px; font-weight: 900; color: var(--cyan); text-align: center; display: block; margin-bottom: 10px; }
+        .table-wrapper { width: 100%; overflow-x: auto; border-radius: 15px; border: 1px solid var(--border); background: rgba(0,0,0,0.05); position: relative; z-index: 10; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
-        .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; }
+        .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; position: relative; z-index: 60; }
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
-        
-        .lock-btn-slot { 
-            width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; 
-            cursor: pointer; border: none; text-transform: uppercase; font-size: 14px; 
-            display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.4);
-        }
-
-        .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; z-index: 30; position: relative; }
+        .lock-btn-slot { width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff; z-index: 60; position: relative; }
+        .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; z-index: 60; position: relative; }
         #clock { font-size: 56px; font-weight: 900; text-align: center; margin: 30px 0; z-index: 100; position: relative; }
-        .qr-frame { padding: 10px; background: #fff; border-radius: 15px; display: inline-block; }
         #fireworksCanvas { position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none; }
         #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
         .hidden-hour { filter: blur(8px); opacity: 0.3; transition: 0.5s; }
         .reveal-data { filter: blur(0) !important; opacity: 1 !important; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
-
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
     </style>
 </head>
@@ -106,6 +105,7 @@
 
 <div class="dashboard-grid">
     <div class="container" id="panel1">
+        <div class="frost-layer"></div>
         <div class="freeze-overlay"></div>
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
         <div class="table-wrapper"><table id="table1"></table></div>
@@ -115,6 +115,7 @@
         <div id="winner1" class="winner-box"></div>
     </div>
     <div class="container" id="panel2">
+        <div class="frost-layer"></div>
         <div class="freeze-overlay"></div>
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
         <div class="table-wrapper"><table id="table2"></table></div>
@@ -194,11 +195,10 @@ function updateFW() {
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
-    
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
-    // ZAPIS I MROŻENIE
+    // MROŻENIE WIZUALNE I LOGICZNE
     if(id === 1) { isStopped1 = true; stoppedSec1 = s; document.getElementById('panel1').classList.add('frozen'); } 
     else { isStopped2 = true; stoppedSec2 = s; document.getElementById('panel2').classList.add('frozen'); }
     
@@ -259,8 +259,6 @@ setInterval(() => {
     const now = new Date(); 
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
-    
-    // RENDEROWANIE MROŻONE
     renderTable(1, isStopped1 ? stoppedSec1 : s); 
     renderTable(2, isStopped2 ? stoppedSec2 : s); 
 }, 1000);
