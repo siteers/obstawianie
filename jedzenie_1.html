@@ -19,13 +19,13 @@
     #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 
     .container {
-      z-index: 10; width: 95vw; max-width: 1100px; background: var(--glass);
+      z-index: 10; width: 95vw; max-width: 1000px; background: var(--glass);
       backdrop-filter: blur(20px); padding: 30px; border-radius: 40px;
       border: 1px solid var(--border); margin: 20px; text-align: center;
       box-sizing: border-box;
     }
 
-    /* --- LOGIN SECTION - FIXED WIDTH --- */
+    /* --- LOGIN SECTION - UJEDNOLICONA SZEROKOŚĆ --- */
     #login-section { max-width: 400px; margin: 40px auto; }
     #login-section select, #login-section input, #login-section .btn-cyber {
       width: 100%; display: block; box-sizing: border-box; margin: 15px 0;
@@ -39,36 +39,24 @@
       font-size: 16px; outline: none;
     }
 
-    /* --- REAL WORLD MAP STYLES --- */
+    /* --- MAPA ŚWIATA --- */
     #map-container { display: none; }
     #world-map-svg {
-        width: 100%;
-        height: auto;
-        max-height: 70vh;
-        margin: 20px 0;
-        filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.1));
+        width: 100%; height: auto; max-height: 60vh; margin: 20px 0;
     }
     path {
-        fill: #1a1b26;
-        stroke: var(--cyan);
-        stroke-width: 0.5;
-        transition: all 0.3s;
-        cursor: pointer;
+        fill: #1a1b26; stroke: var(--cyan); stroke-width: 0.5;
+        transition: 0.3s; cursor: pointer;
     }
-    path:hover {
-        fill: rgba(0, 212, 255, 0.4);
-    }
-    path.selected {
-        fill: var(--gold) !important;
-        stroke: #fff;
-        filter: drop-shadow(0 0 12px var(--gold));
-    }
+    path:hover { fill: rgba(0, 212, 255, 0.4); }
+    path.selected { fill: var(--gold) !important; stroke: #fff; filter: drop-shadow(0 0 10px var(--gold)); }
 
     .btn-cyber {
       padding: 20px; background: var(--gold); color: #000; border: none;
       border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase;
       transition: 0.3s; font-size: 14px;
     }
+    /* Styl dla zablokowanego przycisku */
     .btn-cyber:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
     .btn-draw { background: #ff4d4d; color: #fff; }
 
@@ -76,7 +64,7 @@
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
       z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
     }
-    .matrix-text { font-size: 24px; color: var(--gold); font-family: monospace; }
+    .matrix-text { font-size: 24px; color: var(--gold); font-family: monospace; height: 30px; }
   </style>
 </head>
 <body>
@@ -84,14 +72,14 @@
 <canvas id="bg-canvas"></canvas>
 
 <div class="container" id="login-section">
-    <h1>Autoryzacja</h1>
+    <h1>AUTORYZACJA</h1>
     <select id="user-select"><option value="">Wczytywanie graczy...</option></select>
     <input type="password" id="user-pass" placeholder="Klucz dostępu">
     <button class="btn-cyber" onclick="login()">Wstąp do systemu</button>
 </div>
 
 <div class="container" id="map-container">
-    <h1 id="user-welcome">Wybierz 3 Kuchnie Świata</h1>
+    <h1 id="user-welcome">Wybierz 3 Kraje</h1>
     <div id="counter" style="color:var(--cyan); font-weight:800; margin-bottom:15px;">Pozostało wyborów: 3</div>
     
     <div id="world-map-svg">
@@ -103,7 +91,7 @@
 
 <div id="result-box">
     <div class="matrix-text" id="stream">ANALYZING GASTRONOMY...</div>
-    <h1 id="final-country" style="font-size: 60px; margin: 30px 0; color: #fff; text-transform: uppercase;"></h1>
+    <h1 id="final-country" style="font-size: 50px; margin: 30px 0; color: #fff; text-transform: uppercase;"></h1>
     <button class="btn-cyber" onclick="openGmaps()">Pokaż restauracje 📍</button>
     <button class="btn-cyber" style="background:none; color:white; margin-top:20px;" onclick="location.reload()">Zamknij</button>
 </div>
@@ -115,10 +103,10 @@ import { getFirestore, collection, getDocs, setDoc, doc, getDoc, onSnapshot } fr
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-let currentUser = "", selected = [];
+let currentUser = "", selectedCountries = [];
 const MAP_URL = "https://raw.githubusercontent.com/thegoodcasper/world-svg-map-data/master/world.svg";
 
-// WCZYTYWANIE GRACZY Z BAZY
+// NASŁUCHIWANIE GRACZY Z BAZY PASSWORDS
 onSnapshot(collection(db, "passwords"), (snap) => {
     const sel = document.getElementById('user-select');
     const current = sel.value;
@@ -155,7 +143,6 @@ window.login = async () => {
     } else alert("BŁĄD AUTORYZACJI");
 };
 
-// ŁADOWANIE PRAWDZIWEJ MAPY ŚWIATA
 async function loadWorldMap() {
     const response = await fetch(MAP_URL);
     const svgText = await response.text();
@@ -166,22 +153,22 @@ async function loadWorldMap() {
     paths.forEach(p => {
         p.onclick = () => {
             const name = p.getAttribute('title') || p.getAttribute('name');
-            if(selected.includes(name)) {
-                selected = selected.filter(c => c !== name);
+            if(selectedCountries.includes(name)) {
+                selectedCountries = selectedCountries.filter(c => c !== name);
                 p.classList.remove('selected');
-            } else if(selected.length < 3) {
-                selected.push(name);
+            } else if(selectedCountries.length < 3) {
+                selectedCountries.push(name);
                 p.classList.add('selected');
             }
-            document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selected.length}`;
-            document.getElementById('vote-btn').disabled = selected.length === 0;
+            document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selectedCountries.length}`;
+            document.getElementById('vote-btn').disabled = selectedCountries.length === 0;
         };
     });
 }
 
 window.saveVotes = async () => {
-    await setDoc(doc(db, "food_votes", currentUser), { countries: selected, timestamp: Date.now() });
-    alert("Wybory zapisane w systemie!");
+    await setDoc(doc(db, "food_votes", currentUser), { countries: selectedCountries, timestamp: Date.now() });
+    alert("Głosy zapisane w systemie!");
 };
 
 window.startDraw = async () => {
@@ -204,10 +191,10 @@ window.startDraw = async () => {
 
 window.openGmaps = () => {
     const c = document.getElementById('final-country').innerText;
-    window.open(`https://www.google.com/maps/search/${encodeURIComponent(c)}+restaurant`, '_blank');
+    window.open(`http://googleusercontent.com/maps.google.com/6{encodeURIComponent(c)}+restaurant`, '_blank');
 };
 
-// CZĄSTECZKI TŁA
+// ANIMOWANE TŁO
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
