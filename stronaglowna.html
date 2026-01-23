@@ -47,14 +47,13 @@
       color: #fff;
     }
 
-    /* Przyciski główne */
     .btn-main {
       background: linear-gradient(135deg, var(--gold), #b38f00);
       color: #000; border: none; font-size: 20px;
     }
 
     .btn-food {
-      background: linear-gradient(135deg, #22c55e, #166534); /* Zielony dla jedzenia */
+      background: linear-gradient(135deg, #22c55e, #166534);
       color: #fff; border: none; font-size: 20px;
     }
 
@@ -93,14 +92,14 @@
     
     <div id="initial-view">
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
-      <a href="jedzenie_1.html" class="btn-cyber btn-food">Wybór jedzenia</a>
+      <a href="jedzenie_1.html" target="_blank" class="btn-cyber btn-food">Wybór jedzenia</a>
     </div>
 
     <div id="sub-menu">
-      <a href="dodaj.html" class="btn-cyber btn-sub">➕ Dodaj godzinę</a>
-      <a href="ranking.html" class="btn-cyber btn-sub">🏆 Ranking</a>
-      <a href="lista.html" class="btn-cyber btn-sub">📋 Lista</a>
-      <a href="regulamin.html" class="btn-cyber btn-sub">📜 Regulamin</a>
+      <a href="dodaj.html" target="_blank" class="btn-cyber btn-sub">➕ Dodaj godzinę</a>
+      <a href="ranking.html" target="_blank" class="btn-cyber btn-sub">🏆 Ranking</a>
+      <a href="lista.html" target="_blank" class="btn-cyber btn-sub">📋 Lista</a>
+      <a href="regulamin.html" target="_blank" class="btn-cyber btn-sub">📜 Regulamin</a>
       <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold;">← Wróć</button>
     </div>
   </div>
