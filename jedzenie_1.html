@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber-Eat | World Selection</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <script src="https://cdn.jsdelivr.net/npm/@svg-maps/world@1.0.1/index.js"></script>
+    <style>
+        :root {
+            --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+            --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1);
+        }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+            margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden;
+        }
+        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
+        .container {
+            z-index: 10; width: 95vw; max-width: 1000px; background: var(--glass);
+            backdrop-filter: blur(20px); padding: 30px; border-radius: 40px;
+            border: 1px solid var(--border); margin: 20px; text-align: center;
+        }
+        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 5px; font-size: 22px; }
+
+        /* --- LOGIN SECTION --- */
+        #login-section { max-width: 400px; margin: auto; }
+        select, input {
+            width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px;
+            background: #000; border: 1px solid var(--cyan); color: #fff; font-weight: bold;
+        }
+
+        /* --- MAP STYLES --- */
+        #map-container { display: none; margin-top: 20px; }
+        svg { fill: #1a1b26; stroke: var(--cyan); stroke-width: 0.5; width: 100%; height: auto; cursor: pointer; }
+        path:hover { fill: rgba(0, 212, 255, 0.3); }
+        path.selected { fill: var(--gold); filter: drop-shadow(0 0 8px var(--gold)); }
+
+        .btn-cyber {
+            padding: 15px 30px; background: var(--gold); color: #000; border: none;
+            border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase;
+            margin-top: 20px; transition: 0.3s;
+        }
+        .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        #result-box {
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
+        }
+        .matrix-text { font-size: 32px; color: var(--gold); font-family: monospace; }
+    </style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<div class="container" id="login-section">
+    <h1>Autoryzacja</h1>
+    <select id="user-select"><option value="">Wybierz Operatora...</option></select>
+    <input type="password" id="user-pass" placeholder="Klucz dostępu">
+    <button class="btn-cyber" onclick="login()">Wstąp do systemu</button>
+</div>
+
+<div class="container" id="map-container">
+    <h1>Wybierz 3 Kuchnie Świata</h1>
+    <p id="counter">Pozostało wyborów: 3</p>
+    <div id="world-map">
+        </div>
+    <button class="btn-cyber" id="vote-btn" onclick="saveVotes()" disabled>Zatwierdź Wybory</button>
+    <button class="btn-cyber" style="background: #ff4d4d;" onclick="startDraw()">LOSUJ POSIŁEK</button>
+</div>
+
+<div id="result-box">
+    <div class="matrix-text" id="stream">ANALYZING GASTRONOMY...</div>
+    <h1 id="final-country" style="font-size: 50px; margin: 30px 0;"></h1>
+    <button class="btn-cyber" id="maps-btn" onclick="openGmaps()">Pokaż na mapie 📍</button>
+    <button class="btn-cyber" style="background:none; color:white;" onclick="location.reload()">Zamknij</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+let currentUser = "";
+let selectedCountries = [];
+const maxChoices = 3;
+
+// Ładowanie listy użytkowników
+onSnapshot(collection(db, "passwords"), (snap) => {
+    const sel = document.getElementById('user-select');
+    sel.innerHTML = '<option value="">Wybierz Operatora...</option>';
+    snap.forEach(d => {
+        let opt = document.createElement('option');
+        opt.value = d.id; opt.innerText = d.id;
+        sel.appendChild(opt);
+    });
+});
+
+window.login = async () => {
+    const n = document.getElementById('user-select').value;
+    const p = document.getElementById('user-pass').value;
+    if(!n || !p) return alert("Podaj dane!");
+
+    const userDoc = await getDoc(doc(db, "passwords", n));
+    if(userDoc.exists() && userDoc.data().password === p) {
+        currentUser = n;
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('map-container').style.display = 'block';
+        loadMap();
+    } else alert("BŁĄD AUTORYZACJI");
+};
+
+// Funkcja ładująca interaktywny SVG
+async function loadMap() {
+    const response = await fetch('https://raw.githubusercontent.com/thegoodcasper/world-svg-map-data/master/world.svg');
+    const svgText = await response.text();
+    const mapDiv = document.getElementById('world-map');
+    mapDiv.innerHTML = svgText;
+
+    const paths = mapDiv.querySelectorAll('path');
+    paths.forEach(p => {
+        p.onclick = () => {
+            const name = p.getAttribute('title') || p.getAttribute('name');
+            if(selectedCountries.includes(name)) {
+                selectedCountries = selectedCountries.filter(c => c !== name);
+                p.classList.remove('selected');
+            } else if(selectedCountries.length < maxChoices) {
+                selectedCountries.push(name);
+                p.classList.add('selected');
+            }
+            document.getElementById('counter').innerText = `Pozostało wyborów: ${maxChoices - selectedCountries.length}`;
+            document.getElementById('vote-btn').disabled = selectedCountries.length === 0;
+        };
+    });
+}
+
+window.saveVotes = async () => {
+    await setDoc(doc(db, "food_choices", currentUser), { countries: selectedCountries, timestamp: Date.now() });
+    alert("Głosy oddane pomyślnie!");
+};
+
+window.startDraw = async () => {
+    const snap = await getDocs(collection(db, "food_choices"));
+    let pool = [];
+    snap.forEach(d => pool.push(...d.data().countries));
+    if(pool.length === 0) return alert("Brak oddanych głosów!");
+
+    document.getElementById('result-box').style.display = 'flex';
+    let i = 0;
+    const interval = setInterval(() => {
+        document.getElementById('stream').innerText = Math.random().toString(36).substring(2, 15).toUpperCase();
+        i++;
+        if(i > 20) {
+            clearInterval(interval);
+            const winner = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('stream').innerText = "CUISINE SELECTED:";
+            document.getElementById('final-country').innerText = winner;
+        }
+    }, 100);
+};
+
+window.openGmaps = () => {
+    const country = document.getElementById('final-country').innerText;
+    window.open(`https://www.google.com/maps/search/restauracja+${country}`, '_blank');
+};
+
+// --- TŁO CZĄSTECZKOWE ---
+const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pts.forEach((p, i) => {
+        p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+    }); requestAnimationFrame(draw);
+} draw();
+</script>
+</body>
+</html>
