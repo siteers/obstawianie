@@ -56,12 +56,10 @@
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
         
-        /* Pozioma legenda */
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 11px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
-        /* Stałe wysokości wykresów */
         .glass-panel canvas { width: 100% !important; height: 320px !important; }
         #rankHistoryChart { height: 400px !important; }
 
@@ -306,7 +304,7 @@
             updateCharts();
         }
 
-        // --- FINAL FIX LOGIKI (PRIORYTET PUNKTÓW + TB) ---
+        // --- POPRAWIONA FUNKCJA WYKRESÓW (STRIKE FIX PAWEŁ) ---
         function updateCharts() {
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
@@ -322,18 +320,25 @@
                 rounds.forEach((_, rIdx) => {
                     if (rIdx >= start) {
                         const snap = playersData.map(pl => {
-                            let pts = 0, g = 0, s = 0, b = 0;
-                            // Precyzyjne sumowanie historii
-                            rounds.slice(0, rIdx + 1).forEach(hr => {
-                                const hw = hr.winners.find(w => w.name === pl.name);
-                                if (hw) {
-                                    const rnk = hw.rank || (hr.winners.indexOf(hw) + 1);
-                                    pts += (rnk === 1 ? 3 : rnk === 2 ? 2 : 1);
-                                    if (rnk === 1) g++; else if (rnk === 2) s++; else b++;
-                                }
-                            });
-                            // UWZGLĘDNIENIE TB Z BAZY
-                            return { name: pl.name, pts, g, s, b, tb: pl.tb || 0 };
+                            let historicalPts = 0, g = 0, s = 0, b = 0;
+                            // Jeśli rIdx to ostatnia runda, bierzemy AKTUALNE punkty z bazy
+                            if (rIdx === rounds.length - 1) {
+                                historicalPts = pl.points;
+                                // Wyciągamy medale z globalStats
+                                const gs = globalStats.find(x => x.name === pl.name);
+                                g = gs.g; s = gs.s; b = gs.b;
+                            } else {
+                                // Dla rund wstecz obliczamy stan na tamten moment
+                                rounds.slice(0, rIdx + 1).forEach(hr => {
+                                    const hw = hr.winners.find(w => w.name === pl.name);
+                                    if (hw) {
+                                        const rnk = hw.rank || (hr.winners.indexOf(hw) + 1);
+                                        historicalPts += (rnk === 1 ? 3 : rnk === 2 ? 2 : 1);
+                                        if (rnk === 1) g++; else if (rnk === 2) s++; else b++;
+                                    }
+                                });
+                            }
+                            return { name: pl.name, pts: historicalPts, g, s, b, tb: pl.tb || 0 };
                         }).sort((a, b) => (b.pts - a.pts) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
 
                         let rank = 1;
