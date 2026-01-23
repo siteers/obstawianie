@@ -8,6 +8,7 @@
     :root {
       --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
       --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1);
+      --gray: #64748b;
     }
 
     body.light {
@@ -36,6 +37,7 @@
       text-transform: uppercase; letter-spacing: 2px;
       cursor: pointer; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      box-sizing: border-box;
     }
 
     .btn-cyber:hover {
@@ -45,14 +47,15 @@
       color: #fff;
     }
 
-    /* Przycisk główny (startowy) */
-    #main-trigger {
+    /* Przyciski główne */
+    .btn-main {
       background: linear-gradient(135deg, var(--gold), #b38f00);
       color: #000; border: none; font-size: 20px;
     }
 
-    #main-trigger:hover {
-        box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+    .btn-food {
+      background: linear-gradient(135deg, #22c55e, #166534); /* Zielony dla jedzenia */
+      color: #fff; border: none; font-size: 20px;
     }
 
     /* --- ANIMACJA WEJŚCIA MENU --- */
@@ -89,24 +92,25 @@
     <h1 id="hub-title">Terminal Dostępowy</h1>
     
     <div id="initial-view">
-      <button class="btn-cyber" id="main-trigger" onclick="revealMenu()">Obstawianie godzin</button>
+      <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
+      <button class="btn-cyber btn-food" onclick="alert('Moduł jedzenia w przygotowaniu...')">Wybór jedzenia</button>
     </div>
 
     <div id="sub-menu">
       <a href="dodaj.html" class="btn-cyber btn-sub">➕ Dodaj godzinę</a>
       <a href="ranking.html" class="btn-cyber btn-sub">🏆 Ranking</a>
       <a href="lista.html" class="btn-cyber btn-sub">📋 Lista</a>
+      <a href="regulamin.html" class="btn-cyber btn-sub">📜 Regulamin</a>
       <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold;">← Wróć</button>
     </div>
   </div>
 
 <script>
-  // --- LOGIKA MENU ---
   function revealMenu() {
     document.getElementById('initial-view').style.display = 'none';
     const menu = document.getElementById('sub-menu');
     menu.classList.add('active');
-    document.getElementById('hub-title').innerText = "Wybierz Moduł";
+    document.getElementById('hub-title').innerText = "Moduł Obstawiania";
   }
 
   function hideMenu() {
@@ -117,14 +121,12 @@
     }, 100);
   }
 
-  // --- DARK MODE ---
   const darkBtn = document.getElementById("darkModeBtn");
   darkBtn.onclick = () => {
     document.body.classList.toggle("light");
     darkBtn.textContent = document.body.classList.contains("light") ? "🌙 Dark Mode" : "☀️ Light Mode";
   };
 
-  // --- TŁO CZĄSTECZKOWE ---
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
   let pts = [];
