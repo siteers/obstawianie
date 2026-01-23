@@ -35,7 +35,6 @@
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
         
-        /* FIX: Poprawna składnia przycisków menu */
         .tabs { display: flex; justify-content: center; gap: 8px; margin-bottom: 25px; flex-wrap: wrap; }
         .tab-link { padding: 10px 20px; border: 1px solid var(--border); background: var(--glass); color: var(--text); cursor: pointer; font-weight: bold; border-radius: 30px; transition: 0.3s; font-size: 13px; }
         .tab-link.active { background: var(--gold); color: #000; box-shadow: 0 0 15px rgba(212, 175, 55, 0.4); }
@@ -56,18 +55,18 @@
         .badge-container { display: inline-flex; gap: 6px; margin-left: 10px; vertical-align: middle; }
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
-
-        /* FIX: Układ poziomy legendy osiągnięć */
-        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-top: 20px; }
+        
+        /* FIX: Opis odznak z powrotem w poziomie */
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 11px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
-        /* FIX: Wysokości wykresów */
-        .glass-panel canvas { width: 100% !important; height: 300px !important; }
-        #rankHistoryChart { height: 350px !important; }
+        .glass-panel canvas { width: 100% !important; height: 320px !important; }
+        #rankHistoryChart { height: 400px !important; }
 
         @media (max-width: 600px) {
-            #rankHistoryChart { height: 450px !important; }
+            .glass-panel canvas { height: 300px !important; }
+            #rankHistoryChart { height: 500px !important; }
         }
 
         .tie-btn { background: linear-gradient(90deg, var(--gold), #fff); color: #000; padding: 4px 12px; border-radius: 8px; font-size: 10px; font-weight: 900; cursor: pointer; border: none; margin-left: 10px; animation: tiePulse 1s infinite alternate; }
@@ -104,7 +103,6 @@
     <div id="rpsOverlay">
         <span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span>
         <h1 style="color:var(--gold)">POJEDYNEK O MIEJSCE</h1>
-        <p>Kamień, Papier, Nożyce (Do 3 zwycięstw)</p>
         <div class="score-display" id="rpsScore">0 : 0</div>
         <div class="rps-arena">
             <div class="player-side">
@@ -194,10 +192,7 @@
 
         const medalChart = new Chart(document.getElementById('medalChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
         const barChart = new Chart(document.getElementById('barChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, plugins: { legend: { display: false } } } });
-        
-        // FIX: Czysty wykres kołowy bez osi
         const pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), { type: 'doughnut', options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: chartColor } } } } });
-        
         const lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), { type: 'line', options: baseOptions });
         const histChart = new Chart(document.getElementById('rankHistoryChart').getContext('2d'), { type: 'line', options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, ticks: { stepSize: 1, color: chartColor } }, x: { ticks: { color: chartColor, font: { size: 10 } } } }, plugins: { legend: { position: 'top', labels: { color: chartColor, boxWidth: 10, font: { size: 9 } } } } } });
 
@@ -310,7 +305,7 @@
             updateCharts();
         }
 
-        // --- FIX: Logika wykresu historii (Paweł) ---
+        // --- POPRAWIONA LOGIKA WYKRESU (FIX PAWEŁ) ---
         function updateCharts() {
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
