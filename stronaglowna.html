@@ -28,9 +28,9 @@
       width: 90vw; max-width: 500px;
     }
 
-    /* --- PRZYCISKI --- */
+    /* --- PRZYCISKI GŁÓWNE --- */
     .btn-cyber {
-      display: block; width: 100%; padding: 25px; margin: 15px 0;
+      display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); backdrop-filter: blur(20px);
       border: 1px solid var(--border); border-radius: 25px;
       color: var(--gold); font-size: 18px; font-weight: 900;
@@ -42,22 +42,32 @@
 
     .btn-cyber:hover {
       transform: translateY(-5px) scale(1.02);
-      border-color: var(--gold);
-      box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-      color: #fff;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+      filter: brightness(1.2);
     }
 
     .btn-main {
       background: linear-gradient(135deg, var(--gold), #b38f00);
-      color: #000; border: none; font-size: 20px;
+      color: #000; border: none;
     }
 
     .btn-food {
       background: linear-gradient(135deg, #22c55e, #166534);
-      color: #fff; border: none; font-size: 20px;
+      color: #fff; border: none;
     }
 
-    /* --- ANIMACJA WEJŚCIA MENU --- */
+    /* NOWE PRZYCISKI */
+    .btn-mundial {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8); /* Niebieski */
+      color: #fff; border: none;
+    }
+
+    .btn-others {
+      background: linear-gradient(135deg, #a855f7, #6b21a8); /* Fioletowy */
+      color: #fff; border: none;
+    }
+
+    /* --- SUB-MENU OBSTAWIANIA --- */
     #sub-menu { display: none; opacity: 0; transform: translateY(20px); transition: 0.5s; }
     #sub-menu.active { display: block; opacity: 1; transform: translateY(0); animation: slideUp 0.5s forwards; }
 
@@ -77,8 +87,8 @@
     }
 
     h1 {
-      font-size: 12px; color: var(--gray); text-transform: uppercase;
-      letter-spacing: 5px; margin-bottom: 40px; opacity: 0.6;
+      font-size: 11px; color: var(--gray); text-transform: uppercase;
+      letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7;
     }
   </style>
 </head>
@@ -93,6 +103,10 @@
     <div id="initial-view">
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
       <a href="jedzenie_1.html" target="_blank" class="btn-cyber btn-food">Wybór jedzenia</a>
+      
+      <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
+      
+      <button class="btn-cyber btn-others" onclick="alert('Dostępne już wkrótce!')">Inne zakłady</button>
     </div>
 
     <div id="sub-menu">
@@ -100,7 +114,7 @@
       <a href="ranking.html" target="_blank" class="btn-cyber btn-sub">🏆 Ranking</a>
       <a href="lista.html" target="_blank" class="btn-cyber btn-sub">📋 Lista</a>
       <a href="regulamin.html" target="_blank" class="btn-cyber btn-sub">📜 Regulamin</a>
-      <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold;">← Wróć</button>
+      <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć do Hub-a</button>
     </div>
   </div>
 
