@@ -3,58 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <title>Cyber-Bet | Operator Terminal</title>
- <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Cyber-Bet">
-  
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="logo.png">
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
     :root {
       --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
       --glass: rgba(15, 23, 42, 0.85); --error: #ff0000; --gray: #475569;
     }
-
     body {
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; perspective: 1000px;
       touch-action: manipulation;
     }
-
-    /* --- EFEKTY KOSZMARU --- */
     .nightmare-mode { background: #300 !important; filter: invert(1) contrast(300%) blur(2px) !important; }
     @keyframes glitch { 0% { transform: translate(0); } 25% { transform: translate(-10px, 10px); } 50% { transform: translate(10px, -10px); } 100% { transform: translate(0); } }
     .nightmare-shake { animation: glitch 0.1s infinite !important; }
-
-    /* --- ZSYNCHRONIZOWANE PULSOWANIE (LOCK) --- */
     @keyframes syncPulse {
         0%, 100% { opacity: 1; text-shadow: 0 0 5px var(--error); border-color: var(--error); box-shadow: 0 0 5px var(--error); }
         50% { opacity: 0.3; text-shadow: 0 0 25px var(--error); border-color: #ff5555; background: rgba(255, 0, 0, 0.2); box-shadow: 0 0 20px var(--error); }
     }
     .group-locked .target-name { color: var(--error) !important; animation: syncPulse 1s infinite; }
     .group-locked input { animation: syncPulse 1s infinite; border: 2px solid var(--error) !important; pointer-events: none; }
-
-    /* --- EFEKT ZSZARZENIA (DLA SAMEGO SIEBIE) --- */
     .target-disabled { opacity: 0.25 !important; filter: grayscale(1); pointer-events: none; }
-
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
     .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transform-style: preserve-3d; }
-
     .container {
       background: var(--glass); backdrop-filter: blur(25px); padding: 35px; border-radius: 40px;
       width: 95vw; max-width: 440px; border: 1px solid rgba(255, 255, 255, 0.1);
       box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); text-align: center; position: relative; box-sizing: border-box;
     }
-
     h2 { margin: 0 0 30px 0; font-size: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; }
     .input-box { margin-bottom: 25px; text-align: center; }
     .input-box label { font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 2px; }
-
-    /* --- CYBER DROPDOWN --- */
     select {
       appearance: none; -webkit-appearance: none;
       width: 100%; padding: 16px; font-size: 16px; border-radius: 20px;
@@ -66,25 +52,19 @@
       transition: 0.3s;
     }
     select:focus { box-shadow: 0 0 25px var(--cyan); outline: none; }
-    option { background: #0f172a; color: #fff; padding: 10px; }
-
     .target-group { display: flex; flex-direction: column; align-items: center; gap: 12px; transition: 0.4s; }
     .target-name {
         font-size: 14px; font-weight: 900; color: var(--cyan); 
         text-transform: uppercase; transition: 0.3s; height: 18px;
         text-shadow: 0 0 10px rgba(0, 212, 255, 0.6); letter-spacing: 1px;
     }
-
     .hour-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
-
     input {
       display: block; width: 100%; padding: 16px; font-size: 20px; border-radius: 18px;
       border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.5); color: #fff; outline: none; box-sizing: border-box;
       transition: 0.2s; text-align: center; font-family: 'JetBrains Mono', monospace;
     }
     input:focus { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.25); background: rgba(0, 212, 255, 0.05); }
-    input:disabled { opacity: 0.2; }
-
     .btn-cyber {
       width: 100%; padding: 20px; background: var(--gold); color: #000; border: none; border-radius: 20px;
       font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 15px;
@@ -92,11 +72,9 @@
     }
     .btn-cyber:active { transform: scale(0.96); }
     .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; opacity: 0.7; cursor: not-allowed; }
-
     #forgot-link, #register-link, #admin-link { display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
     #admin-link { color: var(--gray); font-size: 9px; }
     #msg { margin-top: 20px; font-size: 12px; font-weight: 900; min-height: 20px; text-transform: uppercase; }
-
     #admin-panel { display: none; margin-top: 15px; }
     .btn-delete { background: #600; color: #fff; }
   </style>
@@ -107,7 +85,7 @@
 
   <div class="tilt-box" id="tiltCard">
     <div class="container" id="mainContainer">
-      <h2 id="mainHeader">System Autoryzacji</h2>
+      <h2>System Autoryzacji</h2>
 
       <div class="input-box">
         <label>Operator Systemu</label>
@@ -130,23 +108,18 @@
       <div id="auth-section" style="display:none;">
         <div class="input-box">
             <label id="main-pass-label">Klucz Dostępu</label>
-            <input id="password" type="password" placeholder="••••" oninput="validateForm()">
+            <input id="password" type="password" placeholder="••••" oninput="validateForm()" onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
             <a id="forgot-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
         <div id="pass-confirm-box" style="display:none;" class="input-box">
             <label>Potwierdź Klucz</label>
-            <input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()">
+            <input id="password-confirm" type="password" placeholder="••••" oninput="validateForm()" onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
         </div>
       </div>
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
-      
       <a id="register-link" onclick="publicRegister()">Zarejestruj się (Nowy gracz)</a>
-
-      <div id="admin-panel">
-          <button class="btn-cyber btn-delete" onclick="adminDeleteUser()">- Usuń Gracza z Systemu</button>
-      </div>
-
+      <div id="admin-panel"><button class="btn-cyber btn-delete" onclick="adminDeleteUser()">- Usuń Gracza</button></div>
       <a id="admin-link" onclick="toggleAdmin()">Terminal Admina</a>
       <p id="msg"></p>
     </div>
@@ -163,7 +136,6 @@ const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
 let isFirstTime = false, isResetMode = false, currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 
-// --- OBSŁUGA LISTY UŻYTKOWNIKÓW ---
 onSnapshot(collection(db, "passwords"), (snap) => {
     const select = document.getElementById('name');
     const currentVal = select.value;
@@ -176,47 +148,31 @@ onSnapshot(collection(db, "passwords"), (snap) => {
     select.value = currentVal;
 });
 
-// --- PUBLICZNA REJESTRACJA ---
 window.publicRegister = async () => {
-    const n = prompt("Jak chcesz się nazywać w systemie?");
-    if(!n) return;
-    const p = prompt("Ustal swoje hasło (4 cyfry):");
-    if(!p) return;
+    const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
+    const p = prompt("Hasło (4 cyfry):"); if(!p) return;
     await setDoc(doc(db, "passwords", n), { password: p });
-    alert("Witaj " + n + "! Możesz teraz wybrać się z listy i obstawiać.");
+    alert("Witaj " + n + "!");
 }
 
-// --- TRYB ADMINA (TYLKO USUWANIE) ---
 window.toggleAdmin = () => {
-    if(prompt("KOD DOSTĘPU TERMINALA:") === "0000") {
+    if(prompt("KOD DOSTĘPU:") === "0000") {
         document.getElementById('admin-panel').style.display = 'block';
         document.getElementById('admin-link').style.display = 'none';
-    } else alert("ODMOWA DOSTĘPU.");
+    } else alert("ODMOWA.");
 }
 
 window.adminDeleteUser = async () => {
-    const n = prompt("Podaj nazwę gracza do usunięcia (nie usunie to jego punktów):");
-    if(!n) return;
-    if(confirm("Czy na pewno zablokować dostęp dla " + n + "?")) {
-        await deleteDoc(doc(db, "passwords", n));
-        alert("Gracz usunięty z terminala.");
-    }
+    const n = prompt("Nazwa gracza do usunięcia:"); if(!n) return;
+    if(confirm("Usunąć " + n + "?")) { await deleteDoc(doc(db, "passwords", n)); alert("Usunięto."); }
 }
 
-// --- WALIDACJA CZASU ---
 window.formatTime = (input) => {
     let v = input.value.replace(/\D/g, '');
-    if (v.length >= 2) {
-        let h = parseInt(v.slice(0, 2));
-        if (h > 23) v = "23" + v.slice(2);
-    }
-    if (v.length >= 4) {
-        let m = parseInt(v.slice(2, 4));
-        if (m > 59) v = v.slice(0, 2) + "59";
-    }
+    if (v.length >= 2) { let h = parseInt(v.slice(0, 2)); if (h > 23) v = "23" + v.slice(2); }
+    if (v.length >= 4) { let m = parseInt(v.slice(2, 4)); if (m > 59) v = v.slice(0, 2) + "59"; }
     if (v.length > 2) v = v.slice(0, 2) + ':' + v.slice(2, 4);
-    input.value = v;
-    validateForm();
+    input.value = v; validateForm();
 };
 
 onSnapshot(doc(db, "appState", "status"), (snap) => {
@@ -229,30 +185,21 @@ onSnapshot(doc(db, "appState", "status"), (snap) => {
 });
 
 function updateSlotUI(id, name, isLocked) {
-    const input = document.getElementById(`hour${id}`);
-    const nameDisplay = document.getElementById(`targetName${id}`);
-    const group = document.getElementById(`group${id}`);
-    const userName = document.getElementById('name').value;
-
-    const isEmpty = (!name || name === "Brak");
-    const isSelfBet = (userName === name && !isEmpty);
-
+    const input = document.getElementById(`hour${id}`), nameDisplay = document.getElementById(`targetName${id}`);
+    const group = document.getElementById(`group${id}`), userName = document.getElementById('name').value;
+    const isEmpty = (!name || name === "Brak"), isSelfBet = (userName === name && !isEmpty);
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
     input.disabled = isLocked || isEmpty || isSelfBet;
-    
     if (isLocked) group.className = "target-group group-locked";
     else if (isSelfBet) group.className = "target-group target-disabled";
     else group.className = "target-group";
-
     if (input.disabled) input.value = "";
     nameDisplay.style.color = isEmpty ? "#475569" : "var(--cyan)";
 }
 
 window.checkUserAuth = async function() {
     const n = document.getElementById('name').value;
-    updateSlotUI(1, currentTargets.t1, slotLocks.l1);
-    updateSlotUI(2, currentTargets.t2, slotLocks.l2);
-
+    updateSlotUI(1, currentTargets.t1, slotLocks.l1); updateSlotUI(2, currentTargets.t2, slotLocks.l2);
     if (!n) { document.getElementById('auth-section').style.display = 'none'; return; }
     const userDoc = await getDoc(doc(db, "passwords", n));
     document.getElementById('auth-section').style.display = 'block';
@@ -266,21 +213,18 @@ window.validateForm = function() {
     const n = document.getElementById('name').value, p = document.getElementById('password').value;
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const p2 = document.getElementById('password-confirm').value;
-    
     const timeReg = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-    let h1Valid = h1.length === 5 && timeReg.test(h1);
-    let h2Valid = h2.length === 5 && timeReg.test(h2);
-
-    let v = n && p && (h1Valid || h2Valid);
+    let h1V = h1.length === 5 && timeReg.test(h1), h2V = h2.length === 5 && timeReg.test(h2);
+    let v = n && p && (h1V || h2V);
     if (isFirstTime || isResetMode) v = v && (p === p2 && p.length > 0);
     document.getElementById('saveBtn').disabled = !v;
 }
 
 window.forgotPassword = () => {
     const n = document.getElementById('name').value; if(!n) return alert("Wybierz Operatora!");
-    if(prompt("AUTORYZACJA ADMINA - KOD:") === "0000") {
+    if(prompt("ADMIN CODE:") === "0000") {
         isResetMode = true; document.getElementById('pass-confirm-box').style.display = 'block';
-        alert("Autoryzacja pomyślna. Wprowadź nowe hasło.");
+        alert("Nowe hasło.");
     } else alert("BŁĄD.");
 }
 
@@ -288,7 +232,6 @@ window.saveData = async function() {
     const n = document.getElementById('name').value, p = document.getElementById('password').value;
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn');
-    
     btn.disabled = true;
     try {
         if (!isFirstTime && !isResetMode) {
@@ -298,24 +241,17 @@ window.saveData = async function() {
                 document.body.classList.add('nightmare-mode');
                 document.getElementById('tiltCard').classList.add('nightmare-shake');
                 msg.style.color = "#ff0000"; msg.innerText = "SYSTEM BREACH DETECTED";
-                setTimeout(() => {
-                    document.body.classList.remove('nightmare-mode');
-                    document.getElementById('tiltCard').classList.remove('nightmare-shake');
-                    btn.disabled = false;
-                }, 1500);
+                setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('tiltCard').classList.remove('nightmare-shake'); btn.disabled = false; }, 1500);
                 return;
             }
         } else await setDoc(doc(db, "passwords", n), { password: p });
-
         if (h1.length === 5) await addDoc(collection(db, "users"), { name: n, hour: h1, targetSlot: 'slot1', timestamp: Date.now() });
         if (h2.length === 5) await addDoc(collection(db, "users"), { name: n, hour: h2, targetSlot: 'slot2', timestamp: Date.now() });
-
         msg.style.color = "var(--cyan)"; msg.innerText = "TRANSFER COMPLETED";
         setTimeout(() => location.reload(), 1200);
     } catch (e) { alert(e.message); btn.disabled = false; }
 }
 
-// --- KONSTELACJA ---
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
@@ -332,13 +268,9 @@ function draw() {
 } draw();
 
 document.addEventListener('mousemove', (e) => {
-    const x = (window.innerWidth / 2 - e.pageX) / 500;
-    const y = (window.innerHeight / 2 - e.pageY) / 500;
+    const x = (window.innerWidth / 2 - e.pageX) / 500, y = (window.innerHeight / 2 - e.pageY) / 500;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
 });
 </script>
 </body>
 </html>
-
-
-
