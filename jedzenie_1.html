@@ -25,71 +25,39 @@
       box-sizing: border-box;
     }
 
+    /* --- LOGIN SECTION - UJEDNOLICONA SZEROKOŚĆ --- */
+    #login-section { max-width: 400px; margin: 40px auto; }
+    #login-section select, #login-section input, #login-section .btn-cyber {
+      width: 100%; display: block; box-sizing: border-box; margin: 15px 0;
+    }
+    
     h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 5px; font-size: clamp(18px, 4vw, 24px); }
 
-    /* --- LOGIN SECTION FIXED --- */
-    #login-section { 
-        max-width: 400px; 
-        margin: 40px auto;
-        display: flex; 
-        flex-direction: column; 
-        align-items: center; 
-    }
-    /* Ujednolicenie szerokości boxów */
-    #login-section select, #login-section input, #login-section .btn-cyber {
-      width: 100%; 
-      max-width: 100%;
-      box-sizing: border-box; 
-    }
     select, input {
-      padding: 15px; margin: 10px 0; border-radius: 15px;
+      padding: 15px; border-radius: 15px;
       background: #000; border: 1px solid var(--cyan); color: #fff; font-weight: bold;
-      font-size: 16px;
+      font-size: 16px; outline: none;
     }
 
-    /* --- MAP STYLES --- */
+    /* --- MAPA --- */
     #map-container { display: none; }
-    #world-map-wrapper { 
-        width: 100%; 
-        height: auto; 
-        margin: 20px 0;
-        /* Ograniczenie maksymalnej wysokości mapy, żeby nie zajmowała całego ekranu */
-        max-height: 60vh;
-        overflow: hidden;
-        display: flex;
-        justify-content: center;
-    }
-    /* Stylowanie osadzonego SVG */
-    #world-map-wrapper svg { 
-        fill: #1a1b26; 
-        stroke: var(--cyan); 
-        stroke-width: 0.5px; /* Cieńsze linie */
-        width: 100%; 
-        height: 100%; /* Dopasowanie do wrappera */
-        cursor: pointer; 
-        transition: fill 0.3s ease;
-    }
+    svg { fill: #1a1b26; stroke: var(--cyan); stroke-width: 0.8px; width: 100%; height: auto; cursor: pointer; max-height: 70vh; }
     path:hover { fill: rgba(0, 212, 255, 0.3); }
-    path.selected { fill: var(--gold) !important; filter: drop-shadow(0 0 8px var(--gold)); }
+    path.selected { fill: var(--gold) !important; filter: drop-shadow(0 0 10px var(--gold)); }
 
     .btn-cyber {
-      padding: 20px 40px; background: var(--gold); color: #000; border: none;
+      padding: 20px; background: var(--gold); color: #000; border: none;
       border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase;
-      margin: 10px; transition: 0.3s; font-size: 14px;
+      transition: 0.3s; font-size: 14px;
     }
-    /* Styl dla zablokowanego przycisku */
-    .btn-cyber:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); }
-    .btn-draw { background: #ff4d4d; color: #fff; transition: 0.5s; }
+    .btn-cyber:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
+    .btn-draw { background: #ff4d4d; color: #fff; }
 
-    /* --- RESULT MODAL --- */
     #result-box {
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
       z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
     }
-    .matrix-text { font-size: 24px; color: var(--gold); font-family: 'Courier New', monospace; height: 30px; }
-
-    #counter { font-weight: 800; color: var(--cyan); margin-bottom: 10px; font-size: 14px; }
+    .matrix-text { font-size: 24px; color: var(--gold); font-family: monospace; }
   </style>
 </head>
 <body>
@@ -98,30 +66,135 @@
 
 <div class="container" id="login-section">
     <h1>Autoryzacja</h1>
-    <select id="user-select"><option value="">Wybierz Operatora...</option></select>
+    <select id="user-select"><option value="">Wczytywanie graczy...</option></select>
     <input type="password" id="user-pass" placeholder="Klucz dostępu">
     <button class="btn-cyber" onclick="login()">Wstąp do systemu</button>
 </div>
 
 <div class="container" id="map-container">
-    <h1 id="user-welcome">Wybierz 3 Kuchnie</h1>
-    <div id="counter">Pozostało wyborów: 3</div>
-    
-    <div id="world-map-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500">
+    <h1 id="user-welcome">Wybierz 3 Kraje</h1>
+    <div id="counter" style="color:var(--cyan); font-weight:800; margin-bottom:15px;">Pozostało wyborów: 3</div>
+    <div id="world-map">
+        <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
             <g id="map-paths">
-                <path title="Kanada" d="M150,50 L250,50 L280,150 L100,150 Z" />
-                <path title="USA" d="M100,160 L280,160 L260,250 L120,250 Z" />
-                <path title="Brazylia" d="M200,300 L300,280 L320,400 L220,420 Z" />
-                <path title="Rosja" d="M450,40 L850,40 L800,150 L400,150 Z" />
-                <path title="Chiny" d="M600,160 L750,160 L730,250 L580,250 Z" />
-                <path title="Indie" d="M550,260 L650,260 L620,350 L580,350 Z" />
-                <path title="Australia" d="M700,350 L850,350 L830,450 L680,450 Z" />
-                <path title="Polska" d="M430,130 L460,130 L455,155 L425,155 Z" />
-                <path title="Niemcy" d="M400,135 L425,135 L420,160 L395,160 Z" />
-                <path title="Francja" d="M370,140 L395,140 L390,170 L365,170 Z" />
-                <path title="Włochy" d="M410,170 L430,170 L440,200 L420,210 Z" />
-                <path title="Hiszpania" d="M340,170 L370,170 L365,200 L335,200 Z" />
-                <path title="Japonia" d="M800,170 L830,160 L840,200 L810,210 Z" />
-                <path title="Meksyk" d="M130,260 L200,260 L180,320 L150,300 Z" />
-                <path title="Egipt" d="M450,220 L50
+                <path title="Polska" d="M510,130 L535,130 L535,155 L510,155 Z" />
+                <path title="Włochy" d="M495,185 L515,185 L515,215 L495,215 Z" />
+                <path title="Japonia" d="M840,175 L865,175 L865,225 L840,225 Z" />
+                <path title="USA" d="M140,145 L310,145 L310,255 L140,255 Z" />
+                <path title="Meksyk" d="M175,265 L235,265 L235,305 L175,305 Z" />
+                <path title="Chiny" d="M690,175 L810,175 L810,265 L690,265 Z" />
+                <path title="Indie" d="M675,275 L735,275 L735,335 L675,335 Z" />
+                <path title="Grecja" d="M525,195 L545,195 L545,215 L525,215 Z" />
+                <path title="Turcja" d="M555,185 L605,185 L605,205 L555,205 Z" />
+                <path title="Francja" d="M465,145 L495,145 L495,175 L465,175 Z" />
+                <path title="Hiszpania" d="M435,185 L475,185 L475,215 L435,215 Z" />
+            </g>
+        </svg>
+    </div>
+    <button class="btn-cyber" id="vote-btn" onclick="saveVotes()" disabled>Zatwierdź Wybory</button>
+    <button class="btn-cyber btn-draw" id="draw-btn" onclick="startDraw()" disabled>LOSUJ KRAJ (0/9)</button>
+</div>
+
+<div id="result-box">
+    <div class="matrix-text">SYSTEM ANALYSIS COMPLETE:</div>
+    <h1 id="final-country" style="font-size: 50px; margin: 30px 0; color: #fff;"></h1>
+    <button class="btn-cyber" onclick="openGmaps()">Pokaż restauracje 📍</button>
+    <button class="btn-cyber" style="background:none; color:white; margin-top:20px;" onclick="location.reload()">Zamknij</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, collection, getDocs, setDoc, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+let currentUser = "", selectedCountries = [];
+
+// WCZYTYWANIE GRACZY Z KOLEKCJI PASSWORDS
+onSnapshot(collection(db, "passwords"), (snap) => {
+    const sel = document.getElementById('user-select');
+    sel.innerHTML = '<option value="">Wybierz Operatora...</option>';
+    snap.forEach(d => {
+        let opt = document.createElement('option');
+        opt.value = d.id; opt.innerText = d.id;
+        sel.appendChild(opt);
+    });
+});
+
+// MONITOROWANIE LICZBY GŁOSÓW (MIN 9)
+onSnapshot(collection(db, "food_votes"), (snap) => {
+    let total = 0;
+    snap.forEach(d => { if(d.data().countries) total += d.data().countries.length; });
+    const btn = document.getElementById('draw-btn');
+    if(btn) {
+        btn.innerText = `LOSUJ KRAJ (${total}/9)`;
+        btn.disabled = total < 9;
+    }
+});
+
+window.login = async () => {
+    const n = document.getElementById('user-select').value;
+    const p = document.getElementById('user-pass').value;
+    if(!n || !p) return alert("Podaj dane!");
+
+    const userDoc = await getDoc(doc(db, "passwords", n));
+    if(userDoc.exists() && userDoc.data().password === p) {
+        currentUser = n;
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('map-container').style.display = 'block';
+        initMap();
+    } else alert("BŁĄD AUTORYZACJI");
+};
+
+function initMap() {
+    document.querySelectorAll('#map-paths path').forEach(p => {
+        p.onclick = () => {
+            const name = p.getAttribute('title');
+            if(selectedCountries.includes(name)) {
+                selectedCountries = selectedCountries.filter(c => c !== name);
+                p.classList.remove('selected');
+            } else if(selectedCountries.length < 3) {
+                selectedCountries.push(name);
+                p.classList.add('selected');
+            }
+            document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selectedCountries.length}`;
+            document.getElementById('vote-btn').disabled = selectedCountries.length === 0;
+        };
+    });
+}
+
+window.saveVotes = async () => {
+    await setDoc(doc(db, "food_votes", currentUser), { countries: selectedCountries, timestamp: Date.now() });
+    alert("Głosy zapisane!");
+};
+
+window.startDraw = async () => {
+    const snap = await getDocs(collection(db, "food_votes"));
+    let pool = []; snap.forEach(d => pool.push(...d.data().countries));
+    document.getElementById('result-box').style.display = 'flex';
+    setTimeout(() => {
+        const winner = pool[Math.floor(Math.random() * pool.length)];
+        document.getElementById('final-country').innerText = winner;
+    }, 1500);
+};
+
+window.openGmaps = () => {
+    const c = document.getElementById('final-country').innerText;
+    window.open(`http://googleusercontent.com/maps.google.com/5{encodeURIComponent(c)}`, '_blank');
+};
+
+// CZĄSTECZKI TŁA
+const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pts.forEach(p => {
+        p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+    }); requestAnimationFrame(draw);
+} draw();
+</script>
+</body>
+</html>
