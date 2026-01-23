@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Cyber-Bet | Hub System</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Cyber-Bet">
-
-<link rel="manifest" href="manifest.json">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Cyber-Bet">
+  <link rel="manifest" href="./manifest.json">
+  
   <style>
     :root {
       --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
@@ -18,14 +18,16 @@
       --gray: #64748b;
     }
 
-    body.light {
-      --bg: #f2f2f2; --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1);
-    }
+    body.light { --bg: #f2f2f2; --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1); }
 
     body {
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; transition: 0.3s;
+      /* APP-LIKE BEHAVIOR */
+      overscroll-behavior-y: contain; 
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
@@ -33,9 +35,10 @@
     .hub-container {
       z-index: 10; position: relative; text-align: center;
       width: 90vw; max-width: 500px;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: env(safe-area-inset-bottom);
     }
 
-    /* --- PRZYCISKI GŁÓWNE --- */
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); backdrop-filter: blur(20px);
@@ -47,62 +50,36 @@
       box-sizing: border-box;
     }
 
-    .btn-cyber:hover {
-      transform: translateY(-5px) scale(1.02);
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-      filter: brightness(1.2);
-    }
+    .btn-cyber:hover { transform: translateY(-5px) scale(1.02); filter: brightness(1.2); }
+    .btn-cyber:active { transform: scale(0.95); }
 
-    .btn-main {
-      background: linear-gradient(135deg, var(--gold), #b38f00);
-      color: #000; border: none;
-    }
+    .btn-main { background: linear-gradient(135deg, var(--gold), #b38f00); color: #000; border: none; }
+    .btn-food { background: linear-gradient(135deg, #22c55e, #166534); color: #fff; border: none; }
+    .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; }
+    .btn-others { background: linear-gradient(135deg, #a855f7, #6b21a8); color: #fff; border: none; }
 
-    .btn-food {
-      background: linear-gradient(135deg, #22c55e, #166534);
-      color: #fff; border: none;
-    }
-
-    /* NOWE PRZYCISKI */
-    .btn-mundial {
-      background: linear-gradient(135deg, #3b82f6, #1d4ed8); /* Niebieski */
-      color: #fff; border: none;
-    }
-
-    .btn-others {
-      background: linear-gradient(135deg, #a855f7, #6b21a8); /* Fioletowy */
-      color: #fff; border: none;
-    }
-
-    /* --- SUB-MENU OBSTAWIANIA --- */
     #sub-menu { display: none; opacity: 0; transform: translateY(20px); transition: 0.5s; }
     #sub-menu.active { display: block; opacity: 1; transform: translateY(0); animation: slideUp 0.5s forwards; }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
     .btn-sub { color: var(--cyan); border-color: rgba(0, 212, 255, 0.2); }
-    .btn-sub:hover { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.3); color: #fff; }
 
     #darkModeBtn {
-      position: fixed; top: 20px; right: 20px; padding: 10px 20px;
+      position: fixed; top: calc(20px + env(safe-area-inset-top)); 
+      right: 20px; padding: 10px 20px;
       border-radius: 30px; border: 1px solid var(--border);
       background: var(--glass); color: var(--gold);
       cursor: pointer; font-weight: bold; z-index: 100;
     }
 
-    h1 {
-      font-size: 11px; color: var(--gray); text-transform: uppercase;
-      letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7;
-    }
+    h1 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7; }
   </style>
 </head>
 <body>
 
   <canvas id="bg-canvas"></canvas>
-  <button id="darkModeBtn">☀️ Light Mode</button>
+  <button id="darkModeBtn">☀️ Light</button>
 
   <div class="hub-container">
     <h1 id="hub-title">Terminal Dostępowy</h1>
@@ -110,9 +87,7 @@
     <div id="initial-view">
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
       <a href="jedzenie_1.html" target="_blank" class="btn-cyber btn-food">Wybór jedzenia</a>
-      
       <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
-      
       <button class="btn-cyber btn-others" onclick="alert('Dostępne już wkrótce!')">Inne zakłady</button>
     </div>
 
@@ -121,7 +96,7 @@
       <a href="ranking.html" target="_blank" class="btn-cyber btn-sub">🏆 Ranking</a>
       <a href="lista.html" target="_blank" class="btn-cyber btn-sub">📋 Lista</a>
       <a href="regulamin.html" target="_blank" class="btn-cyber btn-sub">📜 Regulamin</a>
-      <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć do Hub-a</button>
+      <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć</button>
     </div>
   </div>
 
@@ -144,7 +119,7 @@
   const darkBtn = document.getElementById("darkModeBtn");
   darkBtn.onclick = () => {
     document.body.classList.toggle("light");
-    darkBtn.textContent = document.body.classList.contains("light") ? "🌙 Dark Mode" : "☀️ Light Mode";
+    darkBtn.textContent = document.body.classList.contains("light") ? "🌙 Dark" : "☀️ Light";
   };
 
   const canvas = document.getElementById('bg-canvas');
@@ -201,4 +176,3 @@
 </script>
 </body>
 </html>
-
