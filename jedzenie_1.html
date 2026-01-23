@@ -2,62 +2,72 @@
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
-    <title>🍕 Piątkowy Feast Protocol</title>
+    <title>🍕 Cyber-Eat | Friday Protocol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
         :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.9); }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        .container { z-index: 10; width: 95vw; max-width: 600px; background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; margin-top: 50px; box-sizing: border-box; }
         
+        .container { z-index: 10; width: 95vw; max-width: 600px; background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; margin-top: 40px; box-sizing: border-box; }
+        
+        /* UJEDNOLICENIE SZEROKOŚCI BOXÓW */
+        .auth-container { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+        input, select { width: 100%; max-width: 300px; padding: 15px; background:#000; color:#fff; border-radius:12px; border: 1px solid var(--cyan); box-sizing: border-box; font-size: 14px; font-weight: bold; }
+
         .cuisine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
         .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 12px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
         .cuisine-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px var(--gold); }
-        .cuisine-card h4 { margin: 5px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .cuisine-card h4 { margin: 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .emoji { font-size: 24px; }
 
-        .btn-cyber { 
-            width: 100%; max-width: 280px; padding: 18px; 
-            background: var(--gold); color: #000; border: none; 
-            border-radius: 15px; font-weight: 900; text-transform: uppercase; 
-            cursor: pointer; margin: 10px auto; display: block;
-            transition: 0.3s;
-        }
+        .btn-cyber { width: 100%; max-width: 280px; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin: 10px auto; display: block; transition: 0.3s; }
         .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; }
         
-        #draw-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-        .winner-display { font-size: 48px; font-weight: 900; color: #fff; margin: 20px 0; text-shadow: 0 0 20px var(--gold); }
+        #draw-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
+        .winner-display { font-size: clamp(32px, 8vw, 56px); font-weight: 900; color: #fff; margin: 20px 0; text-shadow: 0 0 20px var(--gold); }
         
-        input, select { width: 100%; max-width: 300px; padding: 15px; margin-bottom: 10px; background:#000; color:#fff; border-radius:10px; border: 1px solid var(--cyan); display: block; margin-left: auto; margin-right: auto; }
+        #other-input-container { display: none; margin-top: 10px; animation: fadeIn 0.3s forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
 
     <div class="container" id="login-box">
-        <h2 style="color:var(--gold)">AUTORYZACJA</h2>
-        <select id="user-select"></select>
-        <input type="password" id="pass-input" placeholder="KLUCZ DOSTĘPU">
-        <button class="btn-cyber" onclick="login()">WSTĄP</button>
+        <h2 style="color:var(--gold); letter-spacing: 3px;">AUTORYZACJA</h2>
+        <div class="auth-container">
+            <select id="user-select"></select>
+            <input type="password" id="pass-input" placeholder="KLUCZ DOSTĘPU">
+            <button class="btn-cyber" onclick="login()">WSTĄP</button>
+        </div>
     </div>
 
     <div class="container" id="food-box" style="display:none;">
-        <h2 style="color:var(--cyan)">CO JEMY W PIĄTEK?</h2>
+        <h2 style="color:var(--cyan)">PIĄTKOWY PROTOKÓŁ</h2>
         <p id="counter">Wybierz 3 kuchnie (0/3)</p>
+        
         <div class="cuisine-grid">
             <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><span class="emoji">🍔</span><h4>Burgery</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><span class="emoji">🥟</span><h4>Polska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">Indyjska</span><h4>Indyjska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">🍛</span><h4>Indyjska</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><span class="emoji">🥙</span><h4>Kebab</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><span class="emoji">🍜</span><h4>Tajska</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><span class="emoji">🥗</span><h4>Grecka</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><span class="emoji">🍱</span><h4>Sushi</h4></div>
             <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><span class="emoji">🍕</span><h4>Pizza</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Wietnamska 🥣')"><span class="emoji">🥣</span><h4>Wietnamska</h4></div>
+            <div class="cuisine-card" id="other-card" onclick="toggleOther()">
+                <span class="emoji">❓</span><h4>Inna...</h4>
+            </div>
         </div>
+
+        <div id="other-input-container">
+            <input type="text" id="other-name" placeholder="Jaka kuchnia?">
+        </div>
+
         <button class="btn-cyber" id="voteBtn" onclick="saveVotes()" disabled>Zapisz Głosy</button>
         <button class="btn-cyber" id="drawBtn" onclick="drawFood()" style="background:#ff4d4d; color:#fff;" disabled>Losuj (0/9)</button>
     </div>
@@ -76,7 +86,7 @@
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-    let currentSelections = [], user = "", winner = "";
+    let currentSelections = [], user = "", winnerName = "", otherSelected = false;
 
     onSnapshot(collection(db, "passwords"), snap => {
         const sel = document.getElementById('user-select');
@@ -85,8 +95,9 @@
 
     onSnapshot(collection(db, "food_votes"), snap => {
         let count = 0; snap.forEach(d => count += (d.data().votes || []).length);
-        document.getElementById('drawBtn').innerText = `LOSUJ (${count}/9)`;
-        document.getElementById('drawBtn').disabled = count < 9;
+        const btn = document.getElementById('drawBtn');
+        btn.innerText = `LOSUJ (${count}/9)`;
+        btn.disabled = count < 9;
     });
 
     window.login = async () => {
@@ -100,39 +111,64 @@
         } else alert("BŁĘDNY KLUCZ");
     };
 
+    window.toggleOther = () => {
+        const card = document.getElementById('other-card');
+        const inputCont = document.getElementById('other-input-container');
+        if(!otherSelected && currentSelections.length < 3) {
+            otherSelected = true;
+            card.classList.add('selected');
+            inputCont.style.display = 'block';
+        } else if(otherSelected) {
+            otherSelected = false;
+            card.classList.remove('selected');
+            inputCont.style.display = 'none';
+            document.getElementById('other-name').value = "";
+        }
+        updateCounter();
+    };
+
     window.select = (el, type) => {
         if(currentSelections.includes(type)) {
             currentSelections = currentSelections.filter(t => t !== type);
             el.classList.remove('selected');
-        } else if(currentSelections.length < 3) {
+        } else if(currentSelections.length < (otherSelected ? 2 : 3)) {
             currentSelections.push(type);
             el.classList.add('selected');
         }
-        document.getElementById('counter').innerText = `Wybierz 3 kuchnie (${currentSelections.length}/3)`;
-        document.getElementById('voteBtn').disabled = currentSelections.length === 0;
+        updateCounter();
     };
 
+    function updateCounter() {
+        const total = currentSelections.length + (otherSelected ? 1 : 0);
+        document.getElementById('counter').innerText = `Wybierz 3 kuchnie (${total}/3)`;
+        document.getElementById('voteBtn').disabled = total === 0;
+    }
+
     window.saveVotes = async () => {
-        await setDoc(doc(db, "food_votes", user), { votes: currentSelections, timestamp: Date.now() });
+        let finalVotes = [...currentSelections];
+        if(otherSelected) {
+            const custom = document.getElementById('other-name').value.trim();
+            if(!custom) return alert("Wpisz nazwę innej kuchni!");
+            finalVotes.push(custom + " ❓");
+        }
+        await setDoc(doc(db, "food_votes", user), { votes: finalVotes, timestamp: Date.now() });
         alert("Głosy zapisane!");
     };
 
     window.drawFood = async () => {
         const snap = await getDocs(collection(db, "food_votes"));
-        let pool = []; 
-        snap.forEach(d => pool.push(...d.data().votes));
-        
+        let pool = []; snap.forEach(d => pool.push(...d.data().votes));
         document.getElementById('draw-overlay').style.display = 'flex';
         let i = 0;
         const itv = setInterval(() => {
-            winner = pool[Math.floor(Math.random()*pool.length)];
-            document.getElementById('winner-text').innerText = winner;
+            winnerName = pool[Math.floor(Math.random()*pool.length)];
+            document.getElementById('winner-text').innerText = winnerName;
             i++; 
             if(i > 25) { 
                 clearInterval(itv); 
-                document.getElementById('status-text').innerText = "WYBRANO:"; 
+                document.getElementById('status-text').innerText = "WYLOSOWANO:"; 
                 document.getElementById('gmapsBtn').style.display = 'block';
-                resetVotes(); // Zerowanie głosów po losowaniu
+                resetVotes(); // Reset bazy po losowaniu
             }
         }, 80);
     };
@@ -143,20 +179,40 @@
     }
 
     window.openGmaps = () => {
-        const query = encodeURIComponent(winner + " restauracja");
-        window.open(`https://www.google.com/maps/search/${query}`, '_blank');
+        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
+        window.open(`http://googleusercontent.com/maps.google.com/8{encodeURIComponent(cleanName + " restauracja")}`, '_blank');
     };
 
-    // --- BG ---
+    // --- TŁO CZĄSTECZKOWE Z LINIAMI (NAPRAWIONE) ---
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-    let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
+    let pts = [];
+    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    window.onresize = resize; resize();
+
+    for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4 });
+
     function draw() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pts.forEach(p => {
-            p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-            ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-        }); requestAnimationFrame(draw);
+        pts.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x<0 || p.x>canvas.width) p.vx*=-1;
+            if(p.y<0 || p.y>canvas.height) p.vy*=-1;
+            
+            ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
+            ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
+
+            // RYSOWANIE LINII MIĘDZY KROPKAMI
+            for (let j = i + 1; j < pts.length; j++) {
+                const p2 = pts[j];
+                const d = Math.hypot(p.x - p2.x, p.y - p2.y);
+                if (d < 120) {
+                    ctx.strokeStyle = `rgba(0, 212, 255, ${1 - d/120})`;
+                    ctx.lineWidth = 0.5;
+                    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                }
+            }
+        }); 
+        requestAnimationFrame(draw);
     } draw();
 </script>
 </body>
