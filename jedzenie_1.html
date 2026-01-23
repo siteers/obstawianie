@@ -5,14 +5,40 @@
     <title>🍕 Cyber-Eat | Friday Protocol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.9); }
+        :root {
+            --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+            /* Ujednolicona przezroczystość szkła z lista.html */
+            --glass: rgba(15, 23, 42, 0.75);
+            --border: rgba(255, 255, 255, 0.1);
+        }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         
-        .container { z-index: 10; width: 95vw; max-width: 600px; background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; margin-top: 40px; box-sizing: border-box; margin-bottom: 40px; }
+        /* --- NOWY STYL KONTENERA (Zapożyczony z lista.html) --- */
+        .container {
+            z-index: 10;
+            width: 95vw; max-width: 600px;
+            background: var(--glass);
+            backdrop-filter: blur(20px); /* Mocniejszy blur */
+            padding: 40px 30px; /* Większy padding */
+            border-radius: 30px;
+            border: 1px solid var(--border);
+            /* Elegancki, głęboki cień */
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            margin-top: 40px;
+            box-sizing: border-box;
+            margin-bottom: 40px;
+            /* Płynne przejścia */
+            transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+            overflow: hidden;
+            position: relative;
+        }
         
-        .auth-container { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; max-width: 320px; margin: 0 auto; }
-        input, select { width: 100%; padding: 15px; background:#000; color:#fff; border-radius:12px; border: 1px solid var(--cyan); box-sizing: border-box; font-size: 14px; font-weight: bold; }
+        .auth-container { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 320px; margin: 0 auto; }
+        /* Lekka zmiana tła inputów na mniej smoliste */
+        input, select { width: 100%; padding: 15px; background:#111; color:#fff; border-radius:12px; border: 1px solid var(--cyan); box-sizing: border-box; font-size: 14px; font-weight: bold; outline: none; transition: 0.3s; }
+        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
 
         .cuisine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
         .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 12px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
@@ -20,203 +46,12 @@
         .cuisine-card h4 { margin: 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .emoji { font-size: 24px; display: block; margin-bottom: 5px; }
 
-        .btn-cyber { width: 100%; max-width: 280px; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin: 10px auto; display: block; transition: 0.3s; }
-        .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-cyber { width: 100%; max-width: 280px; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin: 10px auto; display: block; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+        .btn-cyber:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3); }
+        .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; transform: none; box-shadow: none; }
         
         #draw-section { margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); display: block; }
         .voters-box { color: var(--gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 900; }
         #voters-list { color: var(--cyan); }
         
-        .winner-display { font-size: clamp(28px, 6vw, 44px); font-weight: 900; color: #fff; margin: 15px 0; text-shadow: 0 0 15px var(--gold); display: none; }
-        
-        #other-input-container { display: none; margin-top: 10px; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; }
-        .btn-clear { background: rgba(128,128,128,0.2); border: 1px solid #444; color: white; display: none; }
-    </style>
-</head>
-<body>
-    <canvas id="bg-canvas"></canvas>
-
-    <div class="container" id="login-box">
-        <h2 style="color:var(--gold); letter-spacing: 3px;">AUTORYZACJA</h2>
-        <div class="auth-container">
-            <select id="user-select"><option value="">Wybierz Operatora...</option></select>
-            <input type="password" id="pass-input" placeholder="KLUCZ DOSTĘPU">
-            <button class="btn-cyber" onclick="login()">WSTĄP</button>
-        </div>
-    </div>
-
-    <div class="container" id="food-box" style="display:none;">
-        <h2 style="color:var(--cyan)">PIĄTKOWY PROTOKÓŁ</h2>
-        <p id="counter">Wybierz 3 kuchnie (0/3)</p>
-        
-        <div class="cuisine-grid">
-            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><span class="emoji">🍔</span><h4>Burgery</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><span class="emoji">🥟</span><h4>Polska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">🍛</span><h4>Indyjska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><span class="emoji">🥙</span><h4>Kebab</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><span class="emoji">🍜</span><h4>Tajska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><span class="emoji">🥗</span><h4>Grecka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><span class="emoji">🍱</span><h4>Sushi</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><span class="emoji">🍕</span><h4>Pizza</h4></div>
-            <div class="cuisine-card" id="other-card" onclick="toggleOther()"><span class="emoji">❓</span><h4>Inna...</h4></div>
-        </div>
-
-        <div id="other-input-container"><input type="text" id="other-name" placeholder="Jaka kuchnia?"></div>
-        <button class="btn-cyber" id="voteBtn" onclick="saveVotes()" disabled>Zapisz Głosy</button>
-
-        <div id="draw-section">
-            <div class="voters-box">Głosowali: <span id="voters-list">-</span></div>
-            <button class="btn-cyber" id="drawBtn" onclick="drawFood()" style="background:#ff4d4d; color:#fff;" disabled>Losuj</button>
-            <div id="status-text" style="color:var(--gold); font-size: 12px; margin-top: 10px; display: none;">ANALIZA PREFERENCJI...</div>
-            <div id="winner-text" class="winner-display"></div>
-            <button class="btn-cyber" id="gmapsBtn" style="display:none; background:var(--gold); color:#000;" onclick="openGmaps()">Pokaż na Mapie 📍</button>
-            <button class="btn-cyber btn-clear" id="clearBtn" onclick="clearResult()">Wyczyść Wynik</button>
-        </div>
-    </div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, setDoc, doc, getDoc, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-    const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-    const app = initializeApp(firebaseConfig); const db = getFirestore(app);
-
-    let currentSelections = [], user = "", winnerName = "", otherSelected = false;
-
-    onSnapshot(collection(db, "passwords"), snap => {
-        const sel = document.getElementById('user-select');
-        sel.innerHTML = '<option value="">Wybierz Operatora...</option>' + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join("");
-    });
-
-    onSnapshot(collection(db, "food_votes"), snap => {
-        const voters = snap.docs.map(d => d.id);
-        document.getElementById('voters-list').innerText = voters.length > 0 ? voters.join(", ") : "-";
-        let totalChoices = 0; snap.forEach(d => totalChoices += (d.data().votes || []).length);
-        const btn = document.getElementById('drawBtn');
-        btn.disabled = totalChoices === 0;
-        btn.innerText = totalChoices > 0 ? `Losuj (${totalChoices} opcji)` : "Losuj";
-    });
-
-    window.login = async () => {
-        user = document.getElementById('user-select').value;
-        const pass = document.getElementById('pass-input').value;
-        if(!user) return;
-        const d = await getDoc(doc(db, "passwords", user));
-        if(d.exists() && d.data().password === pass) {
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('food-box').style.display = 'block';
-        } else alert("BŁĘDNY KLUCZ");
-    };
-
-    window.toggleOther = () => {
-        const card = document.getElementById('other-card');
-        const inputCont = document.getElementById('other-input-container');
-        if(!otherSelected && currentSelections.length < 3) {
-            otherSelected = true; card.classList.add('selected'); inputCont.style.display = 'block';
-        } else if(otherSelected) {
-            otherSelected = false; card.classList.remove('selected'); inputCont.style.display = 'none'; document.getElementById('other-name').value = "";
-        }
-        updateCounter();
-    };
-
-    window.select = (el, type) => {
-        if(currentSelections.includes(type)) {
-            currentSelections = currentSelections.filter(t => t !== type); el.classList.remove('selected');
-        } else if(currentSelections.length < (otherSelected ? 2 : 3)) {
-            currentSelections.push(type); el.classList.add('selected');
-        }
-        updateCounter();
-    };
-
-    function updateCounter() {
-        const total = currentSelections.length + (otherSelected ? 1 : 0);
-        document.getElementById('counter').innerText = `Wybierz 3 kuchnie (${total}/3)`;
-        document.getElementById('voteBtn').disabled = total === 0;
-    }
-
-    window.saveVotes = async () => {
-        let finalVotes = [...currentSelections];
-        if(otherSelected) {
-            const custom = document.getElementById('other-name').value.trim();
-            if(!custom) return alert("Wpisz nazwę innej kuchni!");
-            finalVotes.push(custom + " ❓");
-        }
-        await setDoc(doc(db, "food_votes", user), { votes: finalVotes, timestamp: Date.now() });
-        alert("Głosy zapisane!");
-    };
-
-    window.drawFood = async () => {
-        const snap = await getDocs(collection(db, "food_votes"));
-        let pool = []; snap.forEach(d => pool.push(...d.data().votes));
-        const winnerDisplay = document.getElementById('winner-text');
-        const statusText = document.getElementById('status-text');
-        const gmapsBtn = document.getElementById('gmapsBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const drawBtn = document.getElementById('drawBtn');
-
-        drawBtn.disabled = true;
-        statusText.style.display = "block";
-        statusText.innerText = "ANALIZA PREFERENCJI...";
-        winnerDisplay.style.display = "block";
-        gmapsBtn.style.display = "none";
-        clearBtn.style.display = "none";
-
-        let i = 0;
-        const itv = setInterval(() => {
-            winnerName = pool[Math.floor(Math.random()*pool.length)];
-            winnerDisplay.innerText = winnerName;
-            i++; 
-            if(i > 25) { 
-                clearInterval(itv); 
-                statusText.innerText = "WYLOSOWANO:"; 
-                gmapsBtn.style.display = "block";
-                clearBtn.style.display = "block";
-                resetVotes();
-            }
-        }, 80);
-    };
-
-    async function resetVotes() {
-        const snap = await getDocs(collection(db, "food_votes"));
-        for (const d of snap.docs) { await deleteDoc(doc(db, "food_votes", d.id)); }
-    }
-
-    // NAPRAWIONE PRZEKIEROWANIE DO GOOGLE MAPS
-    window.openGmaps = () => {
-        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
-        window.open(`https://www.google.com/maps/search/${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
-    };
-
-    // FUNKCJA WYCZYŚĆ WYNIK
-    window.clearResult = () => {
-        document.getElementById('winner-text').style.display = "none";
-        document.getElementById('status-text').style.display = "none";
-        document.getElementById('gmapsBtn').style.display = "none";
-        document.getElementById('clearBtn').style.display = "none";
-        winnerName = "";
-    };
-
-    const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-    let pts = [];
-    function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    window.onresize = resize; resize();
-    for (let i = 0; i < 60; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.4, vy: (Math.random()-0.5)*0.4 });
-
-    function draw() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        pts.forEach((p, i) => {
-            p.x += p.vx; p.y += p.vy;
-            if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-            ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-            for (let j = i + 1; j < pts.length; j++) {
-                const p2 = pts[j]; const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-                if (d < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - d/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-            }
-        }); requestAnimationFrame(draw);
-    } draw();
-</script>
-</body>
-</html>
+        .winner-display { font-size: clamp(28px, 6vw, 44px); font-weight: 900; color: #fff; margin: 15px 0; text-shadow: 0 0 15px var(--gold);
