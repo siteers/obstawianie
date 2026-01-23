@@ -28,7 +28,7 @@
         }
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
         .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
-        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 5vw, 24px); margin-bottom: 30px; }
+        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 5vw, 28px); margin-bottom: 30px; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
         .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
@@ -56,21 +56,25 @@
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
 
-        /* NOWE FIXY DLA WYKRESÓW (CSS) */
+        /* POPRAWKA 2: Zmiana minmax na 150px, aby wymusić układ poziomy */
+        .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-top: 15px; }
+        .legend-item { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
+        body.dark .legend-item { background: rgba(255,255,255,0.05); }
+
         .glass-panel canvas {
             width: 100% !important;
-            height: 320px !important; /* Stała wysokość dla większości wykresów */
+            height: 320px !important;
         }
         #rankHistoryChart {
-            height: 400px !important; /* Wykres historii musi być wyższy */
+            height: 400px !important;
         }
 
         @media (max-width: 600px) {
             .glass-panel canvas {
-                height: 300px !important; /* Nieco mniejsze na mobile */
+                height: 300px !important;
             }
             #rankHistoryChart {
-                height: 500px !important; /* Ale historia na mobile musi być wysoka przez legendę */
+                height: 500px !important;
             }
         }
 
@@ -199,11 +203,22 @@
 
         // --- CHARTS CONFIG ---
         const chartColor = '#888';
+        // baseOptions zawiera definicje osi, których nie chcemy w wykresie kołowym
         const baseOptions = { responsive: true, maintainAspectRatio: false, scales: { x: { ticks: { color: chartColor } }, y: { ticks: { color: chartColor } } } };
 
         const medalChart = new Chart(document.getElementById('medalChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
         const barChart = new Chart(document.getElementById('barChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, plugins: { legend: { display: false } } } });
-        const pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), { type: 'doughnut', options: { ...baseOptions, plugins: { legend: { labels: { color: chartColor } } } } });
+        
+        // POPRAWKA 1: Usunięto ...baseOptions i zdefiniowano opcje bez osi
+        const pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), { 
+            type: 'doughnut', 
+            options: { 
+                responsive: true, 
+                maintainAspectRatio: false, 
+                plugins: { legend: { labels: { color: chartColor } } } 
+            } 
+        });
+        
         const lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), { type: 'line', options: baseOptions });
         
         const histChart = new Chart(document.getElementById('rankHistoryChart').getContext('2d'), { 
@@ -240,7 +255,7 @@
         };
         window.makeChoice = (player, emoji) => {
             if(player === 1) { duel.c1 = emoji; document.getElementById('p1Status').innerText = "🔒"; document.getElementById('p1Btns').style.display = "none"; document.getElementById('p2Btns').style.display = "flex"; }
-            else { duel.c2 = emoji; document.getElementById('p2Status').innerText = "🔒"; document.getElementById('p2Btns').style.display = "none"; resolveRound(); }
+            else { duel.c2 = emoji; document.getElementById('p2Status').innerText = "🔒"; document.getElementById('p2Status').innerText = "🔒"; document.getElementById('p2Btns').style.display = "none"; resolveRound(); }
         };
         function resolveRound() {
             const rules = {"👊":"✌️", "✋":"👊", "✌️":"✋"};
