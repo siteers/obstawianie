@@ -1,54 +1,96 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>Cyber-Eat | World Selection</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-    <script src="https://cdn.jsdelivr.net/npm/@svg-maps/world@1.0.1/index.js"></script>
-    <style>
-        :root {
-            --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
-            --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1);
-        }
-        body {
-            font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
-            margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
-            overflow-x: hidden;
-        }
-        #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        .container {
-            z-index: 10; width: 95vw; max-width: 1000px; background: var(--glass);
-            backdrop-filter: blur(20px); padding: 30px; border-radius: 40px;
-            border: 1px solid var(--border); margin: 20px; text-align: center;
-        }
-        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 5px; font-size: 22px; }
+  <meta charset="UTF-8">
+  <title>Cyber-Eat | World Selection</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+  <style>
+    :root {
+      --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+      --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1);
+    }
 
-        /* --- LOGIN SECTION --- */
-        #login-section { max-width: 400px; margin: auto; }
-        select, input {
-            width: 100%; padding: 15px; margin: 10px 0; border-radius: 15px;
-            background: #000; border: 1px solid var(--cyan); color: #fff; font-weight: bold;
-        }
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+      margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+      overflow-x: hidden;
+    }
 
-        /* --- MAP STYLES --- */
-        #map-container { display: none; margin-top: 20px; }
-        svg { fill: #1a1b26; stroke: var(--cyan); stroke-width: 0.5; width: 100%; height: auto; cursor: pointer; }
-        path:hover { fill: rgba(0, 212, 255, 0.3); }
-        path.selected { fill: var(--gold); filter: drop-shadow(0 0 8px var(--gold)); }
+    #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 
-        .btn-cyber {
-            padding: 15px 30px; background: var(--gold); color: #000; border: none;
-            border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase;
-            margin-top: 20px; transition: 0.3s;
-        }
-        .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; }
+    .container {
+      z-index: 10; width: 95vw; max-width: 1000px; background: var(--glass);
+      backdrop-filter: blur(20px); padding: 30px; border-radius: 40px;
+      border: 1px solid var(--border); margin: 20px; text-align: center;
+      box-sizing: border-box;
+    }
 
-        #result-box {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
-            z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
-        }
-        .matrix-text { font-size: 32px; color: var(--gold); font-family: monospace; }
-    </style>
+    h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 5px; font-size: clamp(18px, 4vw, 24px); }
+
+    /* --- LOGIN SECTION FIXED --- */
+    #login-section { 
+        max-width: 400px; 
+        margin: 40px auto;
+        display: flex; 
+        flex-direction: column; 
+        align-items: center; 
+    }
+    /* Ujednolicenie szerokości boxów */
+    #login-section select, #login-section input, #login-section .btn-cyber {
+      width: 100%; 
+      max-width: 100%;
+      box-sizing: border-box; 
+    }
+    select, input {
+      padding: 15px; margin: 10px 0; border-radius: 15px;
+      background: #000; border: 1px solid var(--cyan); color: #fff; font-weight: bold;
+      font-size: 16px;
+    }
+
+    /* --- MAP STYLES --- */
+    #map-container { display: none; }
+    #world-map-wrapper { 
+        width: 100%; 
+        height: auto; 
+        margin: 20px 0;
+        /* Ograniczenie maksymalnej wysokości mapy, żeby nie zajmowała całego ekranu */
+        max-height: 60vh;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+    }
+    /* Stylowanie osadzonego SVG */
+    #world-map-wrapper svg { 
+        fill: #1a1b26; 
+        stroke: var(--cyan); 
+        stroke-width: 0.5px; /* Cieńsze linie */
+        width: 100%; 
+        height: 100%; /* Dopasowanie do wrappera */
+        cursor: pointer; 
+        transition: fill 0.3s ease;
+    }
+    path:hover { fill: rgba(0, 212, 255, 0.3); }
+    path.selected { fill: var(--gold) !important; filter: drop-shadow(0 0 8px var(--gold)); }
+
+    .btn-cyber {
+      padding: 20px 40px; background: var(--gold); color: #000; border: none;
+      border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase;
+      margin: 10px; transition: 0.3s; font-size: 14px;
+    }
+    /* Styl dla zablokowanego przycisku */
+    .btn-cyber:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(0.5); }
+    .btn-draw { background: #ff4d4d; color: #fff; transition: 0.5s; }
+
+    /* --- RESULT MODAL --- */
+    #result-box {
+      display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+      z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .matrix-text { font-size: 24px; color: var(--gold); font-family: 'Courier New', monospace; height: 30px; }
+
+    #counter { font-weight: 800; color: var(--cyan); margin-bottom: 10px; font-size: 14px; }
+  </style>
 </head>
 <body>
 
@@ -62,123 +104,24 @@
 </div>
 
 <div class="container" id="map-container">
-    <h1>Wybierz 3 Kuchnie Świata</h1>
-    <p id="counter">Pozostało wyborów: 3</p>
-    <div id="world-map">
-        </div>
-    <button class="btn-cyber" id="vote-btn" onclick="saveVotes()" disabled>Zatwierdź Wybory</button>
-    <button class="btn-cyber" style="background: #ff4d4d;" onclick="startDraw()">LOSUJ POSIŁEK</button>
-</div>
-
-<div id="result-box">
-    <div class="matrix-text" id="stream">ANALYZING GASTRONOMY...</div>
-    <h1 id="final-country" style="font-size: 50px; margin: 30px 0;"></h1>
-    <button class="btn-cyber" id="maps-btn" onclick="openGmaps()">Pokaż na mapie 📍</button>
-    <button class="btn-cyber" style="background:none; color:white;" onclick="location.reload()">Zamknij</button>
-</div>
-
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, setDoc, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-
-let currentUser = "";
-let selectedCountries = [];
-const maxChoices = 3;
-
-// Ładowanie listy użytkowników
-onSnapshot(collection(db, "passwords"), (snap) => {
-    const sel = document.getElementById('user-select');
-    sel.innerHTML = '<option value="">Wybierz Operatora...</option>';
-    snap.forEach(d => {
-        let opt = document.createElement('option');
-        opt.value = d.id; opt.innerText = d.id;
-        sel.appendChild(opt);
-    });
-});
-
-window.login = async () => {
-    const n = document.getElementById('user-select').value;
-    const p = document.getElementById('user-pass').value;
-    if(!n || !p) return alert("Podaj dane!");
-
-    const userDoc = await getDoc(doc(db, "passwords", n));
-    if(userDoc.exists() && userDoc.data().password === p) {
-        currentUser = n;
-        document.getElementById('login-section').style.display = 'none';
-        document.getElementById('map-container').style.display = 'block';
-        loadMap();
-    } else alert("BŁĄD AUTORYZACJI");
-};
-
-// Funkcja ładująca interaktywny SVG
-async function loadMap() {
-    const response = await fetch('https://raw.githubusercontent.com/thegoodcasper/world-svg-map-data/master/world.svg');
-    const svgText = await response.text();
-    const mapDiv = document.getElementById('world-map');
-    mapDiv.innerHTML = svgText;
-
-    const paths = mapDiv.querySelectorAll('path');
-    paths.forEach(p => {
-        p.onclick = () => {
-            const name = p.getAttribute('title') || p.getAttribute('name');
-            if(selectedCountries.includes(name)) {
-                selectedCountries = selectedCountries.filter(c => c !== name);
-                p.classList.remove('selected');
-            } else if(selectedCountries.length < maxChoices) {
-                selectedCountries.push(name);
-                p.classList.add('selected');
-            }
-            document.getElementById('counter').innerText = `Pozostało wyborów: ${maxChoices - selectedCountries.length}`;
-            document.getElementById('vote-btn').disabled = selectedCountries.length === 0;
-        };
-    });
-}
-
-window.saveVotes = async () => {
-    await setDoc(doc(db, "food_choices", currentUser), { countries: selectedCountries, timestamp: Date.now() });
-    alert("Głosy oddane pomyślnie!");
-};
-
-window.startDraw = async () => {
-    const snap = await getDocs(collection(db, "food_choices"));
-    let pool = [];
-    snap.forEach(d => pool.push(...d.data().countries));
-    if(pool.length === 0) return alert("Brak oddanych głosów!");
-
-    document.getElementById('result-box').style.display = 'flex';
-    let i = 0;
-    const interval = setInterval(() => {
-        document.getElementById('stream').innerText = Math.random().toString(36).substring(2, 15).toUpperCase();
-        i++;
-        if(i > 20) {
-            clearInterval(interval);
-            const winner = pool[Math.floor(Math.random() * pool.length)];
-            document.getElementById('stream').innerText = "CUISINE SELECTED:";
-            document.getElementById('final-country').innerText = winner;
-        }
-    }, 100);
-};
-
-window.openGmaps = () => {
-    const country = document.getElementById('final-country').innerText;
-    window.open(`https://www.google.com/maps/search/restauracja+${country}`, '_blank');
-};
-
-// --- TŁO CZĄSTECZKOWE ---
-const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pts.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(212, 175, 55, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-    }); requestAnimationFrame(draw);
-} draw();
-</script>
-</body>
-</html>
+    <h1 id="user-welcome">Wybierz 3 Kuchnie</h1>
+    <div id="counter">Pozostało wyborów: 3</div>
+    
+    <div id="world-map-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500">
+            <g id="map-paths">
+                <path title="Kanada" d="M150,50 L250,50 L280,150 L100,150 Z" />
+                <path title="USA" d="M100,160 L280,160 L260,250 L120,250 Z" />
+                <path title="Brazylia" d="M200,300 L300,280 L320,400 L220,420 Z" />
+                <path title="Rosja" d="M450,40 L850,40 L800,150 L400,150 Z" />
+                <path title="Chiny" d="M600,160 L750,160 L730,250 L580,250 Z" />
+                <path title="Indie" d="M550,260 L650,260 L620,350 L580,350 Z" />
+                <path title="Australia" d="M700,350 L850,350 L830,450 L680,450 Z" />
+                <path title="Polska" d="M430,130 L460,130 L455,155 L425,155 Z" />
+                <path title="Niemcy" d="M400,135 L425,135 L420,160 L395,160 Z" />
+                <path title="Francja" d="M370,140 L395,140 L390,170 L365,170 Z" />
+                <path title="Włochy" d="M410,170 L430,170 L440,200 L420,210 Z" />
+                <path title="Hiszpania" d="M340,170 L370,170 L365,200 L335,200 Z" />
+                <path title="Japonia" d="M800,170 L830,160 L840,200 L810,210 Z" />
+                <path title="Meksyk" d="M130,260 L200,260 L180,320 L150,300 Z" />
+                <path title="Egipt" d="M450,220 L50
