@@ -19,13 +19,13 @@
     #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 
     .container {
-      z-index: 10; width: 95vw; max-width: 1000px; background: var(--glass);
+      z-index: 10; width: 95vw; max-width: 1100px; background: var(--glass);
       backdrop-filter: blur(20px); padding: 30px; border-radius: 40px;
       border: 1px solid var(--border); margin: 20px; text-align: center;
       box-sizing: border-box;
     }
 
-    /* --- LOGIN SECTION - JEDNAKOWA SZEROKOŚĆ --- */
+    /* --- LOGIN SECTION - FIXED WIDTH --- */
     #login-section { max-width: 400px; margin: 40px auto; }
     #login-section select, #login-section input, #login-section .btn-cyber {
       width: 100%; display: block; box-sizing: border-box; margin: 15px 0;
@@ -39,16 +39,30 @@
       font-size: 16px; outline: none;
     }
 
-    /* --- WIRTUALNA MAPA (BOKSY) --- */
+    /* --- REAL WORLD MAP STYLES --- */
     #map-container { display: none; }
-    .virtual-map {
-        width: 100%; height: 350px; margin: 30px 0; display: flex;
-        justify-content: center; align-items: center; position: relative;
+    #world-map-svg {
+        width: 100%;
+        height: auto;
+        max-height: 70vh;
+        margin: 20px 0;
+        filter: drop-shadow(0 0 10px rgba(0, 212, 255, 0.1));
     }
-    svg { width: 100%; height: 100%; cursor: pointer; }
-    rect { fill: rgba(0, 212, 255, 0.05); stroke: var(--cyan); stroke-width: 1.5; transition: 0.3s; }
-    rect:hover { fill: rgba(0, 212, 255, 0.2); }
-    rect.selected { fill: var(--gold) !important; stroke: #fff; filter: drop-shadow(0 0 15px var(--gold)); }
+    path {
+        fill: #1a1b26;
+        stroke: var(--cyan);
+        stroke-width: 0.5;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+    path:hover {
+        fill: rgba(0, 212, 255, 0.4);
+    }
+    path.selected {
+        fill: var(--gold) !important;
+        stroke: #fff;
+        filter: drop-shadow(0 0 12px var(--gold));
+    }
 
     .btn-cyber {
       padding: 20px; background: var(--gold); color: #000; border: none;
@@ -62,6 +76,7 @@
       display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95);
       z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
     }
+    .matrix-text { font-size: 24px; color: var(--gold); font-family: monospace; }
   </style>
 </head>
 <body>
@@ -76,34 +91,19 @@
 </div>
 
 <div class="container" id="map-container">
-    <h1 id="user-welcome">Wybierz 3 Kraje</h1>
+    <h1 id="user-welcome">Wybierz 3 Kuchnie Świata</h1>
     <div id="counter" style="color:var(--cyan); font-weight:800; margin-bottom:15px;">Pozostało wyborów: 3</div>
     
-    <div class="virtual-map">
-        <svg viewBox="0 0 800 400">
-            <rect title="USA" x="150" y="150" width="120" height="80" onclick="toggleCountry(this)"/>
-            <rect title="Meksyk" x="170" y="240" width="40" height="30" onclick="toggleCountry(this)"/>
-            
-            <rect title="Polska" x="400" y="150" width="35" height="35" onclick="toggleCountry(this)"/>
-            <rect title="Niemcy" x="375" y="160" width="20" height="20" onclick="toggleCountry(this)"/>
-            <rect title="Włochy" x="395" y="195" width="15" height="30" onclick="toggleCountry(this)"/>
-            <rect title="Grecja" x="415" y="200" width="15" height="15" onclick="toggleCountry(this)"/>
-            <rect title="Turcja" x="440" y="185" width="40" height="20" onclick="toggleCountry(this)"/>
-            <rect title="Egipt" x="405" y="125" width="20" height="20" onclick="toggleCountry(this)"/>
-
-            <rect title="Indie" x="530" y="180" width="90" height="70" onclick="toggleCountry(this)"/>
-            <rect title="Chiny" x="520" y="260" width="45" height="45" onclick="toggleCountry(this)"/>
-            <rect title="Japonia" x="640" y="180" width="20" height="40" onclick="toggleCountry(this)"/>
-        </svg>
-    </div>
+    <div id="world-map-svg">
+        </div>
 
     <button class="btn-cyber" id="vote-btn" onclick="saveVotes()" disabled>Zatwierdź Wybory</button>
     <button class="btn-cyber btn-draw" id="draw-btn" onclick="startDraw()" disabled>LOSUJ KRAJ (0/9)</button>
 </div>
 
 <div id="result-box">
-    <div style="color:var(--gold); font-family:monospace; font-size:24px;">DESTINATION SELECTED:</div>
-    <h1 id="final-country" style="font-size: 50px; margin: 30px 0; color: #fff;"></h1>
+    <div class="matrix-text" id="stream">ANALYZING GASTRONOMY...</div>
+    <h1 id="final-country" style="font-size: 60px; margin: 30px 0; color: #fff; text-transform: uppercase;"></h1>
     <button class="btn-cyber" onclick="openGmaps()">Pokaż restauracje 📍</button>
     <button class="btn-cyber" style="background:none; color:white; margin-top:20px;" onclick="location.reload()">Zamknij</button>
 </div>
@@ -116,25 +116,30 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
 let currentUser = "", selected = [];
+const MAP_URL = "https://raw.githubusercontent.com/thegoodcasper/world-svg-map-data/master/world.svg";
 
-// WCZYTYWANIE GRACZY
+// WCZYTYWANIE GRACZY Z BAZY
 onSnapshot(collection(db, "passwords"), (snap) => {
     const sel = document.getElementById('user-select');
+    const current = sel.value;
     sel.innerHTML = '<option value="">Wybierz Operatora...</option>';
     snap.forEach(d => {
         let opt = document.createElement('option');
         opt.value = d.id; opt.innerText = d.id;
         sel.appendChild(opt);
     });
+    sel.value = current;
 });
 
 // MONITOROWANIE ŁĄCZNEJ LICZBY GŁOSÓW (MIN 9)
 onSnapshot(collection(db, "food_votes"), (snap) => {
-    let total = 0;
-    snap.forEach(d => { if(d.data().countries) total += d.data().countries.length; });
+    let totalCount = 0;
+    snap.forEach(d => { if(d.data().countries) totalCount += d.data().countries.length; });
     const btn = document.getElementById('draw-btn');
-    btn.innerText = `LOSUJ KRAJ (${total}/9)`;
-    btn.disabled = total < 9;
+    if(btn) {
+        btn.innerText = `LOSUJ KRAJ (${totalCount}/9)`;
+        btn.disabled = totalCount < 9;
+    }
 });
 
 window.login = async () => {
@@ -146,35 +151,55 @@ window.login = async () => {
         currentUser = n;
         document.getElementById('login-section').style.display = 'none';
         document.getElementById('map-container').style.display = 'block';
+        loadWorldMap();
     } else alert("BŁĄD AUTORYZACJI");
 };
 
-window.toggleCountry = (el) => {
-    const name = el.getAttribute('title');
-    if(selected.includes(name)) {
-        selected = selected.filter(c => c !== name);
-        el.classList.remove('selected');
-    } else if(selected.length < 3) {
-        selected.push(name);
-        el.classList.add('selected');
-    }
-    document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selected.length}`;
-    document.getElementById('vote-btn').disabled = selected.length === 0;
-};
+// ŁADOWANIE PRAWDZIWEJ MAPY ŚWIATA
+async function loadWorldMap() {
+    const response = await fetch(MAP_URL);
+    const svgText = await response.text();
+    const mapDiv = document.getElementById('world-map-svg');
+    mapDiv.innerHTML = svgText;
+
+    const paths = mapDiv.querySelectorAll('path');
+    paths.forEach(p => {
+        p.onclick = () => {
+            const name = p.getAttribute('title') || p.getAttribute('name');
+            if(selected.includes(name)) {
+                selected = selected.filter(c => c !== name);
+                p.classList.remove('selected');
+            } else if(selected.length < 3) {
+                selected.push(name);
+                p.classList.add('selected');
+            }
+            document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selected.length}`;
+            document.getElementById('vote-btn').disabled = selected.length === 0;
+        };
+    });
+}
 
 window.saveVotes = async () => {
     await setDoc(doc(db, "food_votes", currentUser), { countries: selected, timestamp: Date.now() });
-    alert("Wybory zapisane!");
+    alert("Wybory zapisane w systemie!");
 };
 
 window.startDraw = async () => {
     const snap = await getDocs(collection(db, "food_votes"));
     let pool = []; snap.forEach(d => pool.push(...d.data().countries));
     document.getElementById('result-box').style.display = 'flex';
-    setTimeout(() => {
-        const winner = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById('final-country').innerText = winner;
-    }, 1500);
+    
+    let i = 0;
+    const interval = setInterval(() => {
+        document.getElementById('stream').innerText = Math.random().toString(36).substring(2, 10).toUpperCase();
+        i++;
+        if(i > 20) {
+            clearInterval(interval);
+            const winner = pool[Math.floor(Math.random() * pool.length)];
+            document.getElementById('stream').innerText = "GASTRONOMY FOUND:";
+            document.getElementById('final-country').innerText = winner;
+        }
+    }, 100);
 };
 
 window.openGmaps = () => {
@@ -182,7 +207,7 @@ window.openGmaps = () => {
     window.open(`https://www.google.com/maps/search/${encodeURIComponent(c)}+restaurant`, '_blank');
 };
 
-// TŁO
+// CZĄSTECZKI TŁA
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 50; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
