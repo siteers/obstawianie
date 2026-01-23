@@ -1,139 +1,109 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Cyber-Eat | World Selection</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <style>
-    :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
-    #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-    .container { z-index: 10; width: 95vw; max-width: 1100px; background: var(--glass); backdrop-filter: blur(20px); padding: 30px; border-radius: 40px; border: 1px solid var(--border); margin: 20px; text-align: center; box-sizing: border-box; }
-    
-    /* UJEDNOLICENIE BOXÓW */
-    #login-section { max-width: 400px; margin: 40px auto; display: flex; flex-direction: column; align-items: center; }
-    #login-section select, #login-section input, #login-section .btn-cyber { width: 100%; box-sizing: border-box; margin: 10px 0; }
-    
-    select, input { padding: 15px; border-radius: 15px; background: #000; border: 1px solid var(--cyan); color: #fff; font-weight: bold; font-size: 16px; }
-    
-    /* MAPA ŚWIATA - OSADZONY SVG (BRAK 404) */
-    #world-map-svg { width: 100%; height: auto; max-height: 60vh; margin: 20px 0; }
-    path { fill: #1a1b26; stroke: var(--cyan); stroke-width: 0.5; transition: 0.3s; cursor: pointer; }
-    path:hover { fill: rgba(0, 212, 255, 0.4); }
-    path.selected { fill: var(--gold) !important; stroke: #fff; filter: drop-shadow(0 0 10px var(--gold)); }
-
-    .btn-cyber { padding: 20px; background: var(--gold); color: #000; border: none; border-radius: 20px; font-weight: 900; cursor: pointer; text-transform: uppercase; transition: 0.3s; }
-    .btn-cyber:disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
-    .btn-draw { background: #ff4d4d; color: #fff; }
-    #result-box { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  </style>
+    <meta charset="UTF-8">
+    <title>🍕 Piątkowy Feast Protocol</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+    <style>
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.9); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { z-index: 10; width: 95vw; max-width: 500px; background: var(--glass); padding: 30px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; margin-top: 50px; }
+        .cuisine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0; }
+        .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 15px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .cuisine-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px var(--gold); }
+        .cuisine-card h4 { margin: 5px 0; font-size: 14px; }
+        .emoji { font-size: 24px; }
+        .btn-cyber { width: 100%; padding: 20px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin-top: 10px; }
+        .btn-cyber:disabled { opacity: 0.3; cursor: not-allowed; }
+        #draw-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; display: none; flex-direction: column; align-items: center; justify-content: center; }
+    </style>
 </head>
 <body>
-<canvas id="bg-canvas"></canvas>
-
-<div class="container" id="login-section">
-    <h1>AUTORYZACJA</h1>
-    <select id="user-select"><option value="">Wczytywanie operatorów...</option></select>
-    <input type="password" id="user-pass" placeholder="Klucz dostępu">
-    <button class="btn-cyber" onclick="login()">WSTĄP DO SYSTEMU</button>
-</div>
-
-<div class="container" id="map-container" style="display:none;">
-    <h1 id="user-welcome">Wybierz 3 Kuchnie</h1>
-    <div id="counter" style="color:var(--cyan); font-weight:800; margin-bottom:15px;">Pozostało wyborów: 3</div>
-    <div id="world-map-svg">
-        <svg viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-            <path title="Polska" d="M510,130 L535,130 L535,155 L510,155 Z" />
-            <path title="Włochy" d="M495,185 L515,185 L515,215 L495,215 Z" />
-            <path title="Japonia" d="M840,175 L865,175 L865,225 L840,225 Z" />
-            <path title="USA" d="M140,145 L310,145 L310,255 L140,255 Z" />
-            <path title="Meksyk" d="M175,265 L235,265 L235,305 L175,305 Z" />
-            <path title="Chiny" d="M690,175 L810,175 L810,265 L690,265 Z" />
-            <path title="Indie" d="M675,275 L735,275 L735,335 L675,335 Z" />
-            <path title="Grecja" d="M525,195 L545,195 L545,215 L525,215 Z" />
-            <path title="Turcja" d="M555,185 L605,185 L605,205 L555,205 Z" />
-        </svg>
+    <div class="container" id="login-box">
+        <h2 style="color:var(--gold)">AUTORYZACJA</h2>
+        <select id="user-select" style="width:100%; padding:15px; margin-bottom:10px; background:#000; color:#fff; border-radius:10px;"></select>
+        <input type="password" id="pass-input" placeholder="KLUCZ DOSTĘPU" style="width:100%; padding:15px; margin-bottom:10px; background:#000; color:#fff; border-radius:10px; box-sizing:border-box;">
+        <button class="btn-cyber" onclick="login()">WSTĄP</button>
     </div>
-    <button class="btn-cyber" id="vote-btn" onclick="saveVotes()" disabled>Zatwierdź Wybory</button>
-    <button class="btn-cyber btn-draw" id="draw-btn" onclick="startDraw()" disabled>LOSUJ KRAJ (0/9)</button>
-</div>
 
-<div id="result-box">
-    <div style="color:var(--gold); font-family:monospace; font-size:24px;">DESTINATION SELECTED:</div>
-    <h1 id="final-country" style="font-size: 50px; margin: 30px 0; color: #fff; text-transform: uppercase;"></h1>
-    <button class="btn-cyber" onclick="openGmaps()">Pokaż restauracje 📍</button>
-    <button class="btn-cyber" style="background:none; color:white; margin-top:20px;" onclick="location.reload()">Zamknij</button>
-</div>
+    <div class="container" id="food-box" style="display:none;">
+        <h2 style="color:var(--cyan)">CO JEMY W PIĄTEK?</h2>
+        <p id="counter">Wybierz 3 kuchnie (0/3)</p>
+        <div class="cuisine-grid">
+            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><span class="emoji">🍔</span><h4>Amerykańska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><span class="emoji">🥟</span><h4>Polska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">🍛</span><h4>Indyjska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><span class="emoji">🥙</span><h4>Kebab</h4></div>
+        </div>
+        <button class="btn-cyber" id="voteBtn" onclick="saveVotes()" disabled>Zapisz Głosy</button>
+        <button class="btn-cyber" id="drawBtn" onclick="drawFood()" style="background:#ff4d4d; color:#fff;" disabled>Losuj (0/9)</button>
+    </div>
+
+    <div id="draw-overlay">
+        <h1 style="color:var(--gold)" id="status-text">ANALIZA PREFERENCJI...</h1>
+        <div id="winner-text" style="font-size: 40px; font-weight: 900; margin: 20px 0;"></div>
+        <button class="btn-cyber" onclick="location.reload()">ZAMKNIJ</button>
+    </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, getDocs, setDoc, doc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, setDoc, doc, getDoc, getDocs, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+    const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+    const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-let currentUser = "", selected = [];
+    let currentSelections = [], user = "";
 
-// WCZYTYWANIE GRACZY Z KOLEKCJI PASSWORDS
-onSnapshot(collection(db, "passwords"), (snap) => {
-    const sel = document.getElementById('user-select');
-    sel.innerHTML = '<option value="">Wybierz Operatora...</option>';
-    snap.forEach(d => {
-        let opt = document.createElement('option');
-        opt.value = d.id; opt.innerText = d.id;
-        sel.appendChild(opt);
+    onSnapshot(collection(db, "passwords"), snap => {
+        const sel = document.getElementById('user-select');
+        sel.innerHTML = snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join("");
     });
-});
 
-// LOSOWANIE MIN 9 GŁOSÓW
-onSnapshot(collection(db, "food_votes"), (snap) => {
-    let total = 0; snap.forEach(d => { if(d.data().countries) total += d.data().countries.length; });
-    const btn = document.getElementById('draw-btn');
-    if(btn) { btn.innerText = `LOSUJ KRAJ (${total}/9)`; btn.disabled = total < 9; }
-});
-
-window.login = async () => {
-    const n = document.getElementById('user-select').value;
-    const p = document.getElementById('user-pass').value;
-    const userDoc = await getDoc(doc(db, "passwords", n));
-    if(userDoc.exists() && userDoc.data().password === p) {
-        currentUser = n; document.getElementById('login-section').style.display = 'none';
-        document.getElementById('map-container').style.display = 'block';
-        initMap();
-    } else alert("BŁĄD AUTORYZACJI");
-};
-
-function initMap() {
-    document.querySelectorAll('#world-map-svg path').forEach(p => {
-        p.onclick = () => {
-            const name = p.getAttribute('title');
-            if(selected.includes(name)) { selected = selected.filter(c => c !== name); p.classList.remove('selected'); }
-            else if(selected.length < 3) { selected.push(name); p.classList.add('selected'); }
-            document.getElementById('counter').innerText = `Pozostało wyborów: ${3 - selected.length}`;
-            document.getElementById('vote-btn').disabled = selected.length === 0;
-        };
+    onSnapshot(collection(db, "food_votes"), snap => {
+        let count = 0; snap.forEach(d => count += d.data().votes.length);
+        document.getElementById('drawBtn').innerText = `LOSUJ (${count}/9)`;
+        document.getElementById('drawBtn').disabled = count < 9;
     });
-}
 
-window.saveVotes = async () => {
-    await setDoc(doc(db, "food_votes", currentUser), { countries: selected, timestamp: Date.now() });
-    alert("Głosy zapisane!");
-};
+    window.login = async () => {
+        user = document.getElementById('user-select').value;
+        const pass = document.getElementById('pass-input').value;
+        const d = await getDoc(doc(db, "passwords", user));
+        if(d.exists() && d.data().password === pass) {
+            document.getElementById('login-box').style.display = 'none';
+            document.getElementById('food-box').style.display = 'block';
+        } else alert("BŁĘDNE HASŁO");
+    };
 
-window.startDraw = async () => {
-    const snap = await getDocs(collection(db, "food_votes"));
-    let pool = []; snap.forEach(d => pool.push(...d.data().countries));
-    document.getElementById('result-box').style.display = 'flex';
-    setTimeout(() => {
-        const winner = pool[Math.floor(Math.random() * pool.length)];
-        document.getElementById('final-country').innerText = winner;
-    }, 1500);
-};
+    window.select = (el, type) => {
+        if(currentSelections.includes(type)) {
+            currentSelections = currentSelections.filter(t => t !== type);
+            el.classList.remove('selected');
+        } else if(currentSelections.length < 3) {
+            currentSelections.push(type);
+            el.classList.add('selected');
+        }
+        document.getElementById('counter').innerText = `Wybierz 3 kuchnie (${currentSelections.length}/3)`;
+        document.getElementById('voteBtn').disabled = currentSelections.length === 0;
+    };
 
-window.openGmaps = () => {
-    const c = document.getElementById('final-country').innerText;
-    window.open(`http://googleusercontent.com/maps.google.com/7{encodeURIComponent(c)}+restaurant`, '_blank');
-};
+    window.saveVotes = async () => {
+        await setDoc(doc(db, "food_votes", user), { votes: currentSelections, timestamp: Date.now() });
+        alert("Głosy zapisane!");
+    };
+
+    window.drawFood = async () => {
+        const snap = await getDocs(collection(db, "food_votes"));
+        let pool = []; snap.forEach(d => pool.push(...d.data().votes));
+        document.getElementById('draw-overlay').style.display = 'flex';
+        let i = 0;
+        const itv = setInterval(() => {
+            document.getElementById('winner-text').innerText = pool[Math.floor(Math.random()*pool.length)];
+            i++; if(i > 20) { clearInterval(itv); document.getElementById('status-text').innerText = "WYNIK LOSOWANIA:"; }
+        }, 100);
+    };
 </script>
 </body>
 </html>
