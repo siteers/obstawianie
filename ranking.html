@@ -28,10 +28,10 @@
         }
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
         .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
-        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 5vw, 28px); margin-bottom: 30px; }
+        h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 5vw, 24px); margin-bottom: 30px; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20 (px); border-radius: 20px; border: 1px solid var(--border); text-align: center; }
+        .stat-card { background: var(--glass); backdrop-filter: blur(15px); padding: 20px; border-radius: 20px; border: 1px solid var(--border); text-align: center; }
         .stat-card h3 { margin: 0; font-size: 10px; text-transform: uppercase; color: #888; letter-spacing: 1px; }
         .stat-card p { margin: 10px 0 0; font-size: 22px; font-weight: bold; color: var(--gold); }
         
@@ -56,10 +56,12 @@
         .badge { font-size: 18px; cursor: help; transition: transform 0.2s; }
         .badge:hover { transform: scale(1.4); }
         
+        /* Pozioma legenda */
         .legend-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; margin-top: 15px; }
         .legend-item { display: flex; align-items: center; gap: 10px; font-size: 11px; padding: 12px; background: rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid var(--border); }
         body.dark .legend-item { background: rgba(255,255,255,0.05); }
 
+        /* Stałe wysokości wykresów */
         .glass-panel canvas { width: 100% !important; height: 320px !important; }
         #rankHistoryChart { height: 400px !important; }
 
@@ -304,7 +306,7 @@
             updateCharts();
         }
 
-        // --- FIX: LOGIKA WYKRESU (PAWEŁ NA 3 MIEJSCU) ---
+        // --- FINAL FIX LOGIKI (PRIORYTET PUNKTÓW + TB) ---
         function updateCharts() {
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
@@ -321,7 +323,7 @@
                     if (rIdx >= start) {
                         const snap = playersData.map(pl => {
                             let pts = 0, g = 0, s = 0, b = 0;
-                            // Precyzyjne sumowanie punktów runda po rundzie
+                            // Precyzyjne sumowanie historii
                             rounds.slice(0, rIdx + 1).forEach(hr => {
                                 const hw = hr.winners.find(w => w.name === pl.name);
                                 if (hw) {
@@ -330,14 +332,15 @@
                                     if (rnk === 1) g++; else if (rnk === 2) s++; else b++;
                                 }
                             });
+                            // UWZGLĘDNIENIE TB Z BAZY
                             return { name: pl.name, pts, g, s, b, tb: pl.tb || 0 };
                         }).sort((a, b) => (b.pts - a.pts) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
 
                         let rank = 1;
                         for (let i = 0; i < snap.length; i++) {
                             if (i > 0) {
-                                const cur = snap[i], prev = snap[i - 1];
-                                if (!(cur.pts === prev.pts && cur.g === prev.g && cur.s === prev.s && cur.b === prev.b && cur.tb === prev.tb)) {
+                                const cur = snap[i], pr = snap[i - 1];
+                                if (!(cur.pts === pr.pts && cur.g === pr.g && cur.s === pr.s && cur.b === pr.b && cur.tb === pr.tb)) {
                                     rank = i + 1;
                                 }
                             }
