@@ -9,10 +9,10 @@
       "purpose": "any maskable"
     }
   ],
-  "start_url": "/sg.html",
+  "start_url": "sg.html",
   "background_color": "#020408",
   "display": "standalone",
-  "scope": "/",
+  "scope": "./",
   "theme_color": "#d4af37",
   "description": "Terminal dostępowy Cyber-Bet"
 }
