@@ -28,7 +28,6 @@
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; transition: 0.3s;
-      /* Ustawienia pod aplikację */
       overscroll-behavior-y: contain; 
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -39,7 +38,6 @@
     .hub-container {
       z-index: 10; position: relative; text-align: center;
       width: 90vw; max-width: 500px;
-      /* Obsługa wycięć w ekranie (notch) */
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
     }
@@ -57,7 +55,6 @@
       outline: none;
     }
 
-    /* FIX DLA IPHONE: Hover działa tylko przy użyciu myszki */
     @media (hover: hover) {
       .btn-cyber:hover {
         transform: translateY(-5px) scale(1.02);
@@ -65,7 +62,6 @@
       }
     }
 
-    /* Efekt kliknięcia (zamiast hover na dotyku) */
     .btn-cyber:active {
       transform: scale(0.96);
       opacity: 0.8;
@@ -112,24 +108,24 @@
     
     <div id="initial-view">
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
-      <a href="jedzenie_1.html" class="btn-cyber btn-food" target="_blank">Wybór jedzenia</a>
+      
+      <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
       
       <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
       <button class="btn-cyber btn-others" onclick="alert('Dostępne już wkrótce!')">Inne zakłady</button>
     </div>
 
     <div id="sub-menu">
-      <a href="dodaj.html" class="btn-cyber btn-sub" target="_blank">➕ Dodaj godzinę</a>
-      <a href="ranking.html" class="btn-cyber btn-sub" target="_blank">🏆 Ranking</a>
-      <a href="lista.html" class="btn-cyber btn-sub" target="_blank">📋 Lista</a>
-      <a href="regulamin.html" class="btn-cyber btn-sub" target="_blank">📜 Regulamin</a>
+      <button class="btn-cyber btn-sub" onclick="window.open('dodaj.html', '_blank')">➕ Dodaj godzinę</button>
+      <button class="btn-cyber btn-sub" onclick="window.open('ranking.html', '_blank')">🏆 Ranking</button>
+      <button class="btn-cyber btn-sub" onclick="window.open('lista.html', '_blank')">📋 Lista</button>
+      <button class="btn-cyber btn-sub" onclick="window.open('regulamin.html', '_blank')">📜 Regulamin</button>
       
       <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć</button>
     </div>
   </div>
 
 <script>
-  /* FIX DLA IPHONE: Resetuje stan przycisków po powrocie gestem palca */
   window.addEventListener('pageshow', (event) => {
     document.querySelectorAll('.btn-cyber').forEach(btn => {
       btn.blur(); 
@@ -157,7 +153,6 @@
     darkBtn.textContent = document.body.classList.contains("light") ? "🌙 Dark" : "☀️ Light";
   };
 
-  /* --- ANIMACJA TŁA --- */
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
   let pts = [];
