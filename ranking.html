@@ -260,20 +260,37 @@
             globalStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
 
             const lastRoundWinners = historyData.length > 0 ? historyData[0].winners.map(w => w.name) : [];
-            const rounds = [...historyData].reverse();
             
-            const prevStats = playersData.map(p => {
-                let pts=0, g=0, s=0, b=0;
-                rounds.slice(0, -1).forEach(r => {
-                    r.winners.forEach((w, idx) => { if(w.name === p.name) { const rnk = w.rank || (idx + 1); pts += (rnk===1?3:rnk===2?2:1); if(rnk===1) g++; else if(rnk===2) s++; else b++; } });
-                });
-                return { name: p.name, pts, g, s, b, tb: p.tb || 0 };
-            }).sort((a,b) => (b.pts-a.pts)||(b.g-a.g)||(b.s-a.s)||(b.b-a.b)||(b.tb-a.tb));
-
-            const prevRanks = {}; prevStats.forEach((p,i) => {
-                if(i>0 && p.pts===prevStats[i-1].pts && p.g===prevStats[i-1].g && p.s===prevStats[i-1].s && p.b===prevStats[i-1].b && p.tb===prevStats[i-1].tb) prevRanks[p.name]=prevRanks[prevStats[i-1].name];
-                else prevRanks[p.name]=i+1;
+            // --- POPRAWKA: POBIERANIE TRENDU Z ODWRÓCONEJ HISTORII ---
+            // Zamiast liczyć od zera, tworzymy stan "przed ostatnią rundą" odejmując punkty
+            const currentRanks = {}; globalStats.forEach((p,i) => currentRanks[p.name] = i + 1);
+            
+            // Obliczamy stan poprzedni przez odjęcie ostatniej rundy od stanu obecnego
+            const prevStats = globalStats.map(p => ({...p})); // Kopia
+            if(historyData.length > 0) {
+                 const lastRound = historyData[0]; // Najnowsza runda
+                 lastRound.winners.forEach((w, idx) => {
+                     const pStat = prevStats.find(ps => ps.name === w.name);
+                     if(pStat) {
+                         const rank = w.rank || (idx + 1);
+                         const pts = rank === 1 ? 3 : rank === 2 ? 2 : 1;
+                         pStat.points -= pts;
+                         if(rank===1) pStat.g--; else if(rank===2) pStat.s--; else pStat.b--;
+                     }
+                 });
+            }
+            // Sortujemy stan poprzedni
+            prevStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
+            const prevRanks = {}; 
+            let lastR = 1;
+            prevStats.forEach((p,i) => {
+                 if(i>0) {
+                    const prev = prevStats[i-1];
+                    if(!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) lastR = i+1;
+                 }
+                 prevRanks[p.name] = lastR;
             });
+            // ---------------------------------------------------------
 
             document.getElementById('top-player').textContent = globalStats[0].name;
             document.getElementById('total-rounds').textContent = historyData.length;
@@ -288,10 +305,9 @@
                 const oldR = prevRanks[p.name] || curR;
 
                 let trendClass = "trend-neutral"; let trendSym = "―";
-                if (lastRoundWinners.includes(p.name)) {
-                    if (curR < oldR) { trendClass = "trend-up"; trendSym = "▲"; }
-                    else if (curR > oldR) { trendClass = "trend-down"; trendSym = "▼"; }
-                }
+                // Pokazuj trend tylko jeśli zmieniła się pozycja
+                if (curR < oldR) { trendClass = "trend-up"; trendSym = "▲"; }
+                else if (curR > oldR) { trendClass = "trend-down"; trendSym = "▼"; }
 
                 let trend = `<span class="trend-icon ${trendClass}">${trendSym}</span>`;
                 const next = globalStats[i+1]; const prevP = globalStats[i-1];
@@ -304,7 +320,7 @@
             updateCharts();
         }
 
-        // --- POPRAWIONA FUNKCJA WYKRESÓW (STRIKE FIX PAWEŁ) ---
+        // --- POPRAWIONA FUNKCJA WYKRESÓW (METODA ODWRÓCONA) ---
         function updateCharts() {
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
@@ -312,51 +328,86 @@
             pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.g,0), globalStats.reduce((a,b)=>a+b.s,0), globalStats.reduce((a,b)=>a+b.b,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
             lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avg), borderColor: '#d4af37', tension: 0.4 }] }; lineChart.update();
 
-            const rounds = [...historyData].reverse();
-            const start = Math.max(0, rounds.length - 10);
+            const roundsReversed = [...historyData]; // Od najnowszej do najstarszej (0 to najnowsza)
+            const numberOfRoundsToShow = 10;
+            const historySteps = []; 
 
-            const datasets = playersData.map((p, idx) => {
-                const data = [];
-                rounds.forEach((_, rIdx) => {
-                    if (rIdx >= start) {
-                        const snap = playersData.map(pl => {
-                            let historicalPts = 0, g = 0, s = 0, b = 0;
-                            // Jeśli rIdx to ostatnia runda, bierzemy AKTUALNE punkty z bazy
-                            if (rIdx === rounds.length - 1) {
-                                historicalPts = pl.points;
-                                // Wyciągamy medale z globalStats
-                                const gs = globalStats.find(x => x.name === pl.name);
-                                g = gs.g; s = gs.s; b = gs.b;
-                            } else {
-                                // Dla rund wstecz obliczamy stan na tamten moment
-                                rounds.slice(0, rIdx + 1).forEach(hr => {
-                                    const hw = hr.winners.find(w => w.name === pl.name);
-                                    if (hw) {
-                                        const rnk = hw.rank || (hr.winners.indexOf(hw) + 1);
-                                        historicalPts += (rnk === 1 ? 3 : rnk === 2 ? 2 : 1);
-                                        if (rnk === 1) g++; else if (rnk === 2) s++; else b++;
-                                    }
-                                });
-                            }
-                            return { name: pl.name, pts: historicalPts, g, s, b, tb: pl.tb || 0 };
-                        }).sort((a, b) => (b.pts - a.pts) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
+            // 1. Zaczynamy od OBECNEGO stanu (jest pewny)
+            let currentSnapshot = globalStats.map(p => ({
+                name: p.name,
+                points: p.points,
+                g: p.g, s: p.s, b: p.b,
+                tb: p.tb || 0
+            }));
 
-                        let rank = 1;
-                        for (let i = 0; i < snap.length; i++) {
-                            if (i > 0) {
-                                const cur = snap[i], pr = snap[i - 1];
-                                if (!(cur.pts === pr.pts && cur.g === pr.g && cur.s === pr.s && cur.b === pr.b && cur.tb === pr.tb)) {
-                                    rank = i + 1;
-                                }
-                            }
-                            if (snap[i].name === p.name) { data.push(rank); break; }
-                        }
+            // Zapisz stan obecny (Runda X)
+            historySteps.push({ roundLabel: `Runda ${historyData.length}`, ranks: calculateRankMap(currentSnapshot) });
+
+            // 2. Cofamy się w czasie o 10 rund
+            for (let i = 0; i < Math.min(numberOfRoundsToShow, roundsReversed.length); i++) {
+                const round = roundsReversed[i];
+                
+                // Cofnij punkty i medale zdobyte w tej rundzie
+                round.winners.forEach((w, idx) => {
+                    const pStat = currentSnapshot.find(p => p.name === w.name);
+                    if (pStat) {
+                        const rank = w.rank || (idx + 1);
+                        const ptsGained = rank === 1 ? 3 : rank === 2 ? 2 : 1;
+                        pStat.points -= ptsGained;
+                        if(rank === 1) pStat.g--; 
+                        else if(rank === 2) pStat.s--; 
+                        else pStat.b--;
                     }
                 });
-                return { label: p.name, data, borderColor: `hsl(${(idx * 360 / playersData.length)}, 70%, 50%)`, tension: 0.3, fill: false };
+
+                // Zapisz stan PO COFNIĘCIU (czyli stan z poprzedniej rundy)
+                // Etykieta to np. Runda 23
+                if (historyData.length - 1 - i > 0) {
+                     historySteps.push({ 
+                         roundLabel: `Runda ${historyData.length - 1 - i}`, 
+                         ranks: calculateRankMap(currentSnapshot) 
+                     });
+                }
+            }
+
+            // 3. Odwracamy kolejność, żeby na wykresie było chronologicznie
+            historySteps.reverse();
+
+            const datasets = playersData.map((p, idx) => {
+                const data = historySteps.map(step => step.ranks[p.name] || null); // null jeśli gracza nie było
+                return {
+                    label: p.name,
+                    data: data,
+                    borderColor: `hsl(${(idx * 360 / playersData.length)}, 70%, 50%)`,
+                    tension: 0.3,
+                    fill: false
+                };
             });
-            histChart.data = { labels: rounds.slice(start).map((_, i) => `Runda ${start + i + 1}`), datasets };
+
+            histChart.data = { 
+                labels: historySteps.map(step => step.roundLabel), 
+                datasets: datasets 
+            };
             histChart.update();
+        }
+
+        // Pomocnicza funkcja do obliczania rankingu z surowych danych
+        function calculateRankMap(statsArray) {
+            // Kopia i sortowanie
+            const sorted = [...statsArray].sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
+            const rankMap = {};
+            let lastRank = 1;
+            sorted.forEach((p, i) => {
+                if(i > 0) {
+                    const prev = sorted[i-1];
+                    // Jeśli statystyki są identyczne, ten sam ranking co poprzednik
+                    if(!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) {
+                        lastRank = i + 1;
+                    }
+                }
+                rankMap[p.name] = lastRank;
+            });
+            return rankMap;
         }
 
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
