@@ -28,6 +28,7 @@
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; transition: 0.3s;
+      /* Ustawienia pod aplikację */
       overscroll-behavior-y: contain; 
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -47,18 +48,19 @@
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); backdrop-filter: blur(20px);
       border: 1px solid var(--border); border-radius: 25px;
-      color: var(--gold); font-size: 18px; font-weight: 900;
+      color: #fff; font-size: 18px; font-weight: 900;
       text-transform: uppercase; letter-spacing: 2px;
       cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       box-sizing: border-box;
       outline: none;
+      text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Cień pod tekstem dla czytelności */
     }
 
     @media (hover: hover) {
       .btn-cyber:hover {
         transform: translateY(-5px) scale(1.02);
-        filter: brightness(1.2);
+        filter: brightness(1.1);
       }
     }
 
@@ -68,14 +70,39 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    .btn-main { background: linear-gradient(135deg, var(--gold), #b38f00); color: #000; border: none; }
-    .btn-food { background: linear-gradient(135deg, #22c55e, #166534); color: #fff; border: none; }
-    .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; }
-    .btn-others { background: linear-gradient(135deg, #a855f7, #6b21a8); color: #fff; border: none; }
+    /* --- STONOWANE KOLORY (Deep Gradients) --- */
     
-    /* NOWY PRZYCISK SERVICE DESK */
-    .btn-service { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border: none; }
+    /* Service Desk: Głęboki pomarańcz/rdza */
+    .btn-service { 
+        background: linear-gradient(135deg, #c2410c, #7c2d12); 
+        border: 1px solid rgba(194, 65, 12, 0.3);
+    }
 
+    /* Obstawianie: Głębokie złoto/brąz */
+    .btn-main { 
+        background: linear-gradient(135deg, #b45309, #78350f); 
+        color: #fff; 
+        border: 1px solid rgba(180, 83, 9, 0.3);
+    }
+
+    /* Jedzenie: Ciemna zieleń */
+    .btn-food { 
+        background: linear-gradient(135deg, #15803d, #14532d); 
+        border: 1px solid rgba(21, 128, 61, 0.3);
+    }
+
+    /* Mundial: Granatowy/Królewski błękit */
+    .btn-mundial { 
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a); 
+        border: 1px solid rgba(29, 78, 216, 0.3);
+    }
+
+    /* Inne Zakłady: Głęboki fiolet */
+    .btn-others { 
+        background: linear-gradient(135deg, #7e22ce, #581c87); 
+        border: 1px solid rgba(126, 34, 206, 0.3);
+    }
+    
     /* --- SUB-MENU OBSTAWIANIA --- */
     #sub-menu { display: none; opacity: 0; transform: translateY(20px); }
     #sub-menu.active { display: block; opacity: 1; transform: translateY(0); animation: slideUp 0.5s forwards; }
@@ -85,7 +112,11 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .btn-sub { color: var(--cyan); border-color: rgba(0, 212, 255, 0.2); }
+    .btn-sub { 
+        background: var(--glass);
+        color: var(--cyan); 
+        border-color: rgba(0, 212, 255, 0.2); 
+    }
 
     #darkModeBtn {
       position: fixed; top: calc(20px + env(safe-area-inset-top)); 
@@ -117,7 +148,8 @@
       <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
       
       <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
-      <button class="btn-cyber btn-others" onclick="alert('Dostępne już wkrótce!')">Inne zakłady</button>
+      
+      <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
     </div>
 
     <div id="sub-menu">
