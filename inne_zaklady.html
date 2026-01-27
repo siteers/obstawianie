@@ -42,12 +42,27 @@
         .bet-card.active { border-color: var(--purple); box-shadow: 0 0 15px rgba(168, 85, 247, 0.15); }
         .bet-card.finished { border-color: var(--gold); opacity: 0.9; }
 
+        /* NOWY STYL: Miganie na czerwono dla przeterminowanych */
+        @keyframes pulseRed {
+            0% { box-shadow: 0 0 5px rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3); }
+            50% { box-shadow: 0 0 20px rgba(231, 76, 60, 0.6); border-color: rgba(231, 76, 60, 1); }
+            100% { box-shadow: 0 0 5px rgba(231, 76, 60, 0.2); border-color: rgba(231, 76, 60, 0.3); }
+        }
+
+        .bet-card.expired {
+            animation: pulseRed 1.5s infinite;
+            border: 1px solid var(--lose);
+        }
+
         .bet-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; }
         .bet-topic { font-size: 18px; font-weight: 900; color: #fff; margin: 0; line-height: 1.3; }
         .bet-date { font-size: 10px; color: #888; margin-top: 5px; text-transform: uppercase; }
+        
+        /* Badges */
         .status-badge { padding: 4px 10px; border-radius: 10px; font-size: 9px; font-weight: bold; text-transform: uppercase; }
         .status-active { background: rgba(168, 85, 247, 0.2); color: var(--purple); border: 1px solid var(--purple); }
         .status-finished { background: rgba(212, 175, 55, 0.2); color: var(--gold); border: 1px solid var(--gold); }
+        .status-expired { background: rgba(231, 76, 60, 0.2); color: var(--lose); border: 1px solid var(--lose); }
 
         /* UCZESTNICY W KARCIE */
         .participant-row { 
@@ -117,7 +132,7 @@
 
     <header>
         <h1>Inne Zakłady</h1>
-        <a href="index.html" class="btn-back">← Wróć</a>
+        <a href="sg.html" class="btn-back">← Wróć</a>
     </header>
 
     <div id="bets-container" class="bets-container">
@@ -162,7 +177,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", 
@@ -210,7 +225,7 @@
 
         // --- POBIERANIE UŻYTKOWNIKÓW DO FORMULARZA ---
         onSnapshot(collection(db, "ranking"), (snap) => {
-            allUsers = snap.docs.map(d => d.id); // Zakładam, że ID dokumentu to imię
+            allUsers = snap.docs.map(d => d.id); 
             renderUserChips();
         });
 
@@ -286,7 +301,12 @@
             document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
             document.getElementById('dynamicInputs').innerHTML = "";
             document.getElementById('betTopic').value = "";
-            document.getElementById('betDate').value = "";
+            
+            // ZMIANA: Ustawienie minimalnej daty na DZISIAJ
+            const today = new Date().toISOString().split('T')[0];
+            const dateInput = document.getElementById('betDate');
+            dateInput.value = "";
+            dateInput.min = today;
         };
 
         window.closeModal = () => document.getElementById('modal-overlay').style.display = 'none';
@@ -301,12 +321,33 @@
                 return;
             }
 
+            // Pobranie dzisiejszej daty do porównania
+            const todayStr = new Date().toISOString().split('T')[0];
+
             snap.forEach(docSnap => {
                 const bet = docSnap.data();
                 const isFinished = bet.status === 'finished';
-                const statusLabel = isFinished ? 'ZAKOŃCZONY' : 'AKTYWNY';
-                const statusClass = isFinished ? 'status-finished' : 'status-active';
-                const cardClass = isFinished ? 'finished' : 'active';
+                
+                // ZMIANA: Sprawdzanie czy zakład jest przeterminowany
+                // Warunek: Jest aktywny ORAZ ma datę ważności ORAZ data ważności jest mniejsza niż dzisiaj
+                let isExpired = false;
+                if(bet.expireDate && bet.expireDate < todayStr && !isFinished) {
+                    isExpired = true;
+                }
+
+                let statusLabel = 'AKTYWNY';
+                let statusClass = 'status-active';
+                let cardClass = 'active';
+
+                if(isFinished) {
+                    statusLabel = 'ZAKOŃCZONY';
+                    statusClass = 'status-finished';
+                    cardClass = 'finished';
+                } else if(isExpired) {
+                    statusLabel = 'PRZETERMINOWANY ❗️';
+                    statusClass = 'status-expired';
+                    cardClass = 'expired'; // Klasa CSS do migania
+                }
                 
                 // Renderowanie uczestników
                 let participantsHtml = "";
@@ -328,7 +369,6 @@
                 // Przyciski akcji
                 let actionsHtml = "";
                 if(!isFinished) {
-                    // Ponieważ JSON nie przechodzi przez string HTML łatwo, przekazujemy tylko ID, a dane pobierzemy przy kliknięciu
                     actionsHtml = `<button class="btn-action btn-resolve" onclick="openResolveModal('${docSnap.id}')">🏆 ROZSTRZYGNIJ</button>`;
                 }
                 actionsHtml += `<button class="btn-action btn-delete" onclick="deleteBet('${docSnap.id}')">USUŃ</button>`;
@@ -341,7 +381,7 @@
                             <div>
                                 <span class="status-badge ${statusClass}">${statusLabel}</span>
                                 <h3 class="bet-topic">${bet.topic}</h3>
-                                <div class="bet-date">${dateDisplay}</div>
+                                <div class="bet-date">${dateDisplay} ${isExpired ? '❗️' : ''}</div>
                             </div>
                         </div>
                         <div class="participants-list">
@@ -357,30 +397,6 @@
         });
 
         // --- ROZSTRZYGANIE ---
-        let currentBetData = null; // Przechowuje dane aktualnie rozstrzyganego zakładu
-
-        window.openResolveModal = async (id) => {
-            currentResolveId = id;
-            // Pobieramy dane uczestników "na żywo" lub z pamięci (tutaj dla uproszczenia zrobimy fetch z DOM lub obiektu snapshota, ale najbezpieczniej pobrać z bazy)
-            // Użyjemy globalnego listenera snapshotów, ale tu zrobimy proste pobranie po ID dla pewności
-            
-            // Ponieważ nie mam "getDoc" w imporcie, dodam go dynamicznie w logice lub użyję tricku. 
-            // Najlepiej po prostu znaleźć uczestników w DOM lub pobrać.
-            // Zróbmy to prościej: przekażmy imiona w HTML? Nie, za dużo znaków.
-            // Pobierzemy dokument.
-            
-            // UWAGA: Musisz dodać getDoc do importu, zaraz to zrobię w kodzie wyżej.
-            // (W kodzie powyżej dodałem już import getFirestore etc, ale brakuje getDoc. Dodaję go teraz mentalnie do importu).
-        };
-        
-        // Zamiast bawić się w getDoc w module, zrobimy to sprytniej. 
-        // Zapamiętajmy dane w zmiennej przy renderowaniu? 
-        // Nie, po prostu w 'openResolveModal' pobierzemy uczestników z HTMLa (mało eleganckie) albo dodam getDoc.
-        // Dodaję getDoc do importu w sekcji <script type="module"> (już poprawione w kodzie wynikowym).
-
-        // Poprawiona funkcja openResolveModal z getDoc:
-        import { getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
         window.openResolveModal = async (id) => {
             currentResolveId = id;
             const docRef = await getDoc(doc(db, "custom_bets", id));
