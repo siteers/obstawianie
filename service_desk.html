@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber-Bet | Service Desk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+    
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    
+    <style>
+        :root {
+            --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+            --glass: rgba(15, 23, 42, 0.9); --glass-light: rgba(255, 255, 255, 0.05);
+            --border: rgba(255, 255, 255, 0.1);
+            --critical: #ff0000; --fault: #ff9f43; --consult: #0abde3;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+            margin: 0; padding: 0; min-height: 100vh;
+            overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
+        }
+
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        /* --- LOGOWANIE --- */
+        #login-screen {
+            position: fixed; inset: 0; z-index: 1000;
+            background: var(--bg); display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        
+        .login-card {
+            background: var(--glass); padding: 40px; border-radius: 20px;
+            border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+            width: 90%; max-width: 400px; text-align: center;
+        }
+
+        input, select, textarea {
+            width: 100%; padding: 15px; margin: 10px 0;
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            color: #fff; border-radius: 10px; font-size: 16px; box-sizing: border-box;
+            font-family: inherit;
+        }
+        
+        input:focus, textarea:focus { border-color: var(--gold); outline: none; }
+
+        .btn-cyber {
+            width: 100%; padding: 15px; border: none; border-radius: 10px;
+            font-weight: 900; text-transform: uppercase; cursor: pointer;
+            margin-top: 10px; transition: 0.2s;
+        }
+        .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; }
+        .btn-submit { background: linear-gradient(90deg, var(--gold), #e1b12c); color: black; }
+        .btn-cancel { background: transparent; border: 1px solid var(--border); color: #aaa; }
+
+        /* --- DASHBOARD --- */
+        #main-app { display: none; position: relative; z-index: 10; padding: 20px; max-width: 800px; margin: 0 auto; }
+        
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        h1 { color: var(--gold); margin: 0; font-size: 24px; text-transform: uppercase; letter-spacing: 2px; }
+        .user-badge { font-size: 12px; color: var(--cyan); border: 1px solid var(--cyan); padding: 5px 10px; border-radius: 20px; }
+        .user-badge.admin { color: #ff4757; border-color: #ff4757; }
+
+        /* --- LISTA ZGŁOSZEŃ --- */
+        .ticket-card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 15px; padding: 20px; margin-bottom: 20px;
+            transition: 0.3s; position: relative; overflow: hidden;
+        }
+        .ticket-card.closed { opacity: 0.6; filter: grayscale(0.8); }
+
+        .ticket-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .ticket-title { font-size: 18px; font-weight: bold; color: #fff; margin: 0; }
+        .ticket-meta { font-size: 12px; color: #888; margin-top: 5px; }
+
+        .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 10px; font-weight: bold; text-transform: uppercase; }
+        .type-Usterka { background: rgba(255, 159, 67, 0.2); color: var(--fault); border: 1px solid var(--fault); }
+        .type-Konsultacje { background: rgba(10, 189, 227, 0.2); color: var(--consult); border: 1px solid var(--consult); }
+        .type-Krytyczny { background: rgba(255, 0, 0, 0.2); color: var(--critical); border: 1px solid var(--critical); animation: pulse 2s infinite; }
+
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+
+        .ticket-desc { background: rgba(0,0,0,0.2); padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; }
+
+        /* --- KOMENTARZE --- */
+        .comments-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
+        .comment { margin-bottom: 10px; font-size: 13px; }
+        .comment strong { color: var(--gold); }
+        .comment.admin-reply strong { color: #ff4757; }
+        .comment-text { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; display: inline-block; margin-top: 2px; }
+        .admin-reply .comment-text { border-left: 3px solid #ff4757; background: rgba(255, 71, 87, 0.1); }
+
+        .reply-box { display: flex; gap: 10px; margin-top: 15px; }
+        .reply-input { flex-grow: 1; padding: 10px; margin: 0; }
+        .btn-reply { width: auto; margin: 0; background: var(--cyan); color: #000; }
+
+        /* --- MODAL NOWEGO ZGŁOSZENIA --- */
+        #new-ticket-modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000;
+            display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+        }
+        .modal-content { background: #1e272e; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px; border: 1px solid var(--gold); }
+        .file-upload { border: 1px dashed var(--border); padding: 20px; text-align: center; color: #888; cursor: pointer; border-radius: 10px; }
+
+        .fab {
+            position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
+            background: var(--gold); border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 30px; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); cursor: pointer; z-index: 100;
+        }
+
+        .close-btn { background: #ff4757; color: white; width: auto; float: right; margin-bottom: 15px; font-size: 10px; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div id="login-screen">
+        <div class="login-card">
+            <h1 style="margin-bottom: 10px;">SERVICE DESK</h1>
+            <p style="color: #888; margin-bottom: 20px;">System Zgłoszeń Cyber-Bet</p>
+            
+            <input type="text" id="username" placeholder="Twoje Imię / Nick" autocomplete="off">
+            <input type="password" id="adminPass" placeholder="Hasło Admina (opcjonalne)">
+            
+            <button class="btn-cyber btn-enter" onclick="login()">Zaloguj do Systemu</button>
+            <p style="font-size: 10px; color: #555; margin-top: 15px;">Hasło admina to: admin</p>
+        </div>
+    </div>
+
+    <div id="main-app">
+        <header>
+            <div>
+                <h1>Lista Zgłoszeń</h1>
+                <div id="userInfo" class="user-badge">Gość</div>
+            </div>
+            <button class="btn-cyber" style="width: auto; padding: 10px 20px; font-size: 12px; background: rgba(255,255,255,0.1);" onclick="location.reload()">Wyloguj</button>
+        </header>
+
+        <div id="tickets-container">
+            <p style="text-align:center; color:#888;">Ładowanie bazy zgłoszeń...</p>
+        </div>
+    </div>
+
+    <div id="fab" class="fab" onclick="openModal()" style="display:none;">+</div>
+
+    <div id="new-ticket-modal">
+        <div class="modal-content">
+            <h2 style="color:var(--gold); margin-top:0;">Nowe Zgłoszenie</h2>
+            
+            <label style="font-size:12px; color:#888;">Typ zgłoszenia *</label>
+            <select id="tType">
+                <option value="Usterka">⚠️ Usterka</option>
+                <option value="Konsultacje">🔵 Konsultacje</option>
+                <option value="Krytyczny">🔥 Stan krytyczny</option>
+            </select>
+
+            <label style="font-size:12px; color:#888;">Tytuł *</label>
+            <input type="text" id="tTitle" placeholder="Krótki tytuł problemu">
+
+            <label style="font-size:12px; color:#888;">Opis zdarzenia *</label>
+            <textarea id="tDesc" rows="5" placeholder="Opisz dokładnie co się stało..."></textarea>
+
+            <label style="font-size:12px; color:#888;">Załączniki</label>
+            <div class="file-upload" onclick="alert('Upload plików będzie dostępny po podpięciu Storage!')">
+                📎 Kliknij, aby dodać plik (Demo)
+            </div>
+
+            <button class="btn-cyber btn-submit" onclick="submitTicket()">Wyślij Zgłoszenie</button>
+            <button class="btn-cyber btn-cancel" onclick="closeModal()">Anuluj</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", 
+            authDomain: "obstaiwanie.firebaseapp.com", 
+            projectId: "obstaiwanie" 
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let currentUser = "";
+        let isAdmin = false;
+
+        // --- BACKGROUND ANIMATION (Space) ---
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+        function initBg() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            pts = Array(50).fill().map(() => ({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5
+            }));
+        }
+        function drawBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(212, 175, 55, 0.4)';
+            pts.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1, 0, Math.PI * 2); ctx.fill();
+            });
+            requestAnimationFrame(drawBg);
+        }
+        window.onresize = initBg; initBg(); drawBg();
+
+        // --- LOGIC ---
+
+        window.login = () => {
+            const name = document.getElementById('username').value.trim();
+            const pass = document.getElementById('adminPass').value.trim();
+
+            if(!name) return alert("Podaj imię!");
+            
+            currentUser = name;
+            if(pass === "admin") {
+                isAdmin = true;
+                document.getElementById('userInfo').innerText = `${name} (ADMIN)`;
+                document.getElementById('userInfo').classList.add('admin');
+            } else {
+                document.getElementById('userInfo').innerText = name;
+            }
+
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            document.getElementById('fab').style.display = 'flex';
+            
+            loadTickets();
+        };
+
+        window.openModal = () => document.getElementById('new-ticket-modal').style.display = 'flex';
+        window.closeModal = () => document.getElementById('new-ticket-modal').style.display = 'none';
+
+        window.submitTicket = async () => {
+            const type = document.getElementById('tType').value;
+            const title = document.getElementById('tTitle').value;
+            const desc = document.getElementById('tDesc').value;
+
+            if(!title || !desc) return alert("Wypełnij tytuł i opis!");
+
+            await addDoc(collection(db, "tickets"), {
+                type, title, desc,
+                author: currentUser,
+                timestamp: serverTimestamp(),
+                status: 'open',
+                replies: []
+            });
+
+            closeModal();
+            // Reset form
+            document.getElementById('tTitle').value = "";
+            document.getElementById('tDesc').value = "";
+        };
+
+        function loadTickets() {
+            const q = query(collection(db, "tickets"), orderBy("timestamp", "desc"));
+            onSnapshot(q, (snapshot) => {
+                const container = document.getElementById('tickets-container');
+                container.innerHTML = "";
+                
+                if(snapshot.empty) {
+                    container.innerHTML = "<p style='text-align:center; color:#666;'>Brak zgłoszeń. Dodać jedno?</p>";
+                    return;
+                }
+
+                snapshot.forEach(docSnap => {
+                    const t = docSnap.data();
+                    const date = t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString() : 'Teraz';
+                    const typeClass = t.type === 'Stan krytyczny' ? 'Krytyczny' : t.type;
+                    const closedClass = t.status === 'closed' ? 'closed' : '';
+                    
+                    let closeBtn = "";
+                    if(isAdmin && t.status === 'open') {
+                        closeBtn = `<button class="close-btn" onclick="closeTicket('${docSnap.id}')">ZAMKNIJ ZGŁOSZENIE</button>`;
+                    }
+                    if(t.status === 'closed') {
+                        closeBtn = `<div style="float:right; color:#ff4757; font-weight:bold; font-size:10px;">ZAMKNIĘTE</div>`;
+                    }
+
+                    // Render Replies
+                    let repliesHtml = "";
+                    if(t.replies && t.replies.length > 0) {
+                        t.replies.forEach(r => {
+                            const adminClass = r.isAdmin ? 'admin-reply' : '';
+                            repliesHtml += `
+                                <div class="comment ${adminClass}">
+                                    <strong>${r.author}</strong> <span style="font-size:10px; opacity:0.5;">${r.date}</span><br>
+                                    <span class="comment-text">${r.text}</span>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    // Reply Input (Available for all if open)
+                    let replyInput = "";
+                    if(t.status !== 'closed') {
+                        replyInput = `
+                            <div class="reply-box">
+                                <input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź...">
+                                <button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button>
+                            </div>
+                        `;
+                    }
+
+                    const html = `
+                        <div class="ticket-card ${closedClass}">
+                            ${closeBtn}
+                            <div class="ticket-header">
+                                <div>
+                                    <span class="status-badge type-${typeClass}">${t.type}</span>
+                                    <h3 class="ticket-title">${t.title}</h3>
+                                    <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
+                                </div>
+                            </div>
+                            <div class="ticket-desc">${t.desc}</div>
+                            
+                            <div class="comments-section">
+                                ${repliesHtml}
+                                ${replyInput}
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += html;
+                });
+            });
+        }
+
+        window.sendReply = async (id) => {
+            const input = document.getElementById(`reply-${id}`);
+            const text = input.value.trim();
+            if(!text) return;
+
+            const replyObj = {
+                author: currentUser,
+                text: text,
+                date: new Date().toLocaleTimeString(),
+                isAdmin: isAdmin
+            };
+
+            await updateDoc(doc(db, "tickets", id), {
+                replies: arrayUnion(replyObj)
+            });
+            
+            input.value = ""; // clear after send (optimistic update handle by snapshot)
+        };
+
+        window.closeTicket = async (id) => {
+            if(!confirm("Czy na pewno zamknąć to zgłoszenie?")) return;
+            await updateDoc(doc(db, "tickets", id), { status: 'closed' });
+        };
+    </script>
+</body>
+</html>
