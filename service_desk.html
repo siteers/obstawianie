@@ -44,7 +44,9 @@
             font-family: inherit;
         }
         
-        input:focus, textarea:focus { border-color: var(--gold); outline: none; }
+        select option { background: #000; color: #fff; }
+        
+        input:focus, textarea:focus, select:focus { border-color: var(--gold); outline: none; }
 
         .btn-cyber {
             width: 100%; padding: 15px; border: none; border-radius: 10px;
@@ -119,14 +121,24 @@
 
     <div id="login-screen">
         <div class="login-card">
-            <h1 style="margin-bottom: 10px;">SERVICE DESK</h1>
-            <p style="color: #888; margin-bottom: 20px;">System Zgłoszeń Cyber-Bet</p>
+            <h1 style="margin-bottom: 30px;">SERVICE DESK</h1>
             
-            <input type="text" id="username" placeholder="Twoje Imię / Nick" autocomplete="off">
-            <input type="password" id="adminPass" placeholder="Hasło Admina (opcjonalne)">
+            <select id="userSelect" onchange="checkUserType()">
+                <option value="" disabled selected>Wybierz użytkownika</option>
+                <option value="Arek">Arek</option>
+                <option value="Dominik">Dominik</option>
+                <option value="Grzesiek P">Grzesiek P</option>
+                <option value="Grzesiek Sz">Grzesiek Sz</option>
+                <option value="Krzysiek">Krzysiek</option>
+                <option value="Mariusz">Mariusz</option>
+                <option value="Paweł">Paweł</option>
+                <option disabled>──────────</option>
+                <option value="Admin">🔑 ADMIN SYSTEMU</option>
+            </select>
+
+            <input type="password" id="adminPass" placeholder="Podaj hasło administratora" style="display:none;">
             
             <button class="btn-cyber btn-enter" onclick="login()">Zaloguj do Systemu</button>
-            <p style="font-size: 10px; color: #555; margin-top: 15px;">Hasło admina to: admin</p>
         </div>
     </div>
 
@@ -214,21 +226,43 @@
 
         // --- LOGIC ---
 
+        // Pokaż pole hasła tylko dla Admina
+        window.checkUserType = () => {
+            const user = document.getElementById('userSelect').value;
+            const passInput = document.getElementById('adminPass');
+            if(user === "Admin") {
+                passInput.style.display = "block";
+                passInput.focus();
+            } else {
+                passInput.style.display = "none";
+            }
+        };
+
         window.login = () => {
-            const name = document.getElementById('username').value.trim();
+            const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('adminPass').value.trim();
 
-            if(!name) return alert("Podaj imię!");
+            if(!user) return alert("Wybierz użytkownika z listy!");
             
-            currentUser = name;
-            if(pass === "admin") {
-                isAdmin = true;
-                document.getElementById('userInfo').innerText = `${name} (ADMIN)`;
-                document.getElementById('userInfo').classList.add('admin');
-            } else {
-                document.getElementById('userInfo').innerText = name;
+            // Logika dla Admina
+            if(user === "Admin") {
+                if(pass === "0000") {
+                    isAdmin = true;
+                    currentUser = "Admin";
+                    document.getElementById('userInfo').innerText = `ADMINISTRATOR`;
+                    document.getElementById('userInfo').classList.add('admin');
+                } else {
+                    return alert("Błędne hasło administratora!");
+                }
+            } 
+            // Logika dla zwykłego gracza
+            else {
+                isAdmin = false;
+                currentUser = user;
+                document.getElementById('userInfo').innerText = user;
             }
 
+            // Przejście do aplikacji
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('fab').style.display = 'flex';
