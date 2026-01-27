@@ -23,19 +23,19 @@
             overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* TŁO - Widoczne zawsze (zmieniono z display:none na block) */
+        /* TŁO */
         #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         /* --- LOGOWANIE --- */
         #login-screen {
             position: fixed; inset: 0; z-index: 1000;
-            /* Dodano półprzezroczyste tło, żeby konstelacje były widoczne, ale przyciemnione pod logowaniem */
-            background: rgba(2, 4, 8, 0.6); 
+            /* POPRAWKA: Usunięto tło przyciemniające, teraz jest przezroczyste */
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
         
         .login-card {
+            /* Karta ma własne tło i rozmycie, więc jest czytelna na jasnym tle */
             background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
             border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
             width: 90%; max-width: 400px; text-align: center; backdrop-filter: blur(10px);
@@ -268,7 +268,8 @@
                 if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-                ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
+                // POPRAWKA: Zwiększono widoczność kropek i linii
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.5)'; 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
@@ -277,7 +278,7 @@
                     const p2 = pts[j];
                     const d = Math.hypot(p.x - p2.x, p.y - p2.y);
                     if (d < 120) {
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 - d/300})`;
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.6 - d/300})`;
                         ctx.lineWidth = 0.5;
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
