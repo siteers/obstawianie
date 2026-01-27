@@ -13,7 +13,6 @@
             --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
             --glass: rgba(15, 23, 42, 0.95);
             --border: rgba(255, 255, 255, 0.1);
-            --critical: #ff0000; --fault: #ff9f43; --consult: #0abde3;
             --open-green: #2ecc71; --closed-red: #e74c3c;
         }
 
@@ -23,8 +22,8 @@
             overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* TŁO */
-        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+        /* TŁO - Domyślnie ukryte (brak konstelacji przy logowaniu) */
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; opacity: 0; transition: opacity 2s; }
 
         /* --- LOGOWANIE --- */
         #login-screen {
@@ -77,34 +76,28 @@
             transition: 0.3s; position: relative; overflow: hidden;
         }
 
-        /* STYL DLA OTWARTYCH (ZIELONE) */
-        .ticket-card.open {
-            border: 1px solid var(--open-green);
-            box-shadow: 0 0 15px rgba(46, 204, 113, 0.15);
-        }
+        /* OTWARTE */
+        .ticket-card.open { border: 1px solid var(--open-green); box-shadow: 0 0 10px rgba(46, 204, 113, 0.1); }
+        /* ZAMKNIĘTE */
+        .ticket-card.closed { border: 1px solid var(--closed-red); opacity: 0.7; filter: grayscale(0.2); }
 
-        /* STYL DLA ZAMKNIĘTYCH (CZERWONE) */
-        .ticket-card.closed {
-            border: 1px solid var(--closed-red);
-            opacity: 0.7;
-            filter: grayscale(0.2);
-        }
-
-        .ticket-header { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            margin-bottom: 15px; 
-        }
+        .ticket-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
         .ticket-title { font-size: 20px; font-weight: 900; color: #fff; margin: 8px 0 0 0; line-height: 1.2; }
         .ticket-meta { font-size: 11px; color: #888; margin-top: 5px; }
 
-        .status-badge { padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; display: inline-block; }
-        .type-Usterka { background: rgba(255, 159, 67, 0.2); color: var(--fault); border: 1px solid var(--fault); }
-        .type-Konsultacje { background: rgba(10, 189, 227, 0.2); color: var(--consult); border: 1px solid var(--consult); }
-        .type-Krytyczny { background: rgba(255, 0, 0, 0.2); color: var(--critical); border: 1px solid var(--critical); animation: pulse 2s infinite; }
-
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 0, 0, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 0, 0, 0); } }
+        /* Styl Plakietki Statusu (Nadpisuje kolory typów) */
+        .status-badge { 
+            padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold; 
+            text-transform: uppercase; letter-spacing: 1px; display: inline-block; 
+        }
+        
+        /* Logika kolorów plakietki w zależności od statusu zgłoszenia */
+        .ticket-card.open .status-badge { 
+            background: rgba(46, 204, 113, 0.2); color: var(--open-green); border: 1px solid var(--open-green);
+        }
+        .ticket-card.closed .status-badge { 
+            background: rgba(231, 76, 60, 0.2); color: var(--closed-red); border: 1px solid var(--closed-red);
+        }
 
         .ticket-desc { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; }
 
@@ -137,8 +130,13 @@
             font-size: 30px; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); cursor: pointer; z-index: 100; color: #000; font-weight: bold;
         }
 
-        .close-btn { background: #ff4757; color: white; border: none; width: auto; position: absolute; top: 20px; right: 20px; font-size: 10px; padding: 5px 10px; border-radius: 5px; cursor: pointer; }
-        
+        /* Przyciski Akcji Admina */
+        .admin-actions { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; }
+        .btn-action { border: none; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; cursor: pointer; color: white; }
+        .btn-close { background: #e74c3c; } /* Zamknij */
+        .btn-open { background: #2ecc71; } /* Otwórz */
+        .btn-delete { background: #333; border: 1px solid #555; } /* Usuń */
+
         .attachment-btn {
             background: rgba(0, 212, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan);
             padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; margin-top: 10px; display: inline-block; text-decoration: none;
@@ -226,7 +224,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, arrayUnion, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, arrayUnion, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", 
@@ -261,23 +259,21 @@
 
         function drawBg() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            // Punkty
             pts.forEach((p, i) => {
                 p.x += p.vx; p.y += p.vy;
                 if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-                ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; // Gold dots
+                ctx.fillStyle = 'rgba(212, 175, 55, 0.3)';
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
                 ctx.fill();
 
-                // Linie (Konstelacje)
                 for (let j = i + 1; j < pts.length; j++) {
                     const p2 = pts[j];
                     const d = Math.hypot(p.x - p2.x, p.y - p2.y);
                     if (d < 120) {
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 - d/300})`; // Cyan lines
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.4 - d/300})`;
                         ctx.lineWidth = 0.5;
                         ctx.beginPath();
                         ctx.moveTo(p.x, p.y);
@@ -340,6 +336,11 @@
             document.getElementById('login-screen').style.display = 'none';
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('fab').style.display = 'flex';
+            
+            // Pokaż tło konstelacji dopiero po zalogowaniu
+            const bg = document.getElementById('bg-canvas');
+            bg.style.display = 'block';
+            setTimeout(() => { bg.style.opacity = '1'; }, 100);
             
             loadTickets();
         }
@@ -423,26 +424,33 @@
                     const date = t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString() : 'Teraz';
                     const typeClass = t.type === 'Stan krytyczny' ? 'Krytyczny' : t.type;
                     const isClosed = t.status === 'closed';
-                    
-                    // Klasa CSS zależna od statusu (open/closed)
                     const statusClass = isClosed ? 'closed' : 'open';
                     
                     let actionHtml = "";
                     
-                    // Jeśli Admin i otwarte -> Pokaż przycisk Zamknij
-                    if(isAdmin && !isClosed) {
-                        actionHtml = `<button class="close-btn" onclick="closeTicket('${docSnap.id}')">ZAMKNIJ</button>`;
-                    }
-                    // Jeśli Zamknięte -> Pokaż etykietę
-                    if(isClosed) {
-                        actionHtml = `<div class="closed-label">ZGŁOSZENIE ZAMKNIĘTE</div>`;
+                    // PANEL ADMINA (Zamykanie, Otwieranie, Usuwanie)
+                    if(isAdmin) {
+                        actionHtml += `<div class="admin-actions">`;
+                        if(!isClosed) {
+                            actionHtml += `<button class="btn-action btn-close" onclick="changeStatus('${docSnap.id}', 'closed')">ZAMKNIJ</button>`;
+                        } else {
+                            actionHtml += `<button class="btn-action btn-open" onclick="changeStatus('${docSnap.id}', 'open')">OTWÓRZ</button>`;
+                        }
+                        actionHtml += `<button class="btn-action btn-delete" onclick="deleteTicket('${docSnap.id}')">USUŃ</button>`;
+                        actionHtml += `</div>`;
+                    } else if(isClosed) {
+                         // Dla zwykłego usera tylko info że zamknięte
+                         actionHtml = `<div class="closed-label">ZGŁOSZENIE ZAMKNIĘTE</div>`;
                     }
 
                     let attachmentHtml = "";
                     if(t.attachment) {
+                        // ID przycisku i ID obrazka
+                        const imgId = `img-${docSnap.id}`;
+                        const btnId = `btn-${docSnap.id}`;
                         attachmentHtml = `
-                            <button class="attachment-btn" onclick="toggleImage('img-${docSnap.id}')">📷 Zobacz załącznik</button>
-                            <img id="img-${docSnap.id}" src="${t.attachment}" class="attachment-img">
+                            <button id="${btnId}" class="attachment-btn" onclick="toggleImage('${imgId}', '${btnId}')">📷 Zobacz załącznik</button>
+                            <img id="${imgId}" src="${t.attachment}" class="attachment-img">
                         `;
                     }
 
@@ -476,7 +484,7 @@
                         <div class="ticket-card ${statusClass}">
                             ${actionHtml}
                             <div class="ticket-header">
-                                <span class="status-badge type-${typeClass}">${t.type}</span>
+                                <span class="status-badge">${t.type}</span>
                                 <h3 class="ticket-title">${t.title}</h3>
                                 <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
                             </div>
@@ -495,10 +503,17 @@
             });
         }
 
-        window.toggleImage = (id) => {
-            const img = document.getElementById(id);
-            if(img.style.display === "block") img.style.display = "none";
-            else img.style.display = "block";
+        window.toggleImage = (imgId, btnId) => {
+            const img = document.getElementById(imgId);
+            const btn = document.getElementById(btnId);
+            
+            if(img.style.display === "block") {
+                img.style.display = "none";
+                btn.innerText = "📷 Zobacz załącznik";
+            } else {
+                img.style.display = "block";
+                btn.innerText = "❌ Ukryj załącznik";
+            }
         };
 
         window.sendReply = async (id) => {
@@ -519,9 +534,15 @@
             input.value = ""; 
         };
 
-        window.closeTicket = async (id) => {
-            if(!confirm("Czy na pewno zamknąć to zgłoszenie?")) return;
-            await updateDoc(doc(db, "tickets", id), { status: 'closed' });
+        window.changeStatus = async (id, newStatus) => {
+            const action = newStatus === 'closed' ? "zamknąć" : "otworzyć ponownie";
+            if(!confirm(`Czy na pewno chcesz ${action} to zgłoszenie?`)) return;
+            await updateDoc(doc(db, "tickets", id), { status: newStatus });
+        };
+
+        window.deleteTicket = async (id) => {
+            if(!confirm("⚠️ Czy na pewno trwale USUNĄĆ to zgłoszenie? Tego nie da się cofnąć!")) return;
+            await deleteDoc(doc(db, "tickets", id));
         };
     </script>
 </body>
