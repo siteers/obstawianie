@@ -28,7 +28,6 @@
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; transition: 0.3s;
-      /* Ustawienia pod aplikację */
       overscroll-behavior-y: contain; 
       user-select: none;
       -webkit-tap-highlight-color: transparent;
@@ -54,7 +53,7 @@
       text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       box-sizing: border-box;
       outline: none;
-      text-shadow: 0 2px 5px rgba(0,0,0,0.5); /* Cień pod tekstem dla czytelności */
+      text-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
 
     @media (hover: hover) {
@@ -70,37 +69,37 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* --- STONOWANE KOLORY (Deep Gradients) --- */
+    /* --- STONOWANA PALETA BEŻY I ZIEMI --- */
     
-    /* Service Desk: Głęboki pomarańcz/rdza */
+    /* Service Desk - Ciepły, lekko rdzawy beż */
     .btn-service { 
-        background: linear-gradient(135deg, #c2410c, #7c2d12); 
-        border: 1px solid rgba(194, 65, 12, 0.3);
+        background: linear-gradient(135deg, #a36b5e, #8a5a4e);
+        border: 1px solid rgba(163, 107, 94, 0.3);
     }
 
-    /* Obstawianie: Głębokie złoto/brąz */
+    /* Obstawianie (Main) - Klasyczny, ciemny piaskowy beż/złoto */
     .btn-main { 
-        background: linear-gradient(135deg, #b45309, #78350f); 
+        background: linear-gradient(135deg, #b08d57, #8f7142);
         color: #fff; 
-        border: 1px solid rgba(180, 83, 9, 0.3);
+        border: 1px solid rgba(176, 141, 87, 0.3);
     }
 
-    /* Jedzenie: Ciemna zieleń */
+    /* Jedzenie (Food) - Oliwkowy beż */
     .btn-food { 
-        background: linear-gradient(135deg, #15803d, #14532d); 
-        border: 1px solid rgba(21, 128, 61, 0.3);
+        background: linear-gradient(135deg, #8a8b6e, #727357);
+        border: 1px solid rgba(138, 139, 110, 0.3);
     }
 
-    /* Mundial: Granatowy/Królewski błękit */
+    /* Mundial - Chłodny, szarawy beż (taupe) */
     .btn-mundial { 
-        background: linear-gradient(135deg, #1d4ed8, #1e3a8a); 
-        border: 1px solid rgba(29, 78, 216, 0.3);
+        background: linear-gradient(135deg, #9a8c83, #83756d);
+        border: 1px solid rgba(154, 140, 131, 0.3);
     }
 
-    /* Inne Zakłady: Głęboki fiolet */
+    /* Inne Zakłady (Others) - Ciepły, brązowawy beż */
     .btn-others { 
-        background: linear-gradient(135deg, #7e22ce, #581c87); 
-        border: 1px solid rgba(126, 34, 206, 0.3);
+        background: linear-gradient(135deg, #997b66, #826653);
+        border: 1px solid rgba(153, 123, 102, 0.3);
     }
     
     /* --- SUB-MENU OBSTAWIANIA --- */
