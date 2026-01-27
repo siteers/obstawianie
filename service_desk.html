@@ -14,6 +14,7 @@
             --glass: rgba(15, 23, 42, 0.95);
             --border: rgba(255, 255, 255, 0.1);
             --open-green: #2ecc71; --closed-red: #e74c3c;
+            --fault: #ff9f43; --consult: #0abde3; --critical: #ff0000;
         }
 
         body {
@@ -22,20 +23,22 @@
             overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
-        /* TŁO - Domyślnie ukryte (brak konstelacji przy logowaniu) */
-        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: none; opacity: 0; transition: opacity 2s; }
+        /* TŁO - Widoczne zawsze (zmieniono z display:none na block) */
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         /* --- LOGOWANIE --- */
         #login-screen {
             position: fixed; inset: 0; z-index: 1000;
-            background: var(--bg); display: flex; flex-direction: column;
+            /* Dodano półprzezroczyste tło, żeby konstelacje były widoczne, ale przyciemnione pod logowaniem */
+            background: rgba(2, 4, 8, 0.6); 
+            display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
         
         .login-card {
             background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
             border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
-            width: 90%; max-width: 400px; text-align: center;
+            width: 90%; max-width: 400px; text-align: center; backdrop-filter: blur(10px);
         }
 
         h1 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
@@ -74,6 +77,7 @@
             background: rgba(255,255,255,0.03); 
             border-radius: 15px; padding: 20px; margin-bottom: 20px;
             transition: 0.3s; position: relative; overflow: hidden;
+            backdrop-filter: blur(5px);
         }
 
         /* OTWARTE */
@@ -85,13 +89,13 @@
         .ticket-title { font-size: 20px; font-weight: 900; color: #fff; margin: 8px 0 0 0; line-height: 1.2; }
         .ticket-meta { font-size: 11px; color: #888; margin-top: 5px; }
 
-        /* Styl Plakietki Statusu (Nadpisuje kolory typów) */
+        /* Styl Plakietki Statusu */
         .status-badge { 
             padding: 5px 15px; border-radius: 20px; font-size: 10px; font-weight: bold; 
             text-transform: uppercase; letter-spacing: 1px; display: inline-block; 
         }
         
-        /* Logika kolorów plakietki w zależności od statusu zgłoszenia */
+        /* Logika kolorów plakietki */
         .ticket-card.open .status-badge { 
             background: rgba(46, 204, 113, 0.2); color: var(--open-green); border: 1px solid var(--open-green);
         }
@@ -133,9 +137,9 @@
         /* Przyciski Akcji Admina */
         .admin-actions { position: absolute; top: 20px; right: 20px; display: flex; gap: 5px; }
         .btn-action { border: none; padding: 5px 10px; border-radius: 5px; font-size: 10px; font-weight: bold; cursor: pointer; color: white; }
-        .btn-close { background: #e74c3c; } /* Zamknij */
-        .btn-open { background: #2ecc71; } /* Otwórz */
-        .btn-delete { background: #333; border: 1px solid #555; } /* Usuń */
+        .btn-close { background: #e74c3c; } 
+        .btn-open { background: #2ecc71; } 
+        .btn-delete { background: #333; border: 1px solid #555; } 
 
         .attachment-btn {
             background: rgba(0, 212, 255, 0.1); border: 1px solid var(--cyan); color: var(--cyan);
@@ -337,11 +341,6 @@
             document.getElementById('main-app').style.display = 'block';
             document.getElementById('fab').style.display = 'flex';
             
-            // Pokaż tło konstelacji dopiero po zalogowaniu
-            const bg = document.getElementById('bg-canvas');
-            bg.style.display = 'block';
-            setTimeout(() => { bg.style.opacity = '1'; }, 100);
-            
             loadTickets();
         }
 
@@ -428,7 +427,6 @@
                     
                     let actionHtml = "";
                     
-                    // PANEL ADMINA (Zamykanie, Otwieranie, Usuwanie)
                     if(isAdmin) {
                         actionHtml += `<div class="admin-actions">`;
                         if(!isClosed) {
@@ -439,13 +437,11 @@
                         actionHtml += `<button class="btn-action btn-delete" onclick="deleteTicket('${docSnap.id}')">USUŃ</button>`;
                         actionHtml += `</div>`;
                     } else if(isClosed) {
-                         // Dla zwykłego usera tylko info że zamknięte
                          actionHtml = `<div class="closed-label">ZGŁOSZENIE ZAMKNIĘTE</div>`;
                     }
 
                     let attachmentHtml = "";
                     if(t.attachment) {
-                        // ID przycisku i ID obrazka
                         const imgId = `img-${docSnap.id}`;
                         const btnId = `btn-${docSnap.id}`;
                         attachmentHtml = `
@@ -467,7 +463,6 @@
                         });
                     }
 
-                    // Input tylko dla OTWARTYCH
                     let replyInput = "";
                     if(!isClosed) {
                         replyInput = `
