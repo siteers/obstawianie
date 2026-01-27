@@ -72,6 +72,9 @@
     .btn-food { background: linear-gradient(135deg, #22c55e, #166534); color: #fff; border: none; }
     .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: #fff; border: none; }
     .btn-others { background: linear-gradient(135deg, #a855f7, #6b21a8); color: #fff; border: none; }
+    
+    /* NOWY PRZYCISK SERVICE DESK */
+    .btn-service { background: linear-gradient(135deg, #f97316, #ea580c); color: #fff; border: none; }
 
     /* --- SUB-MENU OBSTAWIANIA --- */
     #sub-menu { display: none; opacity: 0; transform: translateY(20px); }
@@ -107,6 +110,8 @@
     <h1 id="hub-title">Terminal Dostępowy</h1>
     
     <div id="initial-view">
+      <button class="btn-cyber btn-service" onclick="window.open('service_desk.html', '_blank')">🛠️ Service Desk</button>
+      
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
       
       <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
