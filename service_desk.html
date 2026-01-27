@@ -220,14 +220,19 @@
                 return;
             } 
             
-            // 2. Logika GRACZA (Sprawdzanie hasła w bazie DB)
+            // 2. Logika GRACZA (POPRAWIONA ŚCIEŻKA DO KOLEKCJI PASSWORDS)
             try {
-                const userDoc = await getDoc(doc(db, "ranking", user));
+                // WAŻNA ZMIANA: Szukamy w kolekcji "passwords"
+                const userDoc = await getDoc(doc(db, "passwords", user));
                 
                 if (userDoc.exists()) {
                     const userData = userDoc.data();
-                    // Sprawdzamy pole 'password' w bazie. Jeśli go nie ma, logowanie się nie uda.
-                    if (userData.password === pass) {
+                    
+                    // Bezpieczna konwersja na tekst
+                    const dbPass = String(userData.password || "");
+                    const inputPass = String(pass);
+
+                    if (dbPass === inputPass && dbPass !== "") {
                         isAdmin = false;
                         currentUser = user;
                         loginSuccess(user, false);
@@ -235,11 +240,11 @@
                         alert("Błędne hasło!");
                     }
                 } else {
-                    alert("Błąd: Nie znaleziono użytkownika w bazie!");
+                    alert("Nie znaleziono hasła dla tego użytkownika w bazie (kolekcja 'passwords').");
                 }
             } catch (error) {
                 console.error("Błąd logowania:", error);
-                alert("Wystąpił błąd połączenia z bazą.");
+                alert("Wystąpił błąd: " + error.message);
             }
         };
 
