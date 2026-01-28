@@ -205,6 +205,11 @@
 </div>
 
 <script type="module">
+    // --- OCHRONIARZ (ZABEZPIECZENIE) ---
+    if (!localStorage.getItem('cyberUser')) {
+        window.location.href = 'sg.html';
+    }
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -304,6 +309,3 @@
 </script>
 </body>
 </html>
-
-
-
