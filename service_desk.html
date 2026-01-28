@@ -20,6 +20,7 @@
         body {
             font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
             margin: 0; padding: 0; min-height: 100vh;
+            /* user-select: none blokuje zaznaczanie, ale nadpiszemy to niżej dla tekstu */
             overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
@@ -29,13 +30,11 @@
         /* --- LOGOWANIE --- */
         #login-screen {
             position: fixed; inset: 0; z-index: 1000;
-            /* POPRAWKA: Usunięto tło przyciemniające, teraz jest przezroczyste */
             display: flex; flex-direction: column;
             align-items: center; justify-content: center;
         }
         
         .login-card {
-            /* Karta ma własne tło i rozmycie, więc jest czytelna na jasnym tle */
             background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
             border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
             width: 90%; max-width: 400px; text-align: center; backdrop-filter: blur(10px);
@@ -103,14 +102,30 @@
             background: rgba(231, 76, 60, 0.2); color: var(--closed-red); border: 1px solid var(--closed-red);
         }
 
-        .ticket-desc { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; }
+        /* --- ZMIANA: Umożliwienie zaznaczania tekstu --- */
+        .ticket-desc { 
+            background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0; 
+            font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; 
+            user-select: text; /* Pozwala zaznaczać tekst */
+            -webkit-user-select: text;
+            cursor: text;
+        }
 
         /* --- KOMENTARZE --- */
         .comments-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
         .comment { margin-bottom: 10px; font-size: 13px; }
         .comment strong { color: var(--gold); }
         .comment.admin-reply strong { color: #ff4757; }
-        .comment-text { background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; display: inline-block; margin-top: 2px; }
+        
+        /* --- ZMIANA: Umożliwienie zaznaczania tekstu w komentarzach --- */
+        .comment-text { 
+            background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; 
+            display: inline-block; margin-top: 2px;
+            user-select: text; /* Pozwala zaznaczać tekst */
+            -webkit-user-select: text;
+            cursor: text;
+        }
+        
         .admin-reply .comment-text { border-left: 3px solid #ff4757; background: rgba(255, 71, 87, 0.1); }
 
         .reply-box { display: flex; gap: 10px; margin-top: 15px; }
