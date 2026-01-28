@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Cyber-Bet | Hub System</title>
-  
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,17 +19,11 @@
       --gray: #64748b;
     }
 
-    body.light {
-      --bg: #f2f2f2; --glass: rgba(255, 255, 255, 0.9); --border: rgba(0, 0, 0, 0.1);
-    }
-
     body {
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
       margin: 0; overflow: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; transition: 0.3s;
-      overscroll-behavior-y: contain; 
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
+      overscroll-behavior-y: contain; user-select: none; -webkit-tap-highlight-color: transparent;
     }
 
     #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
@@ -40,115 +33,99 @@
       width: 90vw; max-width: 500px;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
+      display: none; /* Domyślnie ukryte, pokaże się po zalogowaniu */
     }
 
-    /* --- PRZYCISKI GŁÓWNE --- */
+    /* EKRAN LOGOWANIA */
+    #login-container {
+        z-index: 20; position: relative; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; width: 90vw; max-width: 400px;
+    }
+    
+    .login-card {
+        background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
+        border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
+        width: 100%; text-align: center; backdrop-filter: blur(10px);
+    }
+
+    input, select {
+        width: 100%; padding: 15px; margin: 10px 0;
+        background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+        color: #fff; border-radius: 10px; font-size: 16px; box-sizing: border-box;
+        font-family: inherit;
+    }
+    select option { background: #000; color: #fff; }
+    input:focus, select:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+
+    /* PRZYCISKI */
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); backdrop-filter: blur(20px);
       border: 1px solid var(--border); border-radius: 25px;
       color: #fff; font-size: 18px; font-weight: 900;
       text-transform: uppercase; letter-spacing: 2px;
-      cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      cursor: pointer; transition: 0.3s;
       text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-      box-sizing: border-box;
-      outline: none;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5); /* Cień dla lepszej czytelności */
+      box-sizing: border-box; outline: none; text-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
+    .btn-cyber:active { transform: scale(0.96); opacity: 0.8; }
 
-    @media (hover: hover) {
-      .btn-cyber:hover {
-        transform: translateY(-5px) scale(1.02);
-        filter: brightness(1.2);
-      }
-    }
+    /* Login Button */
+    .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; }
 
-    .btn-cyber:active {
-      transform: scale(0.96);
-      opacity: 0.8;
-      background: rgba(255, 255, 255, 0.1);
-    }
-
-    /* --- KOLORYSTYKA "DEEP CYBER" (Kolorowo, ale elegancko) --- */
+    /* KOLORY HUB */
+    .btn-service { background: linear-gradient(135deg, #a36b5e, #8a5a4e); border: 1px solid rgba(163, 107, 94, 0.3); }
+    .btn-main { background: linear-gradient(135deg, #b08d57, #8f7142); color: #fff; border: 1px solid rgba(176, 141, 87, 0.3); }
+    .btn-food { background: linear-gradient(135deg, #8a8b6e, #727357); border: 1px solid rgba(138, 139, 110, 0.3); }
+    .btn-mundial { background: linear-gradient(135deg, #9a8c83, #83756d); border: 1px solid rgba(154, 140, 131, 0.3); }
+    .btn-others { background: linear-gradient(135deg, #997b66, #826653); border: 1px solid rgba(153, 123, 102, 0.3); }
     
-    /* Service Desk: Głęboki pomarańcz (ostrzegawczy, techniczny) */
-    .btn-service { 
-        background: linear-gradient(135deg, #ea580c, #9a3412); 
-        border: 1px solid rgba(234, 88, 12, 0.3);
-    }
-
-    /* Obstawianie: Klasyczne Złoto (Signature color) - czarny tekst dla kontrastu */
-    .btn-main { 
-        background: linear-gradient(135deg, #d4af37, #856d22); 
-        color: #000; 
-        text-shadow: none;
-        border: 1px solid rgba(212, 175, 55, 0.4);
-    }
-
-    /* Jedzenie: Głęboka zieleń (Emerald) */
-    .btn-food { 
-        background: linear-gradient(135deg, #10b981, #065f46); 
-        border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    /* Mundial: Królewski granat/błękit */
-    .btn-mundial { 
-        background: linear-gradient(135deg, #2563eb, #1e3a8a); 
-        border: 1px solid rgba(37, 99, 235, 0.3);
-    }
-
-    /* Inne Zakłady: Szlachetny fiolet */
-    .btn-others { 
-        background: linear-gradient(135deg, #9333ea, #581c87); 
-        border: 1px solid rgba(147, 51, 234, 0.3);
-    }
-    
-    /* --- SUB-MENU OBSTAWIANIA --- */
+    /* SUB-MENU */
     #sub-menu { display: none; opacity: 0; transform: translateY(20px); }
     #sub-menu.active { display: block; opacity: 1; transform: translateY(0); animation: slideUp 0.5s forwards; }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    .btn-sub { background: var(--glass); color: var(--cyan); border-color: rgba(0, 212, 255, 0.2); }
 
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
+    /* Logout Button */
+    #logoutBtn { position: fixed; top: 20px; right: 20px; background: rgba(255,0,0,0.2); border: 1px solid #ff4757; color: #ff4757; padding: 8px 15px; border-radius: 20px; font-size: 10px; cursor: pointer; z-index: 100; display: none; }
 
-    .btn-sub { 
-        background: var(--glass);
-        color: var(--cyan); 
-        border-color: rgba(0, 212, 255, 0.2); 
-    }
-
-    #darkModeBtn {
-      position: fixed; top: calc(20px + env(safe-area-inset-top)); 
-      right: 20px; padding: 10px 20px;
-      border-radius: 30px; border: 1px solid var(--border);
-      background: var(--glass); color: var(--gold);
-      cursor: pointer; font-weight: bold; z-index: 100; font-size: 12px;
-    }
-
-    h1 {
-      font-size: 11px; color: var(--gray); text-transform: uppercase;
-      letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7;
-    }
+    h1 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7; }
+    h2 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
   </style>
 </head>
 <body>
 
   <canvas id="bg-canvas"></canvas>
-  <button id="darkModeBtn">☀️ Light</button>
+  <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
 
-  <div class="hub-container">
-    <h1 id="hub-title">Terminal Dostępowy</h1>
+  <div id="login-container">
+    <div class="login-card">
+        <h2>TERMINAL DOSTĘPOWY</h2>
+        <select id="userSelect">
+            <option value="" disabled selected>Wybierz użytkownika</option>
+            <option value="Arek">Arek</option>
+            <option value="Dominik">Dominik</option>
+            <option value="Grzesiek P">Grzesiek P</option>
+            <option value="Grzesiek Sz">Grzesiek Sz</option>
+            <option value="Krzysiek">Krzysiek</option>
+            <option value="Mariusz">Mariusz</option>
+            <option value="Paweł">Paweł</option>
+            <option disabled>──────────</option>
+            <option value="Admin">🔑 ADMIN SYSTEMU</option>
+        </select>
+        <input type="password" id="userPass" placeholder="Hasło dostępu">
+        <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
+    </div>
+  </div>
+
+  <div class="hub-container" id="hub-view">
+    <h1 id="hub-title">Witaj, <span id="userNameDisplay" style="color:var(--cyan)">User</span></h1>
     
     <div id="initial-view">
       <button class="btn-cyber btn-service" onclick="window.open('service_desk.html', '_blank')">🛠️ Service Desk</button>
-      
       <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
-      
       <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
-      
       <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
-      
       <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
     </div>
 
@@ -157,90 +134,115 @@
       <button class="btn-cyber btn-sub" onclick="window.open('ranking.html', '_blank')">🏆 Ranking</button>
       <button class="btn-cyber btn-sub" onclick="window.open('lista.html', '_blank')">📋 Lista</button>
       <button class="btn-cyber btn-sub" onclick="window.open('regulamin.html', '_blank')">📜 Regulamin</button>
-      
       <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć</button>
     </div>
   </div>
 
-<script>
-  window.addEventListener('pageshow', (event) => {
-    document.querySelectorAll('.btn-cyber').forEach(btn => {
-      btn.blur(); 
-    });
-  });
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  function revealMenu() {
-    document.getElementById('initial-view').style.display = 'none';
-    const menu = document.getElementById('sub-menu');
-    menu.classList.add('active');
-    document.getElementById('hub-title').innerText = "Moduł Obstawiania";
+  const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // --- SPRAWDZANIE SESJI NA STARCIE ---
+  const savedUser = localStorage.getItem('cyberUser');
+  if (savedUser) {
+      showHub(savedUser);
   }
 
-  function hideMenu() {
-    document.getElementById('sub-menu').classList.remove('active');
-    setTimeout(() => {
-        document.getElementById('initial-view').style.display = 'block';
-        document.getElementById('hub-title').innerText = "Terminal Dostępowy";
-    }, 100);
-  }
+  // --- LOGOWANIE ---
+  window.login = async () => {
+      const user = document.getElementById('userSelect').value;
+      const pass = document.getElementById('userPass').value.trim();
 
-  const darkBtn = document.getElementById("darkModeBtn");
-  darkBtn.onclick = () => {
-    document.body.classList.toggle("light");
-    darkBtn.textContent = document.body.classList.contains("light") ? "🌙 Dark" : "☀️ Light";
+      if(!user) return alert("Wybierz użytkownika!");
+
+      if(user === "Admin") {
+          if(pass === "0000") {
+              saveSession("Admin");
+          } else {
+              alert("Błędne hasło administratora!");
+          }
+          return;
+      }
+
+      try {
+          const userDoc = await getDoc(doc(db, "passwords", user));
+          if (userDoc.exists()) {
+              const userData = userDoc.data();
+              if (String(userData.password) === String(pass)) {
+                  saveSession(user);
+              } else {
+                  alert("Błędne hasło!");
+              }
+          } else {
+              alert("Brak hasła w bazie.");
+          }
+      } catch (error) {
+          console.error(error);
+          alert("Błąd połączenia.");
+      }
   };
 
+  // Obsługa Enter
+  document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
+
+  function saveSession(user) {
+      localStorage.setItem('cyberUser', user);
+      showHub(user);
+  }
+
+  function showHub(user) {
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('hub-view').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'block';
+      document.getElementById('userNameDisplay').innerText = user;
+  }
+
+  window.logout = () => {
+      localStorage.removeItem('cyberUser');
+      location.reload();
+  };
+
+  window.revealMenu = () => {
+      document.getElementById('initial-view').style.display = 'none';
+      document.getElementById('sub-menu').classList.add('active');
+  };
+
+  window.hideMenu = () => {
+      document.getElementById('sub-menu').classList.remove('active');
+      setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100);
+  };
+
+  // --- BACKGROUND ---
   const canvas = document.getElementById('bg-canvas');
   const ctx = canvas.getContext('2d');
   let pts = [];
-
   function init() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight;
     pts = [];
-    for (let i = 0; i < 70; i++) {
-      pts.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5
-      });
-    }
+    for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); }
   }
-
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const isLight = document.body.classList.contains('light');
-    
     pts.forEach((p, i) => {
       p.x += p.vx; p.y += p.vy;
       if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
       if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
-      ctx.fillStyle = isLight ? 'rgba(0,0,0,0.1)' : 'rgba(212, 175, 55, 0.3)';
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-
+      ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
       for (let j = i + 1; j < pts.length; j++) {
         const p2 = pts[j];
-        const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-        if (d < 150) {
-          ctx.strokeStyle = isLight ? `rgba(0,0,0,${0.1 - d/1500})` : `rgba(0, 212, 255, ${0.5 - d/300})`;
-          ctx.lineWidth = 0.5;
-          ctx.beginPath();
-          ctx.moveTo(p.x, p.y);
-          ctx.lineTo(p2.x, p2.y);
-          ctx.stroke();
+        if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) {
+          ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`;
+          ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
         }
       }
     });
     requestAnimationFrame(draw);
   }
-
-  window.onresize = init;
-  init();
-  draw();
+  window.onresize = init; init(); draw();
 </script>
 </body>
 </html>
