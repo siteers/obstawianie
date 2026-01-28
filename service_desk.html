@@ -102,11 +102,11 @@
             background: rgba(231, 76, 60, 0.2); color: var(--closed-red); border: 1px solid var(--closed-red);
         }
 
-        /* --- ZMIANA: Umożliwienie zaznaczania tekstu --- */
+        /* --- Umożliwienie zaznaczania tekstu --- */
         .ticket-desc { 
             background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0; 
             font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; 
-            user-select: text; /* Pozwala zaznaczać tekst */
+            user-select: text; 
             -webkit-user-select: text;
             cursor: text;
         }
@@ -117,11 +117,10 @@
         .comment strong { color: var(--gold); }
         .comment.admin-reply strong { color: #ff4757; }
         
-        /* --- ZMIANA: Umożliwienie zaznaczania tekstu w komentarzach --- */
         .comment-text { 
             background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; 
             display: inline-block; margin-top: 2px;
-            user-select: text; /* Pozwala zaznaczać tekst */
+            user-select: text; 
             -webkit-user-select: text;
             cursor: text;
         }
@@ -283,7 +282,6 @@
                 if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
 
-                // POPRAWKA: Zwiększono widoczność kropek i linii
                 ctx.fillStyle = 'rgba(212, 175, 55, 0.5)'; 
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
@@ -309,6 +307,14 @@
         drawBg();
 
         // --- LOGOWANIE ---
+        
+        // Dodana obsługa ENTER
+        document.getElementById('userPass').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+
         window.login = async () => {
             const user = document.getElementById('userSelect').value;
             const pass = document.getElementById('userPass').value.trim();
