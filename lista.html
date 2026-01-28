@@ -102,8 +102,8 @@
 
 <div class="admin-config">
     <div style="font-weight: bold; color: var(--gold); font-size: 12px;">CELE DNIA:</div>
-    <select id="targetSelect1" onchange="updateTargets()"><option value="Brak">Osoba 1...</option><option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option><option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option></select>
-    <select id="targetSelect2" onchange="updateTargets()"><option value="Brak">Osoba 2...</option><option value="Arek">Arek</option><option value="Paweł">Paweł</option><option value="Grzesiek Sz">Grzesiek Sz</option><option value="Grzesiek P">Grzesiek P</option><option value="Krzysiek">Krzysiek</option><option value="Mariusz">Mariusz</option><option value="Dominik">Dominik</option></select>
+    <select id="targetSelect1" onchange="updateTargets()"><option value="Brak">Wczytywanie...</option></select>
+    <select id="targetSelect2" onchange="updateTargets()"><option value="Brak">Wczytywanie...</option></select>
 </div>
 
 <div class="dashboard-grid">
@@ -166,6 +166,27 @@ let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, i
 let stoppedSec1 = 0, stoppedSec2 = 0;
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
+
+// --- DYNAMICZNE ŁADOWANIE LISTY CELÓW ---
+onSnapshot(collection(db, "passwords"), (snap) => {
+    const s1 = document.getElementById('targetSelect1');
+    const s2 = document.getElementById('targetSelect2');
+    
+    // Zapamiętaj obecny wybór
+    const v1 = s1.value;
+    const v2 = s2.value;
+
+    const options = `<option value="Brak">Brak</option>` + 
+        snap.docs
+            .filter(d => d.id !== "Admin") // Nie chcemy Admina jako celu
+            .map(d => `<option value="${d.id}">${d.id}</option>`).join("");
+
+    s1.innerHTML = options;
+    s2.innerHTML = options;
+
+    // Przywróć wybór jeśli nadal istnieje w opcjach (lub ustaw z bazy w onSnapshot appState)
+    // To zostanie nadpisane przez onSnapshot(appStateRef) poniżej, więc jest OK.
+});
 
 function shuffleArray(array) {
     const a = [...array];
@@ -256,8 +277,25 @@ document.getElementById("darkModeBtn").onclick = () => { document.body.classList
 new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 90, height: 90 });
 function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0); }
 function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
+
 window.updateTargets = async () => { await setDoc(appStateRef, { target1: document.getElementById("targetSelect1").value, target2: document.getElementById("targetSelect2").value }, { merge: true }); };
-onSnapshot(appStateRef, (snap) => { const data = snap.data(); if(!data) return; document.getElementById("targetName1").textContent = data.target1 || "---"; document.getElementById("targetName2").textContent = data.target2 || "---"; document.getElementById("targetSelect1").value = data.target1 || "Brak"; document.getElementById("targetSelect2").value = data.target2 || "Brak"; isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); });
+
+onSnapshot(appStateRef, (snap) => { 
+    const data = snap.data(); if(!data) return; 
+    document.getElementById("targetName1").textContent = data.target1 || "---"; 
+    document.getElementById("targetName2").textContent = data.target2 || "---"; 
+    
+    // Ustaw wartości selectów, jeśli opcje są już załadowane
+    const s1 = document.getElementById("targetSelect1");
+    if(s1.options.length > 1) s1.value = data.target1 || "Brak";
+    
+    const s2 = document.getElementById("targetSelect2");
+    if(s2.options.length > 1) s2.value = data.target2 || "Brak";
+
+    isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; 
+    updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); 
+});
+
 function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
 window.toggleLock = async (id) => { const snap = await getDoc(appStateRef); const field = `isLocked${id}`; const newState = !snap.data()[field]; await setDoc(appStateRef, { [field]: newState }, { merge: true }); if(newState) lockSound.play().catch(()=>{}); };
 
