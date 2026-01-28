@@ -71,8 +71,16 @@
         }
         .participant-row:last-child { border-bottom: none; }
         .p-name { font-weight: bold; color: var(--cyan); }
-        .p-bet { color: #ccc; text-align: right; max-width: 60%; font-style: italic; }
         
+        .p-right-side { display: flex; align-items: center; gap: 8px; max-width: 70%; justify-content: flex-end; }
+        .p-bet { color: #ccc; text-align: right; font-style: italic; white-space: pre-wrap; word-break: break-word; }
+        
+        /* Ikony edycji i historii */
+        .icon-btn { cursor: pointer; opacity: 0.7; transition: 0.2s; font-size: 14px; text-decoration: none; border:none; background: none; padding: 2px;}
+        .icon-btn:hover { opacity: 1; transform: scale(1.2); }
+        .icon-edit { color: var(--gold); }
+        .icon-history { color: var(--cyan); }
+
         /* Styl dla zwycięzcy/przegranego */
         .winner .p-name { color: var(--gold); }
         .winner .p-bet { color: var(--gold); font-weight: bold; text-shadow: 0 0 5px rgba(212,175,55,0.5); }
@@ -150,11 +158,9 @@
             <input type="text" id="betTopic" placeholder="np. Kto zje więcej pizzy?">
 
             <label style="font-size:12px; color:#888; margin-top:10px; display:block;">Wybierz uczestników (min. 2)</label>
-            <div id="usersGrid" class="users-grid">
-                </div>
+            <div id="usersGrid" class="users-grid"></div>
 
-            <div id="dynamicInputs" class="dynamic-inputs">
-                </div>
+            <div id="dynamicInputs" class="dynamic-inputs"></div>
 
             <label style="font-size:12px; color:#888; margin-top:10px; display:block;">Termin (Opcjonalnie)</label>
             <input type="date" id="betDate">
@@ -168,9 +174,7 @@
             <button class="btn-close-modal" onclick="document.getElementById('resolve-overlay').style.display='none'">×</button>
             <h2 style="color:var(--gold); margin-top:0; text-align:center;">Kto wygrał?</h2>
             <p id="resolve-topic" style="text-align:center; color:#ccc; margin-bottom:20px;"></p>
-            
             <div id="winner-list"></div>
-            
             <button class="btn-full" style="background: var(--gold); color:#000;" onclick="confirmWinner()">ZATWIERDŹ WYNIK</button>
         </div>
     </div>
@@ -186,6 +190,13 @@
         };
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // --- OCHRONIARZ ---
+        const currentUser = localStorage.getItem('cyberUser');
+        if (!currentUser) {
+            window.location.href = 'sg.html';
+        }
+        const isAdmin = (currentUser === 'Admin');
 
         // --- ZMIENNE GLOBALNE ---
         let allUsers = [];
@@ -223,7 +234,7 @@
         }
         window.onresize = initBg; initBg(); drawBg();
 
-        // --- POBIERANIE UŻYTKOWNIKÓW DO FORMULARZA ---
+        // --- POBIERANIE UŻYTKOWNIKÓW ---
         onSnapshot(collection(db, "ranking"), (snap) => {
             allUsers = snap.docs.map(d => d.id); 
             renderUserChips();
@@ -280,14 +291,15 @@
 
             const participants = selectedUsers.map(user => ({
                 name: user,
-                prediction: document.getElementById(`bet-val-${user}`).value || "Brak opisu"
+                prediction: document.getElementById(`bet-val-${user}`).value || "Brak opisu",
+                history: [] // Nowe pole na historię edycji
             }));
 
             await addDoc(collection(db, "custom_bets"), {
                 topic,
                 expireDate: date || null,
                 participants,
-                status: 'active', // active / finished
+                status: 'active',
                 winner: null,
                 timestamp: serverTimestamp()
             });
@@ -301,8 +313,6 @@
             document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
             document.getElementById('dynamicInputs').innerHTML = "";
             document.getElementById('betTopic').value = "";
-            
-            // ZMIANA: Ustawienie minimalnej daty na DZISIAJ
             const today = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('betDate');
             dateInput.value = "";
@@ -321,19 +331,14 @@
                 return;
             }
 
-            // Pobranie dzisiejszej daty do porównania
             const todayStr = new Date().toISOString().split('T')[0];
 
             snap.forEach(docSnap => {
                 const bet = docSnap.data();
                 const isFinished = bet.status === 'finished';
                 
-                // ZMIANA: Sprawdzanie czy zakład jest przeterminowany
-                // Warunek: Jest aktywny ORAZ ma datę ważności ORAZ data ważności jest mniejsza niż dzisiaj
                 let isExpired = false;
-                if(bet.expireDate && bet.expireDate < todayStr && !isFinished) {
-                    isExpired = true;
-                }
+                if(bet.expireDate && bet.expireDate < todayStr && !isFinished) isExpired = true;
 
                 let statusLabel = 'AKTYWNY';
                 let statusClass = 'status-active';
@@ -346,31 +351,44 @@
                 } else if(isExpired) {
                     statusLabel = 'PRZETERMINOWANY ❗️';
                     statusClass = 'status-expired';
-                    cardClass = 'expired'; // Klasa CSS do migania
+                    cardClass = 'expired';
                 }
                 
-                // Renderowanie uczestników
                 let participantsHtml = "";
                 bet.participants.forEach(p => {
                     let resultClass = "";
                     if(isFinished) {
-                        if(bet.winner === p.name) resultClass = "winner"; // Złoty
-                        else resultClass = "loser"; // Przekreślony
+                        if(bet.winner === p.name) resultClass = "winner";
+                        else resultClass = "loser";
                     }
                     
+                    // IKONY EDYCJI I HISTORII
+                    let icons = "";
+                    const hasHistory = p.history && p.history.length > 0;
+                    
+                    // Historia widoczna dla wszystkich
+                    if(hasHistory) {
+                        icons += `<button class="icon-btn icon-history" onclick="viewHistory('${docSnap.id}', '${p.name}')">🕒</button>`;
+                    }
+
+                    // Edycja tylko dla właściciela slotu lub Admina, jeśli zakład nie jest zakończony
+                    if(!isFinished && (p.name === currentUser || isAdmin)) {
+                        icons += `<button class="icon-btn icon-edit" onclick="editBet('${docSnap.id}', '${p.name}')">✏️</button>`;
+                    }
+
                     participantsHtml += `
                         <div class="participant-row ${resultClass}">
                             <span class="p-name">${isFinished && bet.winner === p.name ? '👑 ' : ''}${p.name}</span>
-                            <span class="p-bet">${p.prediction}</span>
+                            <div class="p-right-side">
+                                <span class="p-bet">${p.prediction}</span>
+                                <div style="display:flex; gap:5px;">${icons}</div>
+                            </div>
                         </div>
                     `;
                 });
 
-                // Przyciski akcji
                 let actionsHtml = "";
-                if(!isFinished) {
-                    actionsHtml = `<button class="btn-action btn-resolve" onclick="openResolveModal('${docSnap.id}')">🏆 ROZSTRZYGNIJ</button>`;
-                }
+                if(!isFinished) actionsHtml = `<button class="btn-action btn-resolve" onclick="openResolveModal('${docSnap.id}')">🏆 ROZSTRZYGNIJ</button>`;
                 actionsHtml += `<button class="btn-action btn-delete" onclick="deleteBet('${docSnap.id}')">USUŃ</button>`;
 
                 const dateDisplay = bet.expireDate ? `Termin: ${bet.expireDate}` : '';
@@ -384,17 +402,66 @@
                                 <div class="bet-date">${dateDisplay} ${isExpired ? '❗️' : ''}</div>
                             </div>
                         </div>
-                        <div class="participants-list">
-                            ${participantsHtml}
-                        </div>
-                        <div class="card-actions">
-                            ${actionsHtml}
-                        </div>
+                        <div class="participants-list">${participantsHtml}</div>
+                        <div class="card-actions">${actionsHtml}</div>
                     </div>
                 `;
                 container.innerHTML += html;
             });
         });
+
+        // --- EDYCJA ZAKŁADU ---
+        window.editBet = async (betId, participantName) => {
+            const docRef = doc(db, "custom_bets", betId);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+
+            const data = docSnap.data();
+            const pIndex = data.participants.findIndex(p => p.name === participantName);
+            if (pIndex === -1) return;
+
+            const currentVal = data.participants[pIndex].prediction;
+            const newVal = prompt(`Edytuj typ dla ${participantName}:`, currentVal);
+
+            if (newVal && newVal !== currentVal) {
+                // Inicjalizuj historię jeśli nie istnieje
+                if (!data.participants[pIndex].history) {
+                    data.participants[pIndex].history = [];
+                }
+
+                // Dodaj stary wpis do historii
+                data.participants[pIndex].history.push({
+                    val: currentVal,
+                    date: new Date().toLocaleString()
+                });
+
+                // Zaktualizuj na nowy
+                data.participants[pIndex].prediction = newVal;
+
+                await updateDoc(docRef, { participants: data.participants });
+            }
+        };
+
+        // --- HISTORIA EDYCJI ---
+        window.viewHistory = async (betId, participantName) => {
+            const docRef = doc(db, "custom_bets", betId);
+            const docSnap = await getDoc(docRef);
+            if (!docSnap.exists()) return;
+
+            const data = docSnap.data();
+            const p = data.participants.find(p => p.name === participantName);
+            
+            if (p && p.history && p.history.length > 0) {
+                let msg = `HISTORIA EDYCJI (${participantName}):\n\n`;
+                p.history.forEach(h => {
+                    msg += `📅 ${h.date}:\n"${h.val}"\n⬇⬇⬇\n`;
+                });
+                msg += `OBECNIE: "${p.prediction}"`;
+                alert(msg);
+            } else {
+                alert("Brak historii edycji.");
+            }
+        };
 
         // --- ROZSTRZYGANIE ---
         window.openResolveModal = async (id) => {
@@ -425,14 +492,8 @@
             const radios = document.getElementsByName('winnerRadio');
             let winner = null;
             for(const r of radios) { if(r.checked) winner = r.value; }
-
             if(!winner) return alert("Wybierz zwycięzcę!");
-
-            await updateDoc(doc(db, "custom_bets", currentResolveId), {
-                status: 'finished',
-                winner: winner
-            });
-
+            await updateDoc(doc(db, "custom_bets", currentResolveId), { status: 'finished', winner: winner });
             document.getElementById('resolve-overlay').style.display = 'none';
         };
 
@@ -441,7 +502,6 @@
                 await deleteDoc(doc(db, "custom_bets", id));
             }
         };
-
     </script>
 </body>
 </html>
