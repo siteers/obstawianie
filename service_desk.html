@@ -20,54 +20,34 @@
         body {
             font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
             margin: 0; padding: 0; min-height: 100vh;
-            /* user-select: none blokuje zaznaczanie, ale nadpiszemy to niżej dla tekstu */
             overflow-x: hidden; user-select: none; -webkit-tap-highlight-color: transparent;
         }
 
         /* TŁO */
         #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
-        /* --- LOGOWANIE --- */
-        #login-screen {
-            position: fixed; inset: 0; z-index: 1000;
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
+        /* --- DASHBOARD --- */
+        /* Domyślnie ukryte, pokaże się po weryfikacji usera w JS */
+        #main-app { display: none; position: relative; z-index: 10; padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        .login-card {
-            background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
-            border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
-            width: 90%; max-width: 400px; text-align: center; backdrop-filter: blur(10px);
-        }
-
-        h1 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
-
-        input, select, textarea {
-            width: 100%; padding: 15px; margin: 10px 0;
-            background: rgba(0,0,0,0.5); border: 1px solid var(--border);
-            color: #fff; border-radius: 10px; font-size: 16px; box-sizing: border-box;
-            font-family: inherit;
-        }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        h2 { color: var(--gold); margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
         
-        select option { background: #000; color: #fff; }
-        input:focus, textarea:focus, select:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
-
+        /* PRZYCISKI */
         .btn-cyber {
             width: 100%; padding: 18px; border: none; border-radius: 10px;
             font-weight: 900; text-transform: uppercase; cursor: pointer;
             margin-top: 20px; transition: 0.2s; letter-spacing: 1px;
         }
-        .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); }
-        .btn-enter:active { transform: scale(0.98); }
-        
         .btn-submit { background: linear-gradient(90deg, var(--gold), #e1b12c); color: black; }
         .btn-cancel { background: transparent; border: 1px solid var(--border); color: #aaa; }
-
-        /* --- DASHBOARD --- */
-        #main-app { display: none; position: relative; z-index: 10; padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
-        h2 { color: var(--gold); margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
+        .btn-back { 
+            width: auto; margin: 0; padding: 10px 20px; font-size: 12px; 
+            background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white;
+            text-decoration: none; display: inline-block; border-radius: 10px;
+        }
+
         .user-badge { font-size: 12px; color: var(--cyan); border: 1px solid var(--cyan); padding: 5px 10px; border-radius: 20px; display: inline-block; margin-top: 5px; }
         .user-badge.admin { color: #ff4757; border-color: #ff4757; }
 
@@ -94,7 +74,6 @@
             text-transform: uppercase; letter-spacing: 1px; display: inline-block; 
         }
         
-        /* Logika kolorów plakietki */
         .ticket-card.open .status-badge { 
             background: rgba(46, 204, 113, 0.2); color: var(--open-green); border: 1px solid var(--open-green);
         }
@@ -106,9 +85,7 @@
         .ticket-desc { 
             background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin: 15px 0; 
             font-size: 14px; line-height: 1.5; color: #ddd; white-space: pre-wrap; 
-            user-select: text; 
-            -webkit-user-select: text;
-            cursor: text;
+            user-select: text; -webkit-user-select: text; cursor: text;
         }
 
         /* --- KOMENTARZE --- */
@@ -120,16 +97,17 @@
         .comment-text { 
             background: rgba(255,255,255,0.05); padding: 8px 12px; border-radius: 8px; 
             display: inline-block; margin-top: 2px;
-            user-select: text; 
-            -webkit-user-select: text;
-            cursor: text;
+            user-select: text; -webkit-user-select: text; cursor: text;
         }
         
         .admin-reply .comment-text { border-left: 3px solid #ff4757; background: rgba(255, 71, 87, 0.1); }
 
         .reply-box { display: flex; gap: 10px; margin-top: 15px; }
-        .reply-input { flex-grow: 1; padding: 10px; margin: 0; }
-        .btn-reply { width: auto; margin: 0; background: var(--cyan); color: #000; border: none; border-radius: 8px; cursor: pointer; }
+        .reply-input { 
+            flex-grow: 1; padding: 10px; margin: 0; background: rgba(0,0,0,0.5); 
+            border: 1px solid var(--border); color: #fff; border-radius: 10px; 
+        }
+        .btn-reply { width: auto; margin: 0; background: var(--cyan); color: #000; border: none; border-radius: 8px; cursor: pointer; padding: 10px; font-weight: bold; }
 
         /* --- MODAL --- */
         #new-ticket-modal {
@@ -137,6 +115,15 @@
             display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
         }
         .modal-content { background: #151b26; width: 90%; max-width: 500px; padding: 30px; border-radius: 20px; border: 1px solid var(--gold); box-shadow: 0 0 50px rgba(212, 175, 55, 0.1); max-height: 90vh; overflow-y: auto; }
+        
+        input, select, textarea {
+            width: 100%; padding: 15px; margin: 10px 0;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+            color: #fff; border-radius: 10px; font-size: 16px; box-sizing: border-box; font-family: inherit;
+        }
+        select option { background: #000; color: #fff; }
+        input:focus, textarea:focus, select:focus { border-color: var(--cyan); outline: none; }
+
         .file-upload { border: 1px dashed var(--border); padding: 20px; text-align: center; color: #888; cursor: pointer; border-radius: 10px; transition: 0.2s; position: relative; }
         .file-upload:hover { border-color: var(--cyan); color: var(--cyan); }
         .file-upload input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
@@ -146,6 +133,7 @@
             position: fixed; bottom: 30px; right: 30px; width: 60px; height: 60px;
             background: linear-gradient(135deg, var(--gold), #e1b12c); border-radius: 50%; display: flex; align-items: center; justify-content: center;
             font-size: 30px; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4); cursor: pointer; z-index: 100; color: #000; font-weight: bold;
+            display: none; /* Ukryte do załadowania */
         }
 
         /* Przyciski Akcji Admina */
@@ -172,36 +160,13 @@
 
     <canvas id="bg-canvas"></canvas>
 
-    <div id="login-screen">
-        <div class="login-card">
-            <h1>SERVICE DESK</h1>
-            
-            <select id="userSelect">
-                <option value="" disabled selected>Wybierz użytkownika</option>
-                <option value="Arek">Arek</option>
-                <option value="Dominik">Dominik</option>
-                <option value="Grzesiek P">Grzesiek P</option>
-                <option value="Grzesiek Sz">Grzesiek Sz</option>
-                <option value="Krzysiek">Krzysiek</option>
-                <option value="Mariusz">Mariusz</option>
-                <option value="Paweł">Paweł</option>
-                <option disabled>──────────</option>
-                <option value="Admin">🔑 ADMIN SYSTEMU</option>
-            </select>
-
-            <input type="password" id="userPass" placeholder="Hasło dostępu">
-            
-            <button class="btn-cyber btn-enter" onclick="login()">Zaloguj do Systemu</button>
-        </div>
-    </div>
-
     <div id="main-app">
         <header>
             <div>
                 <h2>Lista Zgłoszeń</h2>
-                <div id="userInfo" class="user-badge">Gość</div>
+                <div id="userInfo" class="user-badge">...</div>
             </div>
-            <button class="btn-cyber" style="width: auto; margin:0; padding: 10px 20px; font-size: 12px; background: rgba(255,255,255,0.1);" onclick="location.reload()">Wyloguj</button>
+            <a href="sg.html" class="btn-cyber btn-back">← Wróć do Menu</a>
         </header>
 
         <div id="tickets-container">
@@ -209,7 +174,7 @@
         </div>
     </div>
 
-    <div id="fab" class="fab" onclick="openModal()" style="display:none;">+</div>
+    <div id="fab" class="fab" onclick="openModal()">+</div>
 
     <div id="new-ticket-modal">
         <div class="modal-content">
@@ -252,9 +217,20 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let currentUser = "";
-        let isAdmin = false;
+        // --- ZABEZPIECZENIE (OCHRONIARZ) ---
+        const currentUser = localStorage.getItem('cyberUser');
+        if (!currentUser) {
+            window.location.href = 'sg.html'; // Wyrzuć do logowania
+        }
+
+        const isAdmin = (currentUser === 'Admin');
         let attachmentBase64 = null;
+
+        // INICJALIZACJA UI
+        document.getElementById('userInfo').innerText = isAdmin ? "ADMINISTRATOR" : currentUser;
+        if(isAdmin) document.getElementById('userInfo').classList.add('admin');
+        document.getElementById('main-app').style.display = 'block';
+        document.getElementById('fab').style.display = 'flex';
 
         // --- ANIMACJA TŁA (Konstelacje) ---
         const canvas = document.getElementById('bg-canvas');
@@ -306,66 +282,7 @@
         initBg();
         drawBg();
 
-        // --- LOGOWANIE ---
-        
-        // Dodana obsługa ENTER
-        document.getElementById('userPass').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                login();
-            }
-        });
-
-        window.login = async () => {
-            const user = document.getElementById('userSelect').value;
-            const pass = document.getElementById('userPass').value.trim();
-
-            if(!user) return alert("Wybierz użytkownika z listy!");
-            
-            if(user === "Admin") {
-                if(pass === "0000") {
-                    isAdmin = true;
-                    currentUser = "Admin";
-                    loginSuccess(currentUser, true);
-                } else {
-                    return alert("Błędne hasło administratora!");
-                }
-                return;
-            } 
-            
-            try {
-                const userDoc = await getDoc(doc(db, "passwords", user));
-                if (userDoc.exists()) {
-                    const userData = userDoc.data();
-                    const dbPass = String(userData.password || "");
-                    const inputPass = String(pass);
-
-                    if (dbPass === inputPass && dbPass !== "") {
-                        isAdmin = false;
-                        currentUser = user;
-                        loginSuccess(user, false);
-                    } else {
-                        alert("Błędne hasło!");
-                    }
-                } else {
-                    alert("Nie znaleziono hasła dla tego użytkownika.");
-                }
-            } catch (error) {
-                console.error(error);
-                alert("Wystąpił błąd logowania.");
-            }
-        };
-
-        function loginSuccess(name, admin) {
-            document.getElementById('userInfo').innerText = admin ? "ADMINISTRATOR" : name;
-            if(admin) document.getElementById('userInfo').classList.add('admin');
-            
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            document.getElementById('fab').style.display = 'flex';
-            
-            loadTickets();
-        }
-
+        // --- LOGIKA MODALI ---
         window.openModal = () => document.getElementById('new-ticket-modal').style.display = 'flex';
         window.closeModal = () => {
             document.getElementById('new-ticket-modal').style.display = 'none';
@@ -429,96 +346,95 @@
             document.getElementById('tDesc').value = "";
         };
 
-        function loadTickets() {
-            const q = query(collection(db, "tickets"), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const container = document.getElementById('tickets-container');
-                container.innerHTML = "";
+        // --- ŁADOWANIE DANYCH ---
+        const q = query(collection(db, "tickets"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snapshot) => {
+            const container = document.getElementById('tickets-container');
+            container.innerHTML = "";
+            
+            if(snapshot.empty) {
+                container.innerHTML = "<p style='text-align:center; color:#666;'>Brak zgłoszeń.</p>";
+                return;
+            }
+
+            snapshot.forEach(docSnap => {
+                const t = docSnap.data();
+                const date = t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString() : 'Teraz';
+                const typeClass = t.type === 'Stan krytyczny' ? 'Krytyczny' : t.type;
+                const isClosed = t.status === 'closed';
+                const statusClass = isClosed ? 'closed' : 'open';
                 
-                if(snapshot.empty) {
-                    container.innerHTML = "<p style='text-align:center; color:#666;'>Brak zgłoszeń.</p>";
-                    return;
+                let actionHtml = "";
+                
+                if(isAdmin) {
+                    actionHtml += `<div class="admin-actions">`;
+                    if(!isClosed) {
+                        actionHtml += `<button class="btn-action btn-close" onclick="changeStatus('${docSnap.id}', 'closed')">ZAMKNIJ</button>`;
+                    } else {
+                        actionHtml += `<button class="btn-action btn-open" onclick="changeStatus('${docSnap.id}', 'open')">OTWÓRZ</button>`;
+                    }
+                    actionHtml += `<button class="btn-action btn-delete" onclick="deleteTicket('${docSnap.id}')">USUŃ</button>`;
+                    actionHtml += `</div>`;
+                } else if(isClosed) {
+                        actionHtml = `<div class="closed-label">ZGŁOSZENIE ZAMKNIĘTE</div>`;
                 }
 
-                snapshot.forEach(docSnap => {
-                    const t = docSnap.data();
-                    const date = t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString() : 'Teraz';
-                    const typeClass = t.type === 'Stan krytyczny' ? 'Krytyczny' : t.type;
-                    const isClosed = t.status === 'closed';
-                    const statusClass = isClosed ? 'closed' : 'open';
-                    
-                    let actionHtml = "";
-                    
-                    if(isAdmin) {
-                        actionHtml += `<div class="admin-actions">`;
-                        if(!isClosed) {
-                            actionHtml += `<button class="btn-action btn-close" onclick="changeStatus('${docSnap.id}', 'closed')">ZAMKNIJ</button>`;
-                        } else {
-                            actionHtml += `<button class="btn-action btn-open" onclick="changeStatus('${docSnap.id}', 'open')">OTWÓRZ</button>`;
-                        }
-                        actionHtml += `<button class="btn-action btn-delete" onclick="deleteTicket('${docSnap.id}')">USUŃ</button>`;
-                        actionHtml += `</div>`;
-                    } else if(isClosed) {
-                         actionHtml = `<div class="closed-label">ZGŁOSZENIE ZAMKNIĘTE</div>`;
-                    }
+                let attachmentHtml = "";
+                if(t.attachment) {
+                    const imgId = `img-${docSnap.id}`;
+                    const btnId = `btn-${docSnap.id}`;
+                    attachmentHtml = `
+                        <button id="${btnId}" class="attachment-btn" onclick="toggleImage('${imgId}', '${btnId}')">📷 Zobacz załącznik</button>
+                        <img id="${imgId}" src="${t.attachment}" class="attachment-img">
+                    `;
+                }
 
-                    let attachmentHtml = "";
-                    if(t.attachment) {
-                        const imgId = `img-${docSnap.id}`;
-                        const btnId = `btn-${docSnap.id}`;
-                        attachmentHtml = `
-                            <button id="${btnId}" class="attachment-btn" onclick="toggleImage('${imgId}', '${btnId}')">📷 Zobacz załącznik</button>
-                            <img id="${imgId}" src="${t.attachment}" class="attachment-img">
-                        `;
-                    }
-
-                    let repliesHtml = "";
-                    if(t.replies && t.replies.length > 0) {
-                        t.replies.forEach(r => {
-                            const adminClass = r.isAdmin ? 'admin-reply' : '';
-                            repliesHtml += `
-                                <div class="comment ${adminClass}">
-                                    <strong>${r.author}</strong> <span style="font-size:10px; opacity:0.5;">${r.date}</span><br>
-                                    <span class="comment-text">${r.text}</span>
-                                </div>
-                            `;
-                        });
-                    }
-
-                    let replyInput = "";
-                    if(!isClosed) {
-                        replyInput = `
-                            <div class="reply-box">
-                                <input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź...">
-                                <button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button>
+                let repliesHtml = "";
+                if(t.replies && t.replies.length > 0) {
+                    t.replies.forEach(r => {
+                        const adminClass = r.isAdmin ? 'admin-reply' : '';
+                        repliesHtml += `
+                            <div class="comment ${adminClass}">
+                                <strong>${r.author}</strong> <span style="font-size:10px; opacity:0.5;">${r.date}</span><br>
+                                <span class="comment-text">${r.text}</span>
                             </div>
                         `;
-                    } else {
-                        replyInput = `<div style="text-align:center; font-size:10px; color:#555; margin-top:10px;"><i>Możliwość komentowania została zablokowana.</i></div>`;
-                    }
+                    });
+                }
 
-                    const html = `
-                        <div class="ticket-card ${statusClass}">
-                            ${actionHtml}
-                            <div class="ticket-header">
-                                <span class="status-badge">${t.type}</span>
-                                <h3 class="ticket-title">${t.title}</h3>
-                                <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
-                            </div>
-                            
-                            <div class="ticket-desc">${t.desc}</div>
-                            ${attachmentHtml}
-                            
-                            <div class="comments-section">
-                                ${repliesHtml}
-                                ${replyInput}
-                            </div>
+                let replyInput = "";
+                if(!isClosed) {
+                    replyInput = `
+                        <div class="reply-box">
+                            <input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź...">
+                            <button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button>
                         </div>
                     `;
-                    container.innerHTML += html;
-                });
+                } else {
+                    replyInput = `<div style="text-align:center; font-size:10px; color:#555; margin-top:10px;"><i>Możliwość komentowania została zablokowana.</i></div>`;
+                }
+
+                const html = `
+                    <div class="ticket-card ${statusClass}">
+                        ${actionHtml}
+                        <div class="ticket-header">
+                            <span class="status-badge">${t.type}</span>
+                            <h3 class="ticket-title">${t.title}</h3>
+                            <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
+                        </div>
+                        
+                        <div class="ticket-desc">${t.desc}</div>
+                        ${attachmentHtml}
+                        
+                        <div class="comments-section">
+                            ${repliesHtml}
+                            ${replyInput}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += html;
             });
-        }
+        });
 
         window.toggleImage = (imgId, btnId) => {
             const img = document.getElementById(imgId);
