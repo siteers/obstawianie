@@ -69,6 +69,19 @@
     .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; opacity: 0.8; transition: 0.2s; }
     .auth-link:hover { opacity: 1; text-decoration: underline; }
 
+    /* CHANGELOG */
+    .changelog {
+        margin-top: 30px;
+        text-align: left;
+        font-size: 10px;
+        color: var(--cyan);
+        opacity: 0.8;
+        line-height: 1.4;
+        border-top: 1px solid rgba(0, 212, 255, 0.2);
+        padding-top: 10px;
+    }
+    .changelog div { margin-bottom: 5px; }
+
     /* PRZYCISKI GŁÓWNE */
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
@@ -144,6 +157,11 @@
         </div>
 
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
+
+        <div class="changelog">
+            <div>Update (28.01.2026) V.398 - Naciśnięcie stop na dowolnym komputerze wywoła animacje na każdym innym z otwartą lista.html</div>
+            <div>Update (28.01.2026) V.394 - Wprowadzono centralne logowanie na stronie głównej, usunięto moduły logowania z pozostałych podstron</div>
+        </div>
     </div>
   </div>
 
@@ -292,7 +310,6 @@
       select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
       modal.style.display = 'flex';
 
-      // Pobierz listę graczy (bez Admina)
       const snap = await getDocs(collection(db, "passwords"));
       select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
       
@@ -317,7 +334,6 @@
 
       if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
           await deleteDoc(doc(db, "passwords", userToDelete));
-          // Opcjonalnie czyścimy też ranking
           await deleteDoc(doc(db, "ranking", userToDelete)); 
           alert("Gracz usunięty.");
           closeDeleteModal();
