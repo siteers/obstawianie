@@ -109,6 +109,17 @@
 
     h1 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; opacity: 0.7; }
     h2 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
+
+    /* MODAL USUWANIA */
+    #delete-user-modal {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000;
+        display: none; align-items: center; justify-content: center; backdrop-filter: blur(5px);
+    }
+    .modal-content {
+        background: #151b26; border: 1px solid #ff4757; padding: 30px;
+        border-radius: 20px; width: 90%; max-width: 400px; text-align: center;
+        box-shadow: 0 0 40px rgba(255, 71, 87, 0.2);
+    }
   </style>
 </head>
 <body>
@@ -164,15 +175,31 @@
     </div>
   </div>
 
+  <div id="delete-user-modal">
+      <div class="modal-content">
+          <h3 style="color: #ff4757; margin-top:0;">USUWANIE GRACZA</h3>
+          <p style="font-size:12px; color:#aaa;">Wybierz użytkownika, którego chcesz trwale usunąć z systemu. Tej operacji nie da się cofnąć.</p>
+          
+          <select id="userDeleteSelect">
+              <option value="" disabled selected>Wczytywanie...</option>
+          </select>
+
+          <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+              <button class="btn-cyber" style="background:transparent; border:1px solid #555; font-size:12px; padding:15px;" onclick="closeDeleteModal()">Anuluj</button>
+              <button class="btn-cyber" style="background:linear-gradient(135deg, #ff0000, #990000); font-size:12px; padding:15px;" onclick="confirmDeleteUser()">USUŃ</button>
+          </div>
+      </div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- ŁADOWANIE LISTY UŻYTKOWNIKÓW (DYNAMICZNE) ---
+  // --- ŁADOWANIE LISTY UŻYTKOWNIKÓW (LOGOWANIE) ---
   onSnapshot(collection(db, "passwords"), (snap) => {
       const select = document.getElementById('userSelect');
       select.innerHTML = `
@@ -231,7 +258,7 @@
       }
   };
 
-  // --- FUNKCJE POMOCNICZE (REJESTRACJA / RESET / USUWANIE) ---
+  // --- FUNKCJE POMOCNICZE (REJESTRACJA / RESET) ---
   window.publicRegister = async () => {
       const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
       const check = await getDoc(doc(db, "passwords", n));
@@ -257,21 +284,47 @@
       }
   };
 
+  // --- USUWANIE GRACZA (MODAL) ---
   window.deleteUserFlow = async () => {
-      const name = prompt("Podaj nazwę gracza do usunięcia:");
-      if (!name) return;
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
       
-      if (name === "Admin") return alert("Nie można usunąć Admina!");
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
 
-      if (confirm(`Czy na pewno chcesz trwale usunąć gracza "${name}"? Tej operacji nie można cofnąć.`)) {
-          await deleteDoc(doc(db, "passwords", name));
-          // Opcjonalnie: usuń też z rankingu, jeśli chcesz posprzątać dokładnie
-          await deleteDoc(doc(db, "ranking", name));
-          alert(`Użytkownik ${name} został usunięty.`);
+      // Pobierz listę graczy (bez Admina)
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      
+      snap.forEach(d => {
+          if (d.id !== "Admin") {
+              const opt = document.createElement('option');
+              opt.value = d.id;
+              opt.innerText = d.id;
+              select.appendChild(opt);
+          }
+      });
+  };
+
+  window.closeDeleteModal = () => {
+      document.getElementById('delete-user-modal').style.display = 'none';
+  };
+
+  window.confirmDeleteUser = async () => {
+      const userToDelete = document.getElementById('userDeleteSelect').value;
+      
+      if (!userToDelete) return alert("Wybierz gracza z listy!");
+
+      if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
+          await deleteDoc(doc(db, "passwords", userToDelete));
+          // Opcjonalnie czyścimy też ranking
+          await deleteDoc(doc(db, "ranking", userToDelete)); 
+          alert("Gracz usunięty.");
+          closeDeleteModal();
       }
   };
 
-  // --- EFEKT NIGHTMARE (BŁĘDNE HASŁO) ---
+  // --- EFEKT NIGHTMARE ---
   function triggerNightmare() {
       const audio = document.getElementById('horrorSound');
       audio.currentTime = 0;
@@ -286,7 +339,6 @@
       }, 1000);
   }
 
-  // Enter to Login
   document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
 
   function saveSession(user) {
@@ -305,7 +357,7 @@
 
       if (user === "Admin") {
           userBtns.style.display = 'none';
-          adminBtns.style.display = 'block'; // Pokaż dodatkowe opcje Admina
+          adminBtns.style.display = 'block'; 
       } else {
           userBtns.style.display = 'block';
           adminBtns.style.display = 'none';
