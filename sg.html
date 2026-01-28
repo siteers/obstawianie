@@ -91,6 +91,9 @@
     .btn-food { background: linear-gradient(135deg, #10b981, #047857); border: 1px solid rgba(16, 185, 129, 0.3); }
     .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 1px solid rgba(59, 130, 246, 0.3); }
     .btn-others { background: linear-gradient(135deg, #a855f7, #7e22ce); border: 1px solid rgba(168, 85, 247, 0.3); }
+    
+    /* Przycisk Usuwania (Admin) */
+    .btn-delete-user { background: linear-gradient(135deg, #ff0000, #800000); border: 1px solid #ff4757; }
 
     /* Login Button */
     .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; text-shadow: none; }
@@ -119,13 +122,6 @@
         <h2>TERMINAL DOSTĘPOWY</h2>
         <select id="userSelect">
             <option value="" disabled selected>Wybierz użytkownika</option>
-            <option value="Arek">Arek</option>
-            <option value="Dominik">Dominik</option>
-            <option value="Grzesiek P">Grzesiek P</option>
-            <option value="Grzesiek Sz">Grzesiek Sz</option>
-            <option value="Krzysiek">Krzysiek</option>
-            <option value="Mariusz">Mariusz</option>
-            <option value="Paweł">Paweł</option>
             <option disabled>──────────</option>
             <option value="Admin">🔑 ADMIN SYSTEMU</option>
         </select>
@@ -152,6 +148,11 @@
           <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
           <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
       </div>
+
+      <div id="admin-buttons" style="display:none;">
+          <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
+          <button class="btn-cyber btn-delete-user" onclick="deleteUserFlow()">❌ Usuń Gracza</button>
+      </div>
     </div>
 
     <div id="sub-menu">
@@ -165,30 +166,28 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
   // --- ŁADOWANIE LISTY UŻYTKOWNIKÓW (DYNAMICZNE) ---
-  // To pozwala nowym graczom od razu pojawić się na liście
   onSnapshot(collection(db, "passwords"), (snap) => {
       const select = document.getElementById('userSelect');
-      // Zachowaj Admina i opcję domyślną, wyczyść resztę
       select.innerHTML = `
         <option value="" disabled selected>Wybierz użytkownika</option>
         <option disabled>──────────</option>
         <option value="Admin">🔑 ADMIN SYSTEMU</option>
       `;
       
-      // Dodaj użytkowników z bazy
       snap.forEach(d => {
-          // Wstawiamy użytkowników PRZED separatorem (index 1)
-          const opt = document.createElement('option');
-          opt.value = d.id; 
-          opt.innerText = d.id;
-          select.insertBefore(opt, select.children[1]); 
+          if (d.id !== "Admin") {
+              const opt = document.createElement('option');
+              opt.value = d.id; 
+              opt.innerText = d.id;
+              select.insertBefore(opt, select.children[1]); 
+          }
       });
   });
 
@@ -206,7 +205,7 @@
       if(!user) return alert("Wybierz użytkownika!");
 
       if(user === "Admin") {
-          if(pass === "1010") { // NOWE HASŁO ADMINA
+          if(pass === "1010") {
               saveSession("Admin");
           } else {
               triggerNightmare();
@@ -232,24 +231,21 @@
       }
   };
 
-  // --- FUNKCJE POMOCNICZE (REJESTRACJA / RESET) ---
+  // --- FUNKCJE POMOCNICZE (REJESTRACJA / RESET / USUWANIE) ---
   window.publicRegister = async () => {
       const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
-      // Sprawdź czy taki user już istnieje (opcjonalne, ale dobre)
       const check = await getDoc(doc(db, "passwords", n));
       if(check.exists()) return alert("Taki użytkownik już istnieje!");
 
       const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
       await setDoc(doc(db, "passwords", n), { password: p });
       alert("Witaj " + n + "! Możesz się teraz zalogować.");
-      // Lista odświeży się sama dzięki onSnapshot
   };
 
   window.forgotPassword = async () => {
       const n = document.getElementById('userSelect').value; 
       if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
       
-      // Prosty mechanizm resetu przez "Admin Code" (zastępczy, jak w dodaj.html)
       if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
           const newP = prompt("Podaj nowe hasło:");
           if(newP) {
@@ -257,7 +253,21 @@
               alert("Hasło zmienione.");
           }
       } else {
-          triggerNightmare(); // Zła odpowiedź = strach
+          triggerNightmare();
+      }
+  };
+
+  window.deleteUserFlow = async () => {
+      const name = prompt("Podaj nazwę gracza do usunięcia:");
+      if (!name) return;
+      
+      if (name === "Admin") return alert("Nie można usunąć Admina!");
+
+      if (confirm(`Czy na pewno chcesz trwale usunąć gracza "${name}"? Tej operacji nie można cofnąć.`)) {
+          await deleteDoc(doc(db, "passwords", name));
+          // Opcjonalnie: usuń też z rankingu, jeśli chcesz posprzątać dokładnie
+          await deleteDoc(doc(db, "ranking", name));
+          alert(`Użytkownik ${name} został usunięty.`);
       }
   };
 
@@ -265,7 +275,7 @@
   function triggerNightmare() {
       const audio = document.getElementById('horrorSound');
       audio.currentTime = 0;
-      audio.play().catch(()=>{}); // Ignoruj błąd autoplay
+      audio.play().catch(()=>{}); 
 
       document.body.classList.add('nightmare-mode');
       document.getElementById('loginCardElement').classList.add('nightmare-shake');
@@ -290,12 +300,15 @@
       document.getElementById('logoutBtn').style.display = 'block';
       document.getElementById('userNameDisplay').innerText = user;
 
-      // UKRYWANIE ELEMENTÓW DLA ADMINA
       const userBtns = document.getElementById('user-buttons');
+      const adminBtns = document.getElementById('admin-buttons');
+
       if (user === "Admin") {
-          userBtns.style.display = 'none'; // Admin widzi tylko Service Desk
+          userBtns.style.display = 'none';
+          adminBtns.style.display = 'block'; // Pokaż dodatkowe opcje Admina
       } else {
           userBtns.style.display = 'block';
+          adminBtns.style.display = 'none';
       }
   }
 
