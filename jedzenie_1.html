@@ -26,14 +26,12 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
             margin-top: 40px; box-sizing: border-box; margin-bottom: 40px;
             transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative;
+            display: none; /* Domyślnie ukryte do momentu weryfikacji */
         }
 
-        /* Węższy box logowania */
-        #login-box { max-width: 400px; } 
-        
-        .auth-container { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 320px; margin: 0 auto; }
-        input, select { width: 100%; padding: 15px; background:#111; color:#fff; border-radius:12px; border: 1px solid var(--cyan); box-sizing: border-box; font-size: 14px; font-weight: bold; outline: none; transition: 0.3s; }
-        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(212, 175, 55, 0.2); }
+        /* HEADER Z POWROTEM */
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
+        .btn-back { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         .cuisine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
         .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 12px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
@@ -52,24 +50,21 @@
         .winner-display { font-size: clamp(28px, 6vw, 44px); font-weight: 900; color: #fff; margin: 15px 0; text-shadow: 0 0 15px var(--gold); display: none; }
         
         #other-input-container { display: none; margin-top: 10px; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; }
+        #other-name { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--cyan); background: rgba(0,0,0,0.5); color: white; text-align: center; }
+        
         .btn-clear { background: rgba(128,128,128,0.2); border: 1px solid #444; color: white; display: none; }
     </style>
 </head>
 <body>
     <canvas id="bg-canvas"></canvas>
 
-    <div class="container" id="login-box">
-        <h2 style="color:var(--gold); letter-spacing: 3px; margin-bottom: 30px;">AUTORYZACJA</h2>
-        <div class="auth-container">
-            <select id="user-select"><option value="">Wybierz Operatora...</option></select>
-            <input type="password" id="pass-input" placeholder="KLUCZ DOSTĘPU" onkeydown="if(event.key === 'Enter') login()">
-            <button class="btn-cyber" onclick="login()" style="margin-top: 20px;">WSTĄP</button>
+    <div class="container" id="food-box">
+        <div class="header-bar">
+            <h2 style="color:var(--cyan); margin:0; font-size: 18px;">PIĄTKOWY PROTOKÓŁ</h2>
+            <a href="sg.html" class="btn-back">← WRÓĆ</a>
         </div>
-    </div>
 
-    <div class="container" id="food-box" style="display:none;">
-        <h2 style="color:var(--cyan)">PIĄTKOWY PROTOKÓŁ</h2>
-        <p id="counter">Wybierz 3 kuchnie (0/3)</p>
+        <p id="counter" style="color: #888; font-size: 14px;">Wybierz 3 kuchnie (0/3)</p>
         
         <div class="cuisine-grid">
             <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
@@ -102,17 +97,21 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, setDoc, doc, getDoc, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, setDoc, doc, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-    let currentSelections = [], user = "", winnerName = "", otherSelected = false;
+    // --- OCHRONIARZ (ZABEZPIECZENIE) ---
+    const currentUser = localStorage.getItem('cyberUser');
+    if (!currentUser) {
+        window.location.href = 'sg.html';
+    } else {
+        // Jeśli zalogowany, pokaż panel
+        document.getElementById('food-box').style.display = 'block';
+    }
 
-    onSnapshot(collection(db, "passwords"), snap => {
-        const sel = document.getElementById('user-select');
-        sel.innerHTML = '<option value="">Wybierz Operatora...</option>' + snap.docs.map(d => `<option value="${d.id}">${d.id}</option>`).join("");
-    });
+    let currentSelections = [], user = currentUser, winnerName = "", otherSelected = false;
 
     onSnapshot(collection(db, "food_votes"), snap => {
         const voters = snap.docs.map(d => d.id);
@@ -122,17 +121,6 @@
         btn.disabled = totalChoices === 0;
         btn.innerText = totalChoices > 0 ? `Losuj (${totalChoices} opcji)` : "Losuj";
     });
-
-    window.login = async () => {
-        user = document.getElementById('user-select').value;
-        const pass = document.getElementById('pass-input').value;
-        if(!user) return;
-        const d = await getDoc(doc(db, "passwords", user));
-        if(d.exists() && d.data().password === pass) {
-            document.getElementById('login-box').style.display = 'none';
-            document.getElementById('food-box').style.display = 'block';
-        } else alert("BŁĘDNY KLUCZ");
-    };
 
     window.toggleOther = () => {
         const card = document.getElementById('other-card');
@@ -208,9 +196,9 @@
     }
 
     window.openGmaps = () => {
-        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim();
-        // POPRAWIONY LINK DO GOOGLE MAPS
-        window.open(`https://www.google.com/maps/search/${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
+        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); // Usuń emoji
+        // Otwórz wyszukiwanie w Google Maps
+        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
     };
 
     window.clearResult = () => {
