@@ -41,7 +41,6 @@
     .input-box { margin-bottom: 25px; text-align: center; }
     .input-box label { font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 2px; }
     
-    /* Wygląd "read-only" pola z imieniem (udaje selecta) */
     .user-display {
       width: 100%; padding: 16px; font-size: 16px; border-radius: 20px;
       border: 2px solid var(--cyan); background: rgba(0,0,0,0.7);
@@ -95,11 +94,15 @@
       <div class="hour-grid">
           <div class="target-group" id="group1">
               <span id="targetName1" class="target-name">---</span>
-              <input id="hour1" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" oninput="formatTime(this)">
+              <input id="hour1" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" 
+                     oninput="formatTime(this)" 
+                     onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
           </div>
           <div class="target-group" id="group2">
               <span id="targetName2" class="target-name">---</span>
-              <input id="hour2" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" oninput="formatTime(this)">
+              <input id="hour2" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" 
+                     oninput="formatTime(this)"
+                     onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
           </div>
       </div>
 
@@ -124,7 +127,6 @@ if (!currentUser) {
     window.location.href = 'sg.html';
 }
 
-// Inicjalizacja widoku po zalogowaniu
 document.getElementById('userNameDisplay').innerText = currentUser;
 document.getElementById('mainContainer').style.display = 'block';
 
@@ -175,6 +177,10 @@ window.validateForm = function() {
 window.saveData = async function() {
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn');
+    
+    // Podwójne zabezpieczenie przed kliknięciem, gdy przycisk jest nieaktywny (np. przez Enter)
+    if (btn.disabled) return;
+
     btn.disabled = true;
     try {
         if (h1.length === 5 && !document.getElementById('hour1').disabled) 
