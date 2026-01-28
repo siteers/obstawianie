@@ -165,25 +165,35 @@ let stoppedSec1 = 0, stoppedSec2 = 0;
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
 
-// --- LISTA CELÓW (Dla Admina do wyboru) ---
+// --- ZAPIS CELÓW DO BAZY ---
+// Ta funkcja była brakująca w poprzedniej wersji!
+window.updateTargets = async () => { 
+    await setDoc(appStateRef, { 
+        target1: document.getElementById("targetSelect1").value, 
+        target2: document.getElementById("targetSelect2").value 
+    }, { merge: true }); 
+};
+
+// --- DYNAMICZNE ŁADOWANIE LISTY CELÓW ---
 onSnapshot(collection(db, "passwords"), (snap) => {
     const s1 = document.getElementById('targetSelect1');
     const s2 = document.getElementById('targetSelect2');
     
-    // Zapamiętaj obecny wybór
-    const v1 = s1.value;
-    const v2 = s2.value;
-
+    // Budujemy opcje z listy haseł (bez Admina)
     const options = `<option value="Brak">Brak</option>` + 
         snap.docs
-            .filter(d => d.id !== "Admin") // Nie chcemy Admina jako celu
+            .filter(d => d.id !== "Admin") 
             .map(d => `<option value="${d.id}">${d.id}</option>`).join("");
+
+    // Zapisujemy, żeby nie nadpisywać, jeśli już wybrano
+    const currentVal1 = s1.value;
+    const currentVal2 = s2.value;
 
     s1.innerHTML = options;
     s2.innerHTML = options;
-
-    // Przywróć wybór jeśli nadal istnieje w opcjach (lub ustaw z bazy w onSnapshot appState)
-    // To zostanie nadpisane przez onSnapshot(appStateRef) poniżej, więc jest OK.
+    
+    // Przywracamy wartość jeśli w międzyczasie appState załadował dane
+    // (Zostanie to poprawione przez onSnapshot appStateRef poniżej)
 });
 
 function shuffleArray(array) {
@@ -207,7 +217,6 @@ function startCelebration() {
     document.getElementById("cringeGifs").style.display = "flex";
     document.body.style.animation = "cringeBg 0.4s infinite alternate";
     
-    // Dźwięk fanfar
     fanfareAudio.play().catch(e => console.log("Audio block:", e));
 
     setTimeout(() => { clearInterval(interval); fwActive = false; canvasFw.style.display = "none"; document.getElementById("cringeGifs").style.display = "none"; document.body.style.animation = "none"; }, 5000);
@@ -225,11 +234,10 @@ function updateFW() {
     if(fwActive) requestAnimationFrame(updateFW);
 }
 
-// --- KLUCZOWA ZMIANA: SYNC EFEKTÓW ---
-// Funkcja, która tylko włącza efekty wizualne (bez zapisu do bazy)
+// --- SYNCHRONIZACJA EFEKTU STOP ---
 function triggerStopEffect(id, timestamp, winners) {
     const isAlreadyStopped = (id === 1) ? isStopped1 : isStopped2;
-    if (isAlreadyStopped) return; // Jeśli już zatrzymano lokalnie, nie rób nic
+    if (isAlreadyStopped) return; 
 
     const date = new Date(timestamp);
     if(id === 1) { isStopped1 = true; stoppedSec1 = timestamp/1000; document.getElementById('panel1').classList.add('frozen'); } 
@@ -239,18 +247,17 @@ function triggerStopEffect(id, timestamp, winners) {
     document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + winners.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
-    startCelebration(); // Odpal fajerwerki u każdego
-    renderTable(id, timestamp/1000); // Odśwież tabelę (odkryj imiona)
+    startCelebration(); 
+    renderTable(id, timestamp/1000); 
 }
 
-// --- LOGIKA PRZYCISKU STOP (TYLKO ZAPIS DO BAZY) ---
+// --- LOGIKA PRZYCISKU STOP ---
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
-    // Obliczanie wyników PRZED zapisem
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     let playersWithPoints = [], rank = 1;
     for (let i = 0; i < sorted.length; i++) {
@@ -259,15 +266,12 @@ window.stopSlot = async (id) => {
         playersWithPoints.push({ name: sorted[i].name, points: (rank === 1 ? 3 : rank === 2 ? 2 : 1), rank: rank });
     }
 
-    // Aktualizacja punktów w rankingu (robi to tylko osoba klikająca)
     for(const p of playersWithPoints) {
         const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
         if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
     }
-    // Zapis do historii
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
 
-    // KLUCZOWE: Zapis stanu STOP do bazy (to wywoła efekt u innych)
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
         [`winners${id}`]: playersWithPoints
@@ -276,50 +280,48 @@ window.stopSlot = async (id) => {
 
 window.clearSlot = async (id) => {
     if(!confirm(`Wyczyścić?`)) return;
-    // Usuń użytkowników
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
     
-    // Reset stanu w bazie (w tym reset STOP)
     await setDoc(appStateRef, { 
         [`isLocked${id}`]: false, 
         [`target${id}`]: "Brak",
-        [`stop${id}`]: null,      // Reset czasu stopu
-        [`winners${id}`]: null    // Reset zwycięzców
+        [`stop${id}`]: null,      
+        [`winners${id}`]: null    
     }, { merge: true });
 };
 
-// --- NASŁUCHIWANIE ZMIAN STANU (STOP / CEL / BLOKADA) ---
+// --- NASŁUCHIWANIE STANU APLIKACJI ---
 onSnapshot(appStateRef, (snap) => { 
     const data = snap.data(); if(!data) return; 
     
-    // Aktualizacja celów
+    // Wyświetlanie celów (duży tekst)
     document.getElementById("targetName1").textContent = data.target1 || "---"; 
     document.getElementById("targetName2").textContent = data.target2 || "---"; 
     
-    const s1 = document.getElementById("targetSelect1"); if(s1.options.length > 1) s1.value = data.target1 || "Brak";
-    const s2 = document.getElementById("targetSelect2"); if(s2.options.length > 1) s2.value = data.target2 || "Brak";
+    // Ustawianie selectów (jeśli opcje są załadowane)
+    const s1 = document.getElementById("targetSelect1"); 
+    if(s1.options.length > 1) s1.value = data.target1 || "Brak";
+    
+    const s2 = document.getElementById("targetSelect2"); 
+    if(s2.options.length > 1) s2.value = data.target2 || "Brak";
 
-    // Aktualizacja blokad
     isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; 
     updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); 
 
-    // --- SYNCHRONIZACJA EFEKTU STOP ---
-    // Jeśli w bazie jest stop1 i nie jest jeszcze zatrzymane lokalnie -> Odpal efekt
+    // Sync efektów STOP
     if (data.stop1 && !isStopped1) {
         triggerStopEffect(1, data.stop1, data.winners1 || []);
     }
-    // Jeśli w bazie stop1 został wyczyszczony (null), a lokalnie jest zatrzymane -> Resetuj widok
     if (!data.stop1 && isStopped1) {
         isStopped1 = false;
         document.getElementById("panel1").classList.remove("frozen");
         document.getElementById("winner1").style.display = "none";
         document.getElementById("stoppedTime1").textContent = "";
-        renderTable(1, 0); // Odśwież tabelę (wróć do zakrytych)
+        renderTable(1, 0); 
     }
 
-    // To samo dla slotu 2
     if (data.stop2 && !isStopped2) {
         triggerStopEffect(2, data.stop2, data.winners2 || []);
     }
@@ -338,8 +340,6 @@ onSnapshot(collection(db, "users"), snap => {
     const currentShuffled = shuffleArray(funnyNames);
     usersData.forEach((u, i) => { assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; });
     
-    // Jeśli slot jest zatrzymany, odśwież tabelę (żeby pokazać odkryte imiona)
-    // Jeśli nie, odśwież z bieżącym czasem zegara (w setInterval)
     if (isStopped1) renderTable(1, stoppedSec1);
     if (isStopped2) renderTable(2, stoppedSec2);
 
@@ -355,7 +355,6 @@ setInterval(() => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
-    // Odświeżaj tabelę tylko jeśli NIE jest zatrzymana (animacja rozmycia)
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
 }, 1000);
@@ -374,7 +373,6 @@ function renderTable(id, sec) {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     const isStopped = id === 1 ? isStopped1 : isStopped2;
     const isLocked = id === 1 ? isLocked1 : isLocked2;
-    // Jeśli zatrzymane, używamy zapisanego czasu zatrzymania (stoppedSec), w przeciwnym razie bieżącego (sec)
     const compareTime = isStopped ? (id === 1 ? stoppedSec1 : stoppedSec2) : sec;
 
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-compareTime) - Math.abs(toSec(b.hour)-compareTime));
@@ -383,7 +381,6 @@ function renderTable(id, sec) {
     
     sorted.forEach((u, i) => {
         const isLeader = i === 0;
-        // Odkrywamy imię jeśli: lista jest zablokowana LUB zatrzymana (winner mode)
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
