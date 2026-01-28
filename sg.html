@@ -27,6 +27,11 @@
       overscroll-behavior-y: contain; user-select: none; -webkit-tap-highlight-color: transparent;
     }
 
+    /* NIGHTMARE MODE STYLES */
+    .nightmare-mode { background: #300 !important; filter: invert(1) contrast(300%) blur(2px) !important; transition: 0.1s !important; }
+    @keyframes glitch { 0% { transform: translate(0); } 25% { transform: translate(-10px, 10px); } 50% { transform: translate(10px, -10px); } 100% { transform: translate(0); } }
+    .nightmare-shake { animation: glitch 0.1s infinite !important; }
+
     #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
 
     .hub-container {
@@ -47,6 +52,7 @@
         background: rgba(10, 15, 30, 0.9); padding: 40px; border-radius: 20px;
         border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
         width: 100%; text-align: center; backdrop-filter: blur(10px);
+        box-sizing: border-box;
     }
 
     input, select {
@@ -58,6 +64,11 @@
     select option { background: #000; color: #fff; }
     input:focus, select:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
 
+    /* LINKI POMOCNICZE (Zapomniałem hasła / Rejestracja) */
+    .auth-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
+    .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; opacity: 0.8; transition: 0.2s; }
+    .auth-link:hover { opacity: 1; text-decoration: underline; }
+
     /* PRZYCISKI GŁÓWNE */
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
@@ -68,44 +79,18 @@
       cursor: pointer; transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       text-decoration: none; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
       box-sizing: border-box; outline: none;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5); /* Cień dla czytelności */
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
     }
 
     .btn-cyber:hover { transform: translateY(-3px) scale(1.02); filter: brightness(1.1); }
     .btn-cyber:active { transform: scale(0.96); opacity: 0.9; }
 
     /* --- PALETA KOLORÓW (Deep Cyber) --- */
-    
-    /* Service Desk: Głęboki Pomarańcz/Rdza */
-    .btn-service { 
-        background: linear-gradient(135deg, #ea580c, #c2410c); 
-        border: 1px solid rgba(234, 88, 12, 0.3); 
-    }
-
-    /* Obstawianie: Złoto (Czarne napisy dla kontrastu) */
-    .btn-main { 
-        background: linear-gradient(135deg, #d4af37, #b4912f); 
-        color: #000; text-shadow: none; 
-        border: 1px solid rgba(212, 175, 55, 0.4); 
-    }
-
-    /* Jedzenie: Głęboka Zieleń */
-    .btn-food { 
-        background: linear-gradient(135deg, #10b981, #047857); 
-        border: 1px solid rgba(16, 185, 129, 0.3); 
-    }
-
-    /* Mundial: Królewski Błękit */
-    .btn-mundial { 
-        background: linear-gradient(135deg, #3b82f6, #1d4ed8); 
-        border: 1px solid rgba(59, 130, 246, 0.3); 
-    }
-
-    /* Inne Zakłady: Głęboki Fiolet */
-    .btn-others { 
-        background: linear-gradient(135deg, #a855f7, #7e22ce); 
-        border: 1px solid rgba(168, 85, 247, 0.3); 
-    }
+    .btn-service { background: linear-gradient(135deg, #ea580c, #c2410c); border: 1px solid rgba(234, 88, 12, 0.3); }
+    .btn-main { background: linear-gradient(135deg, #d4af37, #b4912f); color: #000; text-shadow: none; border: 1px solid rgba(212, 175, 55, 0.4); }
+    .btn-food { background: linear-gradient(135deg, #10b981, #047857); border: 1px solid rgba(16, 185, 129, 0.3); }
+    .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 1px solid rgba(59, 130, 246, 0.3); }
+    .btn-others { background: linear-gradient(135deg, #a855f7, #7e22ce); border: 1px solid rgba(168, 85, 247, 0.3); }
 
     /* Login Button */
     .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; text-shadow: none; }
@@ -127,9 +112,10 @@
 
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
+  <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
   <div id="login-container">
-    <div class="login-card">
+    <div class="login-card" id="loginCardElement">
         <h2>TERMINAL DOSTĘPOWY</h2>
         <select id="userSelect">
             <option value="" disabled selected>Wybierz użytkownika</option>
@@ -144,6 +130,12 @@
             <option value="Admin">🔑 ADMIN SYSTEMU</option>
         </select>
         <input type="password" id="userPass" placeholder="Hasło dostępu">
+        
+        <div class="auth-links">
+            <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
+            <a class="auth-link" onclick="publicRegister()">Zarejestruj się (Nowy gracz)</a>
+        </div>
+
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
     </div>
   </div>
@@ -153,10 +145,13 @@
     
     <div id="initial-view">
       <button class="btn-cyber btn-service" onclick="window.open('service_desk.html', '_blank')">🛠️ Service Desk</button>
-      <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
-      <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
-      <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
-      <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
+      
+      <div id="user-buttons">
+          <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
+          <button class="btn-cyber btn-food" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
+          <button class="btn-cyber btn-mundial" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
+          <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
+      </div>
     </div>
 
     <div id="sub-menu">
@@ -170,11 +165,32 @@
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, setDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
+
+  // --- ŁADOWANIE LISTY UŻYTKOWNIKÓW (DYNAMICZNE) ---
+  // To pozwala nowym graczom od razu pojawić się na liście
+  onSnapshot(collection(db, "passwords"), (snap) => {
+      const select = document.getElementById('userSelect');
+      // Zachowaj Admina i opcję domyślną, wyczyść resztę
+      select.innerHTML = `
+        <option value="" disabled selected>Wybierz użytkownika</option>
+        <option disabled>──────────</option>
+        <option value="Admin">🔑 ADMIN SYSTEMU</option>
+      `;
+      
+      // Dodaj użytkowników z bazy
+      snap.forEach(d => {
+          // Wstawiamy użytkowników PRZED separatorem (index 1)
+          const opt = document.createElement('option');
+          opt.value = d.id; 
+          opt.innerText = d.id;
+          select.insertBefore(opt, select.children[1]); 
+      });
+  });
 
   // --- SPRAWDZANIE SESJI ---
   const savedUser = localStorage.getItem('cyberUser');
@@ -190,10 +206,10 @@
       if(!user) return alert("Wybierz użytkownika!");
 
       if(user === "Admin") {
-          if(pass === "0000") {
+          if(pass === "1010") { // NOWE HASŁO ADMINA
               saveSession("Admin");
           } else {
-              alert("Błędne hasło administratora!");
+              triggerNightmare();
           }
           return;
       }
@@ -205,7 +221,7 @@
               if (String(userData.password) === String(pass)) {
                   saveSession(user);
               } else {
-                  alert("Błędne hasło!");
+                  triggerNightmare();
               }
           } else {
               alert("Brak hasła w bazie.");
@@ -215,6 +231,50 @@
           alert("Błąd połączenia.");
       }
   };
+
+  // --- FUNKCJE POMOCNICZE (REJESTRACJA / RESET) ---
+  window.publicRegister = async () => {
+      const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
+      // Sprawdź czy taki user już istnieje (opcjonalne, ale dobre)
+      const check = await getDoc(doc(db, "passwords", n));
+      if(check.exists()) return alert("Taki użytkownik już istnieje!");
+
+      const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
+      await setDoc(doc(db, "passwords", n), { password: p });
+      alert("Witaj " + n + "! Możesz się teraz zalogować.");
+      // Lista odświeży się sama dzięki onSnapshot
+  };
+
+  window.forgotPassword = async () => {
+      const n = document.getElementById('userSelect').value; 
+      if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
+      
+      // Prosty mechanizm resetu przez "Admin Code" (zastępczy, jak w dodaj.html)
+      if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
+          const newP = prompt("Podaj nowe hasło:");
+          if(newP) {
+              await setDoc(doc(db, "passwords", n), { password: newP }, { merge: true });
+              alert("Hasło zmienione.");
+          }
+      } else {
+          triggerNightmare(); // Zła odpowiedź = strach
+      }
+  };
+
+  // --- EFEKT NIGHTMARE (BŁĘDNE HASŁO) ---
+  function triggerNightmare() {
+      const audio = document.getElementById('horrorSound');
+      audio.currentTime = 0;
+      audio.play().catch(()=>{}); // Ignoruj błąd autoplay
+
+      document.body.classList.add('nightmare-mode');
+      document.getElementById('loginCardElement').classList.add('nightmare-shake');
+      
+      setTimeout(() => {
+          document.body.classList.remove('nightmare-mode');
+          document.getElementById('loginCardElement').classList.remove('nightmare-shake');
+      }, 1000);
+  }
 
   // Enter to Login
   document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
@@ -229,6 +289,14 @@
       document.getElementById('hub-view').style.display = 'block';
       document.getElementById('logoutBtn').style.display = 'block';
       document.getElementById('userNameDisplay').innerText = user;
+
+      // UKRYWANIE ELEMENTÓW DLA ADMINA
+      const userBtns = document.getElementById('user-buttons');
+      if (user === "Admin") {
+          userBtns.style.display = 'none'; // Admin widzi tylko Service Desk
+      } else {
+          userBtns.style.display = 'block';
+      }
   }
 
   window.logout = () => {
