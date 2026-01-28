@@ -27,7 +27,6 @@
         #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
 
         /* --- DASHBOARD --- */
-        /* Domyślnie ukryte, pokaże się po weryfikacji usera w JS */
         #main-app { display: none; position: relative; z-index: 10; padding: 20px; max-width: 800px; margin: 0 auto; }
         
         header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
@@ -90,7 +89,7 @@
 
         /* --- KOMENTARZE --- */
         .comments-section { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px; }
-        .comment { margin-bottom: 10px; font-size: 13px; }
+        .comment { margin-bottom: 10px; font-size: 13px; position: relative; }
         .comment strong { color: var(--gold); }
         .comment.admin-reply strong { color: #ff4757; }
         
@@ -101,6 +100,13 @@
         }
         
         .admin-reply .comment-text { border-left: 3px solid #ff4757; background: rgba(255, 71, 87, 0.1); }
+
+        .delete-comment-btn {
+            position: absolute; right: 0; top: 0;
+            background: transparent; border: none; color: #555; 
+            cursor: pointer; font-size: 12px; padding: 2px 5px;
+        }
+        .delete-comment-btn:hover { color: #ff4757; }
 
         .reply-box { display: flex; gap: 10px; margin-top: 15px; }
         .reply-input { 
@@ -220,7 +226,7 @@
         // --- ZABEZPIECZENIE (OCHRONIARZ) ---
         const currentUser = localStorage.getItem('cyberUser');
         if (!currentUser) {
-            window.location.href = 'sg.html'; // Wyrzuć do logowania
+            window.location.href = 'sg.html';
         }
 
         const isAdmin = (currentUser === 'Admin');
@@ -232,55 +238,37 @@
         document.getElementById('main-app').style.display = 'block';
         document.getElementById('fab').style.display = 'flex';
 
-        // --- ANIMACJA TŁA (Konstelacje) ---
+        // --- ANIMACJA TŁA ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let pts = [];
-
         function initBg() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
             pts = [];
             for (let i = 0; i < 60; i++) {
-                pts.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    vx: (Math.random() - 0.5) * 0.4,
-                    vy: (Math.random() - 0.5) * 0.4
-                });
+                pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4 });
             }
         }
-
         function drawBg() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             pts.forEach((p, i) => {
                 p.x += p.vx; p.y += p.vy;
                 if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
                 if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
-
                 ctx.fillStyle = 'rgba(212, 175, 55, 0.5)'; 
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
-                ctx.fill();
-
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
                 for (let j = i + 1; j < pts.length; j++) {
                     const p2 = pts[j];
                     const d = Math.hypot(p.x - p2.x, p.y - p2.y);
                     if (d < 120) {
-                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.6 - d/300})`;
-                        ctx.lineWidth = 0.5;
-                        ctx.beginPath();
-                        ctx.moveTo(p.x, p.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
+                        ctx.strokeStyle = `rgba(0, 212, 255, ${0.6 - d/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
                     }
                 }
             });
             requestAnimationFrame(drawBg);
         }
-        window.onresize = initBg;
-        initBg();
-        drawBg();
+        window.onresize = initBg; initBg(); drawBg();
 
         // --- LOGIKA MODALI ---
         window.openModal = () => document.getElementById('new-ticket-modal').style.display = 'flex';
@@ -303,20 +291,13 @@
                         const canvas = document.createElement('canvas');
                         const ctx = canvas.getContext('2d');
                         const MAX_SIZE = 800;
-                        let width = img.width;
-                        let height = img.height;
-                        if (width > height) {
-                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
-                        } else {
-                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-                        }
-                        canvas.width = width;
-                        canvas.height = height;
+                        let width = img.width; let height = img.height;
+                        if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                        canvas.width = width; canvas.height = height;
                         ctx.drawImage(img, 0, 0, width, height);
                         attachmentBase64 = canvas.toDataURL('image/jpeg', 0.7);
                         const preview = document.getElementById('filePreview');
-                        preview.src = attachmentBase64;
-                        preview.style.display = "block";
+                        preview.src = attachmentBase64; preview.style.display = "block";
                         document.getElementById('file-label').innerText = "✅ Zdjęcie dodane!";
                     };
                 };
@@ -328,22 +309,11 @@
             const type = document.getElementById('tType').value;
             const title = document.getElementById('tTitle').value;
             const desc = document.getElementById('tDesc').value;
-
             if(!title || !desc) return alert("Wypełnij tytuł i opis!");
-
-            const ticketData = {
-                type, title, desc,
-                author: currentUser,
-                timestamp: serverTimestamp(),
-                status: 'open',
-                replies: [],
-                attachment: attachmentBase64
-            };
-
+            const ticketData = { type, title, desc, author: currentUser, timestamp: serverTimestamp(), status: 'open', replies: [], attachment: attachmentBase64 };
             await addDoc(collection(db, "tickets"), ticketData);
             closeModal();
-            document.getElementById('tTitle').value = "";
-            document.getElementById('tDesc').value = "";
+            document.getElementById('tTitle').value = ""; document.getElementById('tDesc').value = "";
         };
 
         // --- ŁADOWANIE DANYCH ---
@@ -351,11 +321,7 @@
         onSnapshot(q, (snapshot) => {
             const container = document.getElementById('tickets-container');
             container.innerHTML = "";
-            
-            if(snapshot.empty) {
-                container.innerHTML = "<p style='text-align:center; color:#666;'>Brak zgłoszeń.</p>";
-                return;
-            }
+            if(snapshot.empty) { container.innerHTML = "<p style='text-align:center; color:#666;'>Brak zgłoszeń.</p>"; return; }
 
             snapshot.forEach(docSnap => {
                 const t = docSnap.data();
@@ -365,14 +331,10 @@
                 const statusClass = isClosed ? 'closed' : 'open';
                 
                 let actionHtml = "";
-                
                 if(isAdmin) {
                     actionHtml += `<div class="admin-actions">`;
-                    if(!isClosed) {
-                        actionHtml += `<button class="btn-action btn-close" onclick="changeStatus('${docSnap.id}', 'closed')">ZAMKNIJ</button>`;
-                    } else {
-                        actionHtml += `<button class="btn-action btn-open" onclick="changeStatus('${docSnap.id}', 'open')">OTWÓRZ</button>`;
-                    }
+                    if(!isClosed) actionHtml += `<button class="btn-action btn-close" onclick="changeStatus('${docSnap.id}', 'closed')">ZAMKNIJ</button>`;
+                    else actionHtml += `<button class="btn-action btn-open" onclick="changeStatus('${docSnap.id}', 'open')">OTWÓRZ</button>`;
                     actionHtml += `<button class="btn-action btn-delete" onclick="deleteTicket('${docSnap.id}')">USUŃ</button>`;
                     actionHtml += `</div>`;
                 } else if(isClosed) {
@@ -381,20 +343,23 @@
 
                 let attachmentHtml = "";
                 if(t.attachment) {
-                    const imgId = `img-${docSnap.id}`;
-                    const btnId = `btn-${docSnap.id}`;
-                    attachmentHtml = `
-                        <button id="${btnId}" class="attachment-btn" onclick="toggleImage('${imgId}', '${btnId}')">📷 Zobacz załącznik</button>
-                        <img id="${imgId}" src="${t.attachment}" class="attachment-img">
-                    `;
+                    const imgId = `img-${docSnap.id}`; const btnId = `btn-${docSnap.id}`;
+                    attachmentHtml = `<button id="${btnId}" class="attachment-btn" onclick="toggleImage('${imgId}', '${btnId}')">📷 Zobacz załącznik</button><img id="${imgId}" src="${t.attachment}" class="attachment-img">`;
                 }
 
                 let repliesHtml = "";
                 if(t.replies && t.replies.length > 0) {
-                    t.replies.forEach(r => {
+                    t.replies.forEach((r, idx) => {
                         const adminClass = r.isAdmin ? 'admin-reply' : '';
+                        let deleteBtn = "";
+                        if(isAdmin) {
+                            // Przekazujemy indeks komentarza do usunięcia
+                            deleteBtn = `<button class="delete-comment-btn" onclick="deleteComment('${docSnap.id}', ${idx})">🗑️</button>`;
+                        }
+                        
                         repliesHtml += `
                             <div class="comment ${adminClass}">
+                                ${deleteBtn}
                                 <strong>${r.author}</strong> <span style="font-size:10px; opacity:0.5;">${r.date}</span><br>
                                 <span class="comment-text">${r.text}</span>
                             </div>
@@ -404,12 +369,7 @@
 
                 let replyInput = "";
                 if(!isClosed) {
-                    replyInput = `
-                        <div class="reply-box">
-                            <input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź...">
-                            <button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button>
-                        </div>
-                    `;
+                    replyInput = `<div class="reply-box"><input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź..."><button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button></div>`;
                 } else {
                     replyInput = `<div style="text-align:center; font-size:10px; color:#555; margin-top:10px;"><i>Możliwość komentowania została zablokowana.</i></div>`;
                 }
@@ -422,14 +382,9 @@
                             <h3 class="ticket-title">${t.title}</h3>
                             <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
                         </div>
-                        
                         <div class="ticket-desc">${t.desc}</div>
                         ${attachmentHtml}
-                        
-                        <div class="comments-section">
-                            ${repliesHtml}
-                            ${replyInput}
-                        </div>
+                        <div class="comments-section">${repliesHtml} ${replyInput}</div>
                     </div>
                 `;
                 container.innerHTML += html;
@@ -437,34 +392,35 @@
         });
 
         window.toggleImage = (imgId, btnId) => {
-            const img = document.getElementById(imgId);
-            const btn = document.getElementById(btnId);
-            
-            if(img.style.display === "block") {
-                img.style.display = "none";
-                btn.innerText = "📷 Zobacz załącznik";
-            } else {
-                img.style.display = "block";
-                btn.innerText = "❌ Ukryj załącznik";
-            }
+            const img = document.getElementById(imgId); const btn = document.getElementById(btnId);
+            if(img.style.display === "block") { img.style.display = "none"; btn.innerText = "📷 Zobacz załącznik"; } 
+            else { img.style.display = "block"; btn.innerText = "❌ Ukryj załącznik"; }
         };
 
         window.sendReply = async (id) => {
-            const input = document.getElementById(`reply-${id}`);
-            const text = input.value.trim();
+            const input = document.getElementById(`reply-${id}`); const text = input.value.trim();
             if(!text) return;
-
-            const replyObj = {
-                author: currentUser,
-                text: text,
-                date: new Date().toLocaleTimeString(),
-                isAdmin: isAdmin
-            };
-
-            await updateDoc(doc(db, "tickets", id), {
-                replies: arrayUnion(replyObj)
-            });
+            const replyObj = { author: currentUser, text: text, date: new Date().toLocaleTimeString(), isAdmin: isAdmin };
+            await updateDoc(doc(db, "tickets", id), { replies: arrayUnion(replyObj) });
             input.value = ""; 
+        };
+
+        // NOWA FUNKCJA: Usuwanie komentarza
+        window.deleteComment = async (ticketId, commentIndex) => {
+            if(!confirm("Usunąć ten komentarz?")) return;
+            
+            const ticketRef = doc(db, "tickets", ticketId);
+            const ticketSnap = await getDoc(ticketRef);
+            
+            if (ticketSnap.exists()) {
+                const data = ticketSnap.data();
+                const newReplies = data.replies;
+                
+                // Usuń element o podanym indeksie
+                newReplies.splice(commentIndex, 1);
+                
+                await updateDoc(ticketRef, { replies: newReplies });
+            }
         };
 
         window.changeStatus = async (id, newStatus) => {
