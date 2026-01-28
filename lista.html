@@ -147,6 +147,12 @@
 <audio id="lockSound" src="https://assets.mixkit.co/active_storage/sfx/2021/2021-preview.mp3"></audio>
 
 <script type="module">
+// --- OCHRONIARZ ---
+const currentUser = localStorage.getItem('cyberUser');
+if (!currentUser) {
+    window.location.href = 'sg.html';
+}
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot, setDoc, getDoc, updateDoc, increment, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -277,8 +283,6 @@ function renderTable(id, sec) {
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
         
-        // --- LOGIKA ROZMYCIA GODZINY ---
-        // Zastosowałem duży blur (10px) dla ukrytej godziny i minimalny (0.5px) dla odkrytej.
         table.innerHTML += `
             <tr class="${isLeader ? 'leader-row' : ''}">
                 <td>${i+1}</td>
@@ -301,6 +305,3 @@ window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
 </script>
 </body>
 </html>
-
-
-
