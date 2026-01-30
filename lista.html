@@ -162,7 +162,7 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
 let stoppedSec1 = 0, stoppedSec2 = 0;
-let savedWinners1 = null, savedWinners2 = null; // ZMIENNA NA ZAMROŻONĄ LISTĘ
+let savedWinners1 = null, savedWinners2 = null; // Tu ląduje CAŁA zamrożona lista
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
 
@@ -228,49 +228,62 @@ function triggerStopEffect(id, timestamp, winners) {
     if (isAlreadyStopped) return; 
 
     const date = new Date(timestamp);
-    if(id === 1) { isStopped1 = true; stoppedSec1 = timestamp/1000; document.getElementById('panel1').classList.add('frozen'); } 
-    else { isStopped2 = true; stoppedSec2 = timestamp/1000; document.getElementById('panel2').classList.add('frozen'); }
+    if(id === 1) { isStopped1 = true; stoppedSec1 = timestamp/1000; savedWinners1 = winners; document.getElementById('panel1').classList.add('frozen'); } 
+    else { isStopped2 = true; stoppedSec2 = timestamp/1000; savedWinners2 = winners; document.getElementById('panel2').classList.add('frozen'); }
     
+    // Pokaż Top 3 w boxie
+    const winnersList = winners.filter(p => p.rank <= 3);
     document.getElementById(`winner${id}`).style.display = "block";
-    document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + winners.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+    document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+    
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
     startCelebration(); 
-    // Tabela zostanie przerysowana przez onSnapshot
+    renderTable(id, timestamp/1000); // Odśwież tabelę (użyje teraz savedWinners)
 }
 
-// --- LOGIKA PRZYCISKU STOP (TYLKO ZAPIS DO BAZY) ---
+// --- LOGIKA PRZYCISKU STOP (ZAPIS DO BAZY) ---
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
-    // Obliczanie wyników PRZED zapisem (to jest ten "beton")
+    // 1. Sortujemy WSZYSTKICH względem czasu stopu
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
+    
     let playersWithPoints = [], rank = 1;
+    // 2. Tworzymy listę WSZYSTKICH graczy z ich pozycjami
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
-        // W bazie zapisujemy całą posortowaną listę, nie tylko top 3
         const pts = (rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0);
-        playersWithPoints.push({ name: sorted[i].name, hour: sorted[i].hour, points: pts, rank: rank, id: sorted[i].id });
+        
+        // WAŻNE: Dodajemy "hour", żeby nie było undefined w zamrożonym widoku
+        playersWithPoints.push({ 
+            name: sorted[i].name, 
+            hour: sorted[i].hour, // <--- NAPRAWA "undefined"
+            points: pts, 
+            rank: rank, 
+            id: sorted[i].id 
+        });
     }
 
-    // Aktualizacja punktów (tylko dla top 3)
+    // 3. Rozdajemy punkty (tylko Top 3 dostaje)
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
             if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
         }
     }
-    // Zapis do historii (tylko top 3)
+    
+    // 4. Historia
     const top3 = playersWithPoints.filter(p => p.rank <= 3);
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: top3 });
 
-    // ZAPIS STANU ZAMROŻONEGO
+    // 5. Zapisujemy PEŁNĄ listę graczy (playersWithPoints) do bazy jako "zamrożoną"
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
-        [`winners${id}`]: playersWithPoints // Zapisujemy całą posortowaną listę
+        [`winners${id}`]: playersWithPoints 
     }, { merge: true });
 };
 
@@ -288,13 +301,12 @@ window.clearSlot = async (id) => {
     }, { merge: true });
 };
 
-// --- NASŁUCHIWANIE STANU (STOP / CEL / BLOKADA) ---
+// --- NASŁUCHIWANIE STANU ---
 onSnapshot(appStateRef, (snap) => { 
     const data = snap.data(); if(!data) return; 
     
     document.getElementById("targetName1").textContent = data.target1 || "---"; 
     document.getElementById("targetName2").textContent = data.target2 || "---"; 
-    
     const s1 = document.getElementById("targetSelect1"); if(s1.options.length > 1) s1.value = data.target1 || "Brak";
     const s2 = document.getElementById("targetSelect2"); if(s2.options.length > 1) s2.value = data.target2 || "Brak";
 
@@ -305,16 +317,17 @@ onSnapshot(appStateRef, (snap) => {
     if (data.stop1) {
         if (!isStopped1) startCelebration();
         isStopped1 = true;
-        savedWinners1 = data.winners1; // Zapisz zamrożoną listę w zmiennej globalnej
+        savedWinners1 = data.winners1; // Pobierz PEŁNĄ listę z bazy
         
         document.getElementById("panel1").classList.add('frozen');
         document.getElementById("stoppedTime1").textContent = "ZATRZYMANO: " + new Date(data.stop1).toLocaleTimeString("pl-PL");
         
-        const winnersList = savedWinners1.filter(p => p.rank <= 3);
+        // W boxie tylko Top 3
+        const winnersList = (savedWinners1 || []).filter(p => p.rank <= 3);
         document.getElementById("winner1").style.display = "block";
         document.getElementById("winner1").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
         
-        renderTable(1, 0); // Renderuj zamrożoną tabelę
+        renderTable(1, 0); // Renderuj "zamrożoną" tabelę
     } else {
         isStopped1 = false;
         savedWinners1 = null;
@@ -333,7 +346,7 @@ onSnapshot(appStateRef, (snap) => {
         document.getElementById("panel2").classList.add('frozen');
         document.getElementById("stoppedTime2").textContent = "ZATRZYMANO: " + new Date(data.stop2).toLocaleTimeString("pl-PL");
         
-        const winnersList = savedWinners2.filter(p => p.rank <= 3);
+        const winnersList = (savedWinners2 || []).filter(p => p.rank <= 3);
         document.getElementById("winner2").style.display = "block";
         document.getElementById("winner2").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
         
@@ -354,9 +367,10 @@ onSnapshot(collection(db, "users"), snap => {
     const currentShuffled = shuffleArray(funnyNames);
     usersData.forEach((u, i) => { assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; });
     
-    // Odśwież widok. Funkcja renderTable sama zdecyduje czy pokazać live czy zamrożone.
-    renderTable(1, stoppedSec1); // Jeśli zamrożone, stoppedSec1 jest ignorowany, ale bezpiecznie przekazać
-    renderTable(2, stoppedSec2);
+    // Jeśli nie jest zatrzymane -> odświeżamy na bieżąco.
+    // Jeśli jest zatrzymane -> renderTable korzysta z savedWinners, więc to wywołanie nie zepsuje kolejności.
+    if (!isStopped1) renderTable(1, stoppedSec1);
+    if (!isStopped2) renderTable(2, stoppedSec2);
 
     document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
@@ -370,8 +384,7 @@ setInterval(() => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
-    // Odświeżaj TYLKO jeśli NIE JEST zamrożone (żeby animować rozmycie i zmiany czasu)
-    // Jeśli zamrożone - tabela jest statyczna i nie musi być odświeżana co sekundę
+    // Jeśli slot jest "żywy" (nie zatrzymany), odświeżamy tabelę co sekundę, żeby pozycje się zmieniały
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
 }, 1000);
@@ -391,14 +404,14 @@ function renderTable(id, sec) {
     const isLocked = id === 1 ? isLocked1 : isLocked2;
     const table = document.getElementById(`table${id}`);
     
-    // ZMIANA: Wybór źródła danych (BETONOWA LISTA vs LIVE)
+    // KLUCZOWE: Wybór źródła danych
     let sortedData = [];
     if (isStopped) {
-        // Jeśli zatrzymane, bierzemy ZAMROŻONĄ listę bezpośrednio z bazy
-        // Ta lista nie zmieni się, nawet jeśli czas płynie
+        // Jeśli zatrzymane - używamy ZAMROŻONEJ listy z bazy
+        // Ta lista nie zmieni się ani o milimetr, nawet jak czas płynie
         sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
     } else {
-        // Jeśli aktywne, bierzemy z bieżącej kolekcji users i sortujemy
+        // Jeśli aktywne - używamy bieżącej listy z bazy i sortujemy na żywo
         const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
         sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
     }
@@ -406,16 +419,18 @@ function renderTable(id, sec) {
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
     sortedData.forEach((u, i) => {
-        // Jeśli lista jest zamrożona, używamy 'rank' z obiektu (żeby remisy były dobrze pokazane)
+        // Jeśli lista jest zamrożona, używamy 'rank' zapisanego w bazie (żeby remisy były dobrze pokazane)
+        // Jeśli lista jest żywa, używamy licznika pętli
         const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
         const isLeader = displayRank === 1;
         
-        // Odkrywamy imię jeśli zablokowane lub zatrzymane
+        // Odkrywamy imię jeśli: lista jest zablokowana LUB zatrzymana
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
         
-        const userId = u.id || ""; // W zamrożonych danych może być ID
+        // Zabezpieczenie przed brakiem ID
+        const userId = u.id || ""; 
 
         table.innerHTML += `
             <tr class="${isLeader ? 'leader-row' : ''}">
