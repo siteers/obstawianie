@@ -162,11 +162,11 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
 let stoppedSec1 = 0, stoppedSec2 = 0;
+let savedWinners1 = null, savedWinners2 = null; // ZMIENNA NA ZAMROŻONĄ LISTĘ
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
 
 // --- ZAPIS CELÓW DO BAZY ---
-// Ta funkcja była brakująca w poprzedniej wersji!
 window.updateTargets = async () => { 
     await setDoc(appStateRef, { 
         target1: document.getElementById("targetSelect1").value, 
@@ -178,22 +178,10 @@ window.updateTargets = async () => {
 onSnapshot(collection(db, "passwords"), (snap) => {
     const s1 = document.getElementById('targetSelect1');
     const s2 = document.getElementById('targetSelect2');
-    
-    // Budujemy opcje z listy haseł (bez Admina)
+    const v1 = s1.value; const v2 = s2.value;
     const options = `<option value="Brak">Brak</option>` + 
-        snap.docs
-            .filter(d => d.id !== "Admin") 
-            .map(d => `<option value="${d.id}">${d.id}</option>`).join("");
-
-    // Zapisujemy, żeby nie nadpisywać, jeśli już wybrano
-    const currentVal1 = s1.value;
-    const currentVal2 = s2.value;
-
-    s1.innerHTML = options;
-    s2.innerHTML = options;
-    
-    // Przywracamy wartość jeśli w międzyczasie appState załadował dane
-    // (Zostanie to poprawione przez onSnapshot appStateRef poniżej)
+        snap.docs.filter(d => d.id !== "Admin").map(d => `<option value="${d.id}">${d.id}</option>`).join("");
+    s1.innerHTML = options; s2.innerHTML = options;
 });
 
 function shuffleArray(array) {
@@ -248,33 +236,41 @@ function triggerStopEffect(id, timestamp, winners) {
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
     startCelebration(); 
-    renderTable(id, timestamp/1000); 
+    // Tabela zostanie przerysowana przez onSnapshot
 }
 
-// --- LOGIKA PRZYCISKU STOP ---
+// --- LOGIKA PRZYCISKU STOP (TYLKO ZAPIS DO BAZY) ---
 window.stopSlot = async (id) => {
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) return;
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
+    // Obliczanie wyników PRZED zapisem (to jest ten "beton")
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     let playersWithPoints = [], rank = 1;
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
-        if (rank > 3) break;
-        playersWithPoints.push({ name: sorted[i].name, points: (rank === 1 ? 3 : rank === 2 ? 2 : 1), rank: rank });
+        // W bazie zapisujemy całą posortowaną listę, nie tylko top 3
+        const pts = (rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0);
+        playersWithPoints.push({ name: sorted[i].name, hour: sorted[i].hour, points: pts, rank: rank, id: sorted[i].id });
     }
 
+    // Aktualizacja punktów (tylko dla top 3)
     for(const p of playersWithPoints) {
-        const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
-        if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
+        if (p.points > 0) {
+            const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
+            if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
+        }
     }
-    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints.map(p=>({name:p.name, rank:p.rank})) });
+    // Zapis do historii (tylko top 3)
+    const top3 = playersWithPoints.filter(p => p.rank <= 3);
+    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: top3 });
 
+    // ZAPIS STANU ZAMROŻONEGO
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
-        [`winners${id}`]: playersWithPoints
+        [`winners${id}`]: playersWithPoints // Zapisujemy całą posortowaną listę
     }, { merge: true });
 };
 
@@ -292,41 +288,59 @@ window.clearSlot = async (id) => {
     }, { merge: true });
 };
 
-// --- NASŁUCHIWANIE STANU APLIKACJI ---
+// --- NASŁUCHIWANIE STANU (STOP / CEL / BLOKADA) ---
 onSnapshot(appStateRef, (snap) => { 
     const data = snap.data(); if(!data) return; 
     
-    // Wyświetlanie celów (duży tekst)
     document.getElementById("targetName1").textContent = data.target1 || "---"; 
     document.getElementById("targetName2").textContent = data.target2 || "---"; 
     
-    // Ustawianie selectów (jeśli opcje są załadowane)
-    const s1 = document.getElementById("targetSelect1"); 
-    if(s1.options.length > 1) s1.value = data.target1 || "Brak";
-    
-    const s2 = document.getElementById("targetSelect2"); 
-    if(s2.options.length > 1) s2.value = data.target2 || "Brak";
+    const s1 = document.getElementById("targetSelect1"); if(s1.options.length > 1) s1.value = data.target1 || "Brak";
+    const s2 = document.getElementById("targetSelect2"); if(s2.options.length > 1) s2.value = data.target2 || "Brak";
 
     isLocked1 = data.isLocked1 || false; isLocked2 = data.isLocked2 || false; 
     updateLockUI(1, isLocked1); updateLockUI(2, isLocked2); 
 
-    // Sync efektów STOP
-    if (data.stop1 && !isStopped1) {
-        triggerStopEffect(1, data.stop1, data.winners1 || []);
-    }
-    if (!data.stop1 && isStopped1) {
+    // --- SLOT 1 ---
+    if (data.stop1) {
+        if (!isStopped1) startCelebration();
+        isStopped1 = true;
+        savedWinners1 = data.winners1; // Zapisz zamrożoną listę w zmiennej globalnej
+        
+        document.getElementById("panel1").classList.add('frozen');
+        document.getElementById("stoppedTime1").textContent = "ZATRZYMANO: " + new Date(data.stop1).toLocaleTimeString("pl-PL");
+        
+        const winnersList = savedWinners1.filter(p => p.rank <= 3);
+        document.getElementById("winner1").style.display = "block";
+        document.getElementById("winner1").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+        
+        renderTable(1, 0); // Renderuj zamrożoną tabelę
+    } else {
         isStopped1 = false;
+        savedWinners1 = null;
         document.getElementById("panel1").classList.remove("frozen");
         document.getElementById("winner1").style.display = "none";
         document.getElementById("stoppedTime1").textContent = "";
         renderTable(1, 0); 
     }
 
-    if (data.stop2 && !isStopped2) {
-        triggerStopEffect(2, data.stop2, data.winners2 || []);
-    }
-    if (!data.stop2 && isStopped2) {
+    // --- SLOT 2 ---
+    if (data.stop2) {
+        if (!isStopped2) startCelebration();
+        isStopped2 = true;
+        savedWinners2 = data.winners2;
+        
+        document.getElementById("panel2").classList.add('frozen');
+        document.getElementById("stoppedTime2").textContent = "ZATRZYMANO: " + new Date(data.stop2).toLocaleTimeString("pl-PL");
+        
+        const winnersList = savedWinners2.filter(p => p.rank <= 3);
+        document.getElementById("winner2").style.display = "block";
+        document.getElementById("winner2").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+        
+        renderTable(2, 0);
+    } else {
         isStopped2 = false;
+        savedWinners2 = null;
         document.getElementById("panel2").classList.remove("frozen");
         document.getElementById("winner2").style.display = "none";
         document.getElementById("stoppedTime2").textContent = "";
@@ -340,8 +354,9 @@ onSnapshot(collection(db, "users"), snap => {
     const currentShuffled = shuffleArray(funnyNames);
     usersData.forEach((u, i) => { assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; });
     
-    if (isStopped1) renderTable(1, stoppedSec1);
-    if (isStopped2) renderTable(2, stoppedSec2);
+    // Odśwież widok. Funkcja renderTable sama zdecyduje czy pokazać live czy zamrożone.
+    renderTable(1, stoppedSec1); // Jeśli zamrożone, stoppedSec1 jest ignorowany, ale bezpiecznie przekazać
+    renderTable(2, stoppedSec2);
 
     document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
     document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
@@ -355,6 +370,8 @@ setInterval(() => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
+    // Odświeżaj TYLKO jeśli NIE JEST zamrożone (żeby animować rozmycie i zmiany czasu)
+    // Jeśli zamrożone - tabela jest statyczna i nie musi być odświeżana co sekundę
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
 }, 1000);
@@ -370,24 +387,39 @@ function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]
 function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
 
 function renderTable(id, sec) {
-    const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     const isStopped = id === 1 ? isStopped1 : isStopped2;
     const isLocked = id === 1 ? isLocked1 : isLocked2;
-    const compareTime = isStopped ? (id === 1 ? stoppedSec1 : stoppedSec2) : sec;
-
-    const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-compareTime) - Math.abs(toSec(b.hour)-compareTime));
     const table = document.getElementById(`table${id}`);
+    
+    // ZMIANA: Wybór źródła danych (BETONOWA LISTA vs LIVE)
+    let sortedData = [];
+    if (isStopped) {
+        // Jeśli zatrzymane, bierzemy ZAMROŻONĄ listę bezpośrednio z bazy
+        // Ta lista nie zmieni się, nawet jeśli czas płynie
+        sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
+    } else {
+        // Jeśli aktywne, bierzemy z bieżącej kolekcji users i sortujemy
+        const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+        sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
+    }
+
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
-    sorted.forEach((u, i) => {
-        const isLeader = i === 0;
+    sortedData.forEach((u, i) => {
+        // Jeśli lista jest zamrożona, używamy 'rank' z obiektu (żeby remisy były dobrze pokazane)
+        const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
+        const isLeader = displayRank === 1;
+        
+        // Odkrywamy imię jeśli zablokowane lub zatrzymane
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
         
+        const userId = u.id || ""; // W zamrożonych danych może być ID
+
         table.innerHTML += `
             <tr class="${isLeader ? 'leader-row' : ''}">
-                <td>${i+1}</td>
+                <td>${displayRank}</td>
                 <td>
                     <div style="display:flex; align-items:center; gap:8px;">
                         <div style="width:24px; height:24px; border-radius:50%; background:${avatarColor}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">
@@ -399,7 +431,9 @@ function renderTable(id, sec) {
                 <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isStopped ? '0.5px' : '10px'}); opacity: ${isStopped ? '1' : '0.2'}; transition: 0.5s;">
                     ${u.hour}
                 </td>
-                <td><span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${u.id}')">✕</span></td>
+                <td>
+                    ${!isStopped ? `<span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${userId}')">✕</span>` : ''}
+                </td>
             </tr>`;
     });
 }
