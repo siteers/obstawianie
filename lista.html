@@ -239,7 +239,7 @@ function triggerStopEffect(id, timestamp, winners) {
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
     startCelebration(); 
-    renderTable(id, timestamp/1000); // Odśwież tabelę (użyje teraz savedWinners)
+    renderTable(id, timestamp/1000); 
 }
 
 // --- LOGIKA PRZYCISKU STOP (ZAPIS DO BAZY) ---
@@ -253,7 +253,7 @@ window.stopSlot = async (id) => {
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     
     let playersWithPoints = [], rank = 1;
-    // 2. Tworzymy listę WSZYSTKICH graczy z ich pozycjami
+    // 2. Tworzymy listę WSZYSTKICH graczy
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
         const pts = (rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0);
@@ -268,7 +268,7 @@ window.stopSlot = async (id) => {
         });
     }
 
-    // 3. Rozdajemy punkty (tylko Top 3 dostaje)
+    // 3. Rozdajemy punkty (tylko Top 3)
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
@@ -280,7 +280,7 @@ window.stopSlot = async (id) => {
     const top3 = playersWithPoints.filter(p => p.rank <= 3);
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: top3 });
 
-    // 5. Zapisujemy PEŁNĄ listę graczy (playersWithPoints) do bazy jako "zamrożoną"
+    // 5. Zapisujemy PEŁNĄ listę graczy do bazy jako "zamrożoną"
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
         [`winners${id}`]: playersWithPoints 
@@ -384,7 +384,8 @@ setInterval(() => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
-    // Jeśli slot jest "żywy" (nie zatrzymany), odświeżamy tabelę co sekundę, żeby pozycje się zmieniały
+    // Odświeżaj TYLKO jeśli NIE JEST zamrożone (żeby animować rozmycie i zmiany czasu)
+    // Jeśli zamrożone - tabela jest statyczna i nie musi być odświeżana co sekundę
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
 }, 1000);
@@ -404,14 +405,14 @@ function renderTable(id, sec) {
     const isLocked = id === 1 ? isLocked1 : isLocked2;
     const table = document.getElementById(`table${id}`);
     
-    // KLUCZOWE: Wybór źródła danych
+    // ZMIANA: Wybór źródła danych (BETONOWA LISTA vs LIVE)
     let sortedData = [];
     if (isStopped) {
-        // Jeśli zatrzymane - używamy ZAMROŻONEJ listy z bazy
-        // Ta lista nie zmieni się ani o milimetr, nawet jak czas płynie
+        // Jeśli zatrzymane, bierzemy ZAMROŻONĄ listę bezpośrednio z bazy
+        // Ta lista nie zmieni się, nawet jeśli czas płynie
         sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
     } else {
-        // Jeśli aktywne - używamy bieżącej listy z bazy i sortujemy na żywo
+        // Jeśli aktywne, bierzemy z bieżącej kolekcji users i sortujemy
         const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
         sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
     }
@@ -419,18 +420,16 @@ function renderTable(id, sec) {
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
     sortedData.forEach((u, i) => {
-        // Jeśli lista jest zamrożona, używamy 'rank' zapisanego w bazie (żeby remisy były dobrze pokazane)
-        // Jeśli lista jest żywa, używamy licznika pętli
+        // Jeśli lista jest zamrożona, używamy 'rank' z obiektu (żeby remisy były dobrze pokazane)
         const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
         const isLeader = displayRank === 1;
         
-        // Odkrywamy imię jeśli: lista jest zablokowana LUB zatrzymana
+        // Odkrywamy imię jeśli zablokowane lub zatrzymane
         const revealThisSlot = isLocked || isStopped;
         const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
         const avatarColor = getAvatarColor(nameDisp);
         
-        // Zabezpieczenie przed brakiem ID
-        const userId = u.id || ""; 
+        const userId = u.id || ""; // W zamrożonych danych może być ID
 
         table.innerHTML += `
             <tr class="${isLeader ? 'leader-row' : ''}">
