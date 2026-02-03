@@ -35,20 +35,16 @@
         width: 100%; backdrop-filter: blur(10px); box-sizing: border-box;
     }
     
-    /* POPRAWKA SZEROKOŚCI INPUTÓW */
     input, select {
         width: 100%; padding: 15px; margin: 10px 0;
         background: rgba(0,0,0,0.5); border: 1px solid var(--border);
         color: #fff; border-radius: 10px; font-size: 16px;
-        box-sizing: border-box; /* To naprawia problem szerokości */
-        height: 50px; /* Ujednolicona wysokość */
+        box-sizing: border-box; height: 50px;
     }
     select option { background: #000; color: #fff; }
-    
     .auth-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
     .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
     .changelog { margin-top: 30px; text-align: left; font-size: 10px; color: var(--cyan); opacity: 0.8; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 10px; }
-    
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
@@ -71,33 +67,34 @@
     h1 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; }
     h2 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
 
-    /* MODAL USUWANIA */
     #delete-user-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #151b26; border: 1px solid #ff4757; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
 
     /* --- ZEMSTA 2.0 (BAN & QUIZ) --- */
     #revenge-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; color: white; text-align: center; }
-    #clown-gif { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1; }
+    #intro-gif { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1; }
     #ban-screen { z-index: 10; display: none; width: 100%; height: 100%; background: black; flex-direction: column; align-items: center; justify-content: center; }
     #countdown-timer { font-size: 40px; font-weight: 900; color: red; font-family: monospace; margin: 20px 0; text-shadow: 0 0 20px red; }
     #ban-info { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
     
-    #quiz-container { z-index: 20; background: rgba(0,0,0,0.95); padding: 30px; border: 2px solid var(--gold); border-radius: 20px; width: 90%; max-width: 600px; display: none; }
-    .quiz-question { font-size: 18px; margin-bottom: 20px; color: var(--gold); min-height: 50px; display: flex; align-items: center; justify-content: center;}
+    #quiz-container { z-index: 20; background: rgba(0,0,0,0.95); padding: 30px; border: 2px solid var(--gold); border-radius: 20px; width: 90%; max-width: 600px; display: none; position: relative; }
+    /* Dodałem ID do nagłówka żeby podpiąć cheat */
+    #quiz-header-title { color: var(--cyan); margin-top: 0; cursor: help; user-select: none; }
+    .quiz-question { font-size: 18px; margin-bottom: 20px; color: var(--gold); min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
     .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; word-break: break-word; }
+    .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; word-break: break-word; font-size: 14px; }
     .quiz-btn:hover { background: var(--cyan); color: black; }
     
+    /* Fake Loading Overlay w quizie */
+    #quiz-loading { position: absolute; inset: 0; background: rgba(0,0,0,0.9); z-index: 25; display: none; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; }
+    .loader { border: 5px solid rgba(255,255,255,0.1); border-top: 5px solid var(--cyan); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
     #penance-container { z-index: 30; display: none; text-align: center; width: 90%; max-width: 500px;}
     #spam-count { font-size: 50px; font-weight: 900; color: red; display: block; margin: 20px 0; }
     #penance-btn { background: red; color: white; font-size: 20px; padding: 20px 40px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; animation: pulseRed 0.5s infinite; width: 100%; }
     @keyframes pulseRed { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px red; } 100% { transform: scale(1); } }
-    
-    #sin-preview {
-        max-width: 100%; height: 150px; object-fit: contain; 
-        background: white; border-radius: 10px; border: 4px solid red; 
-        margin: 10px auto; display: block;
-    }
+    #sin-preview { max-width: 100%; height: 150px; object-fit: contain; background: white; border-radius: 10px; border: 4px solid red; margin: 10px auto; display: block; }
   </style>
 </head>
 <body>
@@ -164,7 +161,7 @@
   </div>
 
   <div id="revenge-overlay">
-      <img id="clown-gif" src="https://media.giphy.com/media/xT9IgvEOwRzUcZDRiU/giphy.gif" style="display:none;">
+      <img id="intro-gif" src="https://media.giphy.com/media/o0vwzuFxEBMze/giphy.gif" style="display:none;">
       
       <div id="ban-screen">
           <h1 style="color: red; font-size: 50px; margin: 0;">BAN ADMINISTRACYJNY</h1>
@@ -175,7 +172,12 @@
       </div>
 
       <div id="quiz-container">
-          <h3 style="color: var(--cyan); margin-top: 0;">Pytanie <span id="q-num">1</span> / 100</h3>
+          <div id="quiz-loading">
+              <div class="loader"></div>
+              <div style="color:var(--cyan); font-size:12px; letter-spacing:1px;">WERYFIKACJA INTELIGENCJI...</div>
+          </div>
+          
+          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 100</h3>
           <div id="q-text" class="quiz-question">...</div>
           <div id="q-options" class="quiz-options"></div>
       </div>
@@ -235,67 +237,111 @@
       } catch (error) { console.error(error); alert("Błąd połączenia."); }
   };
 
-  // --- ZEMSTA VARIABLES ---
+  // --- ZEMSTA VARIABLES & CHEAT ---
   let banTarget = "";
   let currentQ = 0;
-  let sinsList = []; // Lista grzechów do odpokutowania
+  let sinsList = [];
+  let cheatClicks = 0; // Licznik kliknięć do cheatu
 
-  // GENERATOR PYTAŃ (Nieskończona pula)
+  // ADMIN CHEAT: Kliknij 5 razy szybko w nagłówek "Pytanie X / 100"
+  document.getElementById('quiz-header-title').addEventListener('click', () => {
+      if(banTarget !== "Grzesiek Sz") return;
+      cheatClicks++;
+      if(cheatClicks >= 5) {
+           currentQ = 98; // Skok do pytania 99
+           alert("[ADMIN CHEAT ACTIVATED] Skok do pytania 99. Nie mów Grześkowi.");
+           nextQuestion();
+           cheatClicks = 0;
+      }
+      // Reset licznika po 1s bezczynności
+      setTimeout(() => { cheatClicks = 0; }, 1000);
+  });
+
+  // NOWA, TRUDNIEJSZA PULA PYTAŃ
+  const mediumTrivia = [
+      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne"] },
+      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz"] },
+      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe"] },
+      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13"] },
+      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori"] },
+      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939"] },
+      { q: "Jakie jest największe zwierzę na świecie?", a: ["Płetwal błękitny", "Słoń afrykański", "Rekin wielorybi"] },
+      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver"] },
+      { q: "Kto namalował 'Mona Lisę'?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael"] },
+      { q: "Ile zer ma miliard?", a: ["9", "6", "12"] },
+      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda"] },
+      { q: "Jak nazywa się polska noblistka z 2018 roku?", a: ["Olga Tokarczuk", "Wisława Szymborska", "Maria Curie-Skłodowska"] },
+      { q: "Ile kości ma dorosły człowiek?", a: ["206", "200", "212"] },
+      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka"] },
+      { q: "Jaka jest waluta Wielkiej Brytanii?", a: ["Funt szterling", "Euro", "Dolar"] }
+  ];
+
+  const hardTrivia = [
+      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey"] },
+      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka"] },
+      { q: "W którym roku upadło Cesarstwo Zachodniorzymskie?", a: ["476 n.e.", "1453 n.e.", "395 n.e."] },
+      { q: "Najgłębsze jezioro na świecie?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie"] },
+      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4"] },
+      { q: "Kto odkrył penicylinę?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch"] },
+      { q: "Jaki pierwiastek ma symbol W?", a: ["Wolfram", "Wanad", "Węgiel"] },
+      { q: "W którym roku uchwalono Konstytucję 3 Maja?", a: ["1791", "1794", "1772"] },
+      { q: "Co oznacza skrót HTML?", a: ["HyperText Markup Language", "High Tech Multi Link", "Hyper Transfer Mode Language"] },
+      { q: "Która planeta jest najgorętsza?", a: ["Wenus", "Merkury", "Mars"] },
+      { q: "Kto jest autorem obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso"] },
+      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik"] },
+      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch"] },
+      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²"] },
+      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell"] }
+  ];
+
+
+  // GENERATOR PYTAŃ (Hardcore Mode)
   function generateQuestion(idx) {
-      // Co 5 pytań dajemy wiedzę ogólną (żeby nie zwariował tylko od matmy)
-      const staticTrivia = [
-          { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Perth"] },
-          { q: "Symbol złota?", a: ["Au", "Ag", "Fe", "Cu"] },
-          { q: "Pierwszy człowiek na Księżycu?", a: ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "Elon Musk"] },
-          { q: "Ile nóg ma pająk?", a: ["8", "6", "4", "12"] },
-          { q: "Wzór na pole koła?", a: ["πr²", "2πr", "a²", "a*h"] },
-          { q: "Stolica Brazylii?", a: ["Brasilia", "Rio de Janeiro", "Sao Paulo", "Lima"] },
-          { q: "Największa planeta?", a: ["Jowisz", "Saturn", "Ziemia", "Mars"] },
-          { q: "Ile to tuzin?", a: ["12", "10", "6", "24"] },
-          { q: "Autor Wiedźmina?", a: ["Sapkowski", "Lem", "Sienkiewicz", "Tolkien"] },
-          { q: "Wzór chemiczny wody?", a: ["H2O", "CO2", "NaCl", "O2"] },
-          { q: "Bitwa pod Grunwaldem?", a: ["1410", "1444", "1525", "1939"] },
-          { q: "Liczba PI (w przybliżeniu)?", a: ["3.14", "2.14", "4.13", "3.41"] },
-          { q: "Stolica Włoch?", a: ["Rzym", "Mediolan", "Neapol", "Turyn"] },
-          { q: "Co nie jest planetą?", a: ["Pluton", "Mars", "Wenus", "Merkury"] },
-          { q: "1000m to ile km?", a: ["1", "10", "0.1", "100"] },
-          { q: "Kto napisał 'Lalkę'?", a: ["Prus", "Mickiewicz", "Słowacki", "Reymont"] },
-          { q: "Kolor chlorofilu?", a: ["Zielony", "Czerwony", "Niebieski", "Żółty"] },
-          { q: "Ile dni ma rok przestępny?", a: ["366", "365", "364", "360"] },
-          { q: "Najdłuższa rzeka Polski?", a: ["Wisła", "Odra", "Warta", "Bug"] },
-          { q: "Stolica Hiszpanii?", a: ["Madryt", "Barcelona", "Sewilla", "Walencja"] }
-      ];
-
+      // Pierwsze 20 pytań: Średni poziom
       if (idx < 20) {
-          return prepareQ(staticTrivia[idx]);
-      } else {
-          // Generowanie zadań matematycznych
-          const operations = ['+', '-', '*'];
-          const op = operations[Math.floor(Math.random() * operations.length)];
-          const a = Math.floor(Math.random() * 50) + 1;
-          const b = Math.floor(Math.random() * 20) + 1;
-          let correct, qStr;
+          return prepareQ(mediumTrivia[idx % mediumTrivia.length]);
+      } 
+      // Kolejne 80 pytań: Mieszanka TRUDNYCH i TRUDNEJ MATMY
+      else {
+          const rnd = Math.random();
+          // 70% szans na trudną wiedzę, 30% na trudną matmę
+          if (rnd < 0.7) {
+              const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
+              return prepareQ(hQ);
+          } else {
+              // Hardcore Math: Mnożenie dwucyfrowych lub dodawanie setek
+              const opType = Math.random() > 0.5 ? 'mul' : 'add';
+              let a, b, correct, qStr;
 
-          if (op === '+') { correct = a + b; qStr = `${a} + ${b} = ?`; }
-          else if (op === '-') { correct = a - b; qStr = `${a} - ${b} = ?`; }
-          else { correct = a * b; qStr = `${a} * ${b} = ?`; }
+              if(opType === 'mul') {
+                  a = Math.floor(Math.random() * 90) + 10; // 10-99
+                  b = Math.floor(Math.random() * 9) + 2;   // 2-10
+                  correct = a * b;
+                  qStr = `${a} * ${b} = ?`;
+              } else {
+                  a = Math.floor(Math.random() * 900) + 100; // 100-999
+                  b = Math.floor(Math.random() * 900) + 100; // 100-999
+                  correct = a + b;
+                  qStr = `${a} + ${b} = ?`;
+              }
 
-          // Generuj błędne odpowiedzi
-          const answers = [correct.toString()];
-          while(answers.length < 4) {
-              let fake = correct + Math.floor(Math.random() * 10) - 5;
-              if (fake !== correct && !answers.includes(fake.toString())) answers.push(fake.toString());
+              const answers = [correct.toString()];
+              while(answers.length < 4) {
+                  // Generuj mylące odpowiedzi (blisko poprawnej)
+                  let fake = correct + (Math.floor(Math.random() * 20) - 10); 
+                  if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString());
+              }
+              return { q: qStr, a: answers, correct: correct.toString() };
           }
-          return { q: qStr, a: answers, correct: correct.toString() };
       }
   }
 
   function prepareQ(item) {
-      // Przyjmujemy że pierwsza odp w tablicy staticTrivia jest poprawna
-      return { q: item.q, a: item.a, correct: item.a[0] };
+      // Przyjmujemy że pierwsza odp w tablicy to poprawna
+      return { q: item.q, a: [...item.a, "Błędna odp 1", "Błędna odp 2"].slice(0,4), correct: item.a[0] };
   }
 
-  // Algorytm tasowania (Fisher-Yates)
+  // Algorytm tasowania (Fisher-Yates) - żeby poprawna nie była zawsze pierwsza
   function shuffle(array) {
       for (let i = array.length - 1; i > 0; i--) {
           const j = Math.floor(Math.random() * (i + 1));
@@ -307,14 +353,14 @@
   function startRevengeProtocol(user) {
       banTarget = user;
       const overlay = document.getElementById('revenge-overlay');
-      const clown = document.getElementById('clown-gif');
+      const gif = document.getElementById('intro-gif');
       const banScreen = document.getElementById('ban-screen');
       
       overlay.style.display = "flex";
-      clown.style.display = "block";
+      gif.style.display = "block";
 
       setTimeout(() => {
-          clown.style.display = "none";
+          gif.style.display = "none";
           banScreen.style.display = "flex";
           startBanTimer();
       }, 2000);
@@ -350,34 +396,40 @@
           return;
       }
       
-      document.getElementById('q-num').innerText = currentQ + 1;
+      const loading = document.getElementById('quiz-loading');
+      loading.style.display = "flex"; // Pokaż fake loading
       
-      // GENERUJ PYTANIE
-      const qObj = generateQuestion(currentQ);
-      const correctAnswer = qObj.correct;
-      const answers = [...qObj.a];
-      shuffle(answers); // MIESZAMY ODPOWIEDZI
+      // Sztuczne opóźnienie 1.5s
+      setTimeout(() => {
+          loading.style.display = "none";
+          document.getElementById('q-num').innerText = currentQ + 1;
+          
+          const qObj = generateQuestion(currentQ);
+          const correctAnswer = qObj.correct;
+          const answers = [...qObj.a];
+          shuffle(answers); // MIESZAMY ODPOWIEDZI!
 
-      document.getElementById('q-text').innerText = qObj.q;
-      const optsDiv = document.getElementById('q-options');
-      optsDiv.innerHTML = "";
-      
-      answers.forEach(opt => {
-          const btn = document.createElement('button');
-          btn.className = 'quiz-btn';
-          btn.innerText = opt;
-          btn.onclick = () => {
-              if (opt === correctAnswer) {
-                  currentQ++;
-                  nextQuestion();
-              } else {
-                  alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!");
-                  currentQ = 0;
-                  nextQuestion();
-              }
-          };
-          optsDiv.appendChild(btn);
-      });
+          document.getElementById('q-text').innerText = qObj.q;
+          const optsDiv = document.getElementById('q-options');
+          optsDiv.innerHTML = "";
+          
+          answers.forEach(opt => {
+              const btn = document.createElement('button');
+              btn.className = 'quiz-btn';
+              btn.innerText = opt;
+              btn.onclick = () => {
+                  if (opt === correctAnswer) {
+                      currentQ++;
+                      nextQuestion();
+                  } else {
+                      alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!");
+                      currentQ = 0;
+                      nextQuestion();
+                  }
+              };
+              optsDiv.appendChild(btn);
+          });
+      }, 1500); // Czas trwania fake loading
   }
 
   async function preparePenance() {
@@ -398,7 +450,7 @@
       
       if (sinsList.length === 0) {
           // Jeśli jakimś cudem nie ma podpisów, ale jest banowany - dodajemy jeden placeholder
-          sinsList.push("0.jpg"); // Domyślny obrazek wstydu
+          sinsList.push("0.jpg"); 
       }
       
       updatePenanceUI();
@@ -412,7 +464,6 @@
           // Pokaż aktualny grzech (ostatni z listy)
           document.getElementById('sin-preview').src = sinsList[count - 1];
       } else {
-          // Koniec kary
           alert("KARA ODBYTA. MOŻESZ WEJŚĆ.");
           document.getElementById('revenge-overlay').style.display = "none";
           saveSession(banTarget);
