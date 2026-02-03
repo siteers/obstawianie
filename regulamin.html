@@ -219,35 +219,58 @@
     }
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
+
+    // --- MAPOWANIE STARYCH PODPISÓW ---
+    const legacyMapping = {
+        "Mario": "Mariusz",
+        "Domino": "Dominik",
+        "Z-ca Kiero": "Arek",
+        "Kiero": "Paweł",
+        "Grzenio": "Grzesiek P",
+        "Gregorio Sz": "Grzesiek Sz"
+    };
 
     // Automatycznie wpisz imię zalogowanego użytkownika
     if (currentUser !== "Admin") {
         document.getElementById('signer-name').value = currentUser;
     }
 
-    // --- SPRAWDZANIE CZY UŻYTKOWNIK JUŻ PODPISAŁ ---
-    // (Ograniczenie do 1 podpisu na osobę)
-    const userSigQuery = query(collection(db, "signatures"), where("author", "==", currentUser));
-    
-    onSnapshot(userSigQuery, (snap) => {
+    // --- SPRAWDZANIE CZY UŻYTKOWNIK JUŻ PODPISAŁ (Z UWZGLĘDNIENIEM STARYCH PODPISÓW) ---
+    // Pobieramy wszystkie podpisy i sprawdzamy po stronie klienta (bo OR w firestore query jest ograniczone)
+    onSnapshot(collection(db, "signatures"), (snap) => {
         const formDiv = document.getElementById('signing-form');
         const msgDiv = document.getElementById('already-signed-msg');
         
-        if (!snap.empty) {
-            // Użytkownik już ma podpis -> ukryj formularz, pokaż komunikat
+        let hasSigned = false;
+
+        snap.forEach(docSnap => {
+            const data = docSnap.data();
+            
+            // 1. Sprawdź po autorze (nowy system)
+            if (data.author === currentUser) {
+                hasSigned = true;
+            }
+            
+            // 2. Sprawdź po starym imieniu (kompatybilność wsteczna)
+            // Sprawdzamy czy nazwa z bazy pasuje do currentUser (np. "Mario" == "Mariusz")
+            if (legacyMapping[data.name] === currentUser || data.name === currentUser) {
+                hasSigned = true;
+            }
+        });
+
+        if (hasSigned) {
             formDiv.style.display = 'none';
             msgDiv.style.display = 'block';
         } else {
-            // Użytkownik nie ma podpisu -> pokaż formularz
             formDiv.style.display = 'block';
             msgDiv.style.display = 'none';
             
-            // Reset widoku skanera (na wszelki wypadek)
+            // Reset widoku skanera
             document.getElementById('step-1').style.display = 'block';
             document.getElementById('signature-section').style.display = 'none';
         }
@@ -332,7 +355,7 @@
             ts: Date.now(),
             author: currentUser // Zapisz kto fizycznie podpisał (login)
         });
-        // Nie musimy tu ręcznie zmieniać HTML, onSnapshot(userSigQuery) zrobi to automatycznie
+        // onSnapshot obsłuży zmianę widoku
     };
 
     // --- LISTA PODPISÓW (WSZYSTKIE, BEZ LIMITU) ---
@@ -343,8 +366,13 @@
             const entry = document.createElement('div'); entry.className = 'sig-entry';
             
             let deleteBtnHtml = '';
-            // Pokaż przycisk usuwania tylko dla Admina LUB autora podpisu
-            if (currentUser === "Admin" || d.author === currentUser || d.name === currentUser) {
+            // Pokaż przycisk usuwania tylko dla Admina LUB autora podpisu (nowego lub starego)
+            if (
+                currentUser === "Admin" || 
+                d.author === currentUser || 
+                d.name === currentUser || 
+                legacyMapping[d.name] === currentUser
+            ) {
                 deleteBtnHtml = `<button class="btn-delete" onclick="deleteSig('${docSnap.id}')">X</button>`;
             }
 
