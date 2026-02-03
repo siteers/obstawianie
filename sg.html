@@ -66,7 +66,6 @@
     #sub-menu.active { display: block; animation: slideUp 0.5s forwards; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     
-    /* POPRAWIONY PRZYCISK WYLOGUJ (Mobile Friendly) */
     #logoutBtn { 
         position: fixed; top: 50px; right: 20px; 
         background: rgba(255,0,0,0.2); border: 1px solid #ff4757; color: #ff4757; 
@@ -277,29 +276,38 @@
   });
 
   const mediumTrivia = [
-      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne"] },
-      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz"] },
-      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe"] },
-      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13"] },
-      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori"] },
-      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939"] },
-      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver"] },
-      { q: "Ile zer ma miliard?", a: ["9", "6", "12"] },
-      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda"] },
-      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka"] }
+      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Brisbane"] },
+      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz", "J. Kochanowski"] },
+      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe", "Pb"] },
+      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13", "3.41"] },
+      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori", "Atlas"] },
+      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939", "1920"] },
+      { q: "Jakie jest największe zwierzę na świecie?", a: ["Płetwal błękitny", "Słoń afrykański", "Rekin wielorybi", "Orka"] },
+      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver", "Montreal"] },
+      { q: "Kto namalował 'Mona Lisę'?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"] },
+      { q: "Ile zer ma miliard?", a: ["9", "6", "12", "8"] },
+      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda", "Ameryka Płd"] },
+      { q: "Jak nazywa się polska noblistka z 2018 roku?", a: ["Olga Tokarczuk", "Wisława Szymborska", "Maria Curie-Skłodowska", "Hanna Krall"] },
+      { q: "Ile kości ma dorosły człowiek?", a: ["206", "200", "212", "198"] },
+      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka", "Hiroszima"] },
+      { q: "Jaka jest waluta Wielkiej Brytanii?", a: ["Funt szterling", "Euro", "Dolar", "Frank"] }
   ];
 
   const hardTrivia = [
-      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey"] },
-      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka"] },
-      { q: "Rok upadku Cesarstwa Zachodniorzymskiego?", a: ["476 n.e.", "1453 n.e.", "395 n.e."] },
-      { q: "Najgłębsze jezioro świata?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie"] },
-      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4"] },
-      { q: "Odkrywca penicyliny?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch"] },
-      { q: "Pierwiastek o symbolu W?", a: ["Wolfram", "Wanad", "Węgiel"] },
-      { q: "Rok Konstytucji 3 Maja?", a: ["1791", "1794", "1772"] },
-      { q: "Najgorętsza planeta?", a: ["Wenus", "Merkury", "Mars"] },
-      { q: "Autor obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso"] }
+      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
+      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka", "Marcel Proust"] },
+      { q: "Rok upadku Cesarstwa Zachodniorzymskiego?", a: ["476 n.e.", "1453 n.e.", "395 n.e.", "410 n.e."] },
+      { q: "Najgłębsze jezioro świata?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie", "Jezioro Wiktorii"] },
+      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4", "0"] },
+      { q: "Odkrywca penicyliny?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Marie Curie"] },
+      { q: "Pierwiastek o symbolu W?", a: ["Wolfram", "Wanad", "Węgiel", "Wodór"] },
+      { q: "Rok Konstytucji 3 Maja?", a: ["1791", "1794", "1772", "1795"] },
+      { q: "Najgorętsza planeta?", a: ["Wenus", "Merkury", "Mars", "Jowisz"] },
+      { q: "Autor obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso", "Salvador Dali"] },
+      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik", "Fanerozoik"] },
+      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch", "Canberra"] },
+      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²", "1.602 x 10^-19"] },
+      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell", "Hermann Hesse"] }
   ];
 
   function generateQuestion(idx) {
@@ -330,9 +338,7 @@
   }
 
   function prepareQ(item) {
-      // Bierzemy poprawne błędne odpowiedzi z bazy lub generujemy
-      // Dla uproszczenia w tym przykładzie, jeśli baza ma tylko 3 opcje, to bierzemy je.
-      // Poprawna jest zawsze pierwsza w bazie (wg definicji wyżej)
+      // Poprawna odpowiedź to zawsze pierwsza w tablicy (według definicji w bazie)
       return { q: item.q, a: item.a, correct: item.a[0] };
   }
 
@@ -355,7 +361,7 @@
           gif.style.display = "none";
           banScreen.style.display = "flex";
           startBanTimer();
-      }, 3000); // 3 sekundy na podziwianie GIFa
+      }, 3000); 
   }
 
   function startBanTimer() {
@@ -477,7 +483,10 @@
 
   document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
 
-  function saveSession(user) { localStorage.setItem('cyberUser', user); showHub(user); }
+  function saveSession(user) {
+      localStorage.setItem('cyberUser', user);
+      showHub(user);
+  }
 
   function showHub(user) {
       document.getElementById('login-container').style.display = 'none';
