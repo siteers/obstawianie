@@ -27,9 +27,18 @@
             min-height: 100vh; transition: 0.3s; overflow-x: hidden;
         }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
-        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; gap: 10px; margin-bottom: 20px; z-index: 100; }
-        #darkModeBtn { padding: 10px 20px; border-radius: 30px !important; border: 1px solid var(--border); cursor: pointer; background: #fff; color: #111; font-weight: bold; }
-        body.dark #darkModeBtn { background: #111; color: #fff; }
+        
+        /* ZMIANA W TOP NAV - Grupowanie */
+        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 100; }
+        .nav-right { display: flex; gap: 10px; align-items: center; }
+
+        #darkModeBtn, #muteBtn { 
+            padding: 10px 15px; border-radius: 30px !important; border: 1px solid var(--border); 
+            cursor: pointer; background: #fff; color: #111; font-weight: bold; 
+            display: flex; align-items: center; justify-content: center;
+        }
+        body.dark #darkModeBtn, body.dark #muteBtn { background: #111; color: #fff; }
+        
         .admin-config { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--gold); display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100; }
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
@@ -97,7 +106,10 @@
 
 <div class="top-nav">
     <button id="darkModeBtn">☀️ Light mode</button>
-    <a href="ranking.html" target="_blank" style="padding: 10px 20px; background: var(--gold); border-radius: 30px; text-decoration: none; color: #000; font-weight: bold;">🏆 Ranking</a>
+    <div class="nav-right">
+        <button id="muteBtn" onclick="toggleMute()">🔊</button>
+        <a href="ranking.html" target="_blank" style="padding: 10px 20px; background: var(--gold); border-radius: 30px; text-decoration: none; color: #000; font-weight: bold;">🏆 Ranking</a>
+    </div>
 </div>
 
 <div class="admin-config">
@@ -162,9 +174,27 @@ const fanfareAudio = document.getElementById("fanfareAudio");
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
 let stoppedSec1 = 0, stoppedSec2 = 0;
-let savedWinners1 = null, savedWinners2 = null; // Tu ląduje CAŁA zamrożona lista
+let savedWinners1 = null, savedWinners2 = null; // ZMIENNA NA ZAMROŻONĄ LISTĘ
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
+
+// --- OBSŁUGA WYCISZANIA ---
+let isMuted = localStorage.getItem('appMuted') === 'true';
+const muteBtn = document.getElementById('muteBtn');
+
+function applyMuteState() {
+    fanfareAudio.muted = isMuted;
+    lockSound.muted = isMuted;
+    muteBtn.textContent = isMuted ? "🔇" : "🔊";
+}
+// Init mute state
+applyMuteState();
+
+window.toggleMute = () => {
+    isMuted = !isMuted;
+    localStorage.setItem('appMuted', isMuted);
+    applyMuteState();
+};
 
 // --- ZAPIS CELÓW DO BAZY ---
 window.updateTargets = async () => { 
@@ -239,7 +269,7 @@ function triggerStopEffect(id, timestamp, winners) {
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
     startCelebration(); 
-    renderTable(id, timestamp/1000); 
+    renderTable(id, timestamp/1000); // Odśwież tabelę (użyje teraz savedWinners)
 }
 
 // --- LOGIKA PRZYCISKU STOP (ZAPIS DO BAZY) ---
