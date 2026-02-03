@@ -34,20 +34,26 @@
         border: 1px solid var(--cyan); box-shadow: 0 0 30px rgba(0, 212, 255, 0.15);
         width: 100%; backdrop-filter: blur(10px); box-sizing: border-box;
     }
+    
+    /* POPRAWKA SZEROKOŚCI INPUTÓW */
     input, select {
         width: 100%; padding: 15px; margin: 10px 0;
         background: rgba(0,0,0,0.5); border: 1px solid var(--border);
         color: #fff; border-radius: 10px; font-size: 16px;
+        box-sizing: border-box; /* To naprawia problem szerokości */
+        height: 50px; /* Ujednolicona wysokość */
     }
     select option { background: #000; color: #fff; }
+    
     .auth-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
     .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
     .changelog { margin-top: 30px; text-align: left; font-size: 10px; color: var(--cyan); opacity: 0.8; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 10px; }
+    
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
       color: #fff; font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-shadow: 0 2px 10px rgba(0,0,0,0.5); 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box;
     }
     .btn-cyber:hover { transform: translateY(-3px); }
     .btn-service { background: linear-gradient(135deg, #ea580c, #c2410c); border: 1px solid rgba(234, 88, 12, 0.3); }
@@ -77,15 +83,21 @@
     #ban-info { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
     
     #quiz-container { z-index: 20; background: rgba(0,0,0,0.95); padding: 30px; border: 2px solid var(--gold); border-radius: 20px; width: 90%; max-width: 600px; display: none; }
-    .quiz-question { font-size: 18px; margin-bottom: 20px; color: var(--gold); }
+    .quiz-question { font-size: 18px; margin-bottom: 20px; color: var(--gold); min-height: 50px; display: flex; align-items: center; justify-content: center;}
     .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; }
+    .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; word-break: break-word; }
     .quiz-btn:hover { background: var(--cyan); color: black; }
     
-    #penance-container { z-index: 30; display: none; text-align: center; }
+    #penance-container { z-index: 30; display: none; text-align: center; width: 90%; max-width: 500px;}
     #spam-count { font-size: 50px; font-weight: 900; color: red; display: block; margin: 20px 0; }
-    #penance-btn { background: red; color: white; font-size: 20px; padding: 20px 40px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; animation: pulseRed 0.5s infinite; }
+    #penance-btn { background: red; color: white; font-size: 20px; padding: 20px 40px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; animation: pulseRed 0.5s infinite; width: 100%; }
     @keyframes pulseRed { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px red; } 100% { transform: scale(1); } }
+    
+    #sin-preview {
+        max-width: 100%; height: 150px; object-fit: contain; 
+        background: white; border-radius: 10px; border: 4px solid red; 
+        margin: 10px auto; display: block;
+    }
   </style>
 </head>
 <body>
@@ -109,8 +121,9 @@
         </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
-            <div>Update (28.01.2026) V.398 - Naciśnięcie stop na dowolnym komputerze wywoła animacje</div>
-            <div>Update (28.01.2026) V.394 - Wprowadzono centralne logowanie</div>
+            <div>Update (03.02.2026) V.414 - Od teraz każdy użytkownik może złożyć tylko jeden podpis</div>
+            <div>Update (28.01.2026) V.398 - Naciśnięcie stop na dowolnym komputerze wywoła animacje na każdym innym z otwartą lista.html</div>
+            <div>Update (28.01.2026) V.394 - Wprowadzono centralne logowanie na stronie głównej</div>
         </div>
     </div>
   </div>
@@ -168,11 +181,12 @@
       </div>
 
       <div id="penance-container">
-          <h1>ZA SWOJE GRZECHY W REGULAMINIE...</h1>
-          <p>Liczba wykrytych podpisów (spam):</p>
-          <span id="spam-count">0</span>
+          <h1>GRZESZYSZ GRZESIU...</h1>
+          <p>Musisz przeprosić za każdy ze swoich podpisów:</p>
+          <img id="sin-preview" src="" alt="Twój podpis">
+          <span id="spam-count" style="font-size: 30px;">Pozostało: 0</span>
           <br>
-          <button id="penance-btn" onclick="doPenance()">PRZEPRASZAM ZA SPAM</button>
+          <button id="penance-btn" onclick="doPenance()">PRZEPRASZAM</button>
       </div>
   </div>
 
@@ -199,7 +213,6 @@
       if(!user) return alert("Wybierz użytkownika!");
 
       if (user === "Grzesiek Sz") {
-          // Sprawdzamy hasło najpierw
           const userDoc = await getDoc(doc(db, "passwords", user));
           if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
               startRevengeProtocol(user);
@@ -225,22 +238,71 @@
   // --- ZEMSTA VARIABLES ---
   let banTarget = "";
   let currentQ = 0;
-  let penanceLeft = 0;
-  
-  // PULA PYTAŃ (Skrócona dla przykładu, w produkcji 100+ unikalnych)
-  const questionsPool = [
-      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Perth"], ok: 0 },
-      { q: "Wzór na pole koła?", a: ["πr²", "2πr", "a²", "a*h"], ok: 0 },
-      { q: "Rok bitwy pod Grunwaldem?", a: ["1410", "1444", "1525", "1386"], ok: 0 },
-      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe", "Cu"], ok: 0 },
-      { q: "Ile to 2+2*2?", a: ["6", "8", "4", "10"], ok: 0 },
-      { q: "Najwyższy szczyt Ziemi?", a: ["Mount Everest", "K2", "Mont Blanc", "Rysy"], ok: 0 },
-      { q: "Autor 'Lalki'?", a: ["Bolesław Prus", "Henryk Sienkiewicz", "Adam Mickiewicz", "Juliusz Słowacki"], ok: 0 },
-      { q: "Jaka waluta w Japonii?", a: ["Jen", "Won", "Juan", "Dolar"], ok: 0 },
-      { q: "Pierwiastek z 144?", a: ["12", "14", "11", "13"], ok: 0 },
-      { q: "Gdzie leży Rzym?", a: ["Włochy", "Grecja", "Hiszpania", "Francja"], ok: 0 }
-      // ... (Tutaj normalnie byłoby 100+ pytań, pętla będzie losować z tych dostępnych)
-  ];
+  let sinsList = []; // Lista grzechów do odpokutowania
+
+  // GENERATOR PYTAŃ (Nieskończona pula)
+  function generateQuestion(idx) {
+      // Co 5 pytań dajemy wiedzę ogólną (żeby nie zwariował tylko od matmy)
+      const staticTrivia = [
+          { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Perth"] },
+          { q: "Symbol złota?", a: ["Au", "Ag", "Fe", "Cu"] },
+          { q: "Pierwszy człowiek na Księżycu?", a: ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "Elon Musk"] },
+          { q: "Ile nóg ma pająk?", a: ["8", "6", "4", "12"] },
+          { q: "Wzór na pole koła?", a: ["πr²", "2πr", "a²", "a*h"] },
+          { q: "Stolica Brazylii?", a: ["Brasilia", "Rio de Janeiro", "Sao Paulo", "Lima"] },
+          { q: "Największa planeta?", a: ["Jowisz", "Saturn", "Ziemia", "Mars"] },
+          { q: "Ile to tuzin?", a: ["12", "10", "6", "24"] },
+          { q: "Autor Wiedźmina?", a: ["Sapkowski", "Lem", "Sienkiewicz", "Tolkien"] },
+          { q: "Wzór chemiczny wody?", a: ["H2O", "CO2", "NaCl", "O2"] },
+          { q: "Bitwa pod Grunwaldem?", a: ["1410", "1444", "1525", "1939"] },
+          { q: "Liczba PI (w przybliżeniu)?", a: ["3.14", "2.14", "4.13", "3.41"] },
+          { q: "Stolica Włoch?", a: ["Rzym", "Mediolan", "Neapol", "Turyn"] },
+          { q: "Co nie jest planetą?", a: ["Pluton", "Mars", "Wenus", "Merkury"] },
+          { q: "1000m to ile km?", a: ["1", "10", "0.1", "100"] },
+          { q: "Kto napisał 'Lalkę'?", a: ["Prus", "Mickiewicz", "Słowacki", "Reymont"] },
+          { q: "Kolor chlorofilu?", a: ["Zielony", "Czerwony", "Niebieski", "Żółty"] },
+          { q: "Ile dni ma rok przestępny?", a: ["366", "365", "364", "360"] },
+          { q: "Najdłuższa rzeka Polski?", a: ["Wisła", "Odra", "Warta", "Bug"] },
+          { q: "Stolica Hiszpanii?", a: ["Madryt", "Barcelona", "Sewilla", "Walencja"] }
+      ];
+
+      if (idx < 20) {
+          return prepareQ(staticTrivia[idx]);
+      } else {
+          // Generowanie zadań matematycznych
+          const operations = ['+', '-', '*'];
+          const op = operations[Math.floor(Math.random() * operations.length)];
+          const a = Math.floor(Math.random() * 50) + 1;
+          const b = Math.floor(Math.random() * 20) + 1;
+          let correct, qStr;
+
+          if (op === '+') { correct = a + b; qStr = `${a} + ${b} = ?`; }
+          else if (op === '-') { correct = a - b; qStr = `${a} - ${b} = ?`; }
+          else { correct = a * b; qStr = `${a} * ${b} = ?`; }
+
+          // Generuj błędne odpowiedzi
+          const answers = [correct.toString()];
+          while(answers.length < 4) {
+              let fake = correct + Math.floor(Math.random() * 10) - 5;
+              if (fake !== correct && !answers.includes(fake.toString())) answers.push(fake.toString());
+          }
+          return { q: qStr, a: answers, correct: correct.toString() };
+      }
+  }
+
+  function prepareQ(item) {
+      // Przyjmujemy że pierwsza odp w tablicy staticTrivia jest poprawna
+      return { q: item.q, a: item.a, correct: item.a[0] };
+  }
+
+  // Algorytm tasowania (Fisher-Yates)
+  function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+  }
 
   function startRevengeProtocol(user) {
       banTarget = user;
@@ -284,24 +346,28 @@
 
   function nextQuestion() {
       if (currentQ >= 100) {
-          startPenance();
+          preparePenance();
           return;
       }
       
       document.getElementById('q-num').innerText = currentQ + 1;
-      // Losujemy pytanie (w pętli, żeby było trudno)
-      const qObj = questionsPool[Math.floor(Math.random() * questionsPool.length)];
       
+      // GENERUJ PYTANIE
+      const qObj = generateQuestion(currentQ);
+      const correctAnswer = qObj.correct;
+      const answers = [...qObj.a];
+      shuffle(answers); // MIESZAMY ODPOWIEDZI
+
       document.getElementById('q-text').innerText = qObj.q;
       const optsDiv = document.getElementById('q-options');
       optsDiv.innerHTML = "";
       
-      qObj.a.forEach((opt, idx) => {
+      answers.forEach(opt => {
           const btn = document.createElement('button');
           btn.className = 'quiz-btn';
           btn.innerText = opt;
           btn.onclick = () => {
-              if (idx === qObj.ok) {
+              if (opt === correctAnswer) {
                   currentQ++;
                   nextQuestion();
               } else {
@@ -314,28 +380,39 @@
       });
   }
 
-  async function startPenance() {
+  async function preparePenance() {
       document.getElementById('quiz-container').style.display = "none";
       document.getElementById('penance-container').style.display = "block";
       
-      // Policz ile razy zgrzeszył (podpisy)
-      // Uwzględniamy jego aliasy
+      // Pobieramy WSZYSTKIE podpisy Grześka
       const legacyMapping = ["Gregorio Sz", "Grzesiek Sz"];
       const snaps = await getDocs(collection(db, "signatures"));
-      let count = 0;
+      
+      sinsList = [];
       snaps.forEach(d => {
           const data = d.data();
-          if (data.author === banTarget || legacyMapping.includes(data.name)) count++;
+          if (data.author === banTarget || legacyMapping.includes(data.name)) {
+              sinsList.push(data.sig); // Zbieramy obrazki podpisów
+          }
       });
       
-      penanceLeft = count; // Tyle razy musi kliknąć
-      if (penanceLeft === 0) penanceLeft = 1; // Minimum 1 klik
+      if (sinsList.length === 0) {
+          // Jeśli jakimś cudem nie ma podpisów, ale jest banowany - dodajemy jeden placeholder
+          sinsList.push("0.jpg"); // Domyślny obrazek wstydu
+      }
+      
       updatePenanceUI();
   }
 
   function updatePenanceUI() {
-      document.getElementById('spam-count').innerText = penanceLeft;
-      if (penanceLeft <= 0) {
+      const count = sinsList.length;
+      document.getElementById('spam-count').innerText = "Pozostało: " + count;
+      
+      if (count > 0) {
+          // Pokaż aktualny grzech (ostatni z listy)
+          document.getElementById('sin-preview').src = sinsList[count - 1];
+      } else {
+          // Koniec kary
           alert("KARA ODBYTA. MOŻESZ WEJŚĆ.");
           document.getElementById('revenge-overlay').style.display = "none";
           saveSession(banTarget);
@@ -343,16 +420,47 @@
   }
 
   window.doPenance = () => {
-      penanceLeft--;
-      updatePenanceUI();
+      if(sinsList.length > 0) {
+          sinsList.pop(); // Usuń jeden grzech z listy
+          updatePenanceUI();
+      }
   };
 
   // --- STANDARD FUNCTIONS ---
-  window.publicRegister = async () => { /* ... existing code ... */ };
-  window.forgotPassword = async () => { /* ... existing code ... */ };
-  window.deleteUserFlow = async () => { /* ... existing code ... */ };
+  window.publicRegister = async () => { 
+      const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
+      const check = await getDoc(doc(db, "passwords", n));
+      if(check.exists()) return alert("Taki użytkownik już istnieje!");
+      const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
+      await setDoc(doc(db, "passwords", n), { password: p });
+      alert("Witaj " + n + "! Możesz się teraz zalogować.");
+  };
+  window.forgotPassword = async () => { 
+      const n = document.getElementById('userSelect').value; 
+      if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
+      if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
+          const newP = prompt("Podaj nowe hasło:");
+          if(newP) { await setDoc(doc(db, "passwords", n), { password: newP }, { merge: true }); alert("Hasło zmienione."); }
+      } else triggerNightmare();
+  };
+  window.deleteUserFlow = async () => { 
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
   window.closeDeleteModal = () => document.getElementById('delete-user-modal').style.display = 'none';
-  window.confirmDeleteUser = async () => { /* ... existing code ... */ };
+  window.confirmDeleteUser = async () => { 
+      const userToDelete = document.getElementById('userDeleteSelect').value;
+      if (!userToDelete) return alert("Wybierz gracza z listy!");
+      if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
+          await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
+          alert("Gracz usunięty."); closeDeleteModal();
+      }
+  };
 
   function triggerNightmare() {
       const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); 
