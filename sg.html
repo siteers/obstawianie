@@ -35,16 +35,19 @@
         width: 100%; backdrop-filter: blur(10px); box-sizing: border-box;
     }
     
+    /* POPRAWKA INPUTÓW - równa szerokość i box-sizing */
     input, select {
         width: 100%; padding: 15px; margin: 10px 0;
         background: rgba(0,0,0,0.5); border: 1px solid var(--border);
         color: #fff; border-radius: 10px; font-size: 16px;
-        box-sizing: border-box; height: 50px;
+        box-sizing: border-box; height: 50px; display: block;
     }
     select option { background: #000; color: #fff; }
+    
     .auth-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
     .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
     .changelog { margin-top: 30px; text-align: left; font-size: 10px; color: var(--cyan); opacity: 0.8; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 10px; }
+    
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
@@ -67,12 +70,13 @@
     h1 { font-size: 11px; color: var(--gray); text-transform: uppercase; letter-spacing: 5px; margin-bottom: 30px; }
     h2 { color: var(--gold); margin: 0 0 30px 0; font-size: 24px; text-transform: uppercase; letter-spacing: 3px; }
 
+    /* MODAL USUWANIA */
     #delete-user-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #151b26; border: 1px solid #ff4757; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
 
     /* --- ZEMSTA 2.0 (BAN & QUIZ) --- */
     #revenge-overlay { position: fixed; inset: 0; background: black; z-index: 9999; display: none; align-items: center; justify-content: center; flex-direction: column; color: white; text-align: center; }
-    #intro-gif { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1; }
+    #clown-gif { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 1; }
     #ban-screen { z-index: 10; display: none; width: 100%; height: 100%; background: black; flex-direction: column; align-items: center; justify-content: center; }
     #countdown-timer { font-size: 40px; font-weight: 900; color: red; font-family: monospace; margin: 20px 0; text-shadow: 0 0 20px red; }
     #ban-info { font-size: 14px; color: #888; text-transform: uppercase; letter-spacing: 2px; }
@@ -161,7 +165,7 @@
   </div>
 
   <div id="revenge-overlay">
-      <img id="intro-gif" src="https://media.giphy.com/media/o0vwzuFxEBMze/giphy.gif" style="display:none;">
+      <img id="clown-gif" src="https://media.giphy.com/media/o0vwzuFxEBMze/giphy.gif" style="display:none;">
       
       <div id="ban-screen">
           <h1 style="color: red; font-size: 50px; margin: 0;">BAN ADMINISTRACYJNY</h1>
@@ -259,39 +263,39 @@
 
   // NOWA, TRUDNIEJSZA PULA PYTAŃ
   const mediumTrivia = [
-      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne"] },
-      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz"] },
-      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe"] },
-      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13"] },
-      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori"] },
-      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939"] },
-      { q: "Jakie jest największe zwierzę na świecie?", a: ["Płetwal błękitny", "Słoń afrykański", "Rekin wielorybi"] },
-      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver"] },
-      { q: "Kto namalował 'Mona Lisę'?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael"] },
-      { q: "Ile zer ma miliard?", a: ["9", "6", "12"] },
-      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda"] },
-      { q: "Jak nazywa się polska noblistka z 2018 roku?", a: ["Olga Tokarczuk", "Wisława Szymborska", "Maria Curie-Skłodowska"] },
-      { q: "Ile kości ma dorosły człowiek?", a: ["206", "200", "212"] },
-      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka"] },
-      { q: "Jaka jest waluta Wielkiej Brytanii?", a: ["Funt szterling", "Euro", "Dolar"] }
+      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Perth"] },
+      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz", "J. Słowacki"] },
+      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe", "Cu"] },
+      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13", "3.41"] },
+      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori", "Aconcagua"] },
+      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939", "1945"] },
+      { q: "Jakie jest największe zwierzę na świecie?", a: ["Płetwal błękitny", "Słoń afrykański", "Rekin wielorybi", "Żyrafa"] },
+      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver", "Montreal"] },
+      { q: "Kto namalował 'Mona Lisę'?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"] },
+      { q: "Ile zer ma miliard?", a: ["9", "6", "12", "8"] },
+      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda", "Ameryka Płd"] },
+      { q: "Jak nazywa się polska noblistka z 2018 roku?", a: ["Olga Tokarczuk", "Wisława Szymborska", "Maria Curie-Skłodowska", "Hanna Krall"] },
+      { q: "Ile kości ma dorosły człowiek?", a: ["206", "200", "212", "198"] },
+      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka", "Hiroszima"] },
+      { q: "Jaka jest waluta Wielkiej Brytanii?", a: ["Funt szterling", "Euro", "Dolar", "Frank"] }
   ];
 
   const hardTrivia = [
-      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey"] },
-      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka"] },
-      { q: "W którym roku upadło Cesarstwo Zachodniorzymskie?", a: ["476 n.e.", "1453 n.e.", "395 n.e."] },
-      { q: "Najgłębsze jezioro na świecie?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie"] },
-      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4"] },
-      { q: "Kto odkrył penicylinę?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch"] },
-      { q: "Jaki pierwiastek ma symbol W?", a: ["Wolfram", "Wanad", "Węgiel"] },
-      { q: "W którym roku uchwalono Konstytucję 3 Maja?", a: ["1791", "1794", "1772"] },
-      { q: "Co oznacza skrót HTML?", a: ["HyperText Markup Language", "High Tech Multi Link", "Hyper Transfer Mode Language"] },
-      { q: "Która planeta jest najgorętsza?", a: ["Wenus", "Merkury", "Mars"] },
-      { q: "Kto jest autorem obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso"] },
-      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik"] },
-      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch"] },
-      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²"] },
-      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell"] }
+      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
+      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka", "Marcel Proust"] },
+      { q: "W którym roku upadło Cesarstwo Zachodniorzymskie?", a: ["476 n.e.", "1453 n.e.", "395 n.e.", "410 n.e."] },
+      { q: "Najgłębsze jezioro na świecie?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie", "Jezioro Wiktorii"] },
+      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4", "0"] },
+      { q: "Kto odkrył penicylinę?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Marie Curie"] },
+      { q: "Jaki pierwiastek ma symbol W?", a: ["Wolfram", "Wanad", "Węgiel", "Wodór"] },
+      { q: "W którym roku uchwalono Konstytucję 3 Maja?", a: ["1791", "1794", "1772", "1795"] },
+      { q: "Co oznacza skrót HTML?", a: ["HyperText Markup Language", "High Tech Multi Link", "Hyper Transfer Mode Language", "Home Tool Markup Language"] },
+      { q: "Która planeta jest najgorętsza?", a: ["Wenus", "Merkury", "Mars", "Jowisz"] },
+      { q: "Kto jest autorem obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso", "Salvador Dali"] },
+      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik", "Fanerozoik"] },
+      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch", "Canberra"] },
+      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²", "1.602 x 10^-19"] },
+      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell", "Hermann Hesse"] }
   ];
 
 
@@ -338,7 +342,7 @@
 
   function prepareQ(item) {
       // Przyjmujemy że pierwsza odp w tablicy to poprawna
-      return { q: item.q, a: [...item.a, "Błędna odp 1", "Błędna odp 2"].slice(0,4), correct: item.a[0] };
+      return { q: item.q, a: item.a, correct: item.a[0] };
   }
 
   // Algorytm tasowania (Fisher-Yates) - żeby poprawna nie była zawsze pierwsza
@@ -353,14 +357,14 @@
   function startRevengeProtocol(user) {
       banTarget = user;
       const overlay = document.getElementById('revenge-overlay');
-      const gif = document.getElementById('intro-gif');
+      const clown = document.getElementById('clown-gif');
       const banScreen = document.getElementById('ban-screen');
       
       overlay.style.display = "flex";
-      gif.style.display = "block";
+      clown.style.display = "block";
 
       setTimeout(() => {
-          gif.style.display = "none";
+          clown.style.display = "none";
           banScreen.style.display = "flex";
           startBanTimer();
       }, 2000);
@@ -464,6 +468,7 @@
           // Pokaż aktualny grzech (ostatni z listy)
           document.getElementById('sin-preview').src = sinsList[count - 1];
       } else {
+          // Koniec kary
           alert("KARA ODBYTA. MOŻESZ WEJŚĆ.");
           document.getElementById('revenge-overlay').style.display = "none";
           saveSession(banTarget);
