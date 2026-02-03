@@ -212,7 +212,7 @@
     }
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig);
@@ -305,7 +305,8 @@
         document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY POMYŚLNIE!</h3>";
     };
 
-    onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc"), limit(10)), (snap) => {
+    // USUNIĘTO limit(10) z zapytania
+    onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc")), (snap) => {
         const list = document.getElementById('sig-list'); list.innerHTML = "";
         snap.forEach(docSnap => {
             const d = docSnap.data();
@@ -313,7 +314,6 @@
             
             let deleteBtnHtml = '';
             // Pokaż przycisk usuwania tylko dla Admina LUB autora podpisu
-            // Sprawdzamy pole 'author' (login) lub 'name' (wpisane imię) dla kompatybilności wstecznej
             if (currentUser === "Admin" || d.author === currentUser || d.name === currentUser) {
                 deleteBtnHtml = `<button class="btn-delete" onclick="deleteSig('${docSnap.id}')">X</button>`;
             }
