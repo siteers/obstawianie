@@ -174,25 +174,32 @@
         </section>
 
         <div class="acceptance-flow">
-            <div id="step-1">
-                <h3>🔐 Akceptacja Regulaminu</h3>
-                <p>KROK 1: Przytrzymaj palec na skanerze (2 sek), aby zweryfikować tożsamość.</p>
-                <div id="scan-zone">
-                    <div class="pulse" id="pulse-ring"></div>
-                    ☝️
-                </div>
-                <div id="status" style="font-size: 13px; font-weight: bold; color: var(--cyan);">DOTKNIJ I PRZYTRZYMAJ</div>
+            <div id="already-signed-msg" style="display: none;">
+                <h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY</h3>
+                <p>Twój podpis widnieje już na liście. Dziękujemy!</p>
             </div>
 
-            <div id="signature-section">
-                <h3>✍️ Podpis Elektroniczny</h3>
-                <p>KROK 2: Wpisz imię i złóż podpis palcem na polu poniżej.</p>
-                <input type="text" id="signer-name" placeholder="Twoje imię / ksywka">
-                <br>
-                <canvas id="sig-canvas" width="300" height="130"></canvas>
-                <div class="btns">
-                    <button class="action btn-clear" id="clear-btn">Wyczyść</button>
-                    <button class="action btn-save" id="save-btn">Zatwierdź</button>
+            <div id="signing-form">
+                <div id="step-1">
+                    <h3>🔐 Akceptacja Regulaminu</h3>
+                    <p>KROK 1: Przytrzymaj palec na skanerze (2 sek), aby zweryfikować tożsamość.</p>
+                    <div id="scan-zone">
+                        <div class="pulse" id="pulse-ring"></div>
+                        ☝️
+                    </div>
+                    <div id="status" style="font-size: 13px; font-weight: bold; color: var(--cyan);">DOTKNIJ I PRZYTRZYMAJ</div>
+                </div>
+
+                <div id="signature-section">
+                    <h3>✍️ Podpis Elektroniczny</h3>
+                    <p>KROK 2: Wpisz imię i złóż podpis palcem na polu poniżej.</p>
+                    <input type="text" id="signer-name" placeholder="Twoje imię / ksywka">
+                    <br>
+                    <canvas id="sig-canvas" width="300" height="130"></canvas>
+                    <div class="btns">
+                        <button class="action btn-clear" id="clear-btn">Wyczyść</button>
+                        <button class="action btn-save" id="save-btn">Zatwierdź</button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -212,7 +219,7 @@
     }
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, limit, deleteDoc, doc, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig);
@@ -222,6 +229,29 @@
     if (currentUser !== "Admin") {
         document.getElementById('signer-name').value = currentUser;
     }
+
+    // --- SPRAWDZANIE CZY UŻYTKOWNIK JUŻ PODPISAŁ ---
+    // (Ograniczenie do 1 podpisu na osobę)
+    const userSigQuery = query(collection(db, "signatures"), where("author", "==", currentUser));
+    
+    onSnapshot(userSigQuery, (snap) => {
+        const formDiv = document.getElementById('signing-form');
+        const msgDiv = document.getElementById('already-signed-msg');
+        
+        if (!snap.empty) {
+            // Użytkownik już ma podpis -> ukryj formularz, pokaż komunikat
+            formDiv.style.display = 'none';
+            msgDiv.style.display = 'block';
+        } else {
+            // Użytkownik nie ma podpisu -> pokaż formularz
+            formDiv.style.display = 'block';
+            msgDiv.style.display = 'none';
+            
+            // Reset widoku skanera (na wszelki wypadek)
+            document.getElementById('step-1').style.display = 'block';
+            document.getElementById('signature-section').style.display = 'none';
+        }
+    });
 
     // --- TŁO SIECI NEURONOWEJ ---
     const bgCanvas = document.getElementById('bg-canvas');
@@ -302,10 +332,10 @@
             ts: Date.now(),
             author: currentUser // Zapisz kto fizycznie podpisał (login)
         });
-        document.querySelector('.acceptance-flow').innerHTML = "<h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY POMYŚLNIE!</h3>";
+        // Nie musimy tu ręcznie zmieniać HTML, onSnapshot(userSigQuery) zrobi to automatycznie
     };
 
-    // USUNIĘTO limit(10) z zapytania
+    // --- LISTA PODPISÓW (WSZYSTKIE, BEZ LIMITU) ---
     onSnapshot(query(collection(db, "signatures"), orderBy("ts", "desc")), (snap) => {
         const list = document.getElementById('sig-list'); list.innerHTML = "";
         snap.forEach(docSnap => {
