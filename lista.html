@@ -89,6 +89,7 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
         .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; position: relative; z-index: 60; }
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
+        .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); } /* STYL DLA ZABLOKOWANEGO PRZYCISKU */
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .lock-btn-slot { width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff; z-index: 60; position: relative; }
         .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; z-index: 60; position: relative; }
@@ -125,7 +126,7 @@
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName1">---</span>
         <div class="table-wrapper"><table id="table1"></table></div>
         <div id="stoppedTime1" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
-        <div class="action-group"><button class="stop-btn" onclick="stopSlot(1)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ</button></div>
+        <div class="action-group"><button id="stopBtn1" class="stop-btn" onclick="stopSlot(1)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(1)">WYCZYŚĆ</button></div>
         <button id="lockBtn1" class="lock-btn-slot" onclick="toggleLock(1)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner1" class="winner-box"></div>
     </div>
@@ -135,7 +136,7 @@
         <h2>OBSTAWIANIE:</h2><span class="target-label" id="targetName2">---</span>
         <div class="table-wrapper"><table id="table2"></table></div>
         <div id="stoppedTime2" style="text-align:center; margin-top:10px; font-weight:bold; color:var(--cyan); font-size: 11px;"></div>
-        <div class="action-group"><button class="stop-btn" onclick="stopSlot(2)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ</button></div>
+        <div class="action-group"><button id="stopBtn2" class="stop-btn" onclick="stopSlot(2)">STOP</button><button class="clear-slot-btn" onclick="clearSlot(2)">WYCZYŚĆ</button></div>
         <button id="lockBtn2" class="lock-btn-slot" onclick="toggleLock(2)">⛔ ZAMKNIJ LISTĘ ⛔</button>
         <div id="winner2" class="winner-box"></div>
     </div>
@@ -268,37 +269,68 @@ function triggerStopEffect(id, timestamp, winners) {
     
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
+    // Wyłącz przycisk po otrzymaniu stanu (dla pewności)
+    const btn = document.getElementById(`stopBtn${id}`);
+    if(btn) { btn.disabled = true; btn.textContent = "STOP"; }
+
     startCelebration(); 
     renderTable(id, timestamp/1000); // Odśwież tabelę (użyje teraz savedWinners)
 }
 
 // --- LOGIKA PRZYCISKU STOP (ZAPIS DO BAZY) ---
 window.stopSlot = async (id) => {
+    // 0. Zablokuj przycisk natychmiast (UI Feedback)
+    const btn = document.getElementById(`stopBtn${id}`);
+    if(btn) {
+        btn.disabled = true;
+        btn.textContent = "ZAPIS...";
+    }
+
+    // 1. BEZPIECZNIK: Sprawdź w bazie czy już nie jest zatrzymane
+    // To zapobiega podwójnemu naliczaniu jeśli ktoś ma laga
+    try {
+        const checkSnap = await getDoc(appStateRef);
+        if (checkSnap.exists()) {
+            const data = checkSnap.data();
+            if (data[`stop${id}`]) {
+                console.log("Slot już zatrzymany przez kogoś innego.");
+                return; // PRZERYWAMY - nie zapisuj drugi raz!
+            }
+        }
+    } catch(e) {
+        console.error("Błąd sprawdzania stanu:", e);
+        if(btn) { btn.disabled = false; btn.textContent = "STOP"; } // Odblokuj w razie błędu sieci
+        return;
+    }
+
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-    if(!slotData.length) return;
+    if(!slotData.length) {
+        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
+        return;
+    }
+
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
-    // 1. Sortujemy WSZYSTKICH względem czasu stopu
+    // 2. Sortujemy WSZYSTKICH względem czasu stopu
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     
     let playersWithPoints = [], rank = 1;
-    // 2. Tworzymy listę WSZYSTKICH graczy
+    // 3. Tworzymy listę WSZYSTKICH graczy
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
         const pts = (rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0);
         
-        // WAŻNE: Dodajemy "hour", żeby nie było undefined w zamrożonym widoku
         playersWithPoints.push({ 
             name: sorted[i].name, 
-            hour: sorted[i].hour, // <--- NAPRAWA "undefined"
+            hour: sorted[i].hour, 
             points: pts, 
             rank: rank, 
             id: sorted[i].id 
         });
     }
 
-    // 3. Rozdajemy punkty (tylko Top 3)
+    // 4. Rozdajemy punkty (tylko Top 3)
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
@@ -306,11 +338,11 @@ window.stopSlot = async (id) => {
         }
     }
     
-    // 4. Historia
+    // 5. Historia
     const top3 = playersWithPoints.filter(p => p.rank <= 3);
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: top3 });
 
-    // 5. Zapisujemy PEŁNĄ listę graczy do bazy jako "zamrożoną"
+    // 6. Zapisujemy PEŁNĄ listę graczy do bazy jako "zamrożoną"
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
         [`winners${id}`]: playersWithPoints 
@@ -345,48 +377,34 @@ onSnapshot(appStateRef, (snap) => {
 
     // --- SLOT 1 ---
     if (data.stop1) {
-        if (!isStopped1) startCelebration();
-        isStopped1 = true;
-        savedWinners1 = data.winners1; // Pobierz PEŁNĄ listę z bazy
-        
-        document.getElementById("panel1").classList.add('frozen');
-        document.getElementById("stoppedTime1").textContent = "ZATRZYMANO: " + new Date(data.stop1).toLocaleTimeString("pl-PL");
-        
-        // W boxie tylko Top 3
-        const winnersList = (savedWinners1 || []).filter(p => p.rank <= 3);
-        document.getElementById("winner1").style.display = "block";
-        document.getElementById("winner1").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
-        
-        renderTable(1, 0); // Renderuj "zamrożoną" tabelę
+        if (!isStopped1) triggerStopEffect(1, data.stop1, data.winners1 || []);
     } else {
         isStopped1 = false;
         savedWinners1 = null;
         document.getElementById("panel1").classList.remove("frozen");
         document.getElementById("winner1").style.display = "none";
         document.getElementById("stoppedTime1").textContent = "";
+        
+        // Reset przycisku STOP
+        const btn = document.getElementById("stopBtn1");
+        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
+        
         renderTable(1, 0); 
     }
 
     // --- SLOT 2 ---
     if (data.stop2) {
-        if (!isStopped2) startCelebration();
-        isStopped2 = true;
-        savedWinners2 = data.winners2;
-        
-        document.getElementById("panel2").classList.add('frozen');
-        document.getElementById("stoppedTime2").textContent = "ZATRZYMANO: " + new Date(data.stop2).toLocaleTimeString("pl-PL");
-        
-        const winnersList = (savedWinners2 || []).filter(p => p.rank <= 3);
-        document.getElementById("winner2").style.display = "block";
-        document.getElementById("winner2").innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
-        
-        renderTable(2, 0);
+        if (!isStopped2) triggerStopEffect(2, data.stop2, data.winners2 || []);
     } else {
         isStopped2 = false;
         savedWinners2 = null;
         document.getElementById("panel2").classList.remove("frozen");
         document.getElementById("winner2").style.display = "none";
         document.getElementById("stoppedTime2").textContent = "";
+        
+        const btn = document.getElementById("stopBtn2");
+        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
+
         renderTable(2, 0);
     }
 });
