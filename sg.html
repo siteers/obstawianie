@@ -79,7 +79,7 @@
     #delete-user-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #151b26; border: 1px solid #ff4757; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
 
-    /* --- ZEMSTA 2.0 (BAN & QUIZ) - POPRAWKI MOBILE --- */
+    /* --- ZEMSTA 2.0 (BAN & QUIZ) --- */
     #revenge-overlay { 
         position: fixed; inset: 0; background: black; z-index: 9999; 
         display: none; align-items: center; justify-content: center; 
@@ -136,13 +136,11 @@
         <input type="password" id="userPass" placeholder="Hasło dostępu">
         <div class="auth-links">
             <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
-            <a class="auth-link" onclick="publicRegister()">Zarejestruj się (Nowy gracz)</a>
-        </div>
+            </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
-            <div>Update (03.02.2026) V.414 - Od teraz każdy użytkownik może złożyć tylko jeden podpis</div>
-            <div>Update (28.01.2026) V.398 - Naciśnięcie stop na dowolnym komputerze wywoła animacje na każdym innym z otwartą lista.html</div>
-            <div>Update (28.01.2026) V.394 - Wprowadzono centralne logowanie na stronie głównej</div>
+            <div>Update (04.02.2026) V.416 - Zaostrzono rygor dla Grześka Sz (1000 pytań)</div>
+            <div>Update (04.02.2026) V.416 - Zarządzanie graczami tylko dla Admina</div>
         </div>
     </div>
   </div>
@@ -159,6 +157,8 @@
       </div>
       <div id="admin-buttons" style="display:none;">
           <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
+          <button class="btn-cyber btn-main" onclick="adminAddUser()">➕ Dodaj Gracza</button>
+          <button class="btn-cyber btn-main" onclick="adminEditUserFlow()">✏️ Edytuj Nazwę</button>
           <button class="btn-cyber btn-delete-user" onclick="deleteUserFlow()">❌ Usuń Gracza</button>
       </div>
     </div>
@@ -173,11 +173,11 @@
 
   <div id="delete-user-modal">
       <div class="modal-content">
-          <h3 style="color: #ff4757; margin-top:0;">USUWANIE GRACZA</h3>
+          <h3 id="modal-title" style="color: #ff4757; margin-top:0;">USUWANIE GRACZA</h3>
           <select id="userDeleteSelect"><option value="" disabled selected>Wczytywanie...</option></select>
           <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
               <button class="btn-cyber" style="background:transparent; border:1px solid #555; padding:15px;" onclick="closeDeleteModal()">Anuluj</button>
-              <button class="btn-cyber" style="background:linear-gradient(135deg, #ff0000, #990000); padding:15px;" onclick="confirmDeleteUser()">USUŃ</button>
+              <button id="modal-action-btn" class="btn-cyber" style="background:linear-gradient(135deg, #ff0000, #990000); padding:15px;" onclick="confirmDeleteUser()">USUŃ</button>
           </div>
       </div>
   </div>
@@ -188,7 +188,7 @@
       <div id="ban-screen">
           <h1 id="ban-header">BAN ADMINISTRACYJNY</h1>
           <div id="countdown-timer">00:00:00:00</div>
-          <div id="ban-info">KONIEC BANU: 10.02.2026 00:00</div>
+          <div id="ban-info">KONIEC BANU: 11.02.2026 00:00</div>
           <br><br>
           <button class="btn-cyber" style="width: auto; padding: 15px 40px; border: 1px solid var(--gold); color: var(--gold);" onclick="startMilionerzy()">SKOŃCZ BAN WCZEŚNIEJ</button>
       </div>
@@ -198,7 +198,7 @@
               <div class="loader"></div>
               <div style="color:var(--cyan); font-size:12px; letter-spacing:1px;">WERYFIKACJA INTELIGENCJI...</div>
           </div>
-          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 100</h3>
+          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 1000</h3>
           <div id="q-text" class="quiz-question">...</div>
           <div id="q-options" class="quiz-options"></div>
       </div>
@@ -267,31 +267,13 @@
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
       if(cheatClicks >= 5) {
-           currentQ = 98; 
-           alert("[ADMIN CHEAT ACTIVATED] Skok do pytania 99.");
+           currentQ = 998; 
+           alert("[ADMIN CHEAT ACTIVATED] Skok do pytania 999.");
            nextQuestion();
            cheatClicks = 0;
       }
       setTimeout(() => { cheatClicks = 0; }, 1000);
   });
-
-  const mediumTrivia = [
-      { q: "Stolica Australii?", a: ["Canberra", "Sydney", "Melbourne", "Brisbane"] },
-      { q: "Autor 'Lalki'?", a: ["B. Prus", "H. Sienkiewicz", "A. Mickiewicz", "J. Kochanowski"] },
-      { q: "Symbol chemiczny złota?", a: ["Au", "Ag", "Fe", "Pb"] },
-      { q: "Ile wynosi liczba Pi (przybliżenie)?", a: ["3.14", "2.14", "4.13", "3.41"] },
-      { q: "Najwyższy szczyt Afryki?", a: ["Kilimandżaro", "Mount Kenya", "Ruwenzori", "Atlas"] },
-      { q: "W którym roku wybuchła I wojna światowa?", a: ["1914", "1918", "1939", "1920"] },
-      { q: "Jakie jest największe zwierzę na świecie?", a: ["Płetwal błękitny", "Słoń afrykański", "Rekin wielorybi", "Orka"] },
-      { q: "Stolica Kanady?", a: ["Ottawa", "Toronto", "Vancouver", "Montreal"] },
-      { q: "Kto namalował 'Mona Lisę'?", a: ["Leonardo da Vinci", "Michelangelo", "Raphael", "Donatello"] },
-      { q: "Ile zer ma miliard?", a: ["9", "6", "12", "8"] },
-      { q: "Który kontynent jest najmniejszy?", a: ["Australia", "Europa", "Antarktyda", "Ameryka Płd"] },
-      { q: "Jak nazywa się polska noblistka z 2018 roku?", a: ["Olga Tokarczuk", "Wisława Szymborska", "Maria Curie-Skłodowska", "Hanna Krall"] },
-      { q: "Ile kości ma dorosły człowiek?", a: ["206", "200", "212", "198"] },
-      { q: "Stolica Japonii?", a: ["Tokio", "Kioto", "Osaka", "Hiroszima"] },
-      { q: "Jaka jest waluta Wielkiej Brytanii?", a: ["Funt szterling", "Euro", "Dolar", "Frank"] }
-  ];
 
   const hardTrivia = [
       { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
@@ -311,34 +293,32 @@
   ];
 
   function generateQuestion(idx) {
-      if (idx < 20) return prepareQ(mediumTrivia[idx % mediumTrivia.length]);
-      else {
-          const rnd = Math.random();
-          if (rnd < 0.7) {
-              const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
-              return prepareQ(hQ);
+      const rnd = Math.random();
+      // Więcej Hard Trivia lub Matmy
+      if (rnd < 0.4) {
+          const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
+          return prepareQ(hQ);
+      } else {
+          // Generowanie TRUDNYCH zadań matematycznych (Mnożenie dwucyfrowe, dodawanie setek)
+          const opType = Math.random() > 0.5 ? 'mul' : 'add';
+          let a, b, correct, qStr;
+          if(opType === 'mul') {
+              a = Math.floor(Math.random() * 90) + 10; b = Math.floor(Math.random() * 20) + 2;
+              correct = a * b; qStr = `${a} * ${b} = ?`;
           } else {
-              const opType = Math.random() > 0.5 ? 'mul' : 'add';
-              let a, b, correct, qStr;
-              if(opType === 'mul') {
-                  a = Math.floor(Math.random() * 90) + 10; b = Math.floor(Math.random() * 9) + 2;
-                  correct = a * b; qStr = `${a} * ${b} = ?`;
-              } else {
-                  a = Math.floor(Math.random() * 900) + 100; b = Math.floor(Math.random() * 900) + 100;
-                  correct = a + b; qStr = `${a} + ${b} = ?`;
-              }
-              const answers = [correct.toString()];
-              while(answers.length < 4) {
-                  let fake = correct + (Math.floor(Math.random() * 20) - 10); 
-                  if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString());
-              }
-              return { q: qStr, a: answers, correct: correct.toString() };
+              a = Math.floor(Math.random() * 900) + 100; b = Math.floor(Math.random() * 900) + 100;
+              correct = a + b; qStr = `${a} + ${b} = ?`;
           }
+          const answers = [correct.toString()];
+          while(answers.length < 4) {
+              let fake = correct + (Math.floor(Math.random() * 40) - 20); 
+              if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString());
+          }
+          return { q: qStr, a: answers, correct: correct.toString() };
       }
   }
 
   function prepareQ(item) {
-      // Poprawna odpowiedź to zawsze pierwsza w tablicy (według definicji w bazie)
       return { q: item.q, a: item.a, correct: item.a[0] };
   }
 
@@ -365,7 +345,8 @@
   }
 
   function startBanTimer() {
-      const targetDate = new Date("2026-02-10T00:00:00").getTime();
+      // NOWA DATA: 11.02.2026
+      const targetDate = new Date("2026-02-11T00:00:00").getTime();
       setInterval(() => {
           const now = new Date().getTime();
           const dist = targetDate - now;
@@ -386,7 +367,8 @@
   };
 
   function nextQuestion() {
-      if (currentQ >= 100) { preparePenance(); return; }
+      // LIMIT ZWIĘKSZONY DO 1000
+      if (currentQ >= 1000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
       loading.style.display = "flex"; 
@@ -440,32 +422,88 @@
 
   window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
 
-  window.publicRegister = async () => { 
-      const n = prompt("Jak chcesz się nazywać?"); if(!n) return;
+  // --- ADMIN FUNCTIONS ---
+  window.adminAddUser = async () => {
+      const n = prompt("Nazwa nowego gracza:"); if(!n) return;
       const check = await getDoc(doc(db, "passwords", n));
       if(check.exists()) return alert("Taki użytkownik już istnieje!");
       const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
       await setDoc(doc(db, "passwords", n), { password: p });
-      alert("Witaj " + n + "! Możesz się teraz zalogować.");
+      alert("Dodano gracza: " + n);
   };
-  window.forgotPassword = async () => { 
-      const n = document.getElementById('userSelect').value; 
-      if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
-      if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
-          const newP = prompt("Podaj nowe hasło:");
-          if(newP) { await setDoc(doc(db, "passwords", n), { password: newP }, { merge: true }); alert("Hasło zmienione."); }
-      } else triggerNightmare();
-  };
-  window.deleteUserFlow = async () => { 
+
+  // Logika Edycji (Otwiera Modal)
+  window.adminEditUserFlow = async () => {
       const modal = document.getElementById('delete-user-modal');
       const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "EDYTUJ NAZWĘ GRACZA";
+      title.style.color = "#d4af37";
+      actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
+      actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
+      
+      // Nadpisujemy funkcję onclick dla tego trybu
+      actionBtn.onclick = confirmEditUser;
+
       select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
       modal.style.display = 'flex';
       const snap = await getDocs(collection(db, "passwords"));
       select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
       snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
   };
+
+  window.confirmEditUser = async () => {
+      const oldName = document.getElementById('userDeleteSelect').value;
+      if (!oldName) return alert("Wybierz gracza!");
+      
+      const newName = prompt("Podaj NOWĄ nazwę dla " + oldName + ":");
+      if (!newName || newName === oldName) return;
+
+      const check = await getDoc(doc(db, "passwords", newName));
+      if(check.exists()) return alert("Taka nazwa już istnieje!");
+
+      if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
+          // 1. Kopiuj hasło
+          const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
+          await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
+          await deleteDoc(doc(db, "passwords", oldName));
+
+          // 2. Kopiuj ranking (jeśli istnieje)
+          const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
+          if (oldRankDoc.exists()) {
+              await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
+              await deleteDoc(doc(db, "ranking", oldName));
+          }
+
+          alert("Nazwa zmieniona pomyślnie.");
+          closeDeleteModal();
+      }
+  };
+
+  // Standardowe usuwanie (Otwiera ten sam modal, ale w trybie usuwania)
+  window.deleteUserFlow = async () => { 
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "USUWANIE GRACZA";
+      title.style.color = "#ff4757";
+      actionBtn.innerText = "USUŃ";
+      actionBtn.style.background = "linear-gradient(135deg, #ff0000, #990000)";
+      actionBtn.onclick = confirmDeleteUser;
+
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
+
   window.closeDeleteModal = () => document.getElementById('delete-user-modal').style.display = 'none';
+  
   window.confirmDeleteUser = async () => { 
       const userToDelete = document.getElementById('userDeleteSelect').value;
       if (!userToDelete) return alert("Wybierz gracza z listy!");
@@ -473,6 +511,15 @@
           await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
           alert("Gracz usunięty."); closeDeleteModal();
       }
+  };
+
+  window.forgotPassword = async () => { 
+      const n = document.getElementById('userSelect').value; 
+      if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
+      if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
+          const newP = prompt("Podaj nowe hasło:");
+          if(newP) { await setDoc(doc(db, "passwords", n), { password: newP }, { merge: true }); alert("Hasło zmienione."); }
+      } else triggerNightmare();
   };
 
   function triggerNightmare() {
