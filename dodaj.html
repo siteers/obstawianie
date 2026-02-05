@@ -70,10 +70,15 @@
     .btn-cyber:active { transform: scale(0.96); }
     .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; opacity: 0.7; cursor: not-allowed; }
     
+    /* STYL PRZYCISKU POWROTU */
     .btn-back { 
-        display: block; margin-top: 15px; font-size: 11px; color: var(--cyan); 
-        text-decoration: none; font-weight: bold; cursor: pointer; 
+        display: block; width: 100%; padding: 15px; margin-top: 15px; 
+        background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); 
+        color: #aaa; text-decoration: none; font-size: 11px; font-weight: bold; 
+        text-transform: uppercase; letter-spacing: 1px; border-radius: 15px; 
+        box-sizing: border-box; transition: 0.2s; cursor: pointer;
     }
+    .btn-back:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
 
     #msg { margin-top: 20px; font-size: 12px; font-weight: 900; min-height: 20px; text-transform: uppercase; }
   </style>
@@ -108,7 +113,7 @@
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
       
-      <a href="sg.html" class="btn-back">← WRÓĆ DO MENU</a>
+      <button onclick="window.close(); window.location.href='sg.html'" class="btn-back">← WRÓĆ DO HUB</button>
       
       <p id="msg"></p>
     </div>
@@ -178,7 +183,6 @@ window.saveData = async function() {
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn');
     
-    // Podwójne zabezpieczenie przed kliknięciem, gdy przycisk jest nieaktywny (np. przez Enter)
     if (btn.disabled) return;
 
     btn.disabled = true;
