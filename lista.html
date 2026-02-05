@@ -29,16 +29,19 @@
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         
         /* ZMIANA W TOP NAV - Grupowanie */
-        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 100; }
+        .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 100; flex-wrap: wrap; gap: 10px;}
         .nav-right { display: flex; gap: 10px; align-items: center; }
+        .nav-left { display: flex; gap: 10px; align-items: center; }
 
-        #darkModeBtn, #muteBtn { 
+        #darkModeBtn, #muteBtn, .btn-back { 
             padding: 10px 15px; border-radius: 30px !important; border: 1px solid var(--border); 
             cursor: pointer; background: #fff; color: #111; font-weight: bold; 
-            display: flex; align-items: center; justify-content: center;
+            display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px;
         }
-        body.dark #darkModeBtn, body.dark #muteBtn { background: #111; color: #fff; }
+        body.dark #darkModeBtn, body.dark #muteBtn, body.dark .btn-back { background: #111; color: #fff; }
         
+        .btn-back { background: var(--cyan) !important; color: #000 !important; border: none !important;}
+
         .admin-config { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--gold); display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100; }
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
@@ -89,7 +92,7 @@
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
         .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; position: relative; z-index: 60; }
         .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
-        .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); } /* STYL DLA ZABLOKOWANEGO PRZYCISKU */
+        .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); } 
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .lock-btn-slot { width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff; z-index: 60; position: relative; }
         .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; z-index: 60; position: relative; }
@@ -106,7 +109,10 @@
 <canvas id="bg-canvas"></canvas>
 
 <div class="top-nav">
-    <button id="darkModeBtn">☀️ Light mode</button>
+    <div class="nav-left">
+        <a href="sg.html" class="btn-back">← WRÓĆ</a>
+        <button id="darkModeBtn">☀️ Light mode</button>
+    </div>
     <div class="nav-right">
         <button id="muteBtn" onclick="toggleMute()">🔊</button>
         <a href="ranking.html" target="_blank" style="padding: 10px 20px; background: var(--gold); border-radius: 30px; text-decoration: none; color: #000; font-weight: bold;">🏆 Ranking</a>
