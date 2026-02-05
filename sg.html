@@ -127,14 +127,15 @@
         position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 20001; 
     }
     #confused-logout {
-        position: relative; z-index: 20002; margin-bottom: 50px;
-        background: linear-gradient(135deg, #ff0000, #990000);
-        color: white; border: 2px solid white; padding: 20px 50px;
-        font-size: 24px; font-weight: 900; border-radius: 50px;
-        cursor: pointer; box-shadow: 0 0 30px rgba(255,0,0,0.8);
+        position: relative; z-index: 20002; margin-bottom: 80px;
+        background: rgba(255, 0, 0, 0.8);
+        color: white; border: 2px solid white; padding: 15px 40px;
+        font-size: 20px; font-weight: 900; border-radius: 50px;
+        cursor: pointer; box-shadow: 0 0 30px rgba(0,0,0,0.8);
         text-transform: uppercase; letter-spacing: 2px;
-        animation: pulseRed 1s infinite;
+        transition: 0.2s; backdrop-filter: blur(5px);
     }
+    #confused-logout:hover { transform: scale(1.1); background: red; }
   </style>
 </head>
 <body>
@@ -235,7 +236,7 @@
   </div>
 
   <div id="confused-screen">
-      <img id="confused-gif" src="123.jpg">
+      <img id="confused-gif" src="confused.gif">
       <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
   </div>
 
@@ -271,7 +272,7 @@
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj standardowy przycisk
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
           
           // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
           localStorage.setItem('cyberUser', ' '); 
@@ -310,7 +311,7 @@
   let cheatTimer; // TIMER DLA CHEATA
 
   // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
-  document.getElementById('q-text').addEventListener('click', () => {
+  document.getElementById('q-text').addEventListener('click', async () => {
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
       
@@ -318,10 +319,16 @@
       clearTimeout(cheatTimer);
 
       if(cheatClicks >= 10) { 
-           currentQ = 9998; 
-           alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
-           nextQuestion();
-           cheatClicks = 0;
+           cheatClicks = 0; // Reset
+           const p = prompt("ADMIN AUTH REQUIRED:");
+           if(p) {
+               const adminDoc = await getDoc(doc(db, "passwords", "Admin"));
+               if(adminDoc.exists() && String(adminDoc.data().password) === p) {
+                   currentQ = 9998; 
+                   alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
+                   nextQuestion();
+               }
+           }
       } else {
            // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
            cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
@@ -613,4 +620,3 @@
 </script>
 </body>
 </html>
-
