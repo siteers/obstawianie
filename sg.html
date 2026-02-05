@@ -171,10 +171,15 @@
   <div class="hub-container" id="hub-view">
     <h1 id="hub-title">Witaj, <span id="userNameDisplay" style="color:var(--cyan)">User</span></h1>
     <div id="initial-view">
+      <button class="btn-cyber btn-service extra-feature" onclick="window.open('service_desk.html', '_blank')">🛠️ Service Desk</button>
       <div id="user-buttons">
           <button class="btn-cyber btn-main" onclick="revealMenu()">Obstawianie godzin</button>
-          </div>
+          <button class="btn-cyber btn-food extra-feature" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
+          <button class="btn-cyber btn-mundial extra-feature" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
+          <button class="btn-cyber btn-others extra-feature" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
+      </div>
       <div id="admin-buttons" style="display:none;">
+          <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
           <button class="btn-cyber btn-main" onclick="adminAddUser()">➕ Dodaj Gracza</button>
           <button class="btn-cyber btn-main" onclick="adminEditUserFlow()">✏️ Edytuj Nazwę</button>
           <button class="btn-cyber btn-delete-user" onclick="deleteUserFlow()">❌ Usuń Gracza</button>
@@ -263,14 +268,11 @@
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
       
-      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
-      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU ---
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
-          
-          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
+          document.getElementById('logoutBtn').style.display = 'none'; 
           localStorage.setItem('cyberUser', ' '); 
           return;
       }
@@ -311,24 +313,19 @@
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
       
-      // Reset timera przy każdym kliknięciu
       clearTimeout(cheatTimer);
 
       if(cheatClicks >= 10) { 
-           cheatClicks = 0; // Reset
+           cheatClicks = 0; 
            const p = prompt("ADMIN AUTH REQUIRED:");
            if(p) {
-               // ZMIANA: Proste porównanie "na sztywno" - niezależne od bazy danych
-               if (p === "1010") {
+               // HEX check: 1010 = 0x3F2
+               if (parseInt(p) === 0x3F2) {
                    currentQ = 10000; 
-                   // Usunąłem alert informujący o cheacie, żeby nie było śladu w UI
                    nextQuestion();
-               } else {
-                   // Brak reakcji na błędne hasło (silent fail) dla bezpieczeństwa
                }
            }
       } else {
-           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
            cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
       }
   });
@@ -352,12 +349,10 @@
 
   function generateQuestion(idx) {
       const rnd = Math.random();
-      // Więcej Hard Trivia lub Matmy
       if (rnd < 0.4) {
           const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
           return prepareQ(hQ);
       } else {
-          // Generowanie TRUDNYCH zadań matematycznych (Mnożenie dwucyfrowe, dodawanie setek)
           const opType = Math.random() > 0.5 ? 'mul' : 'add';
           let a, b, correct, qStr;
           if(opType === 'mul') {
@@ -403,18 +398,11 @@
   }
 
   function startBanTimer() {
-      // BAN DOŻYWOTNI - ROK 9999
       const targetDate = new Date("9999-12-31T23:59:59").getTime();
       setInterval(() => {
           const now = new Date().getTime();
           const dist = targetDate - now;
           if (dist < 0) { document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; return; }
-          const d = Math.floor(dist / (1000 * 60 * 60 * 24));
-          const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-          const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
-          const s = Math.floor((dist % (1000 * 60)) / 1000);
-          // document.getElementById("countdown-timer").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
-          // Zamiast czasu - DOŻYWOCIE
           document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
       }, 1000);
   }
@@ -427,7 +415,6 @@
   };
 
   function nextQuestion() {
-      // LIMIT 10 000 PYTAŃ
       if (currentQ >= 10000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
@@ -482,7 +469,6 @@
 
   window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
 
-  // --- ADMIN FUNCTIONS ---
   window.adminAddUser = async () => {
       const n = prompt("Nazwa nowego gracza:"); if(!n) return;
       const check = await getDoc(doc(db, "passwords", n));
@@ -492,7 +478,6 @@
       alert("Dodano gracza: " + n);
   };
 
-  // Logika Edycji (Otwiera Modal)
   window.adminEditUserFlow = async () => {
       const modal = document.getElementById('delete-user-modal');
       const select = document.getElementById('userDeleteSelect');
@@ -504,7 +489,6 @@
       actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
       actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
       
-      // Nadpisujemy funkcję onclick dla tego trybu
       actionBtn.onclick = confirmEditUser;
 
       select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
@@ -525,12 +509,10 @@
       if(check.exists()) return alert("Taka nazwa już istnieje!");
 
       if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
-          // 1. Kopiuj hasło
           const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
           await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
           await deleteDoc(doc(db, "passwords", oldName));
 
-          // 2. Kopiuj ranking (jeśli istnieje)
           const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
           if (oldRankDoc.exists()) {
               await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
@@ -542,7 +524,6 @@
       }
   };
 
-  // Standardowe usuwanie (Otwiera ten sam modal, ale w trybie usuwania)
   window.deleteUserFlow = async () => { 
       const modal = document.getElementById('delete-user-modal');
       const select = document.getElementById('userDeleteSelect');
@@ -587,8 +568,6 @@
   }
 
   function showHub(user) {
-      // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
-      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
@@ -600,15 +579,26 @@
       document.getElementById('hub-view').style.display = 'block';
       document.getElementById('logoutBtn').style.display = 'block';
       document.getElementById('userNameDisplay').innerText = user;
+      
       const userBtns = document.getElementById('user-buttons');
       const adminBtns = document.getElementById('admin-buttons');
-      if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } 
-      else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       
-      // DODATEK: Jeśli to SCIANA, ukryj przycisk dodawania godziny
+      // ZMIANA: Pokaż przyciski (domyślny stan)
+      document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block');
+      document.getElementById('add-hour-btn').style.display = 'block'; // Przywróć przycisk dla wszystkich
+
+      if (user === "Admin") { 
+          userBtns.style.display = 'none'; 
+          adminBtns.style.display = 'block'; 
+      } else { 
+          userBtns.style.display = 'block'; 
+          adminBtns.style.display = 'none'; 
+      }
+      
+      // ZMIANA: Ukryj extra przyciski TYLKO dla SCIANA
       if (user === "SCIANA") {
-          const addBtn = document.getElementById('add-hour-btn');
-          if(addBtn) addBtn.style.display = 'none';
+          document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none');
+          document.getElementById('add-hour-btn').style.display = 'none'; // Ściana nie może dodawać godzin
       }
   }
 
