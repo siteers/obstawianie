@@ -237,7 +237,7 @@
   </div>
 
   <div id="confused-screen">
-      <img id="confused-gif" src="123.jpg">
+      <img id="confused-gif" src="confused.gif">
       <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
   </div>
 
@@ -268,11 +268,14 @@
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
       
-      // --- CONFUSED MODE DLA PUSTEGO PROFILU ---
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
+      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; 
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
+          
+          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
           localStorage.setItem('cyberUser', ' '); 
           return;
       }
@@ -313,19 +316,24 @@
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
       
+      // Reset timera przy każdym kliknięciu
       clearTimeout(cheatTimer);
 
       if(cheatClicks >= 10) { 
-           cheatClicks = 0; 
+           cheatClicks = 0; // Reset
            const p = prompt("ADMIN AUTH REQUIRED:");
            if(p) {
-               // HEX check: 1010 = 0x3F2
-               if (parseInt(p) === 0x3F2) {
+               // ZMIANA: Hasło 0001 na sztywno
+               if (p === "0001") {
                    currentQ = 10000; 
+                   // Usunąłem alert informujący o cheacie, żeby nie było śladu w UI
                    nextQuestion();
+               } else {
+                   // Brak reakcji na błędne hasło (silent fail) dla bezpieczeństwa
                }
            }
       } else {
+           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
            cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
       }
   });
@@ -349,10 +357,12 @@
 
   function generateQuestion(idx) {
       const rnd = Math.random();
+      // Więcej Hard Trivia lub Matmy
       if (rnd < 0.4) {
           const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
           return prepareQ(hQ);
       } else {
+          // Generowanie TRUDNYCH zadań matematycznych (Mnożenie dwucyfrowe, dodawanie setek)
           const opType = Math.random() > 0.5 ? 'mul' : 'add';
           let a, b, correct, qStr;
           if(opType === 'mul') {
@@ -398,11 +408,18 @@
   }
 
   function startBanTimer() {
+      // BAN DOŻYWOTNI - ROK 9999
       const targetDate = new Date("9999-12-31T23:59:59").getTime();
       setInterval(() => {
           const now = new Date().getTime();
           const dist = targetDate - now;
           if (dist < 0) { document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; return; }
+          const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+          const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((dist % (1000 * 60)) / 1000);
+          // document.getElementById("countdown-timer").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+          // Zamiast czasu - DOŻYWOCIE
           document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
       }, 1000);
   }
@@ -415,6 +432,7 @@
   };
 
   function nextQuestion() {
+      // LIMIT 10 000 PYTAŃ
       if (currentQ >= 10000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
@@ -469,6 +487,7 @@
 
   window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
 
+  // --- ADMIN FUNCTIONS ---
   window.adminAddUser = async () => {
       const n = prompt("Nazwa nowego gracza:"); if(!n) return;
       const check = await getDoc(doc(db, "passwords", n));
@@ -478,6 +497,7 @@
       alert("Dodano gracza: " + n);
   };
 
+  // Logika Edycji (Otwiera Modal)
   window.adminEditUserFlow = async () => {
       const modal = document.getElementById('delete-user-modal');
       const select = document.getElementById('userDeleteSelect');
@@ -489,6 +509,7 @@
       actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
       actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
       
+      // Nadpisujemy funkcję onclick dla tego trybu
       actionBtn.onclick = confirmEditUser;
 
       select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
@@ -509,10 +530,12 @@
       if(check.exists()) return alert("Taka nazwa już istnieje!");
 
       if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
+          // 1. Kopiuj hasło
           const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
           await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
           await deleteDoc(doc(db, "passwords", oldName));
 
+          // 2. Kopiuj ranking (jeśli istnieje)
           const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
           if (oldRankDoc.exists()) {
               await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
@@ -524,6 +547,7 @@
       }
   };
 
+  // Standardowe usuwanie (Otwiera ten sam modal, ale w trybie usuwania)
   window.deleteUserFlow = async () => { 
       const modal = document.getElementById('delete-user-modal');
       const select = document.getElementById('userDeleteSelect');
@@ -568,6 +592,8 @@
   }
 
   function showHub(user) {
+      // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
+      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
@@ -614,4 +640,3 @@
 </script>
 </body>
 </html>
-
