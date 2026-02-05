@@ -27,7 +27,7 @@
             overscroll-behavior-y: contain; user-select: none; -webkit-tap-highlight-color: transparent;
         }
         #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
-        .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; }
+        .dashboard-container { max-width: 1000px; margin: 0 auto; z-index: 10; position: relative; padding-top: 60px; /* Miejsce na przyciski */ }
         h1 { text-align: center; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-size: clamp(18px, 5vw, 24px); margin-bottom: 30px; }
         
         .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
@@ -90,14 +90,22 @@
         .xp-bar-container { background: rgba(255,255,255,0.1); height: 8px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
         .xp-bar-fill { background: var(--cyan); height: 100%; width: 0%; transition: 1s; box-shadow: 0 0 10px var(--cyan); }
         
-        #darkModeBtn { position: fixed; top: 15px; right: 15px; padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; z-index: 1000; }
-        body.dark #darkModeBtn { background: #f1f1f1; color: #111; }
+        /* PRZYCISKI GÓRNE */
+        .top-btn-container { position: fixed; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; }
+        #darkModeBtn, .btn-back { padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #111; color: white; text-decoration: none; font-size: 13px; display: flex; align-items: center; }
+        body.dark #darkModeBtn, body.dark .btn-back { background: #f1f1f1; color: #111; }
+        .btn-back { background: var(--cyan) !important; color: #000 !important; }
+        
         .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
     </style>
 </head>
 <body class="dark">
     <canvas id="bg-canvas"></canvas>
-    <button id="darkModeBtn">☀️ Light mode</button>
+    
+    <div class="top-btn-container">
+        <a href="sg.html" class="btn-back">← WRÓĆ</a>
+        <button id="darkModeBtn">☀️ Light mode</button>
+    </div>
 
     <div id="rpsOverlay">
         <span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span>
@@ -267,10 +275,8 @@
             const lastRoundWinners = historyData.length > 0 ? historyData[0].winners.map(w => w.name) : [];
             
             // --- POPRAWKA: POBIERANIE TRENDU Z ODWRÓCONEJ HISTORII ---
-            // Zamiast liczyć od zera, tworzymy stan "przed ostatnią rundą" odejmując punkty
             const currentRanks = {}; globalStats.forEach((p,i) => currentRanks[p.name] = i + 1);
             
-            // Obliczamy stan poprzedni przez odjęcie ostatniej rundy od stanu obecnego
             const prevStats = globalStats.map(p => ({...p})); // Kopia
             if(historyData.length > 0) {
                  const lastRound = historyData[0]; // Najnowsza runda
@@ -284,7 +290,6 @@
                      }
                  });
             }
-            // Sortujemy stan poprzedni
             prevStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
             const prevRanks = {}; 
             let lastR = 1;
@@ -310,7 +315,6 @@
                 const oldR = prevRanks[p.name] || curR;
 
                 let trendClass = "trend-neutral"; let trendSym = "―";
-                // Pokazuj trend tylko jeśli zmieniła się pozycja
                 if (curR < oldR) { trendClass = "trend-up"; trendSym = "▲"; }
                 else if (curR > oldR) { trendClass = "trend-down"; trendSym = "▼"; }
 
@@ -325,7 +329,6 @@
             updateCharts();
         }
 
-        // --- POPRAWIONA FUNKCJA WYKRESÓW (METODA ODWRÓCONA) ---
         function updateCharts() {
             const names = globalStats.map(s => s.name);
             medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
@@ -333,11 +336,10 @@
             pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.g,0), globalStats.reduce((a,b)=>a+b.s,0), globalStats.reduce((a,b)=>a+b.b,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
             lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avg), borderColor: '#d4af37', tension: 0.4 }] }; lineChart.update();
 
-            const roundsReversed = [...historyData]; // Od najnowszej do najstarszej (0 to najnowsza)
+            const roundsReversed = [...historyData]; 
             const numberOfRoundsToShow = 10;
             const historySteps = []; 
 
-            // 1. Zaczynamy od OBECNEGO stanu (jest pewny)
             let currentSnapshot = globalStats.map(p => ({
                 name: p.name,
                 points: p.points,
@@ -345,14 +347,10 @@
                 tb: p.tb || 0
             }));
 
-            // Zapisz stan obecny (Runda X)
             historySteps.push({ roundLabel: `Runda ${historyData.length}`, ranks: calculateRankMap(currentSnapshot) });
 
-            // 2. Cofamy się w czasie o 10 rund
             for (let i = 0; i < Math.min(numberOfRoundsToShow, roundsReversed.length); i++) {
                 const round = roundsReversed[i];
-                
-                // Cofnij punkty i medale zdobyte w tej rundzie
                 round.winners.forEach((w, idx) => {
                     const pStat = currentSnapshot.find(p => p.name === w.name);
                     if (pStat) {
@@ -365,8 +363,6 @@
                     }
                 });
 
-                // Zapisz stan PO COFNIĘCIU (czyli stan z poprzedniej rundy)
-                // Etykieta to np. Runda 23
                 if (historyData.length - 1 - i > 0) {
                      historySteps.push({ 
                          roundLabel: `Runda ${historyData.length - 1 - i}`, 
@@ -375,11 +371,10 @@
                 }
             }
 
-            // 3. Odwracamy kolejność, żeby na wykresie było chronologicznie
             historySteps.reverse();
 
             const datasets = playersData.map((p, idx) => {
-                const data = historySteps.map(step => step.ranks[p.name] || null); // null jeśli gracza nie było
+                const data = historySteps.map(step => step.ranks[p.name] || null); 
                 return {
                     label: p.name,
                     data: data,
@@ -396,16 +391,13 @@
             histChart.update();
         }
 
-        // Pomocnicza funkcja do obliczania rankingu z surowych danych
         function calculateRankMap(statsArray) {
-            // Kopia i sortowanie
             const sorted = [...statsArray].sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
             const rankMap = {};
             let lastRank = 1;
             sorted.forEach((p, i) => {
                 if(i > 0) {
                     const prev = sorted[i-1];
-                    // Jeśli statystyki są identyczne, ten sam ranking co poprzednik
                     if(!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) {
                         lastRank = i + 1;
                     }
