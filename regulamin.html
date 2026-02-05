@@ -108,7 +108,14 @@
         .btn-save { background: #28a745; color: white; }
         .btn-clear { background: #6c757d; color: white; }
         
-        input#signer-name { padding: 10px; width: 80%; max-width: 220px; margin-bottom: 15px; border-radius: 8px; border: 1px solid var(--border); background: rgba(0,0,0,0.5); color: #fff; text-align: center; }
+        input#signer-name { 
+            padding: 10px; width: 80%; max-width: 220px; margin-bottom: 15px; 
+            border-radius: 8px; border: 1px solid var(--border); 
+            background: rgba(0,0,0,0.5); color: #fff; text-align: center; 
+        }
+        input#signer-name:disabled {
+            opacity: 0.7; cursor: not-allowed; border-color: #444; color: #aaa;
+        }
 
         #history { margin-top: 50px; border-top: 1px solid var(--border); padding-top: 30px; }
         .sig-entry { display: flex; align-items: center; justify-content: space-between; padding: 15px; border-radius: 15px; background: rgba(255,255,255,0.03); margin-bottom: 10px; border: 1px solid var(--border); gap: 15px; }
@@ -196,7 +203,7 @@
                 <div id="signature-section">
                     <h3>✍️ Podpis Elektroniczny</h3>
                     <p>KROK 2: Wpisz imię i złóż podpis palcem na polu poniżej.</p>
-                    <input type="text" id="signer-name" placeholder="Twoje imię / ksywka">
+                    <input type="text" id="signer-name" placeholder="Twoje imię / ksywka" disabled>
                     <br>
                     <canvas id="sig-canvas" width="300" height="130"></canvas>
                     <div class="btns">
@@ -239,8 +246,12 @@
     };
 
     // Automatycznie wpisz imię zalogowanego użytkownika
-    if (currentUser !== "Admin") {
-        document.getElementById('signer-name').value = currentUser;
+    const nameInput = document.getElementById('signer-name');
+    nameInput.value = currentUser;
+    
+    // ZABEZPIECZENIE: Tylko Admin może edytować pole imienia
+    if (currentUser === "Admin") {
+        nameInput.disabled = false;
     }
 
     // --- SPRAWDZANIE CZY UŻYTKOWNIK JUŻ PODPISAŁ (Z UWZGLĘDNIENIEM STARYCH PODPISÓW) ---
@@ -348,11 +359,19 @@
     document.getElementById('clear-btn').onclick = () => ctx.clearRect(0,0,canvas.width,canvas.height);
     
     document.getElementById('save-btn').onclick = async () => {
-        const name = document.getElementById('signer-name').value;
-        if(!name) return alert("Podaj swoje imię!");
+        // ZABEZPIECZENIE: Pobierz imię. Jeśli to nie Admin, ZAWSZE używaj currentUser.
+        let nameToSave;
+        if (currentUser === "Admin") {
+            const inputVal = document.getElementById('signer-name').value;
+            if(!inputVal) return alert("Podaj imię!");
+            nameToSave = inputVal;
+        } else {
+            nameToSave = currentUser; // Wymuś prawdziwy login, nawet jak ktoś edytował HTML
+        }
+
         const imgData = canvas.toDataURL("image/png");
         await addDoc(collection(db, "signatures"), { 
-            name: name, 
+            name: nameToSave, 
             sig: imgData, 
             date: new Date().toLocaleString("pl-PL"), 
             ts: Date.now(),
