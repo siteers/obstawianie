@@ -85,7 +85,6 @@
         display: none; align-items: center; justify-content: center; 
         flex-direction: column; color: white; text-align: center; overflow: hidden;
     }
-    /* STYL DLA WIDEO (zamiast gifa) */
     #intro-video { 
         width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 10; 
     }
@@ -209,7 +208,7 @@
   </div>
 
   <div id="revenge-overlay">
-      <video id="intro-video" src="1234.mp4" autoplay muted playsinline style="display:none;"></video>
+      <video id="intro-video" src="1234.mp4" playsinline style="display:none;"></video>
       
       <div id="ban-screen">
           <h1 id="ban-header">BAN ADMINISTRACYJNY</h1>
@@ -323,7 +322,7 @@
            cheatClicks = 0; // Reset
            const p = prompt("ADMIN AUTH REQUIRED:");
            if(p) {
-               // HEX check: 0001
+               // ZMIANA: Hasło 0001 na sztywno
                if (p === "0001") {
                    currentQ = 10000; 
                    // Usunąłem alert informujący o cheacie, żeby nie było śladu w UI
@@ -396,9 +395,14 @@
       const overlay = document.getElementById('revenge-overlay');
       const video = document.getElementById('intro-video'); // POPRAWKA: VIDEO
       const banScreen = document.getElementById('ban-screen');
+      
       overlay.style.display = "flex";
       video.style.display = "block";
-      video.play().catch(()=>{}); 
+      
+      // ZMIANA: Wymuszenie dźwięku i odtwarzania w JS
+      video.muted = false; 
+      video.volume = 1.0;
+      video.play().catch(e => console.log("Autoplay blocked:", e)); 
       
       setTimeout(() => {
           video.style.display = "none";
@@ -579,6 +583,8 @@
   }
 
   function showHub(user) {
+      // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
+      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
@@ -594,8 +600,9 @@
       const userBtns = document.getElementById('user-buttons');
       const adminBtns = document.getElementById('admin-buttons');
       
+      // ZMIANA: Pokaż przyciski (domyślny stan)
       document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block');
-      document.getElementById('add-hour-btn').style.display = 'block';
+      document.getElementById('add-hour-btn').style.display = 'block'; // Przywróć przycisk dla wszystkich
 
       if (user === "Admin") { 
           userBtns.style.display = 'none'; 
@@ -605,9 +612,10 @@
           adminBtns.style.display = 'none'; 
       }
       
+      // ZMIANA: Ukryj extra przyciski TYLKO dla SCIANA
       if (user === "SCIANA") {
           document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none');
-          document.getElementById('add-hour-btn').style.display = 'none'; 
+          document.getElementById('add-hour-btn').style.display = 'none'; // Ściana nie może dodawać godzin
       }
   }
 
