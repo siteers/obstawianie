@@ -215,4 +215,389 @@
 
       <div id="penance-container">
           <h1>GRZESZYSZ GRZESIU...</h1>
-          <p>Mus
+          <p>Musisz przeprosić za każdy ze swoich podpisów:</p>
+          <img id="sin-preview" src="" alt="Twój podpis">
+          <span id="spam-count" style="font-size: 30px;">Pozostało: 0</span>
+          <br>
+          <button id="penance-btn" onclick="doPenance()">PRZEPRASZAM</button>
+      </div>
+  </div>
+
+  <div id="confused-screen">
+      <img id="confused-gif" src="confused.gif">
+  </div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  onSnapshot(collection(db, "passwords"), (snap) => {
+      const select = document.getElementById('userSelect');
+      select.innerHTML = `<option value="" disabled selected>Wybierz użytkownika</option><option disabled>──────────</option><option value="Admin">🔑 ADMIN SYSTEMU</option>`;
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.insertBefore(opt, select.children[1]); } });
+  });
+
+  const savedUser = localStorage.getItem('cyberUser');
+  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU) ---
+  if (savedUser === "Grzesiek Sz") {
+      localStorage.removeItem('cyberUser');
+  } 
+  else if (savedUser) {
+      showHub(savedUser);
+  }
+
+  window.login = async () => {
+      const user = document.getElementById('userSelect').value;
+      const pass = document.getElementById('userPass').value.trim();
+      
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
+      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
+      if ((user === " " || user.trim() === "") && pass === "aaaa") {
+          document.getElementById('confused-screen').style.display = 'flex';
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
+          
+          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
+          localStorage.setItem('cyberUser', ' '); 
+          return;
+      }
+
+      if(!user) return alert("Wybierz użytkownika!");
+
+      if (user === "Grzesiek Sz") {
+          const userDoc = await getDoc(doc(db, "passwords", user));
+          if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
+              startRevengeProtocol(user);
+          } else {
+              triggerNightmare();
+          }
+          return;
+      }
+
+      if(user === "Admin") {
+          if(pass === "1010") saveSession("Admin"); else triggerNightmare();
+          return;
+      }
+
+      try {
+          const userDoc = await getDoc(doc(db, "passwords", user));
+          if (userDoc.exists()) {
+              if (String(userDoc.data().password) === String(pass)) saveSession(user); else triggerNightmare();
+          } else alert("Brak hasła w bazie.");
+      } catch (error) { console.error(error); alert("Błąd połączenia."); }
+  };
+
+  let banTarget = "";
+  let currentQ = 0;
+  let sinsList = [];
+  let cheatClicks = 0;
+  let cheatTimer; // TIMER DLA CHEATA
+
+  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
+  document.getElementById('q-text').addEventListener('click', () => {
+      if(banTarget !== "Grzesiek Sz") return;
+      cheatClicks++;
+      
+      // Reset timera przy każdym kliknięciu
+      clearTimeout(cheatTimer);
+
+      if(cheatClicks >= 10) { 
+           currentQ = 9998; 
+           alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
+           nextQuestion();
+           cheatClicks = 0;
+      } else {
+           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
+           cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
+      }
+  });
+
+  const hardTrivia = [
+      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
+      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka", "Marcel Proust"] },
+      { q: "Rok upadku Cesarstwa Zachodniorzymskiego?", a: ["476 n.e.", "1453 n.e.", "395 n.e.", "410 n.e."] },
+      { q: "Najgłębsze jezioro świata?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie", "Jezioro Wiktorii"] },
+      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4", "0"] },
+      { q: "Odkrywca penicyliny?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Marie Curie"] },
+      { q: "Pierwiastek o symbolu W?", a: ["Wolfram", "Wanad", "Węgiel", "Wodór"] },
+      { q: "Rok Konstytucji 3 Maja?", a: ["1791", "1794", "1772", "1795"] },
+      { q: "Najgorętsza planeta?", a: ["Wenus", "Merkury", "Mars", "Jowisz"] },
+      { q: "Autor obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso", "Salvador Dali"] },
+      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik", "Fanerozoik"] },
+      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch", "Canberra"] },
+      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²", "1.602 x 10^-19"] },
+      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell", "Hermann Hesse"] }
+  ];
+
+  function generateQuestion(idx) {
+      const rnd = Math.random();
+      // Więcej Hard Trivia lub Matmy
+      if (rnd < 0.4) {
+          const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
+          return prepareQ(hQ);
+      } else {
+          // Generowanie TRUDNYCH zadań matematycznych (Mnożenie dwucyfrowe, dodawanie setek)
+          const opType = Math.random() > 0.5 ? 'mul' : 'add';
+          let a, b, correct, qStr;
+          if(opType === 'mul') {
+              a = Math.floor(Math.random() * 90) + 10; b = Math.floor(Math.random() * 20) + 2;
+              correct = a * b; qStr = `${a} * ${b} = ?`;
+          } else {
+              a = Math.floor(Math.random() * 900) + 100; b = Math.floor(Math.random() * 900) + 100;
+              correct = a + b; qStr = `${a} + ${b} = ?`;
+          }
+          const answers = [correct.toString()];
+          while(answers.length < 4) {
+              let fake = correct + (Math.floor(Math.random() * 40) - 20); 
+              if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString());
+          }
+          return { q: qStr, a: answers, correct: correct.toString() };
+      }
+  }
+
+  function prepareQ(item) {
+      return { q: item.q, a: item.a, correct: item.a[0] };
+  }
+
+  function shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+  }
+
+  function startRevengeProtocol(user) {
+      banTarget = user;
+      const overlay = document.getElementById('revenge-overlay');
+      const gif = document.getElementById('intro-gif');
+      const banScreen = document.getElementById('ban-screen');
+      overlay.style.display = "flex";
+      gif.style.display = "block";
+      setTimeout(() => {
+          gif.style.display = "none";
+          banScreen.style.display = "flex";
+          startBanTimer();
+      }, 3000); 
+  }
+
+  function startBanTimer() {
+      // BAN DOŻYWOTNI - ROK 9999
+      const targetDate = new Date("9999-12-31T23:59:59").getTime();
+      setInterval(() => {
+          const now = new Date().getTime();
+          const dist = targetDate - now;
+          if (dist < 0) { document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; return; }
+          const d = Math.floor(dist / (1000 * 60 * 60 * 24));
+          const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+          const s = Math.floor((dist % (1000 * 60)) / 1000);
+          // document.getElementById("countdown-timer").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+          // Zamiast czasu - DOŻYWOCIE
+          document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
+      }, 1000);
+  }
+
+  window.startMilionerzy = () => {
+      document.getElementById('ban-screen').style.display = "none";
+      document.getElementById('quiz-container').style.display = "block";
+      currentQ = 0;
+      nextQuestion();
+  };
+
+  function nextQuestion() {
+      // LIMIT 10 000 PYTAŃ
+      if (currentQ >= 10000) { preparePenance(); return; }
+      
+      const loading = document.getElementById('quiz-loading');
+      loading.style.display = "flex"; 
+      
+      setTimeout(() => {
+          loading.style.display = "none";
+          document.getElementById('q-num').innerText = currentQ + 1;
+          
+          const qObj = generateQuestion(currentQ);
+          const correctAnswer = qObj.correct;
+          const answers = [...qObj.a];
+          shuffle(answers); 
+
+          document.getElementById('q-text').innerText = qObj.q;
+          const optsDiv = document.getElementById('q-options');
+          optsDiv.innerHTML = "";
+          
+          answers.forEach(opt => {
+              const btn = document.createElement('button');
+              btn.className = 'quiz-btn';
+              btn.innerText = opt;
+              btn.onclick = () => {
+                  if (opt === correctAnswer) { currentQ++; nextQuestion(); } 
+                  else { alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!"); currentQ = 0; nextQuestion(); }
+              };
+              optsDiv.appendChild(btn);
+          });
+      }, 1500); 
+  }
+
+  async function preparePenance() {
+      document.getElementById('quiz-container').style.display = "none";
+      document.getElementById('penance-container').style.display = "block";
+      const legacyMapping = ["Gregorio Sz", "Grzesiek Sz"];
+      const snaps = await getDocs(collection(db, "signatures"));
+      sinsList = [];
+      snaps.forEach(d => {
+          const data = d.data();
+          if (data.author === banTarget || legacyMapping.includes(data.name)) sinsList.push(data.sig);
+      });
+      if (sinsList.length === 0) sinsList.push("0.jpg"); 
+      updatePenanceUI();
+  }
+
+  function updatePenanceUI() {
+      const count = sinsList.length;
+      document.getElementById('spam-count').innerText = "Pozostało: " + count;
+      if (count > 0) { document.getElementById('sin-preview').src = sinsList[count - 1]; } 
+      else { alert("KARA ODBYTA. MOŻESZ WEJŚĆ."); document.getElementById('revenge-overlay').style.display = "none"; saveSession(banTarget); }
+  }
+
+  window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
+
+  // --- ADMIN FUNCTIONS ---
+  window.adminAddUser = async () => {
+      const n = prompt("Nazwa nowego gracza:"); if(!n) return;
+      const check = await getDoc(doc(db, "passwords", n));
+      if(check.exists()) return alert("Taki użytkownik już istnieje!");
+      const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
+      await setDoc(doc(db, "passwords", n), { password: p });
+      alert("Dodano gracza: " + n);
+  };
+
+  // Logika Edycji (Otwiera Modal)
+  window.adminEditUserFlow = async () => {
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "EDYTUJ NAZWĘ GRACZA";
+      title.style.color = "#d4af37";
+      actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
+      actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
+      
+      // Nadpisujemy funkcję onclick dla tego trybu
+      actionBtn.onclick = confirmEditUser;
+
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
+
+  window.confirmEditUser = async () => {
+      const oldName = document.getElementById('userDeleteSelect').value;
+      if (!oldName) return alert("Wybierz gracza!");
+      
+      const newName = prompt("Podaj NOWĄ nazwę dla " + oldName + ":");
+      if (!newName || newName === oldName) return;
+
+      const check = await getDoc(doc(db, "passwords", newName));
+      if(check.exists()) return alert("Taka nazwa już istnieje!");
+
+      if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
+          // 1. Kopiuj hasło
+          const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
+          await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
+          await deleteDoc(doc(db, "passwords", oldName));
+
+          // 2. Kopiuj ranking (jeśli istnieje)
+          const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
+          if (oldRankDoc.exists()) {
+              await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
+              await deleteDoc(doc(db, "ranking", oldName));
+          }
+
+          alert("Nazwa zmieniona pomyślnie.");
+          closeDeleteModal();
+      }
+  };
+
+  // Standardowe usuwanie (Otwiera ten sam modal, ale w trybie usuwania)
+  window.deleteUserFlow = async () => { 
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "USUWANIE GRACZA";
+      title.style.color = "#ff4757";
+      actionBtn.innerText = "USUŃ";
+      actionBtn.style.background = "linear-gradient(135deg, #ff0000, #990000)";
+      actionBtn.onclick = confirmDeleteUser;
+
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
+
+  window.closeDeleteModal = () => document.getElementById('delete-user-modal').style.display = 'none';
+  
+  window.confirmDeleteUser = async () => { 
+      const userToDelete = document.getElementById('userDeleteSelect').value;
+      if (!userToDelete) return alert("Wybierz gracza z listy!");
+      if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
+          await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
+          alert("Gracz usunięty."); closeDeleteModal();
+      }
+  };
+
+  function triggerNightmare() {
+      const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); 
+      document.body.classList.add('nightmare-mode'); document.getElementById('loginCardElement').classList.add('nightmare-shake');
+      setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('loginCardElement').classList.remove('nightmare-shake'); }, 1000);
+  }
+
+  document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
+
+  function saveSession(user) {
+      localStorage.setItem('cyberUser', user);
+      showHub(user);
+  }
+
+  function showHub(user) {
+      // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
+      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
+      if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
+          document.getElementById('confused-screen').style.display = 'flex';
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+          return;
+      }
+
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('hub-view').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'block';
+      document.getElementById('userNameDisplay').innerText = user;
+      const userBtns = document.getElementById('user-buttons');
+      const adminBtns = document.getElementById('admin-buttons');
+      if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } 
+      else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
+  }
+
+  window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
+  window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
+  window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
+
+  const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+  let pts = [];
+  function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
+  function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw); }
+  window.onresize = init; init(); draw();
+</script>
+</body>
+</html>
