@@ -121,9 +121,20 @@
     /* CONFUSED MODE - Pełny ekran */
     #confused-screen { 
         position: fixed; inset: 0; background: black; z-index: 20000; 
-        display: none; align-items: center; justify-content: center;
+        display: none; flex-direction: column; align-items: center; justify-content: flex-end;
     }
-    #confused-gif { width: 100%; height: 100%; object-fit: contain; }
+    #confused-gif { 
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 20001; 
+    }
+    #confused-logout {
+        position: relative; z-index: 20002; margin-bottom: 50px;
+        background: linear-gradient(135deg, #ff0000, #990000);
+        color: white; border: 2px solid white; padding: 20px 50px;
+        font-size: 24px; font-weight: 900; border-radius: 50px;
+        cursor: pointer; box-shadow: 0 0 30px rgba(255,0,0,0.8);
+        text-transform: uppercase; letter-spacing: 2px;
+        animation: pulseRed 1s infinite;
+    }
   </style>
 </head>
 <body>
@@ -225,6 +236,7 @@
 
   <div id="confused-screen">
       <img id="confused-gif" src="confused.gif">
+      <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
   </div>
 
 <script type="module">
@@ -259,7 +271,7 @@
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj standardowy przycisk
           
           // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
           localStorage.setItem('cyberUser', ' '); 
