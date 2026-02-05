@@ -76,7 +76,7 @@
         background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); 
         color: #aaa; text-decoration: none; font-size: 11px; font-weight: bold; 
         text-transform: uppercase; letter-spacing: 1px; border-radius: 15px; 
-        box-sizing: border-box; transition: 0.2s; cursor: pointer;
+        box-sizing: border-box; transition: 0.2s; cursor: pointer; text-align: center;
     }
     .btn-back:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
 
@@ -113,7 +113,7 @@
 
       <button class="btn-cyber" id="saveBtn" onclick="saveData()" disabled>Zatwierdź Dane</button>
       
-      <button onclick="window.close(); window.location.href='sg.html'" class="btn-back">← WRÓĆ DO HUB</button>
+      <a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a>
       
       <p id="msg"></p>
     </div>
