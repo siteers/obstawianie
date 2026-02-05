@@ -118,9 +118,9 @@
     @keyframes pulseRed { 0% { transform: scale(1); } 50% { transform: scale(1.05); box-shadow: 0 0 30px red; } 100% { transform: scale(1); } }
     #sin-preview { max-width: 100%; height: 150px; object-fit: contain; background: white; border-radius: 10px; border: 4px solid red; margin: 10px auto; display: block; }
 
-    /* CONFUSED MODE */
+    /* CONFUSED MODE - Pełny ekran */
     #confused-screen { 
-        position: fixed; inset: 0; background: black; z-index: 10000; 
+        position: fixed; inset: 0; background: black; z-index: 20000; 
         display: none; align-items: center; justify-content: center;
     }
     #confused-gif { width: 100%; height: 100%; object-fit: contain; }
@@ -224,7 +224,7 @@
   </div>
 
   <div id="confused-screen">
-      <img id="confused-gif" src="https://media.giphy.com/media/hEc4k5pN17GZq/giphy.gif">
+      <img id="confused-gif" src="https://media.tenor.com/x8v1o5UsuhAAAAAC/vincent-vega-pulp-fiction.gif">
   </div>
 
 <script type="module">
@@ -253,18 +253,20 @@
   window.login = async () => {
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
-      if(!user) return alert("Wybierz użytkownika!");
-
-      // --- CONFUSED MODE DLA PUSTEGO GRZEŚKA ---
-      if (user === " " || user === "." || user === "Grzesiek" || user === "") { // Dostosuj jeśli znasz dokładną nazwę w bazie
-          const userDoc = await getDoc(doc(db, "passwords", user));
-          if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
-              document.getElementById('confused-screen').style.display = 'flex';
-              document.getElementById('login-container').style.display = 'none';
-              localStorage.setItem('cyberUser', user);
-              return;
-          }
+      
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
+      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
+      if ((user === " " || user.trim() === "") && pass === "aaaa") {
+          document.getElementById('confused-screen').style.display = 'flex';
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
+          
+          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
+          localStorage.setItem('cyberUser', ' '); 
+          return;
       }
+
+      if(!user) return alert("Wybierz użytkownika!");
 
       if (user === "Grzesiek Sz") {
           const userDoc = await getDoc(doc(db, "passwords", user));
@@ -569,9 +571,11 @@
 
   function showHub(user) {
       // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
-      if (user === " " || user === "." || user === "Grzesiek" || user === "") { // Ta sama lista co przy logowaniu
+      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
+      if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
           return;
       }
 
