@@ -28,7 +28,6 @@
         }
         #bg-canvas { position: fixed; inset: 0; z-index: 1; pointer-events: none; }
         
-        /* ZMIANA W TOP NAV - Grupowanie */
         .top-nav { width: 100%; max-width: 1200px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; z-index: 100; flex-wrap: wrap; gap: 10px;}
         .nav-right { display: flex; gap: 10px; align-items: center; }
         .nav-left { display: flex; gap: 10px; align-items: center; }
@@ -53,7 +52,6 @@
             overflow: hidden; 
         }
 
-        /* --- EFEKT LODU --- */
         .freeze-overlay {
             position: absolute; inset: 0; pointer-events: none; z-index: 50;
             background-image: url('image_822d4c.png');
@@ -68,18 +66,10 @@
         .frozen { border: 2px solid #afeeee !important; box-shadow: 0 0 30px rgba(175, 238, 238, 0.4) !important; }
         .frozen .freeze-overlay { opacity: 1; transform: scale(1); }
         .frozen .frost-shimmer { opacity: 1; animation: iceShimmer 3s infinite linear; }
-        .frozen .table-wrapper, .frozen .target-label {
-            filter: blur(0.5px) contrast(1.1); 
-            color: #b0e2ff !important;
-            transition: 0.8s;
-        }
+        .frozen .table-wrapper, .frozen .target-label { filter: blur(0.5px) contrast(1.1); color: #b0e2ff !important; transition: 0.8s; }
         @keyframes iceShimmer { 0% { background-position: -200% -200%; } 100% { background-position: 200% 200%; } }
 
-        /* --- RAMKA QR --- */
-        .qr-frame { 
-            padding: 10px; background: #fff; border-radius: 15px; 
-            display: inline-block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
-        }
+        .qr-frame { padding: 10px; background: #fff; border-radius: 15px; display: inline-block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
         @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
@@ -321,7 +311,8 @@ window.stopSlot = async (id) => {
     // 2. Sortujemy WSZYSTKICH względem czasu stopu
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     
-    let playersWithPoints = [], rank = 1;
+    let playersWithPoints = []; // ZMIANA: Usunięto top3, teraz zapisujemy WSZYSTKICH
+    let rank = 1;
     // 3. Tworzymy listę WSZYSTKICH graczy
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
@@ -336,7 +327,7 @@ window.stopSlot = async (id) => {
         });
     }
 
-    // 4. Rozdajemy punkty (tylko Top 3)
+    // 4. Rozdajemy punkty (tylko Top 3 - filtracja tutaj, nie przy tworzeniu listy)
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
@@ -344,9 +335,10 @@ window.stopSlot = async (id) => {
         }
     }
     
-    // 5. Historia
-    const top3 = playersWithPoints.filter(p => p.rank <= 3);
-    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: top3 });
+    // 5. Historia - ZAPIS PEŁNEJ LISTY!
+    // Wcześniej było: const top3 = playersWithPoints.filter(p => p.rank <= 3);
+    // Teraz zapisujemy wszystkich:
+    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints });
 
     // 6. Zapisujemy PEŁNĄ listę graczy do bazy jako "zamrożoną"
     await setDoc(appStateRef, { 
