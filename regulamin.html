@@ -3,15 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Regulamin & Akceptacja - Cyber-Link</title>
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Cyber-Bet">
-  
-  <link rel="manifest" href="./manifest.json">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Cyber-Bet">
+    
+    <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="logo.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
     <style>
         :root {
             --gold: #d4af37;
@@ -78,11 +77,11 @@
         th, td { padding: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
         th { background: rgba(255, 255, 255, 0.05); color: var(--gold); }
 
-        #darkModeBtn { 
-            position: fixed; top: 15px; right: 15px; padding: 10px 18px; 
-            border-radius: 30px; border: none; cursor: pointer; 
-            background: #fff; color: #111; font-weight: bold; z-index: 1000;
-        }
+        /* PRZYCISKI GÓRNE */
+        .top-btn-container { position: fixed; top: 15px; right: 15px; display: flex; gap: 10px; z-index: 1000; }
+        #darkModeBtn, .btn-back { padding: 10px 18px; border-radius: 30px; border: none; cursor: pointer; font-weight: bold; background: #fff; color: #111; text-decoration: none; font-size: 13px; display: flex; align-items: center; }
+        body.dark #darkModeBtn, body.dark .btn-back { background: #111; color: #fff; }
+        .btn-back { background: var(--cyan) !important; color: #000 !important; }
 
         .acceptance-flow { 
             text-align: center; margin-top: 40px; padding: 30px; 
@@ -125,7 +124,11 @@
 <body class="dark">
 
 <canvas id="bg-canvas"></canvas>
-<button id="darkModeBtn">🌙 Dark mode</button>
+
+<div class="top-btn-container">
+    <a href="sg.html" class="btn-back">← WRÓĆ</a>
+    <button id="darkModeBtn">🌙 Dark mode</button>
+</div>
 
 <div id="tilt-wrapper">
     <div class="container">
