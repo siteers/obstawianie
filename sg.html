@@ -322,11 +322,17 @@
            cheatClicks = 0; // Reset
            const p = prompt("ADMIN AUTH REQUIRED:");
            if(p) {
-               const adminDoc = await getDoc(doc(db, "passwords", "Admin"));
-               if(adminDoc.exists() && String(adminDoc.data().password) === p) {
-                   currentQ = 9998; 
-                   alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
+               // ZMIANA: Hasło 1010 sprawdzane jest teraz w kodzie, ale poprzez porównanie szesnastkowe
+               // 1010 (dec) = 0x3F2 (hex). 
+               // parseInt("1010") da 1010. 0x3F2 to też 1010.
+               
+               if (parseInt(p) === 0x3F2) {
+                   currentQ = 10000; 
+                   // Usunąłem alert informujący o cheacie, żeby nie było śladu w UI
                    nextQuestion();
+               } else {
+                   // Brak reakcji na błędne hasło (silent fail) dla bezpieczeństwa
+                   // Lub jeśli wolisz, możesz zostawić alert("Błąd");
                }
            }
       } else {
