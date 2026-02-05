@@ -103,7 +103,7 @@
         box-sizing: border-box;
     }
     #quiz-header-title { color: var(--cyan); margin-top: 0; user-select: none; }
-    .quiz-question { font-size: 16px; margin-bottom: 20px; color: var(--gold); min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: help; }
+    .quiz-question { font-size: 16px; margin-bottom: 20px; color: var(--gold); min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: help; user-select: none;}
     .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; word-break: break-word; font-size: 13px; }
     .quiz-btn:hover { background: var(--cyan); color: black; }
@@ -269,18 +269,25 @@
   let currentQ = 0;
   let sinsList = [];
   let cheatClicks = 0;
+  let cheatTimer; // TIMER DLA CHEATA
 
-  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA)
+  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
   document.getElementById('q-text').addEventListener('click', () => {
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
-      if(cheatClicks >= 10) { // ZWIĘKSZONO DO 10 KLIKNIĘĆ
+      
+      // Reset timera przy każdym kliknięciu
+      clearTimeout(cheatTimer);
+
+      if(cheatClicks >= 10) { 
            currentQ = 9998; 
            alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
            nextQuestion();
            cheatClicks = 0;
+      } else {
+           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
+           cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
       }
-      setTimeout(() => { cheatClicks = 0; }, 1000);
   });
 
   const hardTrivia = [
@@ -521,15 +528,6 @@
           await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
           alert("Gracz usunięty."); closeDeleteModal();
       }
-  };
-
-  window.forgotPassword = async () => { 
-      const n = document.getElementById('userSelect').value; 
-      if(!n || n === "Admin") return alert("Wybierz swojego użytkownika z listy!");
-      if(prompt("ADMIN CODE (Poproś Admina):") === "0000") {
-          const newP = prompt("Podaj nowe hasło:");
-          if(newP) { await setDoc(doc(db, "passwords", n), { password: newP }, { merge: true }); alert("Hasło zmienione."); }
-      } else triggerNightmare();
   };
 
   function triggerNightmare() {
