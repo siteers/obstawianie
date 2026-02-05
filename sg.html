@@ -102,8 +102,8 @@
         width: 95%; max-width: 500px; display: none; position: relative; 
         box-sizing: border-box;
     }
-    #quiz-header-title { color: var(--cyan); margin-top: 0; cursor: help; user-select: none; }
-    .quiz-question { font-size: 16px; margin-bottom: 20px; color: var(--gold); min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+    #quiz-header-title { color: var(--cyan); margin-top: 0; user-select: none; }
+    .quiz-question { font-size: 16px; margin-bottom: 20px; color: var(--gold); min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; cursor: help; }
     .quiz-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .quiz-btn { padding: 15px; background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white; cursor: pointer; border-radius: 10px; transition: 0.2s; word-break: break-word; font-size: 13px; }
     .quiz-btn:hover { background: var(--cyan); color: black; }
@@ -184,12 +184,12 @@
   </div>
 
   <div id="revenge-overlay">
-      <img id="intro-gif" src="https://media.giphy.com/media/tHIRLHtNwxpjIFqPdV/giphy.gif" style="display:none;">
+      <img id="intro-gif" src="https://media.giphy.com/media/5fBH6z8aMV9CM/giphy.gif" style="display:none;">
       
       <div id="ban-screen">
           <h1 id="ban-header">BAN ADMINISTRACYJNY</h1>
-          <div id="countdown-timer">00:00:00:00</div>
-          <div id="ban-info">KONIEC BANU: 11.02.2026 00:00</div>
+          <div id="countdown-timer">DOŻYWOCIE</div>
+          <div id="ban-info">KONIEC BANU: NIGDY</div>
           <br><br>
           <button class="btn-cyber" style="width: auto; padding: 15px 40px; border: 1px solid var(--gold); color: var(--gold);" onclick="startMilionerzy()">SKOŃCZ BAN WCZEŚNIEJ</button>
       </div>
@@ -199,7 +199,7 @@
               <div class="loader"></div>
               <div style="color:var(--cyan); font-size:12px; letter-spacing:1px;">WERYFIKACJA INTELIGENCJI...</div>
           </div>
-          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 1000</h3>
+          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 10000</h3>
           <div id="q-text" class="quiz-question">...</div>
           <div id="q-options" class="quiz-options"></div>
       </div>
@@ -270,12 +270,13 @@
   let sinsList = [];
   let cheatClicks = 0;
 
-  document.getElementById('quiz-header-title').addEventListener('click', () => {
+  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA)
+  document.getElementById('q-text').addEventListener('click', () => {
       if(banTarget !== "Grzesiek Sz") return;
       cheatClicks++;
-      if(cheatClicks >= 5) {
-           currentQ = 998; 
-           alert("[ADMIN CHEAT ACTIVATED] Skok do pytania 999.");
+      if(cheatClicks >= 10) { // ZWIĘKSZONO DO 10 KLIKNIĘĆ
+           currentQ = 9998; 
+           alert("[ADMIN CHEAT ACTIVATED] Skok do końca.");
            nextQuestion();
            cheatClicks = 0;
       }
@@ -352,8 +353,8 @@
   }
 
   function startBanTimer() {
-      // NOWA DATA: 11.02.2026
-      const targetDate = new Date("2026-02-11T00:00:00").getTime();
+      // BAN DOŻYWOTNI - ROK 9999
+      const targetDate = new Date("9999-12-31T23:59:59").getTime();
       setInterval(() => {
           const now = new Date().getTime();
           const dist = targetDate - now;
@@ -362,7 +363,9 @@
           const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
           const s = Math.floor((dist % (1000 * 60)) / 1000);
-          document.getElementById("countdown-timer").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+          // document.getElementById("countdown-timer").innerHTML = `${d}d ${h}h ${m}m ${s}s`;
+          // Zamiast czasu - DOŻYWOCIE
+          document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
       }, 1000);
   }
 
@@ -374,8 +377,8 @@
   };
 
   function nextQuestion() {
-      // LIMIT ZWIĘKSZONY DO 1000
-      if (currentQ >= 1000) { preparePenance(); return; }
+      // LIMIT 10 000 PYTAŃ
+      if (currentQ >= 10000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
       loading.style.display = "flex"; 
