@@ -404,12 +404,12 @@
       video.volume = 1.0;
       video.play().catch(e => console.log("Autoplay blocked:", e)); 
       
-      setTimeout(() => {
+      // ZMIANA: Czekamy na zdarzenie 'ended', żeby film poleciał cały
+      video.onended = () => {
           video.style.display = "none";
-          video.pause();
           banScreen.style.display = "flex";
           startBanTimer();
-      }, 5000); 
+      };
   }
 
   function startBanTimer() {
@@ -596,7 +596,6 @@
       document.getElementById('hub-view').style.display = 'block';
       document.getElementById('logoutBtn').style.display = 'block';
       document.getElementById('userNameDisplay').innerText = user;
-      
       const userBtns = document.getElementById('user-buttons');
       const adminBtns = document.getElementById('admin-buttons');
       
