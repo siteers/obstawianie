@@ -547,4 +547,185 @@
           shuffle(answers); 
 
           document.getElementById('q-text').innerText = qObj.q;
-          const optsDiv
+          const optsDiv = document.getElementById('q-options');
+          optsDiv.innerHTML = "";
+          
+          answers.forEach(opt => {
+              const btn = document.createElement('button');
+              btn.className = 'quiz-btn';
+              btn.innerText = opt;
+              btn.onclick = () => {
+                  if (opt === correctAnswer) { currentQ++; nextQuestion(); } 
+                  else { alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!"); currentQ = 0; nextQuestion(); }
+              };
+              optsDiv.appendChild(btn);
+          });
+      }, 1500); 
+  }
+
+  async function preparePenance() {
+      document.getElementById('quiz-container').style.display = "none";
+      document.getElementById('penance-container').style.display = "block";
+      const legacyMapping = ["Gregorio Sz", "Grzesiek Sz"];
+      const snaps = await getDocs(collection(db, "signatures"));
+      sinsList = [];
+      snaps.forEach(d => {
+          const data = d.data();
+          if (data.author === banTarget || legacyMapping.includes(data.name)) sinsList.push(data.sig);
+      });
+      if (sinsList.length === 0) sinsList.push("0.jpg"); 
+      updatePenanceUI();
+  }
+
+  function updatePenanceUI() {
+      const count = sinsList.length;
+      document.getElementById('spam-count').innerText = "Pozostało: " + count;
+      if (count > 0) { document.getElementById('sin-preview').src = sinsList[count - 1]; } 
+      else { alert("KARA ODBYTA. MOŻESZ WEJŚĆ."); document.getElementById('revenge-overlay').style.display = "none"; saveSession(banTarget); }
+  }
+
+  window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
+
+  window.adminAddUser = async () => {
+      const n = prompt("Nazwa nowego gracza:"); if(!n) return;
+      const check = await getDoc(doc(db, "passwords", n));
+      if(check.exists()) return alert("Taki użytkownik już istnieje!");
+      const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
+      await setDoc(doc(db, "passwords", n), { password: p });
+      alert("Dodano gracza: " + n);
+  };
+
+  window.adminEditUserFlow = async () => {
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "EDYTUJ NAZWĘ GRACZA";
+      title.style.color = "#d4af37";
+      actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
+      actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
+      
+      actionBtn.onclick = confirmEditUser;
+
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
+
+  window.confirmEditUser = async () => {
+      const oldName = document.getElementById('userDeleteSelect').value;
+      if (!oldName) return alert("Wybierz gracza!");
+      
+      const newName = prompt("Podaj NOWĄ nazwę dla " + oldName + ":");
+      if (!newName || newName === oldName) return;
+
+      const check = await getDoc(doc(db, "passwords", newName));
+      if(check.exists()) return alert("Taka nazwa już istnieje!");
+
+      if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
+          const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
+          await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
+          await deleteDoc(doc(db, "passwords", oldName));
+
+          const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
+          if (oldRankDoc.exists()) {
+              await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
+              await deleteDoc(doc(db, "ranking", oldName));
+          }
+
+          alert("Nazwa zmieniona pomyślnie.");
+          closeDeleteModal();
+      }
+  };
+
+  window.deleteUserFlow = async () => { 
+      const modal = document.getElementById('delete-user-modal');
+      const select = document.getElementById('userDeleteSelect');
+      const title = document.getElementById('modal-title');
+      const actionBtn = document.getElementById('modal-action-btn');
+
+      title.innerText = "USUWANIE GRACZA";
+      title.style.color = "#ff4757";
+      actionBtn.innerText = "USUŃ";
+      actionBtn.style.background = "linear-gradient(135deg, #ff0000, #990000)";
+      actionBtn.onclick = confirmDeleteUser;
+
+      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
+      modal.style.display = 'flex';
+      const snap = await getDocs(collection(db, "passwords"));
+      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
+      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
+  };
+
+  window.closeDeleteModal = () => document.getElementById('delete-user-modal').style.display = 'none';
+  
+  window.confirmDeleteUser = async () => { 
+      const userToDelete = document.getElementById('userDeleteSelect').value;
+      if (!userToDelete) return alert("Wybierz gracza z listy!");
+      if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
+          await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
+          alert("Gracz usunięty."); closeDeleteModal();
+      }
+  };
+
+  function triggerNightmare() {
+      const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); 
+      document.body.classList.add('nightmare-mode'); document.getElementById('loginCardElement').classList.add('nightmare-shake');
+      setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('loginCardElement').classList.remove('nightmare-shake'); }, 1000);
+  }
+
+  document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
+
+  function saveSession(user) {
+      localStorage.setItem('cyberUser', user);
+      showHub(user);
+  }
+
+  function showHub(user) {
+      if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
+          document.getElementById('confused-screen').style.display = 'flex';
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+          return;
+      }
+
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('hub-view').style.display = 'block';
+      document.getElementById('logoutBtn').style.display = 'block';
+      document.getElementById('userNameDisplay').innerText = user;
+      
+      const userBtns = document.getElementById('user-buttons');
+      const adminBtns = document.getElementById('admin-buttons');
+      
+      document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block');
+      document.getElementById('add-hour-btn').style.display = 'block'; 
+
+      if (user === "Admin") { 
+          userBtns.style.display = 'none'; 
+          adminBtns.style.display = 'block'; 
+      } else { 
+          userBtns.style.display = 'block'; 
+          adminBtns.style.display = 'none'; 
+      }
+      
+      if (user === "SCIANA") {
+          document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none');
+          document.getElementById('add-hour-btn').style.display = 'none'; 
+      }
+  }
+
+  window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
+  window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
+  window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
+
+  const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+  let pts = [];
+  function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
+  function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw); }
+  window.onresize = init; init(); draw();
+</script>
+</body>
+</html>
