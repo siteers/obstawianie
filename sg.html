@@ -258,7 +258,7 @@
   });
 
   const savedUser = localStorage.getItem('cyberUser');
-  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU PRZY STARCIE) ---
+  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU) ---
   if (savedUser === "Grzesiek Sz") {
       localStorage.removeItem('cyberUser');
   } 
@@ -270,11 +270,14 @@
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
       
-      // --- CONFUSED MODE DLA PUSTEGO PROFILU ---
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
+      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; 
+          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
+          
+          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
           localStorage.setItem('cyberUser', ' '); 
           return;
       }
@@ -285,7 +288,7 @@
           const userDoc = await getDoc(doc(db, "passwords", user));
           if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
               startRevengeProtocol(user);
-              // ZMIANA: Uruchomienie timera wylogowania po 5 minutach
+              // Uruchomienie timera wylogowania po 5 minutach
               startTrollLogoutTimer();
           } else {
               triggerNightmare();
@@ -293,11 +296,7 @@
           return;
       }
 
-      if(user === "Admin") {
-          if(pass === "1010") saveSession("Admin"); else triggerNightmare();
-          return;
-      }
-
+      // --- LOGOWANIE DLA WSZYSTKICH (W TYM ADMINA) PRZEZ BAZĘ DANYCH ---
       try {
           const userDoc = await getDoc(doc(db, "passwords", user));
           if (userDoc.exists()) {
@@ -309,8 +308,35 @@
   let banTarget = "";
   let currentQ = 0;
   let sinsList = [];
+  let cheatClicks = 0;
+  let cheatTimer; // TIMER DLA CHEATA
 
-  // ZMIANA: Usunięto obsługę 'click' na #q-text, która pozwalała na cheatowanie.
+  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
+  document.getElementById('q-text').addEventListener('click', async () => {
+      if(banTarget !== "Grzesiek Sz") return;
+      cheatClicks++;
+      
+      // Reset timera przy każdym kliknięciu
+      clearTimeout(cheatTimer);
+
+      if(cheatClicks >= 10) { 
+           cheatClicks = 0; // Reset
+           const p = prompt("ADMIN AUTH REQUIRED:");
+           if(p) {
+               // ZMIANA: Hasło z BAZY DANYCH (Admin)
+               try {
+                   const adminDoc = await getDoc(doc(db, "passwords", "Admin"));
+                   if (adminDoc.exists() && String(adminDoc.data().password) === p) {
+                       currentQ = 1000000; 
+                       nextQuestion();
+                   }
+               } catch(e) { console.error(e); }
+           }
+      } else {
+           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
+           cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
+      }
+  });
 
   const hardTrivia = [
       { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
@@ -395,7 +421,7 @@
       }, 1000);
   }
 
-  // ZMIANA: Funkcja automatycznego wylogowania po 5 minutach (300000ms)
+  // Funkcja automatycznego wylogowania po 5 minutach (300000ms)
   function startTrollLogoutTimer() {
       setTimeout(() => {
           alert("SESJA WYGASŁA - ZA DŁUGO MYŚLISZ!");
@@ -411,7 +437,6 @@
   };
 
   function nextQuestion() {
-      // ZMIANA: Limit zwiększony do 1 miliona
       if (currentQ >= 1000000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
