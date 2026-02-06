@@ -276,23 +276,43 @@
       showHub(savedUser);
   }
 
-  // --- ZAPOMNIAŁEM HASŁA ---
+  // --- ZAPOMNIAŁEM HASŁA (NOWA FUNKCJA Z SAMO-RESETEM) ---
   window.forgotPassword = async () => {
-      const user = prompt("Podaj nazwę użytkownika:");
+      const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
       if (!user) return;
+
+      // ZABEZPIECZENIE: Nie pozwól zresetować Admina ani SCIANY tą metodą!
+      if (user.toLowerCase() === "admin" || user === "SCIANA") {
+          alert("BŁĄD: Hasła tego konta nie można zresetować zdalnie.");
+          return;
+      }
 
       try {
           const docRef = doc(db, "passwords", user);
           const docSnap = await getDoc(docRef);
 
-          if (docSnap.exists()) {
-              alert(`Użytkownik "${user}" istnieje.\n\nSkontaktuj się z Administratorem (lub ŚCIANĄ), aby zresetować hasło.`);
-          } else {
-              alert("Nie znaleziono takiego użytkownika.");
+          if (!docSnap.exists()) {
+              alert("BŁĄD: Użytkownik nie istnieje w bazie.");
+              return;
           }
+
+          // Procedura resetu
+          const newPass = prompt(`Witaj ${user}.\nPodaj NOWE hasło:`);
+          if (!newPass) return;
+
+          const confirmPass = prompt("Powtórz NOWE hasło:");
+          if (newPass !== confirmPass) {
+              alert("BŁĄD: Hasła nie są identyczne! Spróbuj ponownie.");
+              return;
+          }
+
+          // Zapisz nowe hasło w bazie
+          await setDoc(docRef, { password: newPass }, { merge: true });
+          alert("SUKCES: Hasło zostało zmienione. Możesz się zalogować.");
+
       } catch (e) {
           console.error(e);
-          alert("Błąd połączenia z bazą.");
+          alert("Błąd systemu bazy danych.");
       }
   };
 
