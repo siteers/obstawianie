@@ -260,7 +260,17 @@
   const savedUser = localStorage.getItem('cyberUser');
   // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU) ---
   if (savedUser === "Grzesiek Sz") {
-      localStorage.removeItem('cyberUser');
+      // ZMIANA: Sprawdzamy, czy ban już minął (09.02.2026, 12:30)
+      const now = new Date();
+      const banEnd = new Date("2026-02-09T12:30:00");
+      
+      // Jeśli jest PO czasie bana -> pozwól zostać zalogowanym
+      if (now >= banEnd) {
+          showHub(savedUser);
+      } else {
+          // Jeśli jest PRZED czasem -> wyloguj
+          localStorage.removeItem('cyberUser');
+      }
   } 
   else if (savedUser) {
       showHub(savedUser);
@@ -270,14 +280,11 @@
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
       
-      // --- CONFUSED MODE DLA PUSTEGO PROFILU (ID to spacja lub puste) ---
-      // Sprawdzamy czy hasło to "aaaa" i czy użytkownik wygląda na pustego (spacja lub null)
+      // --- CONFUSED MODE DLA PUSTEGO PROFILU ---
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none'; // Ukryj przycisk wylogowania
-          
-          // Zapisz sesję, żeby po odświeżeniu też widział GIF-a
+          document.getElementById('logoutBtn').style.display = 'none'; 
           localStorage.setItem('cyberUser', ' '); 
           return;
       }
@@ -287,9 +294,21 @@
       if (user === "Grzesiek Sz") {
           const userDoc = await getDoc(doc(db, "passwords", user));
           if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
-              startRevengeProtocol(user);
-              // Uruchomienie timera wylogowania po 5 minutach
-              startTrollLogoutTimer();
+              
+              // ZMIANA: Sprawdzenie warunku czasowego na bana
+              const now = new Date();
+              const banEnd = new Date("2026-02-09T12:30:00");
+
+              if (now >= banEnd) {
+                  // Koniec bana! Wpuść go normalnie
+                  saveSession(user);
+                  startTrollLogoutTimer(); // Opcjonalnie zostawiamy troll timer
+              } else {
+                  // Ban nadal trwa - pokaż ekran zemsty
+                  startRevengeProtocol(user);
+                  startTrollLogoutTimer();
+              }
+
           } else {
               triggerNightmare();
           }
@@ -396,6 +415,8 @@
       const overlay = document.getElementById('revenge-overlay');
       const video = document.getElementById('intro-video'); 
       const banScreen = document.getElementById('ban-screen');
+      const banHeader = document.getElementById('ban-header'); // Nagłówek bana
+      const banInfo = document.getElementById('ban-info');     // Info o banie
       
       overlay.style.display = "flex";
       video.style.display = "block";
@@ -407,17 +428,71 @@
       video.onended = () => {
           video.style.display = "none";
           banScreen.style.display = "flex";
-          startBanTimer();
+          
+          // ZMIANA: Sprawdzamy czy to dzień końca bana (09.02.2026, 06:00 - 12:30)
+          const now = new Date();
+          const targetDate = new Date("2026-02-09");
+          const targetStart = new Date("2026-02-09T06:00:00");
+          const targetEnd = new Date("2026-02-09T12:30:00");
+
+          // Czy to ten sam dzień i godzina w przedziale?
+          const isTargetDay = now.toDateString() === targetDate.toDateString();
+          const isInTimeRange = now >= targetStart && now <= targetEnd;
+
+          if (isTargetDay && isInTimeRange) {
+              // Specjalny tryb odliczania do końca bana
+              banHeader.innerHTML = "BAN WYGASA O 12:30";
+              banHeader.style.color = "orange";
+              banInfo.innerHTML = "CIERPLIWOŚCI...";
+              startBanTimer(true); // true = tryb odliczania do 12:30
+          } else {
+              // Standardowy tryb permanentny
+              banHeader.innerHTML = "BAN ADMINISTRACYJNY";
+              banHeader.style.color = "red";
+              banInfo.innerHTML = "KONIEC BANU: NIGDY";
+              startBanTimer(false); // false = tryb dożywocie
+          }
       };
   }
 
-  function startBanTimer() {
-      const targetDate = new Date("9999-12-31T23:59:59").getTime();
-      setInterval(() => {
+  function startBanTimer(isCountdownMode) {
+      // Jeśli tryb odliczania -> celujemy w 12:30 dzisiaj
+      // Jeśli tryb zwykły -> celujemy w rok 9999
+      
+      const targetDate = isCountdownMode 
+          ? new Date("2026-02-09T12:30:00").getTime() 
+          : new Date("9999-12-31T23:59:59").getTime();
+
+      const timerInterval = setInterval(() => {
           const now = new Date().getTime();
           const dist = targetDate - now;
-          if (dist < 0) { document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; return; }
-          document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
+
+          if (dist < 0) { 
+              if (isCountdownMode) {
+                  // Ban się skończył!
+                  clearInterval(timerInterval);
+                  document.getElementById("countdown-timer").innerHTML = "WOLNOŚĆ!";
+                  setTimeout(() => location.reload(), 2000); // Przeładuj stronę, żeby mógł wejść
+                  return;
+              } else {
+                  document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; 
+                  return; 
+              }
+          }
+
+          if (isCountdownMode) {
+              // Formatowanie czasu dla odliczania (HH:MM:SS)
+              const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
+              const s = Math.floor((dist % (1000 * 60)) / 1000);
+              document.getElementById("countdown-timer").innerHTML = 
+                  `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+              document.getElementById("countdown-timer").style.color = "orange";
+          } else {
+              // Standardowy tekst
+              document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
+              document.getElementById("countdown-timer").style.color = "red";
+          }
       }, 1000);
   }
 
