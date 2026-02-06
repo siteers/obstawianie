@@ -223,7 +223,7 @@
               <div class="loader"></div>
               <div style="color:var(--cyan); font-size:12px; letter-spacing:1px;">WERYFIKACJA INTELIGENCJI...</div>
           </div>
-          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 10000</h3>
+          <h3 id="quiz-header-title">Pytanie <span id="q-num">1</span> / 1000000</h3>
           <div id="q-text" class="quiz-question">...</div>
           <div id="q-options" class="quiz-options"></div>
       </div>
@@ -258,7 +258,7 @@
   });
 
   const savedUser = localStorage.getItem('cyberUser');
-  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU) ---
+  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU PRZY STARCIE) ---
   if (savedUser === "Grzesiek Sz") {
       localStorage.removeItem('cyberUser');
   } 
@@ -285,6 +285,8 @@
           const userDoc = await getDoc(doc(db, "passwords", user));
           if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
               startRevengeProtocol(user);
+              // ZMIANA: Uruchomienie timera wylogowania po 5 minutach
+              startTrollLogoutTimer();
           } else {
               triggerNightmare();
           }
@@ -307,35 +309,8 @@
   let banTarget = "";
   let currentQ = 0;
   let sinsList = [];
-  let cheatClicks = 0;
-  let cheatTimer; // TIMER DLA CHEATA
 
-  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
-  document.getElementById('q-text').addEventListener('click', async () => {
-      if(banTarget !== "Grzesiek Sz") return;
-      cheatClicks++;
-      
-      // Reset timera przy każdym kliknięciu
-      clearTimeout(cheatTimer);
-
-      if(cheatClicks >= 10) { 
-           cheatClicks = 0; // Reset
-           const p = prompt("ADMIN AUTH REQUIRED:");
-           if(p) {
-               // ZMIANA: Hasło 0001 na sztywno
-               if (p === "0001") {
-                   currentQ = 10000; 
-                   // Usunąłem alert informujący o cheacie, żeby nie było śladu w UI
-                   nextQuestion();
-               } else {
-                   // Brak reakcji na błędne hasło (silent fail) dla bezpieczeństwa
-               }
-           }
-      } else {
-           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
-           cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
-      }
-  });
+  // ZMIANA: Usunięto obsługę 'click' na #q-text, która pozwalała na cheatowanie.
 
   const hardTrivia = [
       { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
@@ -393,18 +368,16 @@
   function startRevengeProtocol(user) {
       banTarget = user;
       const overlay = document.getElementById('revenge-overlay');
-      const video = document.getElementById('intro-video'); // POPRAWKA: VIDEO
+      const video = document.getElementById('intro-video'); 
       const banScreen = document.getElementById('ban-screen');
       
       overlay.style.display = "flex";
       video.style.display = "block";
       
-      // ZMIANA: Wymuszenie dźwięku i odtwarzania w JS
       video.muted = false; 
       video.volume = 1.0;
       video.play().catch(e => console.log("Autoplay blocked:", e)); 
       
-      // ZMIANA: Czekamy na zdarzenie 'ended', żeby film poleciał cały
       video.onended = () => {
           video.style.display = "none";
           banScreen.style.display = "flex";
@@ -422,6 +395,14 @@
       }, 1000);
   }
 
+  // ZMIANA: Funkcja automatycznego wylogowania po 5 minutach (300000ms)
+  function startTrollLogoutTimer() {
+      setTimeout(() => {
+          alert("SESJA WYGASŁA - ZA DŁUGO MYŚLISZ!");
+          logout();
+      }, 300000); 
+  }
+
   window.startMilionerzy = () => {
       document.getElementById('ban-screen').style.display = "none";
       document.getElementById('quiz-container').style.display = "block";
@@ -430,7 +411,8 @@
   };
 
   function nextQuestion() {
-      if (currentQ >= 10000) { preparePenance(); return; }
+      // ZMIANA: Limit zwiększony do 1 miliona
+      if (currentQ >= 1000000) { preparePenance(); return; }
       
       const loading = document.getElementById('quiz-loading');
       loading.style.display = "flex"; 
@@ -583,8 +565,6 @@
   }
 
   function showHub(user) {
-      // --- CONFUSED MODE CHECK (Dla sesji z localStorage) ---
-      // Jeśli zapisany user to spacja, pokaż GIF-a zamiast panelu
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
@@ -596,12 +576,12 @@
       document.getElementById('hub-view').style.display = 'block';
       document.getElementById('logoutBtn').style.display = 'block';
       document.getElementById('userNameDisplay').innerText = user;
+      
       const userBtns = document.getElementById('user-buttons');
       const adminBtns = document.getElementById('admin-buttons');
       
-      // ZMIANA: Pokaż przyciski (domyślny stan)
       document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block');
-      document.getElementById('add-hour-btn').style.display = 'block'; // Przywróć przycisk dla wszystkich
+      document.getElementById('add-hour-btn').style.display = 'block'; 
 
       if (user === "Admin") { 
           userBtns.style.display = 'none'; 
@@ -611,10 +591,9 @@
           adminBtns.style.display = 'none'; 
       }
       
-      // ZMIANA: Ukryj extra przyciski TYLKO dla SCIANA
       if (user === "SCIANA") {
           document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none');
-          document.getElementById('add-hour-btn').style.display = 'none'; // Ściana nie może dodawać godzin
+          document.getElementById('add-hour-btn').style.display = 'none'; 
       }
   }
 
