@@ -12,6 +12,8 @@
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="logo.png">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+
     <style>
         :root {
             --gold: #d4af37; --cyan: #00d4ff; --bg: #f2f2f2; --text: #111;
@@ -41,8 +43,13 @@
         
         .btn-back { background: var(--cyan) !important; color: #000 !important; border: none !important;}
 
-        .admin-config { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--gold); display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100; }
+        .admin-config { background: var(--glass); padding: 15px; border-radius: 20px; border: 1px solid var(--gold); display: flex; gap: 15px; align-items: center; margin-bottom: 20px; z-index: 100; flex-wrap: wrap; }
         .admin-config select { padding: 10px; border-radius: 10px; background: #1a1a1a; color: white; border: 1px solid var(--gold); font-weight: bold; }
+        
+        /* Styl dla przycisku automatyzacji */
+        .btn-auto { background: var(--cyan); color: #000; font-weight: bold; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
+        .btn-auto:hover { transform: scale(1.05); }
+
         .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 1300px; z-index: 10; }
         
         .container { 
@@ -91,6 +98,9 @@
         #cringeGifs { position: fixed; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10000; }
         @keyframes cringeBg { 0% { background: #ff00ff; } 33% { background: #00ffff; } 66% { background: #ffff00; } 100% { background: #00ff00; } }
 
+        /* Logi automatyzacji */
+        #autoLog { position: fixed; bottom: 10px; left: 10px; font-family: monospace; font-size: 10px; color: var(--cyan); z-index: 200; pointer-events: none; opacity: 0.7; }
+
         @media (max-width: 850px) { .dashboard-grid { grid-template-columns: 1fr; } .admin-config { flex-direction: column; width: 90%; } #clock { font-size: 42px; } }
     </style>
 </head>
@@ -109,10 +119,11 @@
     </div>
 </div>
 
-<div class="admin-config">
+<div class="admin-config" id="adminPanel">
     <div style="font-weight: bold; color: var(--gold); font-size: 12px;">CELE DNIA:</div>
     <select id="targetSelect1" onchange="updateTargets()"><option value="Brak">Wczytywanie...</option></select>
     <select id="targetSelect2" onchange="updateTargets()"><option value="Brak">Wczytywanie...</option></select>
+    <button class="btn-auto" id="autoCheckBtn" style="display:none;" onclick="forceCheckSchedule()">SPRAWDŹ GRAFIK TERAZ</button>
 </div>
 
 <div class="dashboard-grid">
@@ -139,6 +150,7 @@
 </div>
 
 <div id="clock">--:--:--</div>
+<div id="autoLog">System gotowy.</div>
 
 <div style="text-align:center; z-index:100; position:relative; padding-bottom: 40px;">
     <div class="qr-frame"><div id="qrcode"></div></div>
@@ -159,6 +171,11 @@
 const currentUser = localStorage.getItem('cyberUser');
 if (!currentUser) { window.location.href = 'sg.html'; }
 
+// Pokaż przycisk auto-sprawdzania tylko dla konta SCIANA
+if (currentUser === "SCIANA") {
+    document.getElementById('autoCheckBtn').style.display = "inline-block";
+}
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, collection, getDocs, deleteDoc, doc, onSnapshot, setDoc, getDoc, updateDoc, increment, addDoc, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -167,6 +184,148 @@ const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 const appStateRef = doc(db, "appState", "status");
 const lockSound = document.getElementById("lockSound");
 const fanfareAudio = document.getElementById("fanfareAudio");
+
+// --- KONFIGURACJA AUTOMATYZACJI ---
+// LINK DO PLIKU RAW NA GITHUBIE (Wklej tutaj swój link!)
+const EXCEL_URL = "https://raw.githubusercontent.com/TWOJA_NAZWA_UZYTKOWNIKA/TWOJE_REPO/main/CSR_Grafik_2026.xlsx"; 
+
+const NAME_MAPPING = {
+    "Szymura Grzegorz": "Grzesiek Sz",
+    "Sitko Krzysztof": "Krzysiek",
+    "Pilarski Grzegorz": "Grzesiek P",
+    "Urbańczyk Mariusz": "Mariusz",
+    "Dominik Waligóra": "Dominik",
+    "Arek": "Arek", 
+    "Paweł": "Paweł" 
+};
+
+const MONTH_MAP = {
+    "sty": 0, "lut": 1, "mar": 2, "kwi": 3, "maj": 4, "cze": 5,
+    "lip": 6, "sie": 7, "wrz": 8, "paź": 9, "lis": 10, "gru": 11
+};
+
+function logAuto(msg) {
+    const t = new Date().toLocaleTimeString();
+    document.getElementById('autoLog').innerHTML = `[${t}] ${msg}<br>` + document.getElementById('autoLog').innerHTML;
+    console.log(`[AUTOMAT] ${msg}`);
+}
+
+window.forceCheckSchedule = () => {
+    logAuto("⚠️ Ręczne wymuszenie sprawdzenia grafiku.");
+    processScheduleAndOpen();
+};
+
+async function processScheduleAndOpen() {
+    if(currentUser !== "SCIANA") return; // Tylko Ściana wykonuje
+
+    try {
+        logAuto("📥 Pobieranie grafiku...");
+        const f = await fetch(EXCEL_URL);
+        if (!f.ok) throw new Error("Błąd pobierania pliku Excel");
+        const ab = await f.arrayBuffer();
+        const workbook = XLSX.read(ab);
+        
+        const sheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        const targets = findTargetsForToday(data);
+
+        if (targets.length > 0) {
+            logAuto(`✅ Znaleziono cele: ${targets.join(", ")}`);
+            
+            // Ustawiamy cele w bazie
+            await setDoc(appStateRef, { 
+                target1: targets[0] || "Brak",
+                target2: targets[1] || "Brak"
+            }, { merge: true });
+
+            // Odblokowujemy sloty (jeśli były zamknięte ręcznie)
+            await setDoc(appStateRef, { isLocked1: false, isLocked2: false }, { merge: true });
+            
+            logAuto("🔓 System otwarty automatycznie.");
+        } else {
+            logAuto("⚠️ Brak osób na zmianie 'P' dzisiaj.");
+        }
+
+    } catch (e) {
+        logAuto("❌ BŁĄD: " + e.message);
+    }
+}
+
+function findTargetsForToday(rows) {
+    const now = new Date();
+    const currentDay = now.getDate();
+    const currentMonthIdx = now.getMonth(); 
+    
+    let headerRowIdx = -1;
+    let colMap = {}; 
+
+    for(let i=0; i<rows.length; i++) {
+        const row = rows[i];
+        for(let j=0; j<row.length; j++) {
+            const cell = row[j];
+            if(cell && typeof cell === 'string' && NAME_MAPPING[cell]) {
+                headerRowIdx = i;
+                colMap[j] = NAME_MAPPING[cell]; 
+            }
+        }
+        if(headerRowIdx !== -1) break; 
+    }
+
+    if(headerRowIdx === -1) { logAuto("Nie znaleziono nagłówków!"); return []; }
+
+    let targets = [];
+    for(let i = headerRowIdx + 1; i < rows.length; i++) {
+        const row = rows[i];
+        const dateCell = row[0]; 
+
+        if (typeof dateCell === 'string') {
+            const parts = dateCell.trim().split(' ');
+            if(parts.length === 2) {
+                const day = parseInt(parts[0]);
+                const monthStr = parts[1].toLowerCase().slice(0, 3); 
+                
+                if (day === currentDay && MONTH_MAP[monthStr] === currentMonthIdx) {
+                    for (const [colIdx, playerNick] of Object.entries(colMap)) {
+                        const val = row[colIdx];
+                        if (val === "P" || val === "p") {
+                            targets.push(playerNick);
+                        }
+                    }
+                    break; 
+                }
+            }
+        }
+    }
+    return targets.slice(0, 2);
+}
+
+// Główny Timer Automatyzacji
+setInterval(() => { 
+    const now = new Date(); 
+    const timeStr = now.toLocaleTimeString('pl-PL', { hour: '2-digit', minute: '2-digit' });
+    document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
+    
+    // Logika Auto (tylko dla ŚCIANA)
+    if(currentUser === "SCIANA") {
+        if (timeStr === "12:30" && now.getSeconds() === 0) {
+            logAuto("⏰ 12:30 - Otwieranie systemu...");
+            processScheduleAndOpen();
+        }
+        if (timeStr === "13:00" && now.getSeconds() === 0) {
+            logAuto("⏰ 13:00 - Zamykanie systemu (STOP).");
+            // Symulacja kliknięcia STOP dla obu slotów
+            stopSlot(1);
+            stopSlot(2);
+        }
+    }
+
+    const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
+    if (!isStopped1) renderTable(1, s); 
+    if (!isStopped2) renderTable(2, s); 
+}, 1000);
+
+// --- END OF AUTO LOGIC ---
 
 let usersData = [], isStopped1 = false, isStopped2 = false, isLocked1 = false, isLocked2 = false;
 let stoppedSec1 = 0, stoppedSec2 = 0;
@@ -201,7 +360,6 @@ onSnapshot(collection(db, "passwords"), (snap) => {
     const s1 = document.getElementById('targetSelect1');
     const s2 = document.getElementById('targetSelect2');
     const v1 = s1.value; const v2 = s2.value;
-    // ZMIANA: Wykluczamy SCIANA z listy celów, żeby nikt jej nie obstawiał
     const options = `<option value="Brak">Brak</option>` + 
         snap.docs.filter(d => d.id !== "Admin" && d.id !== "SCIANA").map(d => `<option value="${d.id}">${d.id}</option>`).join("");
     s1.innerHTML = options; s2.innerHTML = options;
@@ -265,7 +423,6 @@ function triggerStopEffect(id, timestamp, winners) {
     renderTable(id, timestamp/1000); 
 }
 
-// --- ZAPIS DO HISTORII ---
 window.stopSlot = async (id) => {
     const btn = document.getElementById(`stopBtn${id}`);
     if(btn) {
@@ -289,11 +446,8 @@ window.stopSlot = async (id) => {
     }
 
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-    if(!slotData.length) {
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
-        return;
-    }
-
+    // Pozwalamy zatrzymać nawet pusty slot (dla automatyzacji)
+    
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
@@ -337,8 +491,8 @@ window.clearSlot = async (id) => {
     await setDoc(appStateRef, { 
         [`isLocked${id}`]: false, 
         [`target${id}`]: "Brak",
-        [`stop${id}`]: null,      
-        [`winners${id}`]: null    
+        [`stop${id}`]: null,       
+        [`winners${id}`]: null     
     }, { merge: true });
 };
 
@@ -375,96 +529,4 @@ onSnapshot(appStateRef, (snap) => {
         document.getElementById("winner2").style.display = "none";
         document.getElementById("stoppedTime2").textContent = "";
         const btn = document.getElementById("stopBtn2");
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
-        renderTable(2, 0);
-    }
-});
-
-onSnapshot(collection(db, "users"), snap => {
-    usersData = []; snap.forEach(d => usersData.push({ id: d.id, ...d.data() }));
-    assignedFakeNames = {};
-    const currentShuffled = shuffleArray(funnyNames);
-    usersData.forEach((u, i) => { assignedFakeNames[u.id] = currentShuffled[i % currentShuffled.length]; });
-    
-    if (!isStopped1) renderTable(1, stoppedSec1);
-    if (!isStopped2) renderTable(2, stoppedSec2);
-
-    document.getElementById('lockBtn1').style.display = usersData.some(u => u.targetSlot === 'slot1') ? 'block' : 'none';
-    document.getElementById('lockBtn2').style.display = usersData.some(u => u.targetSlot === 'slot2') ? 'block' : 'none';
-});
-
-function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
-window.toggleLock = async (id) => { const snap = await getDoc(appStateRef); const field = `isLocked${id}`; const newState = !snap.data()[field]; await setDoc(appStateRef, { [field]: newState }, { merge: true }); if(newState) lockSound.play().catch(()=>{}); };
-
-setInterval(() => { 
-    const now = new Date(); 
-    document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
-    const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
-    if (!isStopped1) renderTable(1, s); 
-    if (!isStopped2) renderTable(2, s); 
-}, 1000);
-
-const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
-let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
-class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
-for(let i=0; i<60; i++) particles.push(new Particle());
-function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); const isDark = document.body.classList.contains('dark'); particles.forEach((p,i) => { p.update(); bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,0,${(1 - dist/120)*0.15})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); requestAnimationFrame(drawBg); } drawBg();
-document.getElementById("darkModeBtn").onclick = () => { document.body.classList.toggle("dark"); document.getElementById("darkModeBtn").textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
-new QRCode(document.getElementById("qrcode"), { text: window.location.href.replace("lista.html", "regulamin.html"), width: 90, height: 90 });
-function toSec(t){ const p=t.split(":").map(Number); return (p[0]||0)*3600+(p[1]||0)*60+(p[2]||0); }
-function getAvatarColor(n) { const colors = ["#1abc9c", "#2ecc71", "#3498db", "#9b59b6", "#e67e22", "#e74c3c"]; let h = 0; for(let i=0; i<n.length; i++) h = n.charCodeAt(i) + ((h<<5)-h); return colors[Math.abs(h)%6]; }
-
-function renderTable(id, sec) {
-    const isStopped = id === 1 ? isStopped1 : isStopped2;
-    const isLocked = id === 1 ? isLocked1 : isLocked2;
-    const table = document.getElementById(`table${id}`);
-    const targetElement = document.getElementById(`targetName${id}`);
-    const targetName = targetElement ? targetElement.textContent : "";
-    
-    let sortedData = [];
-    if (isStopped) {
-        sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
-    } else {
-        const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-        sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
-    }
-
-    table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
-    
-    sortedData.forEach((u, i) => {
-        const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
-        const isLeader = displayRank === 1;
-        let revealThisSlot = isLocked || isStopped;
-
-        if (currentUser === targetName) {
-            revealThisSlot = false;
-        }
-
-        const nameDisp = revealThisSlot ? u.name : (assignedFakeNames[u.id] || "Anonim");
-        const avatarColor = getAvatarColor(nameDisp);
-        const userId = u.id || ""; 
-
-        table.innerHTML += `
-            <tr class="${isLeader ? 'leader-row' : ''}">
-                <td>${displayRank}</td>
-                <td>
-                    <div style="display:flex; align-items:center; gap:8px;">
-                        <div style="width:24px; height:24px; border-radius:50%; background:${avatarColor}; color:white; font-size:10px; display:flex; align-items:center; justify-content:center;">
-                            ${revealThisSlot ? u.name[0] : "?"}
-                        </div>
-                        ${nameDisp}
-                    </div>
-                </td>
-                <td style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isStopped ? '0.5px' : '10px'}); opacity: ${isStopped ? '1' : '0.2'}; transition: 0.5s;">
-                    ${u.hour}
-                </td>
-                <td>
-                    ${!isStopped ? `<span style="color:#ff4d4d; cursor:pointer;" onclick="deleteOne('${userId}')">✕</span>` : ''}
-                </td>
-            </tr>`;
-    });
-}
-window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
-</script>
-</body>
-</html>
+        if(btn) { btn.disabled = false;
