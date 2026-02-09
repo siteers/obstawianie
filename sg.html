@@ -263,7 +263,7 @@
           <h1 style="color: var(--gold); text-shadow: 0 0 20px var(--gold);">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h1>
           <p style="font-size: 18px; color: #ccc;">Z okazji urodzin:</p>
           <h2 style="font-size: 40px; color: #00ff00; text-shadow: 0 0 30px #00ff00; margin: 20px 0;">MNOŻNIK PUNKTÓW <br> RAZY DWA (x2)</h2>
-          <button class="btn-cyber" onclick="closeBirthday()">ODBIERZ PREZENT 🎁</button>
+          <button id="claimGiftBtn" class="btn-cyber">ODBIERZ PREZENT 🎁</button>
       </div>
   </div>
 
@@ -293,6 +293,14 @@
       if (now >= banEnd) { showHub(savedUser); } else { localStorage.removeItem('cyberUser'); }
   } 
   else if (savedUser) { showHub(savedUser); }
+
+  // --- OBSŁUGA PRZYCISKU URODZINOWEGO (PRZYPISANIE BEZPOŚREDNIE) ---
+  const claimBtn = document.getElementById('claimGiftBtn');
+  if(claimBtn) {
+      claimBtn.addEventListener('click', () => {
+          document.getElementById('birthday-overlay').style.display = 'none';
+      });
+  }
 
   window.forgotPassword = async () => {
       const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
@@ -472,8 +480,11 @@
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
   window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
   window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
-  window.closeBirthday = () => { document.getElementById('birthday-overlay').style.display = 'none'; };
-
+  
+  // --- ZMIANA: PRZESUNIĘTA DEFINICJA FUNKCJI ---
+  // Brak tej funkcji w module powodował błąd "closeBirthday is not defined" w HTML-u
+  // Teraz jest obsługiwana przez eventListener powyżej, ale dla pewności usuwam wywołanie z HTML
+  
   // --- LOGIKA KONFETTI ---
   let confettiCtx; let confettiPieces = [];
   function startBirthdayConfetti() {
