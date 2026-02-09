@@ -138,6 +138,23 @@
         transition: 0.2s; backdrop-filter: blur(5px);
     }
     #confused-logout:hover { transform: scale(1.1); background: red; }
+
+    /* --- URODZINY PAWŁA --- */
+    #birthday-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 30000;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        text-align: center;
+    }
+    .bday-card {
+        background: rgba(10, 15, 30, 0.95); padding: 40px; border-radius: 30px;
+        border: 2px solid var(--gold); box-shadow: 0 0 100px rgba(212, 175, 55, 0.5);
+        animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        position: relative; z-index: 30002; max-width: 90%;
+    }
+    @keyframes popIn { 0% { transform: scale(0) rotate(-10deg); } 100% { transform: scale(1) rotate(0deg); } }
+    .rabbit-emoji { font-size: 80px; display: block; margin-bottom: 10px; animation: bounce 2s infinite; }
+    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+    #bday-canvas { position: absolute; inset: 0; z-index: 30001; pointer-events: none; }
   </style>
 </head>
 <body>
@@ -145,6 +162,7 @@
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
+  <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
 
   <div id="login-container">
     <div class="login-card" id="loginCardElement">
@@ -157,7 +175,7 @@
         <input type="password" id="userPass" placeholder="Hasło dostępu">
         <div class="auth-links">
             <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
-            </div>
+        </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
             <div>Update (05.02.2026) V.442 - Dodano konto SCIANA (tylko podgląd) oraz zabezpieczono system przed self-votingiem</div>
@@ -238,6 +256,17 @@
       </div>
   </div>
 
+  <div id="birthday-overlay">
+      <canvas id="bday-canvas"></canvas>
+      <div class="bday-card">
+          <div class="rabbit-emoji">🐰🎂</div>
+          <h1 style="color: var(--gold); text-shadow: 0 0 20px var(--gold);">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h1>
+          <p style="font-size: 18px; color: #ccc;">Z okazji urodzin:</p>
+          <h2 style="font-size: 40px; color: #00ff00; text-shadow: 0 0 30px #00ff00; margin: 20px 0;">MNOŻNIK PUNKTÓW <br> RAZY DWA (x2)</h2>
+          <button class="btn-cyber" onclick="closeBirthday()">ODBIERZ PREZENT 🎁</button>
+      </div>
+  </div>
+
   <div id="confused-screen">
       <img id="confused-gif" src="confused.gif">
       <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
@@ -258,69 +287,34 @@
   });
 
   const savedUser = localStorage.getItem('cyberUser');
-  // --- SPECIALNA WERYFIKACJA DLA GRZEŚKA (WYLOGOWUJE GO Z AUTOMATU) ---
   if (savedUser === "Grzesiek Sz") {
-      // ZMIANA: Sprawdzamy, czy ban już minął (09.02.2026, 12:30)
       const now = new Date();
       const banEnd = new Date("2026-02-09T12:30:00");
-      
-      // Jeśli jest PO czasie bana -> pozwól zostać zalogowanym
-      if (now >= banEnd) {
-          showHub(savedUser);
-      } else {
-          // Jeśli jest PRZED czasem -> wyloguj
-          localStorage.removeItem('cyberUser');
-      }
+      if (now >= banEnd) { showHub(savedUser); } else { localStorage.removeItem('cyberUser'); }
   } 
-  else if (savedUser) {
-      showHub(savedUser);
-  }
+  else if (savedUser) { showHub(savedUser); }
 
-  // --- ZAPOMNIAŁEM HASŁA (DODANO BRAKUJĄCĄ FUNKCJĘ) ---
   window.forgotPassword = async () => {
       const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
       if (!user) return;
-
-      // ZABEZPIECZENIE: Nie pozwól zresetować Admina ani SCIANY tą metodą!
-      if (user.toLowerCase() === "admin" || user === "SCIANA") {
-          alert("BŁĄD: Hasła tego konta nie można zresetować zdalnie.");
-          return;
-      }
-
+      if (user.toLowerCase() === "admin" || user === "SCIANA") { alert("BŁĄD: Hasła tego konta nie można zresetować zdalnie."); return; }
       try {
           const docRef = doc(db, "passwords", user);
           const docSnap = await getDoc(docRef);
-
-          if (!docSnap.exists()) {
-              alert("BŁĄD: Użytkownik nie istnieje w bazie.");
-              return;
-          }
-
-          // Procedura resetu
+          if (!docSnap.exists()) { alert("BŁĄD: Użytkownik nie istnieje w bazie."); return; }
           const newPass = prompt(`Witaj ${user}.\nPodaj NOWE hasło:`);
           if (!newPass) return;
-
           const confirmPass = prompt("Powtórz NOWE hasło:");
-          if (newPass !== confirmPass) {
-              alert("BŁĄD: Hasła nie są identyczne! Spróbuj ponownie.");
-              return;
-          }
-
-          // Zapisz nowe hasło w bazie
+          if (newPass !== confirmPass) { alert("BŁĄD: Hasła nie są identyczne! Spróbuj ponownie."); return; }
           await setDoc(docRef, { password: newPass }, { merge: true });
           alert("SUKCES: Hasło zostało zmienione. Możesz się zalogować.");
-
-      } catch (e) {
-          console.error(e);
-          alert("Błąd systemu bazy danych.");
-      }
+      } catch (e) { console.error(e); alert("Błąd systemu bazy danych."); }
   };
 
   window.login = async () => {
       const user = document.getElementById('userSelect').value;
       const pass = document.getElementById('userPass').value.trim();
       
-      // --- CONFUSED MODE DLA PUSTEGO PROFILU ---
       if ((user === " " || user.trim() === "") && pass === "aaaa") {
           document.getElementById('confused-screen').style.display = 'flex';
           document.getElementById('login-container').style.display = 'none';
@@ -334,28 +328,14 @@
       if (user === "Grzesiek Sz") {
           const userDoc = await getDoc(doc(db, "passwords", user));
           if(userDoc.exists() && String(userDoc.data().password) === String(pass)) {
-              
-              // ZMIANA: Sprawdzenie warunku czasowego na bana
               const now = new Date();
               const banEnd = new Date("2026-02-09T12:30:00");
-
-              if (now >= banEnd) {
-                  // Koniec bana! Wpuść go normalnie
-                  saveSession(user);
-                  startTrollLogoutTimer(); // Opcjonalnie zostawiamy troll timer
-              } else {
-                  // Ban nadal trwa - pokaż ekran zemsty
-                  startRevengeProtocol(user);
-                  startTrollLogoutTimer();
-              }
-
-          } else {
-              triggerNightmare();
-          }
+              if (now >= banEnd) { saveSession(user); startTrollLogoutTimer(); } 
+              else { startRevengeProtocol(user); startTrollLogoutTimer(); }
+          } else { triggerNightmare(); }
           return;
       }
 
-      // --- LOGOWANIE DLA WSZYSTKICH (W TYM ADMINA) PRZEZ BAZĘ DANYCH ---
       try {
           const userDoc = await getDoc(doc(db, "passwords", user));
           if (userDoc.exists()) {
@@ -364,382 +344,163 @@
       } catch (error) { console.error(error); alert("Błąd połączenia."); }
   };
 
-  let banTarget = "";
-  let currentQ = 0;
-  let sinsList = [];
-  let cheatClicks = 0;
-  let cheatTimer; // TIMER DLA CHEATA
-
-  // CHEAT PRZENIESIONY DO #q-text (TREŚĆ PYTANIA) - FIX TIMERA
+  let banTarget = ""; let currentQ = 0; let sinsList = []; let cheatClicks = 0; let cheatTimer;
   document.getElementById('q-text').addEventListener('click', async () => {
       if(banTarget !== "Grzesiek Sz") return;
-      cheatClicks++;
-      
-      // Reset timera przy każdym kliknięciu
-      clearTimeout(cheatTimer);
-
+      cheatClicks++; clearTimeout(cheatTimer);
       if(cheatClicks >= 10) { 
-           cheatClicks = 0; // Reset
-           const p = prompt("ADMIN AUTH REQUIRED:");
+           cheatClicks = 0; const p = prompt("ADMIN AUTH REQUIRED:");
            if(p) {
-               // ZMIANA: Hasło z BAZY DANYCH (Admin)
                try {
                    const adminDoc = await getDoc(doc(db, "passwords", "Admin"));
-                   if (adminDoc.exists() && String(adminDoc.data().password) === p) {
-                       currentQ = 1000000; 
-                       nextQuestion();
-                   }
+                   if (adminDoc.exists() && String(adminDoc.data().password) === p) { currentQ = 1000000; nextQuestion(); }
                } catch(e) { console.error(e); }
            }
-      } else {
-           // Timer zeruje licznik dopiero jak przestaniesz klikać na 1 sekundę
-           cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000);
-      }
+      } else { cheatTimer = setTimeout(() => { cheatClicks = 0; }, 1000); }
   });
 
-  const hardTrivia = [
-      { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] },
-      { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka", "Marcel Proust"] },
-      { q: "Rok upadku Cesarstwa Zachodniorzymskiego?", a: ["476 n.e.", "1453 n.e.", "395 n.e.", "410 n.e."] },
-      { q: "Najgłębsze jezioro świata?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie", "Jezioro Wiktorii"] },
-      { q: "Ile księżyców ma Mars?", a: ["2", "1", "4", "0"] },
-      { q: "Odkrywca penicyliny?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Marie Curie"] },
-      { q: "Pierwiastek o symbolu W?", a: ["Wolfram", "Wanad", "Węgiel", "Wodór"] },
-      { q: "Rok Konstytucji 3 Maja?", a: ["1791", "1794", "1772", "1795"] },
-      { q: "Najgorętsza planeta?", a: ["Wenus", "Merkury", "Mars", "Jowisz"] },
-      { q: "Autor obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso", "Salvador Dali"] },
-      { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik", "Fanerozoik"] },
-      { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch", "Canberra"] },
-      { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²", "1.602 x 10^-19"] },
-      { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell", "Hermann Hesse"] }
-  ];
+  const hardTrivia = [ { q: "Stolica Burkina Faso?", a: ["Ouagadougou", "Bamako", "Niamey", "Dakar"] }, { q: "Autor 'Dżumy'?", a: ["Albert Camus", "Jean-Paul Sartre", "Franz Kafka", "Marcel Proust"] }, { q: "Rok upadku Cesarstwa Zachodniorzymskiego?", a: ["476 n.e.", "1453 n.e.", "395 n.e.", "410 n.e."] }, { q: "Najgłębsze jezioro świata?", a: ["Bajkał", "Tanganika", "Morze Kaspijskie", "Jezioro Wiktorii"] }, { q: "Ile księżyców ma Mars?", a: ["2", "1", "4", "0"] }, { q: "Odkrywca penicyliny?", a: ["Alexander Fleming", "Louis Pasteur", "Robert Koch", "Marie Curie"] }, { q: "Pierwiastek o symbolu W?", a: ["Wolfram", "Wanad", "Węgiel", "Wodór"] }, { q: "Rok Konstytucji 3 Maja?", a: ["1791", "1794", "1772", "1795"] }, { q: "Najgorętsza planeta?", a: ["Wenus", "Merkury", "Mars", "Jowisz"] }, { q: "Autor obrazu 'Krzyk'?", a: ["Edvard Munch", "Vincent van Gogh", "Pablo Picasso", "Salvador Dali"] }, { q: "Jak nazywa się obecna era geologiczna?", a: ["Kenozoik", "Mezozoik", "Paleozoik", "Fanerozoik"] }, { q: "Stolica Nowej Zelandii?", a: ["Wellington", "Auckland", "Christchurch", "Canberra"] }, { q: "Ile wynosi stała Avogadro (w przybliżeniu)?", a: ["6.022 x 10^23", "3.14 x 10^9", "9.81 m/s²", "1.602 x 10^-19"] }, { q: "Kto napisał 'Proces'?", a: ["Franz Kafka", "Fiodor Dostojewski", "George Orwell", "Hermann Hesse"] } ];
 
   function generateQuestion(idx) {
       const rnd = Math.random();
-      if (rnd < 0.4) {
-          const hQ = hardTrivia[Math.floor(Math.random() * hardTrivia.length)];
-          return prepareQ(hQ);
-      } else {
+      if (rnd < 0.4) { return prepareQ(hardTrivia[Math.floor(Math.random() * hardTrivia.length)]); } 
+      else {
           const opType = Math.random() > 0.5 ? 'mul' : 'add';
           let a, b, correct, qStr;
-          if(opType === 'mul') {
-              a = Math.floor(Math.random() * 90) + 10; b = Math.floor(Math.random() * 20) + 2;
-              correct = a * b; qStr = `${a} * ${b} = ?`;
-          } else {
-              a = Math.floor(Math.random() * 900) + 100; b = Math.floor(Math.random() * 900) + 100;
-              correct = a + b; qStr = `${a} + ${b} = ?`;
-          }
+          if(opType === 'mul') { a = Math.floor(Math.random() * 90) + 10; b = Math.floor(Math.random() * 20) + 2; correct = a * b; qStr = `${a} * ${b} = ?`; } 
+          else { a = Math.floor(Math.random() * 900) + 100; b = Math.floor(Math.random() * 900) + 100; correct = a + b; qStr = `${a} + ${b} = ?`; }
           const answers = [correct.toString()];
-          while(answers.length < 4) {
-              let fake = correct + (Math.floor(Math.random() * 40) - 20); 
-              if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString());
-          }
+          while(answers.length < 4) { let fake = correct + (Math.floor(Math.random() * 40) - 20); if (fake !== correct && fake > 0 && !answers.includes(fake.toString())) answers.push(fake.toString()); }
           return { q: qStr, a: answers, correct: correct.toString() };
       }
   }
-
-  function prepareQ(item) {
-      return { q: item.q, a: item.a, correct: item.a[0] };
-  }
-
-  function shuffle(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-  }
+  function prepareQ(item) { return { q: item.q, a: item.a, correct: item.a[0] }; }
+  function shuffle(array) { for (let i = array.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [array[i], array[j]] = [array[j], array[i]]; } return array; }
 
   function startRevengeProtocol(user) {
       banTarget = user;
       const overlay = document.getElementById('revenge-overlay');
       const video = document.getElementById('intro-video'); 
       const banScreen = document.getElementById('ban-screen');
-      const banHeader = document.getElementById('ban-header'); // Nagłówek bana
-      const banInfo = document.getElementById('ban-info');     // Info o banie
+      const banHeader = document.getElementById('ban-header'); 
+      const banInfo = document.getElementById('ban-info');
       
-      overlay.style.display = "flex";
-      video.style.display = "block";
-      
-      video.muted = false; 
-      video.volume = 1.0;
-      video.play().catch(e => console.log("Autoplay blocked:", e)); 
+      overlay.style.display = "flex"; video.style.display = "block"; video.muted = false; video.volume = 1.0; video.play().catch(e => console.log("Autoplay blocked:", e)); 
       
       video.onended = () => {
-          video.style.display = "none";
-          banScreen.style.display = "flex";
-          
-          // ZMIANA: Sprawdzamy czy to dzień końca bana (09.02.2026, 06:00 - 12:30)
-          const now = new Date();
-          const targetDate = new Date("2026-02-09");
-          const targetStart = new Date("2026-02-09T06:00:00");
-          const targetEnd = new Date("2026-02-09T12:30:00");
-
-          // Czy to ten sam dzień i godzina w przedziale?
-          const isTargetDay = now.toDateString() === targetDate.toDateString();
-          const isInTimeRange = now >= targetStart && now <= targetEnd;
-
-          if (isTargetDay && isInTimeRange) {
-              // Specjalny tryb odliczania do końca bana
-              banHeader.innerHTML = "BAN WYGASA O 12:30";
-              banHeader.style.color = "orange";
-              banInfo.innerHTML = "CIERPLIWOŚCI...";
-              startBanTimer(true); // true = tryb odliczania do 12:30
+          video.style.display = "none"; banScreen.style.display = "flex";
+          const now = new Date(); const targetDate = new Date("2026-02-09"); const targetStart = new Date("2026-02-09T06:00:00"); const targetEnd = new Date("2026-02-09T12:30:00");
+          if (now.toDateString() === targetDate.toDateString() && now >= targetStart && now <= targetEnd) {
+              banHeader.innerHTML = "BAN WYGASA O 12:30"; banHeader.style.color = "orange"; banInfo.innerHTML = "CIERPLIWOŚCI..."; startBanTimer(true);
           } else {
-              // Standardowy tryb permanentny
-              banHeader.innerHTML = "BAN ADMINISTRACYJNY";
-              banHeader.style.color = "red";
-              banInfo.innerHTML = "KONIEC BANU: NIGDY";
-              startBanTimer(false); // false = tryb dożywocie
+              banHeader.innerHTML = "BAN ADMINISTRACYJNY"; banHeader.style.color = "red"; banInfo.innerHTML = "KONIEC BANU: NIGDY"; startBanTimer(false);
           }
       };
   }
 
   function startBanTimer(isCountdownMode) {
-      // Jeśli tryb odliczania -> celujemy w 12:30 dzisiaj
-      // Jeśli tryb zwykły -> celujemy w rok 9999
-      
-      const targetDate = isCountdownMode 
-          ? new Date("2026-02-09T12:30:00").getTime() 
-          : new Date("9999-12-31T23:59:59").getTime();
-
+      const targetDate = isCountdownMode ? new Date("2026-02-09T12:30:00").getTime() : new Date("9999-12-31T23:59:59").getTime();
       const timerInterval = setInterval(() => {
-          const now = new Date().getTime();
-          const dist = targetDate - now;
-
+          const now = new Date().getTime(); const dist = targetDate - now;
           if (dist < 0) { 
-              if (isCountdownMode) {
-                  // Ban się skończył!
-                  clearInterval(timerInterval);
-                  document.getElementById("countdown-timer").innerHTML = "WOLNOŚĆ!";
-                  setTimeout(() => location.reload(), 2000); // Przeładuj stronę, żeby mógł wejść
-                  return;
-              } else {
-                  document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; 
-                  return; 
-              }
+              if (isCountdownMode) { clearInterval(timerInterval); document.getElementById("countdown-timer").innerHTML = "WOLNOŚĆ!"; setTimeout(() => location.reload(), 2000); return; } 
+              else { document.getElementById("countdown-timer").innerHTML = "KONIEC BANU"; return; }
           }
-
           if (isCountdownMode) {
-              // Formatowanie czasu dla odliczania (HH:MM:SS)
               const h = Math.floor((dist % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
               const m = Math.floor((dist % (1000 * 60 * 60)) / (1000 * 60));
               const s = Math.floor((dist % (1000 * 60)) / 1000);
-              document.getElementById("countdown-timer").innerHTML = 
-                  `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
-              document.getElementById("countdown-timer").style.color = "orange";
-          } else {
-              // Standardowy tekst
-              document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE";
-              document.getElementById("countdown-timer").style.color = "red";
-          }
+              document.getElementById("countdown-timer").innerHTML = `${h<10?'0'+h:h}:${m<10?'0'+m:m}:${s<10?'0'+s:s}`; document.getElementById("countdown-timer").style.color = "orange";
+          } else { document.getElementById("countdown-timer").innerHTML = "DOŻYWOCIE"; document.getElementById("countdown-timer").style.color = "red"; }
       }, 1000);
   }
 
-  // Funkcja automatycznego wylogowania po 5 minutach (300000ms)
-  function startTrollLogoutTimer() {
-      setTimeout(() => {
-          alert("SESJA WYGASŁA - ZA DŁUGO MYŚLISZ!");
-          logout();
-      }, 300000); 
-  }
-
-  window.startMilionerzy = () => {
-      document.getElementById('ban-screen').style.display = "none";
-      document.getElementById('quiz-container').style.display = "block";
-      currentQ = 0;
-      nextQuestion();
-  };
-
+  function startTrollLogoutTimer() { setTimeout(() => { alert("SESJA WYGASŁA - ZA DŁUGO MYŚLISZ!"); logout(); }, 300000); }
+  window.startMilionerzy = () => { document.getElementById('ban-screen').style.display = "none"; document.getElementById('quiz-container').style.display = "block"; currentQ = 0; nextQuestion(); };
   function nextQuestion() {
       if (currentQ >= 1000000) { preparePenance(); return; }
-      
-      const loading = document.getElementById('quiz-loading');
-      loading.style.display = "flex"; 
-      
+      const loading = document.getElementById('quiz-loading'); loading.style.display = "flex"; 
       setTimeout(() => {
-          loading.style.display = "none";
-          document.getElementById('q-num').innerText = currentQ + 1;
-          
-          const qObj = generateQuestion(currentQ);
-          const correctAnswer = qObj.correct;
-          const answers = [...qObj.a];
-          shuffle(answers); 
-
-          document.getElementById('q-text').innerText = qObj.q;
-          const optsDiv = document.getElementById('q-options');
-          optsDiv.innerHTML = "";
-          
-          answers.forEach(opt => {
-              const btn = document.createElement('button');
-              btn.className = 'quiz-btn';
-              btn.innerText = opt;
-              btn.onclick = () => {
-                  if (opt === correctAnswer) { currentQ++; nextQuestion(); } 
-                  else { alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!"); currentQ = 0; nextQuestion(); }
-              };
-              optsDiv.appendChild(btn);
-          });
+          loading.style.display = "none"; document.getElementById('q-num').innerText = currentQ + 1;
+          const qObj = generateQuestion(currentQ); const correctAnswer = qObj.correct; const answers = [...qObj.a]; shuffle(answers); 
+          document.getElementById('q-text').innerText = qObj.q; const optsDiv = document.getElementById('q-options'); optsDiv.innerHTML = "";
+          answers.forEach(opt => { const btn = document.createElement('button'); btn.className = 'quiz-btn'; btn.innerText = opt; btn.onclick = () => { if (opt === correctAnswer) { currentQ++; nextQuestion(); } else { alert("ZŁA ODPOWIEDŹ! WRACASZ NA POCZĄTEK!"); currentQ = 0; nextQuestion(); } }; optsDiv.appendChild(btn); });
       }, 1500); 
   }
-
   async function preparePenance() {
-      document.getElementById('quiz-container').style.display = "none";
-      document.getElementById('penance-container').style.display = "block";
-      const legacyMapping = ["Gregorio Sz", "Grzesiek Sz"];
-      const snaps = await getDocs(collection(db, "signatures"));
-      sinsList = [];
-      snaps.forEach(d => {
-          const data = d.data();
-          if (data.author === banTarget || legacyMapping.includes(data.name)) sinsList.push(data.sig);
-      });
-      if (sinsList.length === 0) sinsList.push("0.jpg"); 
-      updatePenanceUI();
+      document.getElementById('quiz-container').style.display = "none"; document.getElementById('penance-container').style.display = "block";
+      const legacyMapping = ["Gregorio Sz", "Grzesiek Sz"]; const snaps = await getDocs(collection(db, "signatures")); sinsList = [];
+      snaps.forEach(d => { const data = d.data(); if (data.author === banTarget || legacyMapping.includes(data.name)) sinsList.push(data.sig); });
+      if (sinsList.length === 0) sinsList.push("0.jpg"); updatePenanceUI();
   }
-
   function updatePenanceUI() {
-      const count = sinsList.length;
-      document.getElementById('spam-count').innerText = "Pozostało: " + count;
-      if (count > 0) { document.getElementById('sin-preview').src = sinsList[count - 1]; } 
-      else { alert("KARA ODBYTA. MOŻESZ WEJŚĆ."); document.getElementById('revenge-overlay').style.display = "none"; saveSession(banTarget); }
+      const count = sinsList.length; document.getElementById('spam-count').innerText = "Pozostało: " + count;
+      if (count > 0) { document.getElementById('sin-preview').src = sinsList[count - 1]; } else { alert("KARA ODBYTA. MOŻESZ WEJŚĆ."); document.getElementById('revenge-overlay').style.display = "none"; saveSession(banTarget); }
   }
-
   window.doPenance = () => { if(sinsList.length > 0) { sinsList.pop(); updatePenanceUI(); } };
-
-  window.adminAddUser = async () => {
-      const n = prompt("Nazwa nowego gracza:"); if(!n) return;
-      const check = await getDoc(doc(db, "passwords", n));
-      if(check.exists()) return alert("Taki użytkownik już istnieje!");
-      const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return;
-      await setDoc(doc(db, "passwords", n), { password: p });
-      alert("Dodano gracza: " + n);
-  };
-
-  window.adminEditUserFlow = async () => {
-      const modal = document.getElementById('delete-user-modal');
-      const select = document.getElementById('userDeleteSelect');
-      const title = document.getElementById('modal-title');
-      const actionBtn = document.getElementById('modal-action-btn');
-
-      title.innerText = "EDYTUJ NAZWĘ GRACZA";
-      title.style.color = "#d4af37";
-      actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ";
-      actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)";
-      
-      actionBtn.onclick = confirmEditUser;
-
-      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
-      modal.style.display = 'flex';
-      const snap = await getDocs(collection(db, "passwords"));
-      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
-      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
-  };
-
-  window.confirmEditUser = async () => {
-      const oldName = document.getElementById('userDeleteSelect').value;
-      if (!oldName) return alert("Wybierz gracza!");
-      
-      const newName = prompt("Podaj NOWĄ nazwę dla " + oldName + ":");
-      if (!newName || newName === oldName) return;
-
-      const check = await getDoc(doc(db, "passwords", newName));
-      if(check.exists()) return alert("Taka nazwa już istnieje!");
-
-      if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) {
-          const oldPassDoc = await getDoc(doc(db, "passwords", oldName));
-          await setDoc(doc(db, "passwords", newName), oldPassDoc.data());
-          await deleteDoc(doc(db, "passwords", oldName));
-
-          const oldRankDoc = await getDoc(doc(db, "ranking", oldName));
-          if (oldRankDoc.exists()) {
-              await setDoc(doc(db, "ranking", newName), oldRankDoc.data());
-              await deleteDoc(doc(db, "ranking", oldName));
-          }
-
-          alert("Nazwa zmieniona pomyślnie.");
-          closeDeleteModal();
-      }
-  };
-
-  window.deleteUserFlow = async () => { 
-      const modal = document.getElementById('delete-user-modal');
-      const select = document.getElementById('userDeleteSelect');
-      const title = document.getElementById('modal-title');
-      const actionBtn = document.getElementById('modal-action-btn');
-
-      title.innerText = "USUWANIE GRACZA";
-      title.style.color = "#ff4757";
-      actionBtn.innerText = "USUŃ";
-      actionBtn.style.background = "linear-gradient(135deg, #ff0000, #990000)";
-      actionBtn.onclick = confirmDeleteUser;
-
-      select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>';
-      modal.style.display = 'flex';
-      const snap = await getDocs(collection(db, "passwords"));
-      select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>';
-      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } });
-  };
-
+  window.adminAddUser = async () => { const n = prompt("Nazwa nowego gracza:"); if(!n) return; const check = await getDoc(doc(db, "passwords", n)); if(check.exists()) return alert("Taki użytkownik już istnieje!"); const p = prompt("Ustaw hasło (4 cyfry):"); if(!p) return; await setDoc(doc(db, "passwords", n), { password: p }); alert("Dodano gracza: " + n); };
+  window.adminEditUserFlow = async () => { const modal = document.getElementById('delete-user-modal'); const select = document.getElementById('userDeleteSelect'); const title = document.getElementById('modal-title'); const actionBtn = document.getElementById('modal-action-btn'); title.innerText = "EDYTUJ NAZWĘ GRACZA"; title.style.color = "#d4af37"; actionBtn.innerText = "ZAPISZ NOWĄ NAZWĘ"; actionBtn.style.background = "linear-gradient(135deg, #d4af37, #b4912f)"; actionBtn.onclick = confirmEditUser; select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>'; modal.style.display = 'flex'; const snap = await getDocs(collection(db, "passwords")); select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>'; snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } }); };
+  window.confirmEditUser = async () => { const oldName = document.getElementById('userDeleteSelect').value; if (!oldName) return alert("Wybierz gracza!"); const newName = prompt("Podaj NOWĄ nazwę dla " + oldName + ":"); if (!newName || newName === oldName) return; const check = await getDoc(doc(db, "passwords", newName)); if(check.exists()) return alert("Taka nazwa już istnieje!"); if (confirm(`Zmienić "${oldName}" na "${newName}"?`)) { const oldPassDoc = await getDoc(doc(db, "passwords", oldName)); await setDoc(doc(db, "passwords", newName), oldPassDoc.data()); await deleteDoc(doc(db, "passwords", oldName)); const oldRankDoc = await getDoc(doc(db, "ranking", oldName)); if (oldRankDoc.exists()) { await setDoc(doc(db, "ranking", newName), oldRankDoc.data()); await deleteDoc(doc(db, "ranking", oldName)); } alert("Nazwa zmieniona pomyślnie."); closeDeleteModal(); } };
+  window.deleteUserFlow = async () => { const modal = document.getElementById('delete-user-modal'); const select = document.getElementById('userDeleteSelect'); const title = document.getElementById('modal-title'); const actionBtn = document.getElementById('modal-action-btn'); title.innerText = "USUWANIE GRACZA"; title.style.color = "#ff4757"; actionBtn.innerText = "USUŃ"; actionBtn.style.background = "linear-gradient(135deg, #ff0000, #990000)"; actionBtn.onclick = confirmDeleteUser; select.innerHTML = '<option value="" disabled selected>Ładowanie...</option>'; modal.style.display = 'flex'; const snap = await getDocs(collection(db, "passwords")); select.innerHTML = '<option value="" disabled selected>Wybierz gracza...</option>'; snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.appendChild(opt); } }); };
   window.closeDeleteModal = () => document.getElementById('delete-user-modal').style.display = 'none';
-  
-  window.confirmDeleteUser = async () => { 
-      const userToDelete = document.getElementById('userDeleteSelect').value;
-      if (!userToDelete) return alert("Wybierz gracza z listy!");
-      if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) {
-          await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); 
-          alert("Gracz usunięty."); closeDeleteModal();
-      }
-  };
-
-  function triggerNightmare() {
-      const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); 
-      document.body.classList.add('nightmare-mode'); document.getElementById('loginCardElement').classList.add('nightmare-shake');
-      setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('loginCardElement').classList.remove('nightmare-shake'); }, 1000);
-  }
-
+  window.confirmDeleteUser = async () => { const userToDelete = document.getElementById('userDeleteSelect').value; if (!userToDelete) return alert("Wybierz gracza z listy!"); if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) { await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); alert("Gracz usunięty."); closeDeleteModal(); } };
+  function triggerNightmare() { const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); document.body.classList.add('nightmare-mode'); document.getElementById('loginCardElement').classList.add('nightmare-shake'); setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('loginCardElement').classList.remove('nightmare-shake'); }, 1000); }
   document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
-
-  function saveSession(user) {
-      localStorage.setItem('cyberUser', user);
-      showHub(user);
-  }
+  function saveSession(user) { localStorage.setItem('cyberUser', user); showHub(user); }
 
   function showHub(user) {
-      if (user === " " || user === "." || user === "Grzesiek" || user === "") { 
-          document.getElementById('confused-screen').style.display = 'flex';
-          document.getElementById('login-container').style.display = 'none';
-          document.getElementById('logoutBtn').style.display = 'none';
-          return;
+      if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
+      document.getElementById('login-container').style.display = 'none'; document.getElementById('hub-view').style.display = 'block'; document.getElementById('logoutBtn').style.display = 'block'; document.getElementById('userNameDisplay').innerText = user;
+      
+      // URODZINY PAWŁA
+      if (user === "Paweł") {
+          document.getElementById('birthday-overlay').style.display = 'flex';
+          startBirthdayConfetti();
+          document.getElementById('fanfareAudio').play().catch(()=>{});
       }
 
-      document.getElementById('login-container').style.display = 'none';
-      document.getElementById('hub-view').style.display = 'block';
-      document.getElementById('logoutBtn').style.display = 'block';
-      document.getElementById('userNameDisplay').innerText = user;
-      
-      const userBtns = document.getElementById('user-buttons');
-      const adminBtns = document.getElementById('admin-buttons');
-      
-      document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block');
-      document.getElementById('add-hour-btn').style.display = 'block'; 
-
-      if (user === "Admin") { 
-          userBtns.style.display = 'none'; 
-          adminBtns.style.display = 'block'; 
-      } else { 
-          userBtns.style.display = 'block'; 
-          adminBtns.style.display = 'none'; 
-      }
-      
-      if (user === "SCIANA") {
-          document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none');
-          document.getElementById('add-hour-btn').style.display = 'none'; 
-      }
+      const userBtns = document.getElementById('user-buttons'); const adminBtns = document.getElementById('admin-buttons');
+      document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block'); document.getElementById('add-hour-btn').style.display = 'block'; 
+      if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
+      if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
   window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
   window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
+  window.closeBirthday = () => { document.getElementById('birthday-overlay').style.display = 'none'; };
+
+  // --- LOGIKA KONFETTI ---
+  let confettiCtx; let confettiPieces = [];
+  function startBirthdayConfetti() {
+      const canvas = document.getElementById('bday-canvas');
+      confettiCtx = canvas.getContext('2d');
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+      confettiPieces = [];
+      const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#d4af37'];
+      for (let i = 0; i < 300; i++) {
+          confettiPieces.push({
+              x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
+              w: Math.random() * 10 + 5, h: Math.random() * 10 + 5,
+              color: colors[Math.floor(Math.random() * colors.length)],
+              vy: Math.random() * 2 + 2, vx: Math.random() * 2 - 1, r: Math.random() * 360
+          });
+      }
+      animateConfetti();
+  }
+  function animateConfetti() {
+      const canvas = document.getElementById('bday-canvas');
+      if(document.getElementById('birthday-overlay').style.display === 'none') return;
+      confettiCtx.clearRect(0, 0, canvas.width, canvas.height);
+      confettiPieces.forEach(p => {
+          p.y += p.vy; p.x += p.vx; p.r += 2;
+          if (p.y > canvas.height) p.y = -20;
+          confettiCtx.save(); confettiCtx.translate(p.x, p.y); confettiCtx.rotate(p.r * Math.PI / 180);
+          confettiCtx.fillStyle = p.color; confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+          confettiCtx.restore();
+      });
+      requestAnimationFrame(animateConfetti);
+  }
 
   const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
   let pts = [];
