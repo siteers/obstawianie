@@ -271,8 +271,10 @@
                 
                 historyData.forEach(r => {
                     const roundDate = new Date(r.timestamp);
-                    // Sprawdzamy czy w tej rundzie Paweł miał bonus
-                    const isPawelBonus = (p.name === "Paweł" && roundDate <= new Date("2026-02-10T23:59:59"));
+                    // Sprawdzamy czy w tej rundzie Paweł miał bonus (OD 09.02 DO 10.02)
+                    const bonusStart = new Date("2026-02-09T00:00:00");
+                    const bonusEnd = new Date("2026-02-10T23:59:59");
+                    const isPawelBonus = (p.name === "Paweł" && roundDate >= bonusStart && roundDate <= bonusEnd);
 
                     r.winners.forEach((w, idx) => {
                         if(w.name === p.name) {
@@ -306,38 +308,40 @@
 
             globalStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
 
-            // --- OBLICZANIE TRENDU (SYMULACJA STANU SPRZED 1 RUNDY) ---
+            // --- OBLICZANIE TRENDU ---
             const prevStats = playersData.map(p => {
                 let points = 0;
-                let g=0, s=0, b=0;
-                // Liczymy wszystko OPRÓCZ najnowszej rundy (index 0)
+                // Liczymy wszystko OPRÓCZ najnowszej rundy
                 const oldHistory = historyData.slice(1); 
                 
                 oldHistory.forEach(r => {
                     const roundDate = new Date(r.timestamp);
-                    const isPawelBonus = (p.name === "Paweł" && roundDate <= new Date("2026-02-10T23:59:59"));
+                    const bonusStart = new Date("2026-02-09T00:00:00");
+                    const bonusEnd = new Date("2026-02-10T23:59:59");
+                    const isPawelBonus = (p.name === "Paweł" && roundDate >= bonusStart && roundDate <= bonusEnd);
 
                     r.winners.forEach((w, idx) => {
                         if(w.name === p.name) {
                             const rank = w.rank || (idx + 1);
                             let pts = 0;
-                            if(rank === 1) { pts = 3; g++; } else if(rank === 2) { pts = 2; s++; } else if(rank === 3) { pts = 1; b++; }
+                            if(rank === 1) pts = 3; else if(rank === 2) pts = 2; else if(rank === 3) pts = 1;
                             if (isPawelBonus && rank <= 3) pts *= 2;
                             points += pts;
                         }
                     });
                 });
-                return { name: p.name, points, g, s, b, tb: p.tb || 0 };
+                return { name: p.name, points, tb: p.tb || 0 };
             });
             
-            prevStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
+            // Sortowanie poprzedniego rankingu
+            prevStats.sort((a,b) => (b.points - a.points) || (b.tb - a.tb));
             
             const prevRanks = {}; 
             let lastR = 1;
             prevStats.forEach((p,i) => {
                  if(i>0) {
                     const prev = prevStats[i-1];
-                    if(!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) lastR = i+1;
+                    if(p.points !== prev.points || p.tb !== prev.tb) lastR = i+1;
                  }
                  prevRanks[p.name] = lastR;
             });
@@ -383,7 +387,7 @@
             const numberOfRoundsToShow = 10;
             const historySteps = []; 
 
-            // Musimy obliczać historię "wstecz" odejmując punkty, pamiętając o zasadach bonusowych
+            // Musimy obliczać historię "wstecz" odejmując punkty
             let currentSnapshot = globalStats.map(p => ({
                 name: p.name, points: p.points, g: p.g, s: p.s, b: p.b, tb: p.tb || 0
             }));
@@ -393,20 +397,23 @@
             for (let i = 0; i < Math.min(numberOfRoundsToShow, roundsReversed.length); i++) {
                 const round = roundsReversed[i];
                 const roundDate = new Date(round.timestamp);
-                const isPawelBonus = roundDate <= new Date("2026-02-10T23:59:59");
+                const bonusStart = new Date("2026-02-09T00:00:00");
+                const bonusEnd = new Date("2026-02-10T23:59:59");
+                const isPawelBonus = roundDate >= bonusStart && roundDate <= bonusEnd;
 
                 round.winners.forEach((w, idx) => {
                     const pStat = currentSnapshot.find(p => p.name === w.name);
                     if (pStat) {
                         const rank = w.rank || (idx + 1);
-                        let ptsGained = rank === 1 ? 3 : rank === 2 ? 2 : 1;
-                        // Tutaj też musimy uwzględnić bonus przy cofaniu historii, żeby wykres był dokładny
+                        let ptsGained = 0;
+                        if(rank === 1) ptsGained = 3; else if(rank === 2) ptsGained = 2; else if(rank === 3) ptsGained = 1;
+                        
                         if (pStat.name === "Paweł" && isPawelBonus && rank <= 3) {
                             ptsGained *= 2;
                         }
 
                         pStat.points -= ptsGained;
-                        if(rank === 1) pStat.g--; else if(rank === 2) pStat.s--; else pStat.b--;
+                        // Nie odejmujemy medali w symulacji wstecznej
                     }
                 });
 
@@ -439,13 +446,13 @@
         }
 
         function calculateRankMap(statsArray) {
-            const sorted = [...statsArray].sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
+            const sorted = [...statsArray].sort((a,b) => (b.points - a.points) || (b.tb - a.tb));
             const rankMap = {};
             let lastRank = 1;
             sorted.forEach((p, i) => {
                 if(i > 0) {
                     const prev = sorted[i-1];
-                    if(!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) {
+                    if(p.points !== prev.points || p.tb !== prev.tb) {
                         lastRank = i + 1;
                     }
                 }
@@ -461,13 +468,11 @@
                 const data = d.data(); 
                 historyData.push(data);
                 
-                // Rozdzielamy na podium (Top 3) i resztę
                 const top3 = [];
                 const rest = [];
                 
                 data.winners.forEach((w, idx) => {
                     const rank = w.rank || (idx + 1);
-                    // Godzina w nawiasie jeśli dostępna
                     const timeStr = w.hour ? ` ${w.hour}` : "";
                     
                     if (rank <= 3) {
@@ -477,7 +482,6 @@
                     }
                 });
 
-                // Budowanie stringa wyniku
                 let resultStr = top3.join(", ");
                 if (rest.length > 0) {
                     resultStr += ` <span style="color:#888; font-size:0.9em;">(${rest.join(", ")})</span>`;
@@ -492,8 +496,6 @@
         
         window.deleteHistoryRecord = async (id) => {
             if(!confirm("Cofnąć ten zapis?")) return;
-            // W nowym systemie po prostu usuwamy rekord z historii.
-            // Punkty przeliczą się same przy odświeżeniu, bo funkcja refreshStats() sumuje wszystko od nowa z historii.
             await deleteDoc(doc(db, "history", id));
         };
         
