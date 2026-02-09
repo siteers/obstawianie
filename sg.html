@@ -452,11 +452,15 @@
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       document.getElementById('login-container').style.display = 'none'; document.getElementById('hub-view').style.display = 'block'; document.getElementById('logoutBtn').style.display = 'block'; document.getElementById('userNameDisplay').innerText = user;
       
-      // URODZINY PAWŁA
+      // URODZINY PAWŁA - DATA DO 10.02.2026 23:59
       if (user === "Paweł") {
-          document.getElementById('birthday-overlay').style.display = 'flex';
-          startBirthdayConfetti();
-          document.getElementById('fanfareAudio').play().catch(()=>{});
+          const now = new Date();
+          const bdayEnd = new Date("2026-02-10T23:59:59");
+          if (now <= bdayEnd) {
+              document.getElementById('birthday-overlay').style.display = 'flex';
+              startBirthdayConfetti();
+              document.getElementById('fanfareAudio').play().catch(()=>{});
+          }
       }
 
       const userBtns = document.getElementById('user-buttons'); const adminBtns = document.getElementById('admin-buttons');
