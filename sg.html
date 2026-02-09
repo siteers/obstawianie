@@ -263,7 +263,7 @@
           <h1 style="color: var(--gold); text-shadow: 0 0 20px var(--gold);">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h1>
           <p style="font-size: 18px; color: #ccc;">Z okazji urodzin:</p>
           <h2 style="font-size: 40px; color: #00ff00; text-shadow: 0 0 30px #00ff00; margin: 20px 0;">MNOŻNIK PUNKTÓW <br> RAZY DWA (x2)</h2>
-          <button id="claimGiftBtn" class="btn-cyber">ODBIERZ PREZENT 🎁</button>
+          <button class="btn-cyber" onclick="closeBirthday()">ODBIERZ PREZENT 🎁</button>
       </div>
   </div>
 
@@ -271,6 +271,13 @@
       <img id="confused-gif" src="confused.gif">
       <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
   </div>
+
+<script>
+    function closeBirthday() {
+        const overlay = document.getElementById('birthday-overlay');
+        if(overlay) overlay.style.display = 'none';
+    }
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -293,14 +300,6 @@
       if (now >= banEnd) { showHub(savedUser); } else { localStorage.removeItem('cyberUser'); }
   } 
   else if (savedUser) { showHub(savedUser); }
-
-  // --- OBSŁUGA PRZYCISKU URODZINOWEGO (PRZYPISANIE BEZPOŚREDNIE) ---
-  const claimBtn = document.getElementById('claimGiftBtn');
-  if(claimBtn) {
-      claimBtn.addEventListener('click', () => {
-          document.getElementById('birthday-overlay').style.display = 'none';
-      });
-  }
 
   window.forgotPassword = async () => {
       const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
