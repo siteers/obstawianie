@@ -139,22 +139,19 @@
     }
     #confused-logout:hover { transform: scale(1.1); background: red; }
 
-    /* --- URODZINY PAWŁA --- */
-    #birthday-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 30000;
-        display: none; flex-direction: column; align-items: center; justify-content: center;
+    /* --- WIZYTÓWKA URODZINOWA PAWŁA --- */
+    #pawel-bday-banner {
+        display: none; /* Domyślnie ukryte, JS włączy dla Pawła */
+        margin-bottom: 20px;
         text-align: center;
+        background: rgba(0, 255, 0, 0.1);
+        border: 2px solid #00ff00;
+        border-radius: 15px;
+        padding: 15px;
+        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        animation: pulseGreen 2s infinite;
     }
-    .bday-card {
-        background: rgba(10, 15, 30, 0.95); padding: 40px; border-radius: 30px;
-        border: 2px solid var(--gold); box-shadow: 0 0 100px rgba(212, 175, 55, 0.5);
-        animation: popIn 0.8s cubic-bezier(0.68, -0.55, 0.27, 1.55);
-        position: relative; z-index: 30002; max-width: 90%;
-    }
-    @keyframes popIn { 0% { transform: scale(0) rotate(-10deg); } 100% { transform: scale(1) rotate(0deg); } }
-    .rabbit-emoji { font-size: 80px; display: block; margin-bottom: 10px; animation: bounce 2s infinite; }
-    @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
-    #bday-canvas { position: absolute; inset: 0; z-index: 30001; pointer-events: none; }
+    @keyframes pulseGreen { 0% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } 50% { box-shadow: 0 0 40px rgba(0,255,0,0.6); } 100% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } }
   </style>
 </head>
 <body>
@@ -162,7 +159,6 @@
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
-  <audio id="fanfareAudio" src="fanfare1.mp3"></audio>
 
   <div id="login-container">
     <div class="login-card" id="loginCardElement">
@@ -189,6 +185,12 @@
   </div>
 
   <div class="hub-container" id="hub-view">
+    <div id="pawel-bday-banner">
+        <div style="font-size: 30px;">🐰🎂</div>
+        <h3 style="margin: 5px 0; color: #00ff00;">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h3>
+        <div style="font-size: 14px; color: #fff;">Z okazji urodzin Twój mnożnik punktów wynosi: <b>x2</b></div>
+    </div>
+    
     <h1 id="hub-title">Witaj, <span id="userNameDisplay" style="color:var(--cyan)">User</span></h1>
     <div id="initial-view">
       <button class="btn-cyber btn-service extra-feature" onclick="window.open('service_desk.html', '_blank')">🛠️ Service Desk</button>
@@ -256,28 +258,10 @@
       </div>
   </div>
 
-  <div id="birthday-overlay">
-      <canvas id="bday-canvas"></canvas>
-      <div class="bday-card">
-          <div class="rabbit-emoji">🐰🎂</div>
-          <h1 style="color: var(--gold); text-shadow: 0 0 20px var(--gold);">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h1>
-          <p style="font-size: 18px; color: #ccc;">Z okazji urodzin:</p>
-          <h2 style="font-size: 40px; color: #00ff00; text-shadow: 0 0 30px #00ff00; margin: 20px 0;">MNOŻNIK PUNKTÓW <br> RAZY DWA (x2)</h2>
-          <button class="btn-cyber" onclick="closeBirthday()">ODBIERZ PREZENT 🎁</button>
-      </div>
-  </div>
-
   <div id="confused-screen">
       <img id="confused-gif" src="confused.gif">
       <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
   </div>
-
-<script>
-    function closeBirthday() {
-        const overlay = document.getElementById('birthday-overlay');
-        if(overlay) overlay.style.display = 'none';
-    }
-</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -459,14 +443,12 @@
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       document.getElementById('login-container').style.display = 'none'; document.getElementById('hub-view').style.display = 'block'; document.getElementById('logoutBtn').style.display = 'block'; document.getElementById('userNameDisplay').innerText = user;
       
-      // URODZINY PAWŁA - DATA DO 10.02.2026 23:59
+      // BANER URODZINOWY
       if (user === "Paweł") {
           const now = new Date();
           const bdayEnd = new Date("2026-02-10T23:59:59");
           if (now <= bdayEnd) {
-              document.getElementById('birthday-overlay').style.display = 'flex';
-              startBirthdayConfetti();
-              document.getElementById('fanfareAudio').play().catch(()=>{});
+              document.getElementById('pawel-bday-banner').style.display = 'block';
           }
       }
 
@@ -480,42 +462,6 @@
   window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
   window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
   
-  // --- ZMIANA: PRZESUNIĘTA DEFINICJA FUNKCJI ---
-  // Brak tej funkcji w module powodował błąd "closeBirthday is not defined" w HTML-u
-  // Teraz jest obsługiwana przez eventListener powyżej, ale dla pewności usuwam wywołanie z HTML
-  
-  // --- LOGIKA KONFETTI ---
-  let confettiCtx; let confettiPieces = [];
-  function startBirthdayConfetti() {
-      const canvas = document.getElementById('bday-canvas');
-      confettiCtx = canvas.getContext('2d');
-      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-      confettiPieces = [];
-      const colors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f', '#d4af37'];
-      for (let i = 0; i < 300; i++) {
-          confettiPieces.push({
-              x: Math.random() * canvas.width, y: Math.random() * canvas.height - canvas.height,
-              w: Math.random() * 10 + 5, h: Math.random() * 10 + 5,
-              color: colors[Math.floor(Math.random() * colors.length)],
-              vy: Math.random() * 2 + 2, vx: Math.random() * 2 - 1, r: Math.random() * 360
-          });
-      }
-      animateConfetti();
-  }
-  function animateConfetti() {
-      const canvas = document.getElementById('bday-canvas');
-      if(document.getElementById('birthday-overlay').style.display === 'none') return;
-      confettiCtx.clearRect(0, 0, canvas.width, canvas.height);
-      confettiPieces.forEach(p => {
-          p.y += p.vy; p.x += p.vx; p.r += 2;
-          if (p.y > canvas.height) p.y = -20;
-          confettiCtx.save(); confettiCtx.translate(p.x, p.y); confettiCtx.rotate(p.r * Math.PI / 180);
-          confettiCtx.fillStyle = p.color; confettiCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
-          confettiCtx.restore();
-      });
-      requestAnimationFrame(animateConfetti);
-  }
-
   const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
   let pts = [];
   function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
