@@ -256,11 +256,6 @@
       </div>
   </div>
 
-  <div id="confused-screen">
-      <img id="confused-gif" src="confused.gif">
-      <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
-  </div>
-
   <div id="birthday-overlay">
       <canvas id="bday-canvas"></canvas>
       <div class="bday-card">
@@ -272,11 +267,17 @@
       </div>
   </div>
 
-  <script>
-      function closeBirthday() {
-          document.getElementById('birthday-overlay').style.display = 'none';
-      }
-  </script>
+  <div id="confused-screen">
+      <img id="confused-gif" src="confused.gif">
+      <button id="confused-logout" onclick="logout()">WYLOGUJ</button>
+  </div>
+
+<script>
+    function closeBirthday() {
+        const overlay = document.getElementById('birthday-overlay');
+        if(overlay) overlay.style.display = 'none';
+    }
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -478,6 +479,10 @@
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
   window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
   window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
+  
+  // --- ZMIANA: PRZESUNIĘTA DEFINICJA FUNKCJI ---
+  // Brak tej funkcji w module powodował błąd "closeBirthday is not defined" w HTML-u
+  // Teraz jest obsługiwana przez eventListener powyżej, ale dla pewności usuwam wywołanie z HTML
   
   // --- LOGIKA KONFETTI ---
   let confettiCtx; let confettiPieces = [];
