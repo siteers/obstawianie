@@ -414,13 +414,13 @@ setInterval(() => {
     const timeStr = now.toLocaleTimeString("pl-PL", { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // 13:15:00 -> ZABLOKUJ (jeśli jeszcze nie zablokowane)
-    if (timeStr === "17:00:00") {
+    if (timeStr === "13:15:00") {
         if (!isLocked1) setDoc(appStateRef, { isLocked1: true }, { merge: true });
         if (!isLocked2) setDoc(appStateRef, { isLocked2: true }, { merge: true });
     }
 
     // 14:10:00 -> ODBLOKUJ (jeśli zablokowane)
-    if (timeStr === "17:03:00") {
+    if (timeStr === "14:15:00") {
         if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
@@ -494,3 +494,4 @@ window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
 </script>
 </body>
 </html>
+
