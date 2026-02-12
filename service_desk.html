@@ -60,6 +60,13 @@
             background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: white;
             text-decoration: none; display: inline-block; border-radius: 10px;
         }
+        
+        /* Specjalny przycisk naprawczy dla Admina */
+        .btn-fix-db {
+            background: #ff4757; color: white; border: none; padding: 5px 10px;
+            font-size: 10px; border-radius: 5px; cursor: pointer; display: none; /* Domyślnie ukryty */
+            margin-top: 5px; width: fit-content;
+        }
 
         .user-badge { font-size: 12px; color: var(--cyan); border: 1px solid var(--cyan); padding: 5px 10px; border-radius: 20px; display: inline-block; margin-top: 5px; }
         .user-badge.admin { color: #ff4757; border-color: #ff4757; }
@@ -128,12 +135,19 @@
         }
         .delete-comment-btn:hover { color: #ff4757; }
 
-        .reply-box { display: flex; gap: 10px; margin-top: 15px; }
+        .reply-box { display: flex; gap: 10px; margin-top: 15px; align-items: flex-end; }
+        
+        /* ZMIANA: TEXTAREA ZAMIAST INPUT DLA ODPOWIEDZI */
         .reply-input { 
             flex-grow: 1; padding: 10px; margin: 0; background: rgba(0,0,0,0.5); 
             border: 1px solid var(--border); color: #fff; border-radius: 10px; 
+            font-family: inherit; resize: vertical; min-height: 42px; max-height: 150px;
         }
-        .btn-reply { width: auto; margin: 0; background: var(--cyan); color: #000; border: none; border-radius: 8px; cursor: pointer; padding: 10px; font-weight: bold; }
+        .btn-reply { 
+            width: auto; margin: 0; background: var(--cyan); color: #000; 
+            border: none; border-radius: 8px; cursor: pointer; padding: 0 15px; 
+            font-weight: bold; height: 42px; display: flex; align-items: center; 
+        }
 
         /* --- MODAL --- */
         #new-ticket-modal {
@@ -192,6 +206,7 @@
                 <div>
                     <h2>Lista Zgłoszeń</h2>
                     <div id="userInfo" class="user-badge">...</div>
+                    <button id="fixDbBtn" class="btn-fix-db" onclick="fixOldTickets()">🛠️ ZRESTARTUJ NUMERACJĘ</button>
                 </div>
                 <a href="sg.html" class="btn-cyber btn-back">← Wróć do Menu</a>
             </div>
@@ -259,7 +274,10 @@
 
         // INICJALIZACJA UI
         document.getElementById('userInfo').innerText = isAdmin ? "ADMINISTRATOR" : currentUser;
-        if(isAdmin) document.getElementById('userInfo').classList.add('admin');
+        if(isAdmin) {
+            document.getElementById('userInfo').classList.add('admin');
+            document.getElementById('fixDbBtn').style.display = "inline-block"; // Pokaż przycisk naprawy tylko Adminowi
+        }
         document.getElementById('main-app').style.display = 'block';
         document.getElementById('fab').style.display = 'flex';
 
@@ -275,6 +293,28 @@
                 "Dominik": "DW"
             };
             return map[name] || "XX"; // XX dla nieznanych
+        };
+
+        // --- NAPRAWA STARYCH NUMERÓW (FUNKCJA ADMINA) ---
+        window.fixOldTickets = async () => {
+            if(!confirm("⚠️ Czy na pewno chcesz przeliczyć numerację WSZYSTKICH zgłoszeń od początku (chronologicznie)?\nTo naprawi zgłoszenia z numerem '0'.")) return;
+            
+            // Pobierz wszystkie, sortuj od najstarszego
+            const qAll = query(collection(db, "tickets"), orderBy("timestamp", "asc"));
+            const snap = await getDocs(qAll);
+            
+            let counter = 1;
+            let promises = [];
+
+            snap.forEach((docSnap) => {
+                const ref = doc(db, "tickets", docSnap.id);
+                // Nadpisujemy ticketIndex kolejnym numerem
+                promises.push(updateDoc(ref, { ticketIndex: counter }));
+                counter++;
+            });
+
+            await Promise.all(promises);
+            alert(`Zaktualizowano numerację dla ${counter - 1} zgłoszeń.`);
         };
 
         // --- ANIMACJA TŁA ---
@@ -350,7 +390,7 @@
             const desc = document.getElementById('tDesc').value;
             if(!title || !desc) return alert("Wypełnij tytuł i opis!");
 
-            // 1. Pobierz ostatni numer zgłoszenia (aby wyliczyć X)
+            // 1. Pobierz ostatni numer zgłoszenia (aby wyliczyć X dla nowego)
             const qLast = query(collection(db, "tickets"), orderBy("ticketIndex", "desc"), limit(1));
             const snapLast = await getDocs(qLast);
             let newIndex = 1;
@@ -408,7 +448,7 @@
                 const statusClass = isClosed ? 'closed' : 'open';
                 
                 // GENEROWANIE NUMERU ZGŁOSZENIA
-                const x = t.ticketIndex ? t.ticketIndex : "0"; // 0 dla starych
+                const x = t.ticketIndex ? t.ticketIndex : "0"; // 0 jeśli jeszcze nie naprawiono bazy
                 const yy = getInitials(t.author);
                 const rok = dateObj.getFullYear();
                 const fullTicketId = `SD.${x}.${yy}.${rok}`;
@@ -439,11 +479,14 @@
                             deleteBtn = `<button class="delete-comment-btn" onclick="deleteComment('${docSnap.id}', ${idx})">🗑️</button>`;
                         }
                         
+                        // ZAMIANA \n NA <BR> DLA WIELOWIERSZOWYCH KOMENTARZY
+                        const formattedText = r.text.replace(/\n/g, '<br>');
+
                         repliesHtml += `
                             <div class="comment ${adminClass}">
                                 ${deleteBtn}
                                 <strong>${r.author}</strong> <span style="font-size:10px; opacity:0.5;">${r.date}</span><br>
-                                <span class="comment-text">${r.text}</span>
+                                <span class="comment-text">${formattedText}</span>
                             </div>
                         `;
                     });
@@ -451,7 +494,12 @@
 
                 let replyInput = "";
                 if(!isClosed) {
-                    replyInput = `<div class="reply-box"><input type="text" class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź..."><button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button></div>`;
+                    // ZMIANA: TEXTAREA ZAMIAST INPUT
+                    replyInput = `
+                        <div class="reply-box">
+                            <textarea class="reply-input" id="reply-${docSnap.id}" placeholder="Napisz odpowiedź... (Enter wysyła, Shift+Enter nowa linia)"></textarea>
+                            <button class="btn-cyber btn-reply" onclick="sendReply('${docSnap.id}')">📩</button>
+                        </div>`;
                 } else {
                     replyInput = `<div style="text-align:center; font-size:10px; color:#555; margin-top:10px;"><i>Możliwość komentowania została zablokowana.</i></div>`;
                 }
@@ -473,6 +521,21 @@
                     </div>
                 `;
                 container.innerHTML += html;
+                
+                // Obsługa Shift+Enter dla textarea
+                if(!isClosed) {
+                    setTimeout(() => {
+                        const txtArea = document.getElementById(`reply-${docSnap.id}`);
+                        if(txtArea) {
+                            txtArea.addEventListener('keydown', function(e) {
+                                if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault(); // Zatrzymaj nową linię
+                                    sendReply(docSnap.id); // Wyślij
+                                }
+                            });
+                        }
+                    }, 100);
+                }
             });
         });
 
@@ -483,7 +546,8 @@
         };
 
         window.sendReply = async (id) => {
-            const input = document.getElementById(`reply-${id}`); const text = input.value.trim();
+            const input = document.getElementById(`reply-${id}`); 
+            const text = input.value.trim();
             if(!text) return;
             const replyObj = { author: currentUser, text: text, date: new Date().toLocaleTimeString(), isAdmin: isAdmin };
             await updateDoc(doc(db, "tickets", id), { replies: arrayUnion(replyObj) });
