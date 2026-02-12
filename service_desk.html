@@ -29,9 +29,23 @@
         /* --- DASHBOARD --- */
         #main-app { display: none; position: relative; z-index: 10; padding: 20px; max-width: 800px; margin: 0 auto; }
         
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; }
+        header { 
+            display: flex; flex-direction: column; gap: 15px; 
+            margin-bottom: 30px; border-bottom: 1px solid var(--border); padding-bottom: 20px; 
+        }
+        .header-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        
         h2 { color: var(--gold); margin: 0; font-size: 20px; text-transform: uppercase; letter-spacing: 2px; }
         
+        /* SEARCH BAR */
+        .search-container { width: 100%; position: relative; }
+        .search-input {
+            width: 100%; padding: 12px 15px; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border); border-radius: 10px; color: #fff;
+            font-size: 14px; box-sizing: border-box; transition: 0.3s;
+        }
+        .search-input:focus { border-color: var(--cyan); outline: none; box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); }
+
         /* PRZYCISKI */
         .btn-cyber {
             width: 100%; padding: 18px; border: none; border-radius: 10px;
@@ -64,7 +78,13 @@
         .ticket-card.closed { border: 1px solid var(--closed-red); opacity: 0.7; filter: grayscale(0.2); }
 
         .ticket-header { display: flex; flex-direction: column; align-items: flex-start; margin-bottom: 15px; }
-        .ticket-title { font-size: 20px; font-weight: 900; color: #fff; margin: 8px 0 0 0; line-height: 1.2; }
+        
+        .ticket-id {
+            color: var(--cyan); font-weight: bold; font-family: monospace; 
+            font-size: 14px; margin-right: 10px; text-shadow: 0 0 5px rgba(0, 212, 255, 0.5);
+        }
+        
+        .ticket-title { font-size: 18px; font-weight: 900; color: #fff; margin: 8px 0 0 0; line-height: 1.2; display: flex; align-items: center; flex-wrap: wrap;}
         .ticket-meta { font-size: 11px; color: #888; margin-top: 5px; }
 
         /* Styl Plakietki Statusu */
@@ -168,11 +188,16 @@
 
     <div id="main-app">
         <header>
-            <div>
-                <h2>Lista Zgłoszeń</h2>
-                <div id="userInfo" class="user-badge">...</div>
+            <div class="header-top">
+                <div>
+                    <h2>Lista Zgłoszeń</h2>
+                    <div id="userInfo" class="user-badge">...</div>
+                </div>
+                <a href="sg.html" class="btn-cyber btn-back">← Wróć do Menu</a>
             </div>
-            <a href="sg.html" class="btn-cyber btn-back">← Wróć do Menu</a>
+            <div class="search-container">
+                <input type="text" id="searchInput" class="search-input" placeholder="🔍 Szukaj po numerze zgłoszenia..." onkeyup="filterTickets()">
+            </div>
         </header>
 
         <div id="tickets-container">
@@ -213,7 +238,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, arrayUnion, serverTimestamp, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, updateDoc, deleteDoc, arrayUnion, serverTimestamp, getDoc, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", 
@@ -237,6 +262,20 @@
         if(isAdmin) document.getElementById('userInfo').classList.add('admin');
         document.getElementById('main-app').style.display = 'block';
         document.getElementById('fab').style.display = 'flex';
+
+        // --- HELPER INICJAŁY ---
+        const getInitials = (name) => {
+            const map = {
+                "Arek": "AŻ",
+                "Paweł": "PP",
+                "Grzesiek Sz": "GS",
+                "Grzesiek P": "GP",
+                "Mariusz": "MU",
+                "Krzysiek": "KS",
+                "Dominik": "DW"
+            };
+            return map[name] || "XX"; // XX dla nieznanych
+        };
 
         // --- ANIMACJA TŁA ---
         const canvas = document.getElementById('bg-canvas');
@@ -310,10 +349,47 @@
             const title = document.getElementById('tTitle').value;
             const desc = document.getElementById('tDesc').value;
             if(!title || !desc) return alert("Wypełnij tytuł i opis!");
-            const ticketData = { type, title, desc, author: currentUser, timestamp: serverTimestamp(), status: 'open', replies: [], attachment: attachmentBase64 };
+
+            // 1. Pobierz ostatni numer zgłoszenia (aby wyliczyć X)
+            const qLast = query(collection(db, "tickets"), orderBy("ticketIndex", "desc"), limit(1));
+            const snapLast = await getDocs(qLast);
+            let newIndex = 1;
+            if (!snapLast.empty) {
+                const lastData = snapLast.docs[0].data();
+                if (lastData.ticketIndex) {
+                    newIndex = lastData.ticketIndex + 1;
+                }
+            }
+
+            const ticketData = { 
+                type, title, desc, author: currentUser, 
+                timestamp: serverTimestamp(), status: 'open', 
+                replies: [], attachment: attachmentBase64,
+                ticketIndex: newIndex // Zapisujemy numer porządkowy
+            };
+
             await addDoc(collection(db, "tickets"), ticketData);
             closeModal();
             document.getElementById('tTitle').value = ""; document.getElementById('tDesc').value = "";
+        };
+
+        // --- FILTROWANIE ---
+        window.filterTickets = () => {
+            const input = document.getElementById('searchInput');
+            const filter = input.value.toUpperCase();
+            const cards = document.getElementsByClassName('ticket-card');
+
+            for (let i = 0; i < cards.length; i++) {
+                const idSpan = cards[i].querySelector('.ticket-id');
+                if (idSpan) {
+                    const txtValue = idSpan.textContent || idSpan.innerText;
+                    if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                        cards[i].style.display = "";
+                    } else {
+                        cards[i].style.display = "none";
+                    }
+                }       
+            }
         };
 
         // --- ŁADOWANIE DANYCH ---
@@ -325,11 +401,18 @@
 
             snapshot.forEach(docSnap => {
                 const t = docSnap.data();
-                const date = t.timestamp ? new Date(t.timestamp.seconds * 1000).toLocaleString() : 'Teraz';
+                const dateObj = t.timestamp ? new Date(t.timestamp.seconds * 1000) : new Date();
+                const dateStr = dateObj.toLocaleString();
                 const typeClass = t.type === 'Stan krytyczny' ? 'Krytyczny' : t.type;
                 const isClosed = t.status === 'closed';
                 const statusClass = isClosed ? 'closed' : 'open';
                 
+                // GENEROWANIE NUMERU ZGŁOSZENIA
+                const x = t.ticketIndex ? t.ticketIndex : "0"; // 0 dla starych
+                const yy = getInitials(t.author);
+                const rok = dateObj.getFullYear();
+                const fullTicketId = `SD.${x}.${yy}.${rok}`;
+
                 let actionHtml = "";
                 if(isAdmin) {
                     actionHtml += `<div class="admin-actions">`;
@@ -353,7 +436,6 @@
                         const adminClass = r.isAdmin ? 'admin-reply' : '';
                         let deleteBtn = "";
                         if(isAdmin) {
-                            // Przekazujemy indeks komentarza do usunięcia
                             deleteBtn = `<button class="delete-comment-btn" onclick="deleteComment('${docSnap.id}', ${idx})">🗑️</button>`;
                         }
                         
@@ -379,8 +461,11 @@
                         ${actionHtml}
                         <div class="ticket-header">
                             <span class="status-badge">${t.type}</span>
-                            <h3 class="ticket-title">${t.title}</h3>
-                            <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${date}</div>
+                            <h3 class="ticket-title">
+                                <span class="ticket-id">${fullTicketId}</span>
+                                ${t.title}
+                            </h3>
+                            <div class="ticket-meta">Zgłosił: <b>${t.author}</b> • ${dateStr}</div>
                         </div>
                         <div class="ticket-desc">${t.desc}</div>
                         ${attachmentHtml}
@@ -405,7 +490,6 @@
             input.value = ""; 
         };
 
-        // NOWA FUNKCJA: Usuwanie komentarza
         window.deleteComment = async (ticketId, commentIndex) => {
             if(!confirm("Usunąć ten komentarz?")) return;
             
