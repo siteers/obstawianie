@@ -409,7 +409,7 @@ window.toggleLock = async (id) => {
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const startBlock = 18 * 60 + 15; // 13:15
-    const endBlock = 19 * 60 + 15;   // 14:15
+    const endBlock = 20 * 60 + 15;   // 14:15
 
     const snap = await getDoc(appStateRef); 
     const field = `isLocked${id}`; 
@@ -418,7 +418,7 @@ window.toggleLock = async (id) => {
 
     // JEŚLI JEST CZAS BLOKADY I CHCEMY ODBLOKOWAĆ -> WYMAGA HASŁA
     if (newState === false && currentMinutes >= startBlock && currentMinutes < endBlock) {
-        const pass = prompt("CZAS BLOKADY ADMINISTRACYJNEJ.\nPodaj hasło (0000) aby odblokować:");
+        const pass = prompt("CZAS BLOKADY ADMINISTRACYJNEJ.\nPodaj hasło aby odblokować:");
         if (pass !== "0000") return alert("Błędne hasło!");
         
         // POPRAWNE HASŁO -> ZEZWALAJ NA ODBLOKOWANIE I IGNORUJ AUTO-BLOCK W TEJ SESJI
@@ -437,7 +437,7 @@ setInterval(() => {
     // --- INTELIGENTNA AUTOMATYZACJA BLOKADY (STRAŻNIK CZASU) ---
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const startBlock = 18 * 60 + 15; // 13:15
-    const endBlock = 19 * 60 + 15;   // 14:15
+    const endBlock = 20 * 60 + 15;   // 14:15
     
     // JEŚLI JESTEŚMY W STREFIE CZASOWEJ (13:15 - 14:15)
     if (currentMinutes >= startBlock && currentMinutes < endBlock) {
@@ -524,5 +524,6 @@ window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
 </script>
 </body>
 </html>
+
 
 
