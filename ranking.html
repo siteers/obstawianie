@@ -268,6 +268,8 @@
             globalStats = playersData.map(p => {
                 let points = 0;
                 let g=0, s=0, b=0, fire=0;
+                // ZABEZPIECZENIE DLA REMISÓW: Jeśli brak TB w bazie, ustaw 0
+                const tb = p.tb || 0;
                 
                 historyData.forEach(r => {
                     const roundDate = new Date(r.timestamp);
@@ -303,7 +305,7 @@
                 for(let i=0; i<historyData.length-2; i++){ if(historyData[i].winners.some(w=>w.name===p.name && w.rank===1) && historyData[i+1].winners.some(w=>w.name===p.name && w.rank===1) && historyData[i+2].winners.some(w=>w.name===p.name && w.rank===1)) fire=1; }
                 
                 const pods = g+s+b; 
-                return { ...p, points, g, s, b, pods, avg:pods>0?(points/pods).toFixed(2):0, sniper: snipers.has(p.name), fire };
+                return { ...p, points, g, s, b, pods, tb, avg:pods>0?(points/pods).toFixed(2):0, sniper: snipers.has(p.name), fire };
             });
 
             globalStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
