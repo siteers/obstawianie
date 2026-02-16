@@ -78,6 +78,7 @@
         .rps-btn { padding: 12px; font-size: 24px; border-radius: 10px; border: none; cursor: pointer; background: var(--glass); color: var(--text); transition: 0.2s; }
         .rps-btn:hover { background: var(--gold); color: #000; }
         .score-display { font-size: 40px; font-weight: 900; color: var(--gold); margin: 30px 0; }
+        #roundInfo { margin-bottom: 20px; font-size: 18px; color: var(--cyan); font-weight: bold; letter-spacing: 2px; }
 
         .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
         .full-width-chart { grid-column: 1 / -1; }
@@ -110,6 +111,7 @@
     <div id="rpsOverlay">
         <span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span>
         <h1 style="color:var(--gold)">POJEDYNEK O MIEJSCE</h1>
+        <div id="roundInfo">RUNDA 1 / 3</div>
         <div class="score-display" id="rpsScore">0 : 0</div>
         <div class="rps-arena">
             <div class="player-side">
@@ -124,6 +126,7 @@
             </div>
         </div>
         <div id="roundResult" style="margin-top: 20px; font-weight: bold; color: var(--cyan); height: 20px;"></div>
+        <button id="nextRoundBtn" style="display:none; margin-top:20px; padding:10px 20px; background:var(--gold); border:none; border-radius:5px; font-weight:bold; cursor:pointer; color:black;">NASTĘPNA RUNDA ➡️</button>
     </div>
 
     <div class="dashboard-container">
@@ -181,12 +184,13 @@
 
     <script type="module">
         // --- OCHRONIARZ (ZABEZPIECZENIE) ---
-        if (!localStorage.getItem('cyberUser')) {
+        const currentUser = localStorage.getItem('cyberUser');
+        if (!currentUser) {
             window.location.href = 'sg.html';
         }
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
@@ -218,34 +222,150 @@
 
         let historyData = [], playersData = [], globalStats = [];
 
-        // --- KPN LOGIC ---
-        let duel = { p1: "", p2: "", s1: 0, s2: 0, c1: null, c2: null };
-        window.startKpn = (p1, p2) => {
-            duel = { p1, p2, s1: 0, s2: 0, c1: null, c2: null };
-            document.getElementById('p1Name').innerText = p1; document.getElementById('p2Name').innerText = p2;
-            document.getElementById('rpsScore').innerText = "0 : 0"; document.getElementById('roundResult').innerText = "";
-            const btnHtml = (player) => ['👊', '✋', '✌️'].map(e => `<button class="rps-btn" onclick="makeChoice(${player}, '${e}')">${e}</button>`).join("");
-            document.getElementById('p1Btns').innerHTML = btnHtml(1); document.getElementById('p2Btns').innerHTML = btnHtml(2);
-            document.getElementById('p1Status').innerText = "?"; document.getElementById('p2Status').innerText = "?";
-            document.getElementById('p1Btns').style.display = "flex"; document.getElementById('p2Btns').style.display = "none";
+        // --- NOWA ASYNCHRONICZNA LOGIKA KPN ---
+        let creationMoves = [];
+        let activeDuelData = null;
+        let currentRound = 0;
+
+        window.startKpn = async (p1, p2) => {
+            const duelId = [p1, p2].sort().join("_");
+            const duelRef = doc(db, "duels", duelId);
+            const snap = await getDoc(duelRef);
+
+            // RESET STANU UI
             document.getElementById('rpsOverlay').style.display = 'flex';
+            document.getElementById('roundResult').innerText = "";
+            document.getElementById('nextRoundBtn').style.display = "none";
+            document.getElementById('rpsScore').innerText = "0 : 0";
+            
+            if (!snap.exists()) {
+                // TRYB TWORZENIA (Gracz 1)
+                setupCreationMode(p1, p2, duelId);
+            } else {
+                const data = snap.data();
+                if (data.initiator === currentUser) {
+                    // Gracz 1 czeka
+                    document.getElementById('rpsOverlay').innerHTML = `<span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span><h1 style="color:var(--gold)">OCZEKIWANIE</h1><p style="font-size:20px">Wyzwanie wysłane do: ${data.opponent === currentUser ? data.initiator : data.opponent}.<br>Czekaj aż zaakceptuje!</p>`;
+                } else {
+                    // TRYB WALKI (Gracz 2)
+                    activeDuelData = data;
+                    setupFightMode();
+                }
+            }
         };
-        window.makeChoice = (player, emoji) => {
-            if(player === 1) { duel.c1 = emoji; document.getElementById('p1Status').innerText = "🔒"; document.getElementById('p1Btns').style.display = "none"; document.getElementById('p2Btns').style.display = "flex"; }
-            else { duel.c2 = emoji; document.getElementById('p2Status').innerText = "🔒"; document.getElementById('p2Btns').style.display = "none"; resolveRound(); }
-        };
-        function resolveRound() {
-            const rules = {"👊":"✌️", "✋":"👊", "✌️":"✋"};
-            document.getElementById('p1Status').innerText = duel.c1; document.getElementById('p2Status').innerText = duel.c2;
-            if(duel.c1 !== duel.c2) { if(rules[duel.c1] === duel.c2) duel.s1++; else duel.s2++; }
-            document.getElementById('rpsScore').innerText = `${duel.s1} : ${duel.s2}`;
-            if(duel.s1 === 3 || duel.s2 === 3) {
-                const winner = duel.s1 === 3 ? duel.p1 : duel.p2;
-                document.getElementById('roundResult').innerText = `WYGRYWA ${winner.toUpperCase()}!`;
-                updateDoc(doc(db, "ranking", winner), { tb: (playersData.find(x => x.name === winner).tb || 0) + 1 });
-                setTimeout(() => document.getElementById('rpsOverlay').style.display = 'none', 2000);
-            } else { setTimeout(() => { duel.c1 = null; duel.c2 = null; document.getElementById('p1Status').innerText = "?"; document.getElementById('p2Status').innerText = "?"; document.getElementById('p1Btns').style.display = "flex"; }, 1000); }
+
+        function setupCreationMode(p1, p2, duelId) {
+            creationMoves = [];
+            document.getElementById('p1Name').innerText = currentUser;
+            document.getElementById('p2Name').innerText = (currentUser === p1 ? p2 : p1); // Przeciwnik
+            document.getElementById('roundInfo').innerText = "WYBIERZ 3 RUCHY";
+            
+            const btnHtml = ['👊', '✋', '✌️'].map(e => `<button class="rps-btn" onclick="storeMove('${e}', '${duelId}', '${currentUser === p1 ? p2 : p1}')">${e}</button>`).join("");
+            document.getElementById('p1Btns').innerHTML = btnHtml;
+            document.getElementById('p1Btns').style.display = "flex";
+            document.getElementById('p2Btns').style.display = "none"; // Ukryj stronę przeciwnika przy wyborze
+            document.getElementById('p1Status').innerText = "1. ?";
+            document.getElementById('p2Status').innerText = "---";
         }
+
+        window.storeMove = async (move, duelId, opponentName) => {
+            creationMoves.push(move);
+            const step = creationMoves.length;
+            
+            if (step < 3) {
+                document.getElementById('p1Status').innerText = `${step + 1}. ?`;
+                document.getElementById('roundInfo').innerText = `WYBRANO ${step}/3`;
+            } else {
+                // Zapisz do bazy
+                await setDoc(doc(db, "duels", duelId), {
+                    initiator: currentUser,
+                    opponent: opponentName,
+                    moves: creationMoves,
+                    p2Score: 0,
+                    p1Score: 0
+                });
+                document.getElementById('rpsOverlay').style.display = 'none';
+                alert("Ruchy zapisane! Niech przeciwnik wejdzie i kliknie REMIS.");
+            }
+        };
+
+        function setupFightMode() {
+            currentRound = 0;
+            const p1 = activeDuelData.initiator; // Ten co założył (jest po lewej)
+            const p2 = activeDuelData.opponent;  // Ty (jesteś po prawej, ale UI ustawimy pod Ciebie)
+            
+            // W UI: Lewa strona to Przeciwnik (Initiator), Prawa to TY (Opponent)
+            document.getElementById('p1Name').innerText = p1; 
+            document.getElementById('p2Name').innerText = "TY (" + p2 + ")";
+            
+            document.getElementById('roundInfo').innerText = "RUNDA 1 / 3";
+            document.getElementById('p1Status').innerText = "🔒"; // Ukryty ruch przeciwnika
+            document.getElementById('p2Status').innerText = "?";
+
+            // Przyciski dla Ciebie (P2)
+            const btnHtml = ['👊', '✋', '✌️'].map(e => `<button class="rps-btn" onclick="playRound('${e}')">${e}</button>`).join("");
+            document.getElementById('p2Btns').innerHTML = btnHtml;
+            document.getElementById('p2Btns').style.display = "flex";
+            document.getElementById('p1Btns').style.display = "none";
+        }
+
+        window.playRound = async (myMove) => {
+            const oppMove = activeDuelData.moves[currentRound];
+            document.getElementById('p1Status').innerText = oppMove;
+            document.getElementById('p2Status').innerText = myMove;
+            document.getElementById('p2Btns').style.display = "none";
+
+            const rules = {"👊":"✌️", "✋":"👊", "✌️":"✋"};
+            let res = "";
+            
+            if (myMove === oppMove) {
+                res = "REMIS W RUNDZIE";
+            } else if (rules[myMove] === oppMove) {
+                activeDuelData.p2Score++; // Ty wygrywasz
+                res = "WYGRAŁEŚ RUNDĘ!";
+            } else {
+                activeDuelData.p1Score++; // On wygrywa
+                res = "PRZEGRANA RUNDA";
+            }
+
+            document.getElementById('roundResult').innerText = res;
+            document.getElementById('rpsScore').innerText = `${activeDuelData.p1Score} : ${activeDuelData.p2Score}`;
+
+            if (currentRound < 2) {
+                const btn = document.getElementById('nextRoundBtn');
+                btn.style.display = "inline-block";
+                btn.onclick = () => {
+                    currentRound++;
+                    document.getElementById('roundInfo').innerText = `RUNDA ${currentRound + 1} / 3`;
+                    document.getElementById('p1Status').innerText = "🔒";
+                    document.getElementById('p2Status').innerText = "?";
+                    document.getElementById('roundResult').innerText = "";
+                    document.getElementById('p2Btns').style.display = "flex";
+                    btn.style.display = "none";
+                };
+            } else {
+                // KONIEC GRY
+                setTimeout(async () => {
+                    let winner = null;
+                    if (activeDuelData.p1Score > activeDuelData.p2Score) winner = activeDuelData.initiator;
+                    else if (activeDuelData.p2Score > activeDuelData.p1Score) winner = activeDuelData.opponent;
+
+                    if (winner) {
+                        alert(`KONIEC! Wygrywa: ${winner}`);
+                        // Zapisz zwycięstwo w rankingu (TB)
+                        const pData = playersData.find(x => x.name === winner);
+                        await updateDoc(doc(db, "ranking", winner), { tb: (pData.tb || 0) + 1 });
+                    } else {
+                        alert("REMIS TOTALNY! Nikt nie dostaje punktu.");
+                    }
+                    
+                    // Usuń pojedynek z bazy
+                    const duelId = [activeDuelData.initiator, activeDuelData.opponent].sort().join("_");
+                    await deleteDoc(doc(db, "duels", duelId));
+                    document.getElementById('rpsOverlay').style.display = 'none';
+                }, 2000);
+            }
+        };
 
         window.showPlayerCard = (name) => {
             const p = globalStats.find(s => s.name === name); if(!p) return;
@@ -368,8 +488,14 @@
 
                 let trend = `<span class="trend-icon ${trendClass}">${trendSym}</span>`;
                 const next = globalStats[i+1]; const prevP = globalStats[i-1];
+                // POPRAWIONA LOGIKA REMISU: Sprawdzamy pełną zgodność statystyk (w tym TB)
                 let isTie = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb) || (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b && p.tb===prevP.tb);
-                let tieBtn = isTie ? `<button class="tie-btn" onclick="startKpn('${p.name}','${next && p.points===next.points ? next.name : prevP.name}')">REMIS</button>` : "";
+                
+                // Przycisk tylko dla gracza, który ma kompana "w dół" o tych samych statystykach
+                let tieBtn = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb) 
+                    ? `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>` 
+                    : "";
+                
                 let badges = ""; if(p.g===Math.max(...globalStats.map(s=>s.g)) && p.g>0) badges += `<span class="badge">👑</span>`; if(p.fire) badges += `<span class="badge">🔥</span>`; if(p.sniper) badges += `<span class="badge">🎯</span>`; if(p.pods===Math.max(...globalStats.map(s=>s.pods)) && p.pods>0) badges += `<span class="badge">🛡️</span>`;
                 
                 tbody.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}<div class="badge-container">${badges}</div></td><td style="color:var(--gold)">${p.points} <small>(${p.g}🥇)</small></td><td>${p.pods}</td></tr>`;
