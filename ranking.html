@@ -488,13 +488,19 @@
 
                 let trend = `<span class="trend-icon ${trendClass}">${trendSym}</span>`;
                 const next = globalStats[i+1]; const prevP = globalStats[i-1];
-                // POPRAWIONA LOGIKA REMISU: Sprawdzamy pełną zgodność statystyk (w tym TB)
-                let isTie = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb) || (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b && p.tb===prevP.tb);
                 
-                // Przycisk tylko dla gracza, który ma kompana "w dół" o tych samych statystykach
-                let tieBtn = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb) 
-                    ? `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>` 
-                    : "";
+                // POPRAWIONA LOGIKA REMISU:
+                let isTieWithNext = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb);
+                let isTieWithPrev = (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b && p.tb===prevP.tb);
+
+                let tieBtn = "";
+                if (isTieWithNext) {
+                    // Jeśli remis z następnym -> wyzwij następnego
+                    tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>`;
+                } else if (isTieWithPrev) {
+                    // Jeśli remis z poprzednim -> wyzwij poprzedniego (to pozwoli dołączyć do gry)
+                    tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${prevP.name}')">REMIS</button>`;
+                }
                 
                 let badges = ""; if(p.g===Math.max(...globalStats.map(s=>s.g)) && p.g>0) badges += `<span class="badge">👑</span>`; if(p.fire) badges += `<span class="badge">🔥</span>`; if(p.sniper) badges += `<span class="badge">🎯</span>`; if(p.pods===Math.max(...globalStats.map(s=>s.pods)) && p.pods>0) badges += `<span class="badge">🛡️</span>`;
                 
