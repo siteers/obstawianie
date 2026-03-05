@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="pl">
-<head> 
+<head>
     <meta charset="UTF-8">
     <title>🍕 Cyber-Eat | Friday Protocol</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Cyber-Bet">
+    <meta name="apple-mobile-web-app-title" content="Cyber-Eat">
     <link rel="manifest" href="./manifest.json">
     <link rel="apple-touch-icon" href="logo.png">
     <style>
@@ -26,10 +26,9 @@
             box-shadow: 0 20px 50px rgba(0,0,0,0.3); text-align: center;
             margin-top: 40px; box-sizing: border-box; margin-bottom: 40px;
             transition: 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative;
-            display: none; /* Domyślnie ukryte do momentu weryfikacji */
+            display: none; 
         }
 
-        /* HEADER Z POWROTEM */
         .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border); padding-bottom: 15px; }
         .btn-back { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; }
 
@@ -38,7 +37,6 @@
         .cuisine-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px var(--gold); }
         .cuisine-card h4 { margin: 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .emoji { font-size: 24px; display: block; margin-bottom: 5px; }
-        .vote-count { position: absolute; top: -5px; right: -5px; background: var(--cyan); color: black; font-weight: bold; font-size: 10px; padding: 3px 6px; border-radius: 10px; display: none;}
 
         .btn-cyber { width: 100%; max-width: 280px; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin: 10px auto; display: block; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .btn-cyber:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3); }
@@ -48,13 +46,42 @@
         .voters-box { color: var(--gold); font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: 900; }
         #voters-list { color: var(--cyan); }
         
-        .winner-display { font-size: clamp(28px, 6vw, 44px); font-weight: 900; color: #fff; margin: 15px 0; text-shadow: 0 0 15px var(--gold); display: none; }
-        
         #other-input-container { display: none; margin-top: 10px; width: 100%; max-width: 300px; margin-left: auto; margin-right: auto; }
         #other-name { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--cyan); background: rgba(0,0,0,0.5); color: white; text-align: center; }
         
-        .btn-clear { background: rgba(128,128,128,0.2); border: 1px solid #444; color: white; display: none; }
-        #results-summary { text-align: left; font-size: 12px; margin-top: 15px; color: #aaa; display: none; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;}
+        /* --- DRAMATIC OVERLAY --- */
+        #drama-overlay {
+            position: fixed; inset: 0; background: #000; z-index: 9999;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; padding: 20px; overflow: hidden;
+        }
+        .drama-text {
+            font-size: clamp(20px, 5vw, 36px); font-weight: 900; color: #fff;
+            text-transform: uppercase; letter-spacing: 3px; margin: 20px 0;
+            opacity: 0; transform: translateY(20px); transition: all 0.5s ease-out;
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
+        .drama-text.visible { opacity: 1; transform: translateY(0); }
+        .drama-text.out { opacity: 0; transform: translateY(-20px); }
+        
+        .drama-loser { color: #888; font-size: clamp(16px, 4vw, 24px); text-shadow: none; }
+        .drama-build { color: #ff4d4d; font-size: clamp(30px, 7vw, 50px); text-shadow: 0 0 20px #ff4d4d; animation: heartbeat 1s infinite; }
+        
+        .drama-winner {
+            font-size: clamp(40px, 10vw, 80px); color: var(--gold);
+            text-shadow: 0 0 30px var(--gold), 0 0 60px #fff;
+            animation: winnerPop 1s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            margin-bottom: 40px;
+        }
+
+        .action-btns-drama { opacity: 0; transition: opacity 1s; display: flex; flex-direction: column; gap: 15px; }
+        .action-btns-drama.visible { opacity: 1; }
+
+        @keyframes heartbeat { 0% { transform: scale(1); } 20% { transform: scale(1.1); } 40% { transform: scale(1); } 60% { transform: scale(1.1); } 80% { transform: scale(1); } }
+        @keyframes winnerPop { 0% { transform: scale(0.1) rotate(-10deg); opacity: 0; } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        @keyframes flashRed { 0%, 100% { background: #000; } 50% { background: #300; } }
+        
+        .bg-flashing { animation: flashRed 1s infinite; }
     </style>
 </head>
 <body>
@@ -69,19 +96,19 @@
         <p id="counter" style="color: #888; font-size: 14px;">Wybierz 3 kuchnie (0/3)</p>
         
         <div class="cuisine-grid">
-            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><div class="vote-count" id="vote-Włoska 🍕">0</div><span class="emoji">🍕</span><h4>Włoska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><div class="vote-count" id="vote-Azjatycka 🍣">0</div><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><div class="vote-count" id="vote-Burgery 🍔">0</div><span class="emoji">🍔</span><h4>Burgery</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><div class="vote-count" id="vote-Polska 🥟">0</div><span class="emoji">🥟</span><h4>Polska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><div class="vote-count" id="vote-Indyjska 🍛">0</div><span class="emoji">🍛</span><h4>Indyjska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><div class="vote-count" id="vote-Kebab 🥙">0</div><span class="emoji">🥙</span><h4>Kebab</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><div class="vote-count" id="vote-Meksykańska 🌮">0</div><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><div class="vote-count" id="vote-Tajska 🍜">0</div><span class="emoji">🍜</span><h4>Tajska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><div class="vote-count" id="vote-Grecka 🥗">0</div><span class="emoji">🥗</span><h4>Grecka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><div class="vote-count" id="vote-Sushi 🍱">0</div><span class="emoji">🍱</span><h4>Sushi</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><div class="vote-count" id="vote-Pizza 🍕">0</div><span class="emoji">🍕</span><h4>Pizza</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'McDonald\'s 🍟')"><div class="vote-count" id="vote-McDonald's 🍟">0</div><span class="emoji">🍟</span><h4>McDonald's</h4></div>
-            <div class="cuisine-card" id="other-card" onclick="toggleOther()"><div class="vote-count" id="vote-other">0</div><span class="emoji">❓</span><h4>Inna...</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><span class="emoji">🍔</span><h4>Burgery</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><span class="emoji">🥟</span><h4>Polska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">🍛</span><h4>Indyjska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><span class="emoji">🥙</span><h4>Kebab</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><span class="emoji">🍜</span><h4>Tajska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><span class="emoji">🥗</span><h4>Grecka</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><span class="emoji">🍱</span><h4>Sushi</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><span class="emoji">🍕</span><h4>Pizza</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'McDonald\'s 🍟')"><span class="emoji">🍟</span><h4>McDonald's</h4></div>
+            <div class="cuisine-card" id="other-card" onclick="toggleOther()"><span class="emoji">❓</span><h4>Inna...</h4></div>
         </div>
 
         <div id="other-input-container"><input type="text" id="other-name" placeholder="Jaka kuchnia?"></div>
@@ -89,14 +116,23 @@
 
         <div id="draw-section">
             <div class="voters-box">Głosowali: <span id="voters-list">-</span></div>
-            <button class="btn-cyber" id="drawBtn" onclick="resolveWinner()" style="background:#ff4d4d; color:#fff;" disabled>Rozstrzygnij</button>
-            <div id="status-text" style="color:var(--gold); font-size: 12px; margin-top: 10px; display: none;">ANALIZA PREFERENCJI...</div>
-            <div id="winner-text" class="winner-display"></div>
-            <div id="results-summary"></div>
-            <button class="btn-cyber" id="gmapsBtn" style="display:none; background:var(--gold); color:#000;" onclick="openGmaps()">Pokaż na Mapie 📍</button>
-            <button class="btn-cyber btn-clear" id="clearBtn" onclick="clearResult()">Wyczyść Wynik</button>
+            <button class="btn-cyber" id="drawBtn" onclick="startDramaticResolution()" style="background:#ff4d4d; color:#fff;" disabled>Rozstrzygnij Wyniki</button>
         </div>
     </div>
+
+    <div id="drama-overlay">
+        <div id="drama-content" class="drama-text">INICJALIZACJA...</div>
+        
+        <div id="final-actions" class="action-btns-drama">
+            <button class="btn-cyber" style="background:var(--gold); color:#000; margin:0;" onclick="openGmaps()">📍 Znajdź na Mapie</button>
+            <button class="btn-cyber" style="background:rgba(255,255,255,0.1); color:#fff; margin:0;" onclick="closeDrama()">Zakończ i Wyczyść</button>
+        </div>
+    </div>
+
+    <audio id="sfx-suspense" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" loop></audio>
+    <audio id="sfx-heartbeat" src="https://assets.mixkit.co/active_storage/sfx/125/125-preview.mp3" loop></audio>
+    <audio id="sfx-reveal" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
+    <audio id="sfx-victory" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -105,18 +141,14 @@
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const app = initializeApp(firebaseConfig); const db = getFirestore(app);
 
-    // --- OCHRONIARZ (ZABEZPIECZENIE) ---
     const currentUser = localStorage.getItem('cyberUser');
-    if (!currentUser) {
-        window.location.href = 'sg.html';
-    } else {
-        // Jeśli zalogowany, pokaż panel
-        document.getElementById('food-box').style.display = 'block';
-    }
+    if (!currentUser) window.location.href = 'sg.html';
+    else document.getElementById('food-box').style.display = 'block';
 
     let currentSelections = [], user = currentUser, winnerName = "", otherSelected = false;
     let globalVoteCounts = {};
 
+    // --- LOGIKA GŁOSOWANIA (Cicha) ---
     onSnapshot(collection(db, "food_votes"), snap => {
         const voters = snap.docs.map(d => d.id);
         document.getElementById('voters-list').innerText = voters.length > 0 ? voters.join(", ") : "-";
@@ -132,36 +164,10 @@
             });
         });
 
-        // Update UI with vote counts
-        document.querySelectorAll('.vote-count').forEach(el => {
-            el.style.display = 'none';
-            el.innerText = '0';
-        });
-
-        let otherCount = 0;
-        for (const [food, count] of Object.entries(globalVoteCounts)) {
-            const elementId = `vote-${food}`;
-            const el = document.getElementById(elementId);
-            if (el) {
-                el.innerText = count;
-                el.style.display = 'block';
-            } else if (food.includes('❓')) {
-                 otherCount += count;
-            }
-        }
-        
-        if(otherCount > 0) {
-            const otherEl = document.getElementById('vote-other');
-            if(otherEl){
-                otherEl.innerText = otherCount;
-                otherEl.style.display = 'block';
-            }
-        }
-
-
         const btn = document.getElementById('drawBtn');
         btn.disabled = totalChoices === 0;
-        btn.innerText = totalChoices > 0 ? `Rozstrzygnij (${totalChoices} opcji)` : "Rozstrzygnij";
+        // Zmieniono tekst, żeby nie pokazywał liczby opcji, by budować napięcie
+        btn.innerText = totalChoices > 0 ? `ROZSTRZYGNIJ WYNIKI` : "Brak głosów";
     });
 
     window.toggleOther = () => {
@@ -198,96 +204,148 @@
             finalVotes.push(custom + " ❓");
         }
         await setDoc(doc(db, "food_votes", user), { votes: finalVotes, timestamp: Date.now() });
-        alert("Głosy zapisane!");
+        alert("Głosy zapisane! (Ciii... wyniki są tajne do czasu losowania)");
     };
 
-    window.resolveWinner = async () => {
-        const winnerDisplay = document.getElementById('winner-text');
-        const statusText = document.getElementById('status-text');
-        const gmapsBtn = document.getElementById('gmapsBtn');
-        const clearBtn = document.getElementById('clearBtn');
-        const drawBtn = document.getElementById('drawBtn');
-        const summary = document.getElementById('results-summary');
+    // --- SYSTEM DRAMATYCZNEGO OGŁASZANIA ---
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+    const sfxSuspense = document.getElementById('sfx-suspense');
+    const sfxHeartbeat = document.getElementById('sfx-heartbeat');
+    const sfxReveal = document.getElementById('sfx-reveal');
+    const sfxVictory = document.getElementById('sfx-victory');
 
-        drawBtn.disabled = true;
-        statusText.style.display = "block";
-        winnerDisplay.style.display = "block";
-        gmapsBtn.style.display = "none";
-        clearBtn.style.display = "none";
-        summary.style.display = "none";
+    async function updateDramaText(text, className = "drama-text") {
+        const el = document.getElementById('drama-content');
+        el.classList.remove('visible');
+        el.classList.add('out');
+        await sleep(500); // Czas na zniknięcie
+        
+        el.className = className; // Reset klas
+        el.innerHTML = text;
+        
+        // Zmuszenie przeglądarki do reflow
+        void el.offsetWidth;
+        
+        el.classList.add('visible');
+        el.classList.remove('out');
+    }
 
+    window.startDramaticResolution = async () => {
         if (Object.keys(globalVoteCounts).length === 0) return;
 
-        // Find max votes
-        let maxVotes = 0;
-        for (const count of Object.values(globalVoteCounts)) {
-            if (count > maxVotes) maxVotes = count;
-        }
+        // Sortowanie wyników: od najmniejszej liczby głosów do największej
+        const sortedResults = Object.entries(globalVoteCounts).sort((a,b) => a[1] - b[1]);
+        const maxVotes = sortedResults[sortedResults.length - 1][1];
+        
+        const winners = sortedResults.filter(r => r[1] === maxVotes).map(r => r[0]);
+        const losers = sortedResults.filter(r => r[1] !== maxVotes);
 
-        // Find all options with max votes
-        const topCandidates = [];
-        for (const [food, count] of Object.entries(globalVoteCounts)) {
-            if (count === maxVotes) topCandidates.push(food);
-        }
+        // Przygotowanie sceny
+        document.getElementById('drawBtn').disabled = true;
+        const overlay = document.getElementById('drama-overlay');
+        overlay.style.display = 'flex';
+        document.getElementById('final-actions').classList.remove('visible');
 
-        let summaryText = `<b>Najwięcej głosów (${maxVotes}):</b><br>`;
-        topCandidates.forEach(c => summaryText += `- ${c}<br>`);
-        summary.innerHTML = summaryText;
+        // Play audio
+        sfxSuspense.volume = 0.5;
+        sfxSuspense.currentTime = 0;
+        sfxSuspense.play().catch(e=>console.log(e));
 
-        if (topCandidates.length === 1) {
-            // Single winner
-            statusText.innerText = "ZWYCIĘZCA WYŁONIONY BEZ LOSOWANIA:";
-            winnerName = topCandidates[0];
-            winnerDisplay.innerText = winnerName;
+        await updateDramaText("ZAMYKAM URNĘ WYBORCZĄ...");
+        await sleep(2000);
+        await updateDramaText("PODLICZAM GŁOSY...");
+        await sleep(2000);
+
+        // Ogłaszanie przegranych (od najsłabszego)
+        if (losers.length > 0) {
+            await updateDramaText("ODRZUCONE PROPOZYCJE:", "drama-text");
+            await sleep(1500);
             
-            setTimeout(() => {
-                summary.style.display = "block";
-                gmapsBtn.style.display = "block";
-                clearBtn.style.display = "block";
-                resetVotes();
-            }, 1000);
+            for (let [food, count] of losers) {
+                sfxReveal.currentTime = 0; sfxReveal.play().catch(e=>console.log(e));
+                await updateDramaText(`${food}<br><span style="font-size:0.5em;color:#ff4d4d">Głosów: ${count}</span>`, "drama-text drama-loser");
+                await sleep(2000);
+            }
+        }
+
+        // Zbudowanie napięcia przed 1 miejscem
+        sfxSuspense.pause();
+        sfxHeartbeat.volume = 1;
+        sfxHeartbeat.play().catch(e=>console.log(e));
+        overlay.classList.add('bg-flashing');
+
+        await updateDramaText("NA PLACU BOJU POZOSTALI NAJLEPSI...", "drama-text drama-build");
+        await sleep(3000);
+
+        if (winners.length === 1) {
+            // BEZSPORNY ZWYCIĘZCA
+            await updateDramaText("JEDNOGŁOŚNĄ DECYZJĄ...", "drama-text drama-build");
+            await sleep(3000);
+            
+            // Finał
+            sfxHeartbeat.pause();
+            overlay.classList.remove('bg-flashing');
+            sfxVictory.play().catch(e=>console.log(e));
+            
+            winnerName = winners[0];
+            await updateDramaText(`🏆 ZWYCIĘŻA 🏆<br><br>${winnerName}<br><span style="font-size:0.4em; color:#fff; text-shadow:none;">Zdobywając ${maxVotes} głosów!</span>`, "drama-text drama-winner");
 
         } else {
-            // Tie - need to draw
-            statusText.innerText = "REMIS! LOSOWANIE SPOŚRÓD NAJLEPSZYCH...";
-            summary.style.display = "block";
-            
-            let i = 0;
-            const itv = setInterval(() => {
-                winnerName = topCandidates[Math.floor(Math.random()*topCandidates.length)];
-                winnerDisplay.innerText = winnerName;
-                i++; 
-                if(i > 25) { 
-                    clearInterval(itv); 
-                    statusText.innerText = "WYLOSOWANO ZWYCIĘZCĘ:"; 
-                    gmapsBtn.style.display = "block";
-                    clearBtn.style.display = "block";
-                    resetVotes();
-                }
-            }, 80);
+            // REMIS - POTRZEBNE LOSOWANIE
+            await updateDramaText(`MAMY REMIS!<br><span style="font-size:0.5em">(${winners.length} opcje po ${maxVotes} głosów)</span>`, "drama-text drama-build");
+            await sleep(3000);
+            await updateDramaText("ROZPOCZYNAM LOSOWANIE NAGŁEJ ŚMIERCI...", "drama-text drama-build");
+            await sleep(2000);
+
+            // Szybkie losowanie na ekranie
+            sfxHeartbeat.playbackRate = 2.0; // Przyspieszenie serca
+            let ticks = 0;
+            const drawInterval = setInterval(() => {
+                const tempWinner = winners[Math.floor(Math.random() * winners.length)];
+                document.getElementById('drama-content').innerHTML = tempWinner;
+                ticks++;
+            }, 100);
+
+            await sleep(3000); // 3 sekundy szybkiego migania
+            clearInterval(drawInterval);
+
+            // Wyłonienie ostatecznego
+            sfxHeartbeat.pause();
+            sfxHeartbeat.playbackRate = 1.0;
+            overlay.classList.remove('bg-flashing');
+            sfxVictory.play().catch(e=>console.log(e));
+
+            winnerName = winners[Math.floor(Math.random() * winners.length)];
+            await updateDramaText(`🎲 LOS ZADECYDOWAŁ 🎲<br><br>${winnerName}`, "drama-text drama-winner");
         }
+
+        // Pokaż przyciski końcowe
+        setTimeout(() => {
+            document.getElementById('final-actions').classList.add('visible');
+            resetVotesInDB();
+        }, 2000);
     };
 
-    async function resetVotes() {
+    async function resetVotesInDB() {
         const snap = await getDocs(collection(db, "food_votes"));
         for (const d of snap.docs) { await deleteDoc(doc(db, "food_votes", d.id)); }
     }
 
     window.openGmaps = () => {
-        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); // Usuń emoji
-        // Otwórz wyszukiwanie w Google Maps
+        const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); 
         window.open(`https://google.pl/maps/search/${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
     };
 
-    window.clearResult = () => {
-        document.getElementById('winner-text').style.display = "none";
-        document.getElementById('status-text').style.display = "none";
-        document.getElementById('gmapsBtn').style.display = "none";
-        document.getElementById('clearBtn').style.display = "none";
-        document.getElementById('results-summary').style.display = "none";
+    window.closeDrama = () => {
+        document.getElementById('drama-overlay').style.display = "none";
+        document.getElementById('drawBtn').disabled = false;
         winnerName = "";
+        // Reset muzyki gdyby leciała
+        sfxVictory.pause();
+        sfxVictory.currentTime = 0;
     };
 
+    // --- TŁO ---
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = [];
     function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -309,4 +367,3 @@
 </script>
 </body>
 </html>
-
