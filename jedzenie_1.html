@@ -88,6 +88,15 @@
         /* --- FIREWORKS & CRINGE GIFS --- */
         #fireworksCanvas { position: absolute; inset: 0; pointer-events: none; z-index: 10000; display: none; }
         #cringeGifs { position: absolute; bottom: 20px; left: 0; width: 100%; display: none; justify-content: center; gap: 15px; z-index: 10001; }
+
+        /* --- PIG VIDEO OVERLAY --- */
+        #pig-video-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 10005;
+            display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px);
+        }
+        .close-vid { position: absolute; top: 20px; right: 30px; font-size: 50px; color: #888; cursor: pointer; transition: 0.2s; }
+        .close-vid:hover { color: #ff4d4d; }
+        video { max-width: 90%; max-height: 70vh; border: 2px solid var(--gold); border-radius: 15px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.4); }
     </style>
 </head>
 <body>
@@ -115,6 +124,7 @@
             <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><span class="emoji">🍕</span><h4>Pizza</h4></div>
             <div class="cuisine-card" onclick="select(this, 'McDonald\'s 🍟')"><span class="emoji">🍟</span><h4>McDonald's</h4></div>
             <div class="cuisine-card" id="other-card" onclick="toggleOther()"><span class="emoji">❓</span><h4>Inna...</h4></div>
+            <div class="cuisine-card" onclick="playPigVideo()" style="border-color: #ff9ff3;"><span class="emoji">🐶</span><h4 style="color:#ff9ff3;">Świnka Żaneta</h4></div>
         </div>
 
         <div id="other-input-container"><input type="text" id="other-name" placeholder="Jaka kuchnia?"></div>
@@ -142,10 +152,21 @@
         </div>
     </div>
 
+    <div id="pig-video-overlay">
+        <span class="close-vid" onclick="closePigVideo()">×</span>
+        <h2 style="color:#ff9ff3; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px;">Specjalność Zakładu 🐷</h2>
+        <video id="pig-video" controls>
+            <source src="swinka_zaneta.mp4" type="video/mp4">
+            Twoja przeglądarka nie obsługuje wideo.
+        </video>
+    </div>
+
     <audio id="sfx-suspense" src="galaxy_bells.mp3" loop></audio>
     <audio id="sfx-heartbeat" src="https://assets.mixkit.co/active_storage/sfx/125/125-preview.mp3" loop></audio>
     <audio id="sfx-reveal" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
-    <audio id="sfx-victory" src="fanfare1.mp3"></audio> <script type="module">
+    <audio id="sfx-victory" src="fanfare1.mp3"></audio>
+
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, setDoc, doc, getDocs, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
@@ -158,6 +179,22 @@
 
     let currentSelections = [], user = currentUser, winnerName = "", otherSelected = false;
     let globalVoteCounts = {};
+
+    // --- LOGIKA WIDEO ŚWINKI ŻANETY ---
+    window.playPigVideo = () => {
+        const overlay = document.getElementById('pig-video-overlay');
+        const vid = document.getElementById('pig-video');
+        overlay.style.display = 'flex';
+        vid.play().catch(e => console.log("Przeglądarka zablokowała autoodtwarzanie", e));
+    };
+
+    window.closePigVideo = () => {
+        const overlay = document.getElementById('pig-video-overlay');
+        const vid = document.getElementById('pig-video');
+        overlay.style.display = 'none';
+        vid.pause();
+        vid.currentTime = 0;
+    };
 
     // --- LOGIKA GŁOSOWANIA (Cicha) ---
     onSnapshot(collection(db, "food_votes"), snap => {
