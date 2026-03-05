@@ -129,7 +129,7 @@
         </div>
     </div>
 
-    <audio id="sfx-suspense" src="https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3" loop></audio>
+    <audio id="sfx-suspense" src="galaxy_bells.mp3" loop></audio>
     <audio id="sfx-heartbeat" src="https://assets.mixkit.co/active_storage/sfx/125/125-preview.mp3" loop></audio>
     <audio id="sfx-reveal" src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3"></audio>
     <audio id="sfx-victory" src="https://assets.mixkit.co/active_storage/sfx/2018/2018-preview.mp3"></audio>
@@ -166,7 +166,6 @@
 
         const btn = document.getElementById('drawBtn');
         btn.disabled = totalChoices === 0;
-        // Zmieniono tekst, żeby nie pokazywał liczby opcji, by budować napięcie
         btn.innerText = totalChoices > 0 ? `ROZSTRZYGNIJ WYNIKI` : "Brak głosów";
     });
 
@@ -209,7 +208,7 @@
 
     // --- SYSTEM DRAMATYCZNEGO OGŁASZANIA ---
     const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-    const sfxSuspense = document.getElementById('sfx-suspense');
+    const sfxSuspense = document.getElementById('sfx-suspense'); // To jest teraz dzwonek Samsunga galaxy_bells.mp3
     const sfxHeartbeat = document.getElementById('sfx-heartbeat');
     const sfxReveal = document.getElementById('sfx-reveal');
     const sfxVictory = document.getElementById('sfx-victory');
@@ -246,8 +245,8 @@
         overlay.style.display = 'flex';
         document.getElementById('final-actions').classList.remove('visible');
 
-        // Play audio
-        sfxSuspense.volume = 0.5;
+        // Odpalenie podkładu (dzwonek Samsunga) na start dramatycznego pokazu
+        sfxSuspense.volume = 0.8;
         sfxSuspense.currentTime = 0;
         sfxSuspense.play().catch(e=>console.log(e));
 
@@ -268,7 +267,7 @@
             }
         }
 
-        // Zbudowanie napięcia przed 1 miejscem
+        // Zbudowanie napięcia przed 1 miejscem (Samsung cichnie, wchodzi bicie serca)
         sfxSuspense.pause();
         sfxHeartbeat.volume = 1;
         sfxHeartbeat.play().catch(e=>console.log(e));
@@ -340,9 +339,9 @@
         document.getElementById('drama-overlay').style.display = "none";
         document.getElementById('drawBtn').disabled = false;
         winnerName = "";
-        // Reset muzyki gdyby leciała
         sfxVictory.pause();
         sfxVictory.currentTime = 0;
+        sfxSuspense.pause(); // Na wszelki wypadek
     };
 
     // --- TŁO ---
