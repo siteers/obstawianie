@@ -34,10 +34,11 @@
         .btn-back { background: rgba(255,255,255,0.1); border: 1px solid var(--border); color: #fff; padding: 8px 15px; border-radius: 20px; text-decoration: none; font-size: 12px; font-weight: bold; cursor: pointer; }
 
         .cuisine-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; margin: 20px 0; }
-        .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 12px; border-radius: 15px; cursor: pointer; transition: 0.3s; }
+        .cuisine-card { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); padding: 12px; border-radius: 15px; cursor: pointer; transition: 0.3s; position: relative;}
         .cuisine-card.selected { border-color: var(--gold); background: rgba(212, 175, 55, 0.2); box-shadow: 0 0 15px var(--gold); }
         .cuisine-card h4 { margin: 5px 0; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
         .emoji { font-size: 24px; display: block; margin-bottom: 5px; }
+        .vote-count { position: absolute; top: -5px; right: -5px; background: var(--cyan); color: black; font-weight: bold; font-size: 10px; padding: 3px 6px; border-radius: 10px; display: none;}
 
         .btn-cyber { width: 100%; max-width: 280px; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 15px; font-weight: 900; text-transform: uppercase; cursor: pointer; margin: 10px auto; display: block; transition: 0.3s; box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
         .btn-cyber:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(212, 175, 55, 0.3); }
@@ -53,6 +54,7 @@
         #other-name { width: 100%; padding: 10px; border-radius: 10px; border: 1px solid var(--cyan); background: rgba(0,0,0,0.5); color: white; text-align: center; }
         
         .btn-clear { background: rgba(128,128,128,0.2); border: 1px solid #444; color: white; display: none; }
+        #results-summary { text-align: left; font-size: 12px; margin-top: 15px; color: #aaa; display: none; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px;}
     </style>
 </head>
 <body>
@@ -67,19 +69,19 @@
         <p id="counter" style="color: #888; font-size: 14px;">Wybierz 3 kuchnie (0/3)</p>
         
         <div class="cuisine-grid">
-            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><span class="emoji">🍕</span><h4>Włoska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><span class="emoji">🍔</span><h4>Burgery</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><span class="emoji">🥟</span><h4>Polska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><span class="emoji">🍛</span><h4>Indyjska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><span class="emoji">🥙</span><h4>Kebab</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><span class="emoji">🍜</span><h4>Tajska</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><span class="emoji">🥗</span><h4>Grecka</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><span class="emoji">🍱</span><h4>Sushi</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><span class="emoji">🍕</span><h4>Pizza</h4></div>
-            <div class="cuisine-card" onclick="select(this, 'McDonald\'s 🍟')"><span class="emoji">🍟</span><h4>McDonald's</h4></div>
-            <div class="cuisine-card" id="other-card" onclick="toggleOther()"><span class="emoji">❓</span><h4>Inna...</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Włoska 🍕')"><div class="vote-count" id="vote-Włoska 🍕">0</div><span class="emoji">🍕</span><h4>Włoska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Azjatycka 🍣')"><div class="vote-count" id="vote-Azjatycka 🍣">0</div><span class="emoji">🍣</span><h4>Azjatycka</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Burgery 🍔')"><div class="vote-count" id="vote-Burgery 🍔">0</div><span class="emoji">🍔</span><h4>Burgery</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Polska 🥟')"><div class="vote-count" id="vote-Polska 🥟">0</div><span class="emoji">🥟</span><h4>Polska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Indyjska 🍛')"><div class="vote-count" id="vote-Indyjska 🍛">0</div><span class="emoji">🍛</span><h4>Indyjska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Kebab 🥙')"><div class="vote-count" id="vote-Kebab 🥙">0</div><span class="emoji">🥙</span><h4>Kebab</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Meksykańska 🌮')"><div class="vote-count" id="vote-Meksykańska 🌮">0</div><span class="emoji">🌮</span><h4>Meksykańska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Tajska 🍜')"><div class="vote-count" id="vote-Tajska 🍜">0</div><span class="emoji">🍜</span><h4>Tajska</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Grecka 🥗')"><div class="vote-count" id="vote-Grecka 🥗">0</div><span class="emoji">🥗</span><h4>Grecka</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Sushi 🍱')"><div class="vote-count" id="vote-Sushi 🍱">0</div><span class="emoji">🍱</span><h4>Sushi</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'Pizza 🍕')"><div class="vote-count" id="vote-Pizza 🍕">0</div><span class="emoji">🍕</span><h4>Pizza</h4></div>
+            <div class="cuisine-card" onclick="select(this, 'McDonald\'s 🍟')"><div class="vote-count" id="vote-McDonald's 🍟">0</div><span class="emoji">🍟</span><h4>McDonald's</h4></div>
+            <div class="cuisine-card" id="other-card" onclick="toggleOther()"><div class="vote-count" id="vote-other">0</div><span class="emoji">❓</span><h4>Inna...</h4></div>
         </div>
 
         <div id="other-input-container"><input type="text" id="other-name" placeholder="Jaka kuchnia?"></div>
@@ -87,9 +89,10 @@
 
         <div id="draw-section">
             <div class="voters-box">Głosowali: <span id="voters-list">-</span></div>
-            <button class="btn-cyber" id="drawBtn" onclick="drawFood()" style="background:#ff4d4d; color:#fff;" disabled>Losuj</button>
+            <button class="btn-cyber" id="drawBtn" onclick="resolveWinner()" style="background:#ff4d4d; color:#fff;" disabled>Rozstrzygnij</button>
             <div id="status-text" style="color:var(--gold); font-size: 12px; margin-top: 10px; display: none;">ANALIZA PREFERENCJI...</div>
             <div id="winner-text" class="winner-display"></div>
+            <div id="results-summary"></div>
             <button class="btn-cyber" id="gmapsBtn" style="display:none; background:var(--gold); color:#000;" onclick="openGmaps()">Pokaż na Mapie 📍</button>
             <button class="btn-cyber btn-clear" id="clearBtn" onclick="clearResult()">Wyczyść Wynik</button>
         </div>
@@ -112,14 +115,53 @@
     }
 
     let currentSelections = [], user = currentUser, winnerName = "", otherSelected = false;
+    let globalVoteCounts = {};
 
     onSnapshot(collection(db, "food_votes"), snap => {
         const voters = snap.docs.map(d => d.id);
         document.getElementById('voters-list').innerText = voters.length > 0 ? voters.join(", ") : "-";
-        let totalChoices = 0; snap.forEach(d => totalChoices += (d.data().votes || []).length);
+        
+        let totalChoices = 0; 
+        globalVoteCounts = {};
+        
+        snap.forEach(d => {
+            const votes = d.data().votes || [];
+            totalChoices += votes.length;
+            votes.forEach(v => {
+                globalVoteCounts[v] = (globalVoteCounts[v] || 0) + 1;
+            });
+        });
+
+        // Update UI with vote counts
+        document.querySelectorAll('.vote-count').forEach(el => {
+            el.style.display = 'none';
+            el.innerText = '0';
+        });
+
+        let otherCount = 0;
+        for (const [food, count] of Object.entries(globalVoteCounts)) {
+            const elementId = `vote-${food}`;
+            const el = document.getElementById(elementId);
+            if (el) {
+                el.innerText = count;
+                el.style.display = 'block';
+            } else if (food.includes('❓')) {
+                 otherCount += count;
+            }
+        }
+        
+        if(otherCount > 0) {
+            const otherEl = document.getElementById('vote-other');
+            if(otherEl){
+                otherEl.innerText = otherCount;
+                otherEl.style.display = 'block';
+            }
+        }
+
+
         const btn = document.getElementById('drawBtn');
         btn.disabled = totalChoices === 0;
-        btn.innerText = totalChoices > 0 ? `Losuj (${totalChoices} opcji)` : "Losuj";
+        btn.innerText = totalChoices > 0 ? `Rozstrzygnij (${totalChoices} opcji)` : "Rozstrzygnij";
     });
 
     window.toggleOther = () => {
@@ -159,35 +201,71 @@
         alert("Głosy zapisane!");
     };
 
-    window.drawFood = async () => {
-        const snap = await getDocs(collection(db, "food_votes"));
-        let pool = []; snap.forEach(d => pool.push(...d.data().votes));
+    window.resolveWinner = async () => {
         const winnerDisplay = document.getElementById('winner-text');
         const statusText = document.getElementById('status-text');
         const gmapsBtn = document.getElementById('gmapsBtn');
         const clearBtn = document.getElementById('clearBtn');
         const drawBtn = document.getElementById('drawBtn');
+        const summary = document.getElementById('results-summary');
 
         drawBtn.disabled = true;
         statusText.style.display = "block";
-        statusText.innerText = "ANALIZA PREFERENCJI...";
         winnerDisplay.style.display = "block";
         gmapsBtn.style.display = "none";
         clearBtn.style.display = "none";
+        summary.style.display = "none";
 
-        let i = 0;
-        const itv = setInterval(() => {
-            winnerName = pool[Math.floor(Math.random()*pool.length)];
+        if (Object.keys(globalVoteCounts).length === 0) return;
+
+        // Find max votes
+        let maxVotes = 0;
+        for (const count of Object.values(globalVoteCounts)) {
+            if (count > maxVotes) maxVotes = count;
+        }
+
+        // Find all options with max votes
+        const topCandidates = [];
+        for (const [food, count] of Object.entries(globalVoteCounts)) {
+            if (count === maxVotes) topCandidates.push(food);
+        }
+
+        let summaryText = `<b>Najwięcej głosów (${maxVotes}):</b><br>`;
+        topCandidates.forEach(c => summaryText += `- ${c}<br>`);
+        summary.innerHTML = summaryText;
+
+        if (topCandidates.length === 1) {
+            // Single winner
+            statusText.innerText = "ZWYCIĘZCA WYŁONIONY BEZ LOSOWANIA:";
+            winnerName = topCandidates[0];
             winnerDisplay.innerText = winnerName;
-            i++; 
-            if(i > 25) { 
-                clearInterval(itv); 
-                statusText.innerText = "WYLOSOWANO:"; 
+            
+            setTimeout(() => {
+                summary.style.display = "block";
                 gmapsBtn.style.display = "block";
                 clearBtn.style.display = "block";
                 resetVotes();
-            }
-        }, 80);
+            }, 1000);
+
+        } else {
+            // Tie - need to draw
+            statusText.innerText = "REMIS! LOSOWANIE SPOŚRÓD NAJLEPSZYCH...";
+            summary.style.display = "block";
+            
+            let i = 0;
+            const itv = setInterval(() => {
+                winnerName = topCandidates[Math.floor(Math.random()*topCandidates.length)];
+                winnerDisplay.innerText = winnerName;
+                i++; 
+                if(i > 25) { 
+                    clearInterval(itv); 
+                    statusText.innerText = "WYLOSOWANO ZWYCIĘZCĘ:"; 
+                    gmapsBtn.style.display = "block";
+                    clearBtn.style.display = "block";
+                    resetVotes();
+                }
+            }, 80);
+        }
     };
 
     async function resetVotes() {
@@ -198,7 +276,7 @@
     window.openGmaps = () => {
         const cleanName = winnerName.replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, '').trim(); // Usuń emoji
         // Otwórz wyszukiwanie w Google Maps
-        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
+        window.open(`https://google.pl/maps/search/${encodeURIComponent(cleanName + " restauracja")}`, '_blank');
     };
 
     window.clearResult = () => {
@@ -206,6 +284,7 @@
         document.getElementById('status-text').style.display = "none";
         document.getElementById('gmapsBtn').style.display = "none";
         document.getElementById('clearBtn').style.display = "none";
+        document.getElementById('results-summary').style.display = "none";
         winnerName = "";
     };
 
