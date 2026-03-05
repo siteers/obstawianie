@@ -141,7 +141,7 @@
 
     /* --- WIZYTÓWKA URODZINOWA PAWŁA --- */
     #pawel-bday-banner {
-        display: none; /* Domyślnie ukryte, JS włączy dla Pawła */
+        display: none;
         margin-bottom: 20px;
         text-align: center;
         background: rgba(0, 255, 0, 0.1);
@@ -152,6 +152,29 @@
         animation: pulseGreen 2s infinite;
     }
     @keyframes pulseGreen { 0% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } 50% { box-shadow: 0 0 40px rgba(0,255,0,0.6); } 100% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } }
+
+    /* --- GLOBAL VIDEO INTRO OVERLAY --- */
+    #global-intro-overlay {
+        position: fixed; inset: 0; background: black; z-index: 99999;
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    #global-intro-video { 
+        width: 100%; height: 100%; object-fit: contain; 
+    }
+    .intro-btn-group {
+        position: absolute; bottom: 30px; display: flex; gap: 15px; z-index: 100000; flex-direction: column; align-items: center;
+    }
+    #start-video-btn {
+        background: var(--gold); color: black; border: none; font-weight: bold;
+        padding: 15px 30px; border-radius: 20px; cursor: pointer; font-size: 16px;
+        display: none; box-shadow: 0 0 30px rgba(212,175,55,0.5); text-transform: uppercase;
+        animation: pulseRed 1s infinite;
+    }
+    #skip-intro-btn {
+        background: rgba(255,255,255,0.1); color: #ccc; border: 1px solid #555;
+        padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.3s;
+    }
+    #skip-intro-btn:hover { background: rgba(255,255,255,0.3); color: #fff; }
   </style>
 </head>
 <body>
@@ -159,6 +182,16 @@
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
+
+  <div id="global-intro-overlay">
+      <video id="global-intro-video" playsinline>
+          <source src="Tworzenie_Wideo_Tanecznego_Do_Piosenki.mp4" type="video/mp4">
+      </video>
+      <div class="intro-btn-group">
+          <button id="start-video-btn">▶️ KLIKNIJ ABY ODTWORZYĆ</button>
+          <button id="skip-intro-btn">Pomiń</button>
+      </div>
+  </div>
 
   <div id="login-container">
     <div class="login-card" id="loginCardElement">
@@ -174,6 +207,7 @@
         </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
+           <div>Update (05.03.2026) V.510 - Wprowadzono zmiany w wyborze jedzenia</div>
             <div>Update (12.02.2026) V.489 - Wprowadzono zmiany w service desk (filtracja i numery spraw)</div>
             <div>Update (11.02.2026) V.454 - Lista zamykana jest automatycznie o godz. 13:15</div>
             <div>Update (05.02.2026) V.442 - Dodano konto SCIANA (tylko podgląd) oraz zabezpieczono system przed self-votingiem</div>
@@ -283,9 +317,9 @@
   if (savedUser === "Grzesiek Sz") {
       const now = new Date();
       const banEnd = new Date("2026-02-09T12:30:00");
-      if (now >= banEnd) { showHub(savedUser); } else { localStorage.removeItem('cyberUser'); }
+      if (now >= banEnd) { triggerHubWithIntro(savedUser); } else { localStorage.removeItem('cyberUser'); }
   } 
-  else if (savedUser) { showHub(savedUser); }
+  else if (savedUser) { triggerHubWithIntro(savedUser); }
 
   window.forgotPassword = async () => {
       const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
@@ -439,11 +473,67 @@
   window.confirmDeleteUser = async () => { const userToDelete = document.getElementById('userDeleteSelect').value; if (!userToDelete) return alert("Wybierz gracza z listy!"); if (confirm(`Potwierdzasz usunięcie gracza "${userToDelete}"?`)) { await deleteDoc(doc(db, "passwords", userToDelete)); await deleteDoc(doc(db, "ranking", userToDelete)); alert("Gracz usunięty."); closeDeleteModal(); } };
   function triggerNightmare() { const audio = document.getElementById('horrorSound'); audio.currentTime = 0; audio.play().catch(()=>{}); document.body.classList.add('nightmare-mode'); document.getElementById('loginCardElement').classList.add('nightmare-shake'); setTimeout(() => { document.body.classList.remove('nightmare-mode'); document.getElementById('loginCardElement').classList.remove('nightmare-shake'); }, 1000); }
   document.getElementById('userPass').addEventListener('keypress', (e) => { if(e.key==='Enter') login(); });
-  function saveSession(user) { localStorage.setItem('cyberUser', user); showHub(user); }
+  
+  function saveSession(user) { localStorage.setItem('cyberUser', user); triggerHubWithIntro(user); }
 
-  function showHub(user) {
+  // --- LOGIKA WYŚWIETLANIA WIDEO TYLKO RAZ ---
+  function triggerHubWithIntro(user) {
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
-      document.getElementById('login-container').style.display = 'none'; document.getElementById('hub-view').style.display = 'block'; document.getElementById('logoutBtn').style.display = 'block'; document.getElementById('userNameDisplay').innerText = user;
+      
+      const introKey = `videoSeen_${user}`;
+      // Jeśli użytkownik już widział wideo - renderuj od razu huba
+      if (localStorage.getItem(introKey)) {
+          renderHubData(user);
+          return;
+      }
+
+      // W przeciwnym razie pokaż wideo
+      document.getElementById('login-container').style.display = 'none';
+      const overlay = document.getElementById('global-intro-overlay');
+      const vid = document.getElementById('global-intro-video');
+      const startBtn = document.getElementById('start-video-btn');
+      
+      overlay.style.display = 'flex';
+
+      // Próba autoodtwarzania
+      vid.play().catch(e => {
+          console.log("Autoplay zablokowane przez przeglądarkę. Wymagana interakcja użytkownika.", e);
+          startBtn.style.display = 'block'; // Pokazujemy przycisk "Play"
+      });
+
+      startBtn.onclick = () => {
+          startBtn.style.display = 'none';
+          vid.play();
+      };
+
+      // Gdy wideo się skończy
+      vid.onended = () => {
+          finishIntro(user, introKey);
+      };
+
+      // Gdy użytkownik pominie wideo
+      document.getElementById('skip-intro-btn').onclick = () => {
+          finishIntro(user, introKey);
+      };
+  }
+
+  window.finishIntro = (user, introKey) => {
+      const vid = document.getElementById('global-intro-video');
+      vid.pause();
+      document.getElementById('global-intro-overlay').style.display = 'none';
+      
+      // Zapisz w LocalStorage, że film został obejrzany
+      localStorage.setItem(introKey, 'true');
+      
+      // Odpal normalnego Huba
+      renderHubData(user);
+  };
+
+  function renderHubData(user) {
+      document.getElementById('login-container').style.display = 'none'; 
+      document.getElementById('hub-view').style.display = 'block'; 
+      document.getElementById('logoutBtn').style.display = 'block'; 
+      document.getElementById('userNameDisplay').innerText = user;
       
       // BANER URODZINOWY
       if (user === "Paweł") {
@@ -472,5 +562,3 @@
 </script>
 </body>
 </html>
-
-
