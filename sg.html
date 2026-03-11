@@ -477,7 +477,6 @@
   
   function saveSession(user) { localStorage.setItem('cyberUser', user); triggerHubWithIntro(user); }
 
-  // --- LOGIKA WYŚWIETLANIA WIDEO TYLKO RAZ ---
   function triggerHubWithIntro(user) {
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       
@@ -523,37 +522,53 @@
       renderHubData(user);
   };
 
-  // --- LOGIKA POWIADOMIEŃ PUSH (KROK 3) ---
-  function requestNotificationPermission(username) {
-      const messaging = getMessaging(app);
+  // --- ODDZIELNA FUNKCJA PYTAJĄCA O POWIADOMIENIA ---
+  async function checkAndAskForNotifications(username) {
+      try {
+          // Upewniamy się, że przeglądarka wspiera powiadomienia
+          if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+              console.log('Przeglądarka nie wspiera powiadomień lub Service Workerów.');
+              return;
+          }
 
-      Notification.requestPermission().then((permission) => {
+          // Czekamy na rejestrację Service Workera (Krok 2)
+          const registration = await navigator.serviceWorker.ready;
+          
+          const messaging = getMessaging(app);
+          const permission = await Notification.requestPermission();
+          
           if (permission === 'granted') {
               console.log('Przyznano uprawnienia do powiadomień.');
               
-              getToken(messaging, { vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos' })
-              .then((currentToken) => {
-                  if (currentToken) {
-                      console.log('Twój token FCM to:', currentToken);
-                      setDoc(doc(db, "fcmTokens", username), {
-                          token: currentToken,
-                          user: username,
-                          lastUpdated: new Date()
-                      });
-                  } else {
-                      console.log('Brak tokena rejestracji.');
-                  }
-              }).catch((err) => {
-                  console.log('Błąd podczas pobierania tokena.', err);
+              const currentToken = await getToken(messaging, { 
+                  vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos',
+                  serviceWorkerRegistration: registration 
               });
-          }
-      });
 
-      onMessage(messaging, (payload) => {
-          console.log('Wiadomość na pierwszym planie: ', payload);
-          alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
-      });
+              if (currentToken) {
+                  console.log('Token zapisany w bazie:', currentToken);
+                  await setDoc(doc(db, "fcmTokens", username), {
+                      token: currentToken,
+                      user: username,
+                      lastUpdated: new Date()
+                  });
+              }
+          }
+      } catch (error) {
+          console.log('Błąd podczas konfiguracji powiadomień:', error);
+      }
   }
+
+  // --- NASŁUCHIWANIE NA ŻYWO (Kiedy aplikacja jest otwarta) ---
+  try {
+      if ('Notification' in window && 'serviceWorker' in navigator) {
+          const messaging = getMessaging(app);
+          onMessage(messaging, (payload) => {
+              console.log('Wiadomość na pierwszym planie: ', payload);
+              alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
+          });
+      }
+  } catch (e) { console.log('Brak wsparcia dla onMessage na tym urządzeniu'); }
 
   function renderHubData(user) {
       document.getElementById('login-container').style.display = 'none'; 
@@ -561,7 +576,6 @@
       document.getElementById('logoutBtn').style.display = 'block'; 
       document.getElementById('userNameDisplay').innerText = user;
       
-      // BANER URODZINOWY
       if (user === "Paweł") {
           const now = new Date();
           const bdayEnd = new Date("2026-02-10T23:59:59");
@@ -575,8 +589,8 @@
       if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
 
-      // WYWOŁANIE FUNKCJI ZAPYTANIA O POWIADOMIENIA (KROK 3)
-      requestNotificationPermission(user);
+      // WYWOŁANIE ZGODY NA POWIADOMIENIA BEZ BLOKOWANIA INTERFEJSU
+      checkAndAskForNotifications(user);
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
@@ -588,6 +602,18 @@
   function init() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
   function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw); }
   window.onresize = init; init(); draw();
+
+  // Rejestracja Service Workera od razu przy starcie pliku
+  if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./firebase-messaging-sw.js')
+          .then(function(registration) {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+          }, function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+          });
+      });
+  }
 </script>
 </body>
 </html>
