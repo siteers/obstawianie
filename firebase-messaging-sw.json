@@ -1,0 +1,53 @@
+// firebase-messaging-sw.js
+
+// Importujemy skrypty Firebase dla Service Workera
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js');
+importScripts('https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging-compat.js');
+
+// Twoja pełna konfiguracja Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie",
+  messagingSenderId: "64783465818",
+  appId: "1:64783465818:web:0a9aa45acf40e351ae8763"
+};
+
+// Inicjalizacja aplikacji Firebase w Service Workerze
+firebase.initializeApp(firebaseConfig);
+const messaging = firebase.messaging();
+
+// Co ma się stać, gdy przyjdzie powiadomienie, a aplikacja działa w tle (lub jest zamknięta):
+messaging.onBackgroundMessage(function(payload) {
+  console.log('[firebase-messaging-sw.js] Otrzymano powiadomienie w tle ', payload);
+  
+  const notificationTitle = payload.notification.title || "Cyber-Bet System";
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: '/logo.png', // Upewnij się, że plik logo.png jest w głównym folderze
+    badge: '/logo.png',
+    vibrate: [200, 100, 200, 100, 200, 100, 200],
+    data: { url: "/lista.html" } // Po kliknięciu powiadomienia otworzy się lista
+  };
+
+  self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Reakcja na kliknięcie powiadomienia (otwarcie okna)
+self.addEventListener('notificationclick', function(event) {
+    event.notification.close();
+    event.waitUntil(
+        clients.matchAll({ type: 'window' }).then(windowClients => {
+            // Sprawdza, czy karta z apką jest już otwarta - jak tak, to ją aktywuje, jak nie, otwiera nową
+            for (let i = 0; i < windowClients.length; i++) {
+                let client = windowClients[i];
+                if (client.url.includes(event.notification.data.url) && 'focus' in client) {
+                    return client.focus();
+                }
+            }
+            if (clients.openWindow) {
+                return clients.openWindow(event.notification.data.url);
+            }
+        })
+    );
+});
