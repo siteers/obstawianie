@@ -62,6 +62,8 @@
     .btn-delete-user { background: linear-gradient(135deg, #ff0000, #800000); border: 1px solid #ff4757; }
     .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; }
     
+    .btn-push-activate { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid #2a5298; font-size: 14px; padding: 15px; margin-top: 25px; }
+
     #sub-menu { display: none; }
     #sub-menu.active { display: block; animation: slideUp 0.5s forwards; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -235,8 +237,11 @@
           <button class="btn-cyber btn-food extra-feature" onclick="window.open('jedzenie_1.html', '_blank')">Wybór jedzenia</button>
           <button class="btn-cyber btn-mundial extra-feature" onclick="alert('Dostępne już wkrótce!')">Mundial 2026</button>
           <button class="btn-cyber btn-others extra-feature" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
+          
+          <button class="btn-cyber btn-push-activate" onclick="enablePushNotifications()">🔔 Aktywuj Powiadomienia</button>
       </div>
       <div id="admin-buttons" style="display:none;">
+          <button class="btn-cyber btn-push-activate" onclick="enablePushNotifications()">🔔 Aktywuj Powiadomienia</button>
           <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
           <button class="btn-cyber btn-main" onclick="adminAddUser()">➕ Dodaj Gracza</button>
           <button class="btn-cyber btn-main" onclick="adminEditUserFlow()">✏️ Edytuj Nazwę</button>
@@ -302,7 +307,9 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
+  
+  // IMPORT BEZPIECZNY DLA TELEFONÓW (Dodane isSupported)
+  import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
@@ -522,53 +529,52 @@
       renderHubData(user);
   };
 
-  // --- ODDZIELNA FUNKCJA PYTAJĄCA O POWIADOMIENIA ---
-  async function checkAndAskForNotifications(username) {
+
+  // --- FUNKCJA BEZPIECZNEGO AKTYWOWANIA POWIADOMIEN NA KLIKNIECIE ---
+  window.enablePushNotifications = async () => {
       try {
-          // Upewniamy się, że przeglądarka wspiera powiadomienia
-          if (!('Notification' in window) || !('serviceWorker' in navigator)) {
-              console.log('Przeglądarka nie wspiera powiadomień lub Service Workerów.');
+          const supported = await isSupported();
+          if (!supported) {
+              alert("Twoja przeglądarka (lub obecny tryb) nie wspiera powiadomień Push.");
               return;
           }
 
-          // Czekamy na rejestrację Service Workera (Krok 2)
-          const registration = await navigator.serviceWorker.ready;
-          
-          const messaging = getMessaging(app);
           const permission = await Notification.requestPermission();
-          
           if (permission === 'granted') {
-              console.log('Przyznano uprawnienia do powiadomień.');
+              const messaging = getMessaging(app);
+              const currentUser = localStorage.getItem('cyberUser');
               
-              const currentToken = await getToken(messaging, { 
-                  vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos',
-                  serviceWorkerRegistration: registration 
+              const token = await getToken(messaging, { 
+                  vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos' 
               });
 
-              if (currentToken) {
-                  console.log('Token zapisany w bazie:', currentToken);
-                  await setDoc(doc(db, "fcmTokens", username), {
-                      token: currentToken,
-                      user: username,
+              if (token && currentUser) {
+                  await setDoc(doc(db, "fcmTokens", currentUser), {
+                      token: token,
+                      user: currentUser,
                       lastUpdated: new Date()
                   });
+                  alert("Sukces! Powiadomienia zostały poprawnie aktywowane.");
               }
+          } else {
+              alert("Brak zgody na powiadomienia (sprawdź ustawienia telefonu/przeglądarki).");
           }
       } catch (error) {
-          console.log('Błąd podczas konfiguracji powiadomień:', error);
+          console.error("Błąd podczas konfiguracji powiadomień:", error);
+          alert("Wystąpił błąd przy włączaniu powiadomień.");
       }
-  }
+  };
 
-  // --- NASŁUCHIWANIE NA ŻYWO (Kiedy aplikacja jest otwarta) ---
-  try {
-      if ('Notification' in window && 'serviceWorker' in navigator) {
+  // Uruchomienie nasłuchu w tle - tylko jeśli jest wspierane (nie zablokuje strony)
+  isSupported().then(supported => {
+      if (supported) {
           const messaging = getMessaging(app);
           onMessage(messaging, (payload) => {
-              console.log('Wiadomość na pierwszym planie: ', payload);
               alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
           });
       }
-  } catch (e) { console.log('Brak wsparcia dla onMessage na tym urządzeniu'); }
+  }).catch(err => console.log("Messaging unsupported on this device."));
+
 
   function renderHubData(user) {
       document.getElementById('login-container').style.display = 'none'; 
@@ -588,9 +594,6 @@
       document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block'); document.getElementById('add-hour-btn').style.display = 'block'; 
       if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
-
-      // WYWOŁANIE ZGODY NA POWIADOMIENIA BEZ BLOKOWANIA INTERFEJSU
-      checkAndAskForNotifications(user);
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
@@ -603,15 +606,9 @@
   function draw() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(draw); }
   window.onresize = init; init(); draw();
 
-  // Rejestracja Service Workera od razu przy starcie pliku
   if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
-          navigator.serviceWorker.register('./firebase-messaging-sw.js')
-          .then(function(registration) {
-              console.log('ServiceWorker registration successful with scope: ', registration.scope);
-          }, function(err) {
-              console.log('ServiceWorker registration failed: ', err);
-          });
+          navigator.serviceWorker.register('./firebase-messaging-sw.js').catch(err => console.log('SW fail: ', err));
       });
   }
 </script>
