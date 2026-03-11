@@ -302,6 +302,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
@@ -481,13 +482,11 @@
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       
       const introKey = `videoSeen_${user}`;
-      // Jeśli użytkownik już widział wideo - renderuj od razu huba
       if (localStorage.getItem(introKey)) {
           renderHubData(user);
           return;
       }
 
-      // W przeciwnym razie pokaż wideo
       document.getElementById('login-container').style.display = 'none';
       const overlay = document.getElementById('global-intro-overlay');
       const vid = document.getElementById('global-intro-video');
@@ -495,10 +494,9 @@
       
       overlay.style.display = 'flex';
 
-      // Próba autoodtwarzania
       vid.play().catch(e => {
-          console.log("Autoplay zablokowane przez przeglądarkę. Wymagana interakcja użytkownika.", e);
-          startBtn.style.display = 'block'; // Pokazujemy przycisk "Play"
+          console.log("Autoplay zablokowane", e);
+          startBtn.style.display = 'block'; 
       });
 
       startBtn.onclick = () => {
@@ -506,12 +504,10 @@
           vid.play();
       };
 
-      // Gdy wideo się skończy
       vid.onended = () => {
           finishIntro(user, introKey);
       };
 
-      // Gdy użytkownik pominie wideo
       document.getElementById('skip-intro-btn').onclick = () => {
           finishIntro(user, introKey);
       };
@@ -522,12 +518,42 @@
       vid.pause();
       document.getElementById('global-intro-overlay').style.display = 'none';
       
-      // Zapisz w LocalStorage, że film został obejrzany
       localStorage.setItem(introKey, 'true');
       
-      // Odpal normalnego Huba
       renderHubData(user);
   };
+
+  // --- LOGIKA POWIADOMIEŃ PUSH (KROK 3) ---
+  function requestNotificationPermission(username) {
+      const messaging = getMessaging(app);
+
+      Notification.requestPermission().then((permission) => {
+          if (permission === 'granted') {
+              console.log('Przyznano uprawnienia do powiadomień.');
+              
+              getToken(messaging, { vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos' })
+              .then((currentToken) => {
+                  if (currentToken) {
+                      console.log('Twój token FCM to:', currentToken);
+                      setDoc(doc(db, "fcmTokens", username), {
+                          token: currentToken,
+                          user: username,
+                          lastUpdated: new Date()
+                      });
+                  } else {
+                      console.log('Brak tokena rejestracji.');
+                  }
+              }).catch((err) => {
+                  console.log('Błąd podczas pobierania tokena.', err);
+              });
+          }
+      });
+
+      onMessage(messaging, (payload) => {
+          console.log('Wiadomość na pierwszym planie: ', payload);
+          alert(`🔔 ${payload.notification.title}\n${payload.notification.body}`);
+      });
+  }
 
   function renderHubData(user) {
       document.getElementById('login-container').style.display = 'none'; 
@@ -548,6 +574,9 @@
       document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block'); document.getElementById('add-hour-btn').style.display = 'block'; 
       if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
+
+      // WYWOŁANIE FUNKCJI ZAPYTANIA O POWIADOMIENIA (KROK 3)
+      requestNotificationPermission(user);
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
