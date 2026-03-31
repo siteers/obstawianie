@@ -81,6 +81,11 @@
     .btn-back:hover { background: rgba(255, 255, 255, 0.1); color: #fff; border-color: rgba(255, 255, 255, 0.3); }
 
     #msg { margin-top: 20px; font-size: 12px; font-weight: 900; min-height: 20px; text-transform: uppercase; }
+    
+    #voteLimitDisplay {
+        color: #ff4757; font-size: 12px; margin-top: 10px; 
+        font-weight: bold; letter-spacing: 1px;
+    }
   </style>
 </head>
 <body>
@@ -94,6 +99,7 @@
       <div class="input-box">
         <label>Operator Systemu</label>
         <div id="userNameDisplay" class="user-display">---</div>
+        <div id="voteLimitDisplay">ŁADOWANIE LIMITU...</div>
       </div>
 
       <div class="hour-grid">
@@ -121,7 +127,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, addDoc, doc, onSnapshot, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
@@ -136,6 +142,32 @@ document.getElementById('userNameDisplay').innerText = currentUser;
 document.getElementById('mainContainer').style.display = 'block';
 
 let currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
+let votesLeft = 20; // Domyślny limit z SD.34.AŻ.2026
+
+// Pobieranie limitu z bazy danych
+async function fetchUserStats() {
+    const userRef = doc(db, "ranking", currentUser);
+    const userSnap = await getDoc(userRef);
+    if (userSnap.exists()) {
+        const data = userSnap.data();
+        let used = data.votesThisMonth || 0;
+        votesLeft = Math.max(0, 20 - used);
+    } else {
+        votesLeft = 20;
+    }
+    
+    const limitDisplay = document.getElementById('voteLimitDisplay');
+    limitDisplay.innerText = `POZOSTAŁO TYPOWAŃ: ${votesLeft}/20`;
+    if (votesLeft === 0) {
+        limitDisplay.style.color = "var(--error)";
+    } else if (votesLeft <= 5) {
+        limitDisplay.style.color = "orange";
+    } else {
+        limitDisplay.style.color = "var(--cyan)";
+    }
+    validateForm();
+}
+fetchUserStats();
 
 window.formatTime = (input) => {
     let v = input.value.replace(/\D/g, '');
@@ -160,7 +192,9 @@ function updateSlotUI(id, name, isLocked) {
     const isEmpty = (!name || name === "Brak"), isSelfBet = (currentUser === name && !isEmpty);
     
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
-    input.disabled = isLocked || isEmpty || isSelfBet;
+    
+    // Blokujemy też pole, jeśli gracz zużył 20 głosów
+    input.disabled = isLocked || isEmpty || isSelfBet || votesLeft <= 0;
     
     if (isLocked) group.className = "target-group group-locked";
     else if (isSelfBet) group.className = "target-group target-disabled";
@@ -173,25 +207,45 @@ function updateSlotUI(id, name, isLocked) {
 window.validateForm = function() {
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
     const timeReg = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
-    let h1V = h1.length === 5 && timeReg.test(h1), h2V = h2.length === 5 && timeReg.test(h2);
-    // Przycisk aktywny jeśli wpisano poprawnie godzinę w przynajmniej jednym dostępnym polu
-    let v = (h1V && !document.getElementById('hour1').disabled) || (h2V && !document.getElementById('hour2').disabled);
-    document.getElementById('saveBtn').disabled = !v;
+    
+    let h1V = h1.length === 5 && timeReg.test(h1) && !document.getElementById('hour1').disabled;
+    let h2V = h2.length === 5 && timeReg.test(h2) && !document.getElementById('hour2').disabled;
+    
+    let votesToCast = (h1V ? 1 : 0) + (h2V ? 1 : 0);
+    let v = votesToCast > 0 && votesToCast <= votesLeft;
+    
+    const saveBtn = document.getElementById('saveBtn');
+    saveBtn.disabled = !v;
+    
+    const msg = document.getElementById('msg');
+    if (votesToCast > votesLeft && votesToCast > 0) {
+        msg.style.color = "var(--error)";
+        msg.innerText = "PRZEKROCZONO LIMIT TYPOWAŃ!";
+    } else {
+        msg.innerText = "";
+    }
 }
 
 window.saveData = async function() {
     const h1 = document.getElementById('hour1').value, h2 = document.getElementById('hour2').value;
-    const msg = document.getElementById('msg'), btn = document.getElementById('saveBtn');
+    const timeReg = /^([0-1][0-9]|2[0-3]):[0-5][0-9]$/;
+    const btn = document.getElementById('saveBtn');
+    const msg = document.getElementById('msg');
     
     if (btn.disabled) return;
-
     btn.disabled = true;
+
+    let h1V = h1.length === 5 && timeReg.test(h1) && !document.getElementById('hour1').disabled;
+    let h2V = h2.length === 5 && timeReg.test(h2) && !document.getElementById('hour2').disabled;
+    let votesToCast = (h1V ? 1 : 0) + (h2V ? 1 : 0);
+
     try {
-        if (h1.length === 5 && !document.getElementById('hour1').disabled) 
-            await addDoc(collection(db, "users"), { name: currentUser, hour: h1, targetSlot: 'slot1', timestamp: Date.now() });
+        if (h1V) await addDoc(collection(db, "users"), { name: currentUser, hour: h1, targetSlot: 'slot1', timestamp: Date.now() });
+        if (h2V) await addDoc(collection(db, "users"), { name: currentUser, hour: h2, targetSlot: 'slot2', timestamp: Date.now() });
         
-        if (h2.length === 5 && !document.getElementById('hour2').disabled) 
-            await addDoc(collection(db, "users"), { name: currentUser, hour: h2, targetSlot: 'slot2', timestamp: Date.now() });
+        // Zaktualizuj licznik typowań w rankingu dla tego użytkownika
+        const userRef = doc(db, "ranking", currentUser);
+        await setDoc(userRef, { votesThisMonth: increment(votesToCast) }, { merge: true });
         
         msg.style.color = "var(--cyan)"; msg.innerText = "TRANSFER COMPLETED";
         setTimeout(() => location.reload(), 1200);
