@@ -98,6 +98,9 @@
         .btn-back { background: var(--cyan) !important; color: #000 !important; }
         
         .deleteBtn { color: #ff4d4d; cursor: pointer; font-size: 20px; }
+        .limit-ok { color: var(--up); font-weight: bold; }
+        .limit-warn { color: orange; font-weight: bold; }
+        .limit-bad { color: var(--down); font-weight: bold; }
     </style>
 </head>
 <body class="dark">
@@ -132,28 +135,39 @@
     <div class="dashboard-container">
         <h1>📊 Game Analytics Dashboard</h1>
         <div class="stats-grid">
-            <div class="stat-card"><h3>Lider Rankingu</h3><p id="top-player">-</p></div>
+            <div class="stat-card"><h3>Lider Grand Rankingu</h3><p id="top-player">-</p></div>
             <div class="stat-card"><h3>Ostatni Zwycięzca</h3><p id="last-winner">-</p></div>
             <div class="stat-card"><h3>Rozegrane Rundy</h3><p id="total-rounds">0</p></div>
         </div>
 
         <div class="tabs">
-            <button class="tab-link active" onclick="openTab(event, 'ranking-tab')">🏆 Ranking</button>
+            <button class="tab-link active" onclick="openTab(event, 'ranking-tab')">🏆 Grand Ranking</button>
+            <button class="tab-link" onclick="openTab(event, 'month-tab')">📅 Obecny Miesiąc</button>
             <button class="tab-link" onclick="openTab(event, 'stats-tab')">📈 Wykresy</button>
             <button class="tab-link" onclick="openTab(event, 'history-tab')">📋 Historia</button>
         </div>
 
         <div id="ranking-tab" class="tab-content active">
             <div class="glass-panel">
-                <table id="rankTable">
-                    <thead><tr><th>#</th><th>Trend / Imię</th><th>Punkty</th><th>Podium</th></tr></thead>
-                    <tbody></tbody>
-                </table>
-                <div class="legend-grid">
-                    <div class="legend-item"><span>👑</span> <div><b>Dominator</b><br>Najwięcej 1. miejsc</div></div>
-                    <div class="legend-item"><span>🔥</span> <div><b>On Fire</b><br>3 zwycięstwa z rzędu</div></div>
-                    <div class="legend-item"><span>🎯</span> <div><b>Snajper</b><br>Trafienie idealne</div></div>
-                    <div class="legend-item"><span>🛡️</span> <div><b>Weteran</b><br>Najczęściej na podium</div></div>
+                <h4 style="color:var(--gold); text-align:center; font-size:16px;">KLASYFIKACJA WSZECH CZASÓW (DUŻE PUNKTY)</h4>
+                <div style="overflow-x: auto;">
+                    <table id="rankTable">
+                        <thead><tr><th>#</th><th>Gracz</th><th>🏆 Duże Punkty</th><th>🥇 Zwycięstwa (MC)</th><th>⚔️ Wygrane TB</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="month-tab" class="tab-content">
+            <div class="glass-panel">
+                <h4 style="color:var(--cyan); text-align:center; font-size:16px;">WYNIKI BIEŻĄCEGO MIESIĄCA (MAŁE PUNKTY)</h4>
+                <p style="text-align:center; font-size:11px; color:#888; margin-top:-10px;">Limit 20 typowań / Wyniki zerowane co miesiąc</p>
+                <div style="overflow-x: auto;">
+                    <table id="monthTable">
+                        <thead><tr><th>#</th><th>Trend / Imię</th><th>Punkty w M-C</th><th>Wykorzystane Typowania</th><th>Podium w M-C</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -161,10 +175,9 @@
         <div id="stats-tab" class="tab-content">
             <div class="charts-grid">
                 <div class="glass-panel full-width-chart"><h4>Historia Pozycji (Ostatnie 10 rund)</h4><canvas id="rankHistoryChart"></canvas></div>
-                <div class="glass-panel full-width-chart"><h4>Skuteczność Medalowa</h4><canvas id="medalChart"></canvas></div>
-                <div class="glass-panel"><h4>Ranking Punktowy</h4><canvas id="barChart"></canvas></div>
+                <div class="glass-panel full-width-chart"><h4>Skuteczność Medalowa (Wszech czasów)</h4><canvas id="medalChart"></canvas></div>
+                <div class="glass-panel"><h4>Grand Ranking Punktowy</h4><canvas id="barChart"></canvas></div>
                 <div class="glass-panel"><h4>Dominacja Medalowa</h4><canvas id="pieChart"></canvas></div>
-                <div class="glass-panel"><h4>Forma Punktowa (Średnia)</h4><canvas id="lineChart"></canvas></div>
             </div>
         </div>
 
@@ -190,10 +203,33 @@
         }
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, collection, onSnapshot, query, orderBy, limit, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, collection, onSnapshot, query, orderBy, getDocs, deleteDoc, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
         const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
         const app = initializeApp(firebaseConfig); const db = getFirestore(app);
+
+        // --- STRAŻNIK MIESIĄCA (AUTO RESET LIMITÓW 20 TYPOWAŃ) ---
+        async function runMonthGuardian() {
+            try {
+                const guardRef = doc(db, "appState", "monthGuardian");
+                const guardSnap = await getDoc(guardRef);
+                const d = new Date();
+                const currentM = d.getFullYear() + '_' + String(d.getMonth()+1).padStart(2, '0');
+                
+                if (!guardSnap.exists() || guardSnap.data().lastProcessedMonth !== currentM) {
+                    console.log("GUARDIAN: Wykryto nowy miesiąc! Rozpoczynam reset limitów (20 typowań).");
+                    const usersSnap = await getDocs(collection(db, "ranking"));
+                    for (const uDoc of usersSnap.docs) {
+                        await updateDoc(doc(db, "ranking", uDoc.id), { votesThisMonth: 0 });
+                    }
+                    await setDoc(guardRef, { lastProcessedMonth: currentM }, { merge: true });
+                    console.log("GUARDIAN: Liczniki typowań wyzerowane.");
+                }
+            } catch (e) {
+                console.error("Błąd Strażnika Miesiąca: ", e);
+            }
+        }
+        runMonthGuardian();
 
         // --- BACKGROUND ---
         const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
@@ -209,7 +245,6 @@
         const medalChart = new Chart(document.getElementById('medalChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, scales: { x: { stacked: true, ticks: { color: chartColor } }, y: { stacked: true, ticks: { color: chartColor } } } } });
         const barChart = new Chart(document.getElementById('barChart').getContext('2d'), { type: 'bar', options: { ...baseOptions, plugins: { legend: { display: false } } } });
         const pieChart = new Chart(document.getElementById('pieChart').getContext('2d'), { type: 'doughnut', options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: chartColor } } } } });
-        const lineChart = new Chart(document.getElementById('lineChart').getContext('2d'), { type: 'line', options: baseOptions });
         const histChart = new Chart(document.getElementById('rankHistoryChart').getContext('2d'), { type: 'line', options: { responsive: true, maintainAspectRatio: false, scales: { y: { reverse: true, ticks: { stepSize: 1, color: chartColor } }, x: { ticks: { color: chartColor, font: { size: 10 } } } }, plugins: { legend: { position: 'top', labels: { color: chartColor, boxWidth: 10, font: { size: 9 } } } } } });
 
         let radarChart;
@@ -220,7 +255,9 @@
             document.getElementById(tabName).classList.add("active"); evt.currentTarget.classList.add("active");
         };
 
-        let historyData = [], playersData = [], globalStats = [];
+        let historyData = [], playersData = [];
+        let grandStats = []; // Tablica dla dużych punktów
+        let currentMonthStats = []; // Tablica dla małych punktów w trwającym miesiącu
 
         // --- NOWA ASYNCHRONICZNA LOGIKA KPN ---
         let creationMoves = [];
@@ -232,22 +269,17 @@
             const duelRef = doc(db, "duels", duelId);
             const snap = await getDoc(duelRef);
 
-            // RESET STANU UI
             document.getElementById('rpsOverlay').style.display = 'flex';
             document.getElementById('roundResult').innerText = "";
             document.getElementById('nextRoundBtn').style.display = "none";
             document.getElementById('rpsScore').innerText = "0 : 0";
             
-            if (!snap.exists()) {
-                // TRYB TWORZENIA (Gracz 1)
-                setupCreationMode(p1, p2, duelId);
-            } else {
+            if (!snap.exists()) { setupCreationMode(p1, p2, duelId); } 
+            else {
                 const data = snap.data();
                 if (data.initiator === currentUser) {
-                    // Gracz 1 czeka
                     document.getElementById('rpsOverlay').innerHTML = `<span class="close-card" onclick="document.getElementById('rpsOverlay').style.display='none'">×</span><h1 style="color:var(--gold)">OCZEKIWANIE</h1><p style="font-size:20px">Wyzwanie wysłane do: ${data.opponent === currentUser ? data.initiator : data.opponent}.<br>Czekaj aż zaakceptuje!</p>`;
                 } else {
-                    // TRYB WALKI (Gracz 2)
                     activeDuelData = data;
                     setupFightMode();
                 }
@@ -257,13 +289,13 @@
         function setupCreationMode(p1, p2, duelId) {
             creationMoves = [];
             document.getElementById('p1Name').innerText = currentUser;
-            document.getElementById('p2Name').innerText = (currentUser === p1 ? p2 : p1); // Przeciwnik
+            document.getElementById('p2Name').innerText = (currentUser === p1 ? p2 : p1);
             document.getElementById('roundInfo').innerText = "WYBIERZ 3 RUCHY";
             
             const btnHtml = ['👊', '✋', '✌️'].map(e => `<button class="rps-btn" onclick="storeMove('${e}', '${duelId}', '${currentUser === p1 ? p2 : p1}')">${e}</button>`).join("");
             document.getElementById('p1Btns').innerHTML = btnHtml;
             document.getElementById('p1Btns').style.display = "flex";
-            document.getElementById('p2Btns').style.display = "none"; // Ukryj stronę przeciwnika przy wyborze
+            document.getElementById('p2Btns').style.display = "none"; 
             document.getElementById('p1Status').innerText = "1. ?";
             document.getElementById('p2Status').innerText = "---";
         }
@@ -276,13 +308,8 @@
                 document.getElementById('p1Status').innerText = `${step + 1}. ?`;
                 document.getElementById('roundInfo').innerText = `WYBRANO ${step}/3`;
             } else {
-                // Zapisz do bazy
                 await setDoc(doc(db, "duels", duelId), {
-                    initiator: currentUser,
-                    opponent: opponentName,
-                    moves: creationMoves,
-                    p2Score: 0,
-                    p1Score: 0
+                    initiator: currentUser, opponent: opponentName, moves: creationMoves, p2Score: 0, p1Score: 0
                 });
                 document.getElementById('rpsOverlay').style.display = 'none';
                 alert("Ruchy zapisane! Niech przeciwnik wejdzie i kliknie REMIS.");
@@ -291,18 +318,15 @@
 
         function setupFightMode() {
             currentRound = 0;
-            const p1 = activeDuelData.initiator; // Ten co założył (jest po lewej)
-            const p2 = activeDuelData.opponent;  // Ty (jesteś po prawej, ale UI ustawimy pod Ciebie)
+            const p1 = activeDuelData.initiator; 
+            const p2 = activeDuelData.opponent;  
             
-            // W UI: Lewa strona to Przeciwnik (Initiator), Prawa to TY (Opponent)
             document.getElementById('p1Name').innerText = p1; 
             document.getElementById('p2Name').innerText = "TY (" + p2 + ")";
-            
             document.getElementById('roundInfo').innerText = "RUNDA 1 / 3";
-            document.getElementById('p1Status').innerText = "🔒"; // Ukryty ruch przeciwnika
+            document.getElementById('p1Status').innerText = "🔒";
             document.getElementById('p2Status').innerText = "?";
 
-            // Przyciski dla Ciebie (P2)
             const btnHtml = ['👊', '✋', '✌️'].map(e => `<button class="rps-btn" onclick="playRound('${e}')">${e}</button>`).join("");
             document.getElementById('p2Btns').innerHTML = btnHtml;
             document.getElementById('p2Btns').style.display = "flex";
@@ -318,15 +342,9 @@
             const rules = {"👊":"✌️", "✋":"👊", "✌️":"✋"};
             let res = "";
             
-            if (myMove === oppMove) {
-                res = "REMIS W RUNDZIE";
-            } else if (rules[myMove] === oppMove) {
-                activeDuelData.p2Score++; // Ty wygrywasz
-                res = "WYGRAŁEŚ RUNDĘ!";
-            } else {
-                activeDuelData.p1Score++; // On wygrywa
-                res = "PRZEGRANA RUNDA";
-            }
+            if (myMove === oppMove) { res = "REMIS W RUNDZIE"; } 
+            else if (rules[myMove] === oppMove) { activeDuelData.p2Score++; res = "WYGRAŁEŚ RUNDĘ!"; } 
+            else { activeDuelData.p1Score++; res = "PRZEGRANA RUNDA"; }
 
             document.getElementById('roundResult').innerText = res;
             document.getElementById('rpsScore').innerText = `${activeDuelData.p1Score} : ${activeDuelData.p2Score}`;
@@ -337,14 +355,11 @@
                 btn.onclick = () => {
                     currentRound++;
                     document.getElementById('roundInfo').innerText = `RUNDA ${currentRound + 1} / 3`;
-                    document.getElementById('p1Status').innerText = "🔒";
-                    document.getElementById('p2Status').innerText = "?";
-                    document.getElementById('roundResult').innerText = "";
-                    document.getElementById('p2Btns').style.display = "flex";
+                    document.getElementById('p1Status').innerText = "🔒"; document.getElementById('p2Status').innerText = "?";
+                    document.getElementById('roundResult').innerText = ""; document.getElementById('p2Btns').style.display = "flex";
                     btn.style.display = "none";
                 };
             } else {
-                // KONIEC GRY
                 setTimeout(async () => {
                     let winner = null;
                     if (activeDuelData.p1Score > activeDuelData.p2Score) winner = activeDuelData.initiator;
@@ -352,14 +367,10 @@
 
                     if (winner) {
                         alert(`KONIEC! Wygrywa: ${winner}`);
-                        // Zapisz zwycięstwo w rankingu (TB)
                         const pData = playersData.find(x => x.name === winner);
                         await updateDoc(doc(db, "ranking", winner), { tb: (pData.tb || 0) + 1 });
-                    } else {
-                        alert("REMIS TOTALNY! Nikt nie dostaje punktu.");
-                    }
+                    } else { alert("REMIS TOTALNY! Nikt nie dostaje punktu."); }
                     
-                    // Usuń pojedynek z bazy
                     const duelId = [activeDuelData.initiator, activeDuelData.opponent].sort().join("_");
                     await deleteDoc(doc(db, "duels", duelId));
                     document.getElementById('rpsOverlay').style.display = 'none';
@@ -368,214 +379,242 @@
         };
 
         window.showPlayerCard = (name) => {
-            const p = globalStats.find(s => s.name === name); if(!p) return;
+            const p = grandStats.find(s => s.name === name); if(!p) return;
             document.getElementById('cardPlayerName').textContent = p.name;
-            const level = Math.floor(p.points / 5) + 1; document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
-            document.getElementById('xpBar').style.width = `${((p.points % 5) / 5) * 100}%`;
-            const rData = [Math.min((p.g/5)*100, 100), Math.min((parseFloat(p.avg)/3)*100, 100), Math.min((p.pods/(historyData.length||1))*100, 100), 70, 70];
+            const level = Math.floor(p.allTimePoints / 5) + 1; document.getElementById('playerLevel').textContent = `LEVEL ${level}`;
+            document.getElementById('xpBar').style.width = `${((p.allTimePoints % 5) / 5) * 100}%`;
+            
+            const rData = [Math.min((p.allTimeG/5)*100, 100), Math.min((p.monthsWon/2)*100, 100), Math.min((p.allTimePods/(historyData.length||1))*100, 100), Math.min(p.grandPoints*2, 100), 80];
             if(radarChart) radarChart.destroy();
-            radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), { type: 'radar', data: { labels: ['Zwycięstwa', 'Skuteczność', 'Stabilność', 'Versatility', 'Aktywność'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
+            radarChart = new Chart(document.getElementById('radarChart').getContext('2d'), { type: 'radar', data: { labels: ['Złota', 'Wygrane M-C', 'Stabilność', 'Grand Pkt', 'Aktywność'], datasets: [{ data: rData, backgroundColor: 'rgba(0, 212, 255, 0.2)', borderColor: '#00d4ff', borderWidth: 2 }] }, options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, pointLabels: { color: '#888' }, ticks: { display: false }, min: 0, max: 100 } }, plugins: { legend: { display: false } }, maintainAspectRatio: false }});
             document.getElementById('playerCardOverlay').style.display = 'flex';
         };
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
-        // --- KLUCZOWA FUNKCJA PRZELICZAJĄCA PUNKTY Z HISTORII ---
+        // --- GŁÓWNY SILNIK DANYCH (MIESIĄCE I DUŻE PUNKTY) ---
         function refreshStats() {
             if (!playersData.length) return;
-            const snipers = new Set(); historyData.forEach(r => r.winners.forEach(w => { if(w.isSniperHit) snipers.add(w.name); }));
+            
+            const curDate = new Date();
+            const currentMonthStr = curDate.getFullYear() + '_' + String(curDate.getMonth()+1).padStart(2, '0');
+            const monthlyData = {}; 
 
-            // TWORZYMY STATYSTYKI OD ZERA NA PODSTAWIE HISTORII
-            globalStats = playersData.map(p => {
-                let points = 0;
-                let g=0, s=0, b=0, fire=0;
-                // ZABEZPIECZENIE DLA REMISÓW: Jeśli brak TB w bazie, ustaw 0
-                const tb = p.tb || 0;
+            // 1. ZLICZANIE MAŁYCH PUNKTÓW DLA KAŻDEGO MIESIĄCA OSOBNO
+            historyData.forEach(r => {
+                const rDate = new Date(r.timestamp);
+                const mStr = rDate.getFullYear() + '_' + String(rDate.getMonth()+1).padStart(2, '0');
+                if (!monthlyData[mStr]) monthlyData[mStr] = {};
                 
-                historyData.forEach(r => {
-                    const roundDate = new Date(r.timestamp);
-                    // Sprawdzamy czy w tej rundzie Paweł miał bonus (OD 09.02 DO 10.02)
-                    const bonusStart = new Date("2026-02-09T00:00:00");
-                    const bonusEnd = new Date("2026-02-10T23:59:59");
-                    const isPawelBonus = (p.name === "Paweł" && roundDate >= bonusStart && roundDate <= bonusEnd);
+                const bonusStart = new Date("2026-02-09T00:00:00");
+                const bonusEnd = new Date("2026-02-10T23:59:59");
+                
+                r.winners.forEach((w, idx) => {
+                    const rank = w.rank || (idx + 1);
+                    let pts = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+                    
+                    // Bonus dla Pawła
+                    if (w.name === "Paweł" && rDate >= bonusStart && rDate <= bonusEnd && rank <= 3) {
+                        pts *= 2;
+                    }
+                    
+                    if (!monthlyData[mStr][w.name]) {
+                        monthlyData[mStr][w.name] = { points: 0, g: 0, s: 0, b: 0, pods: 0 };
+                    }
+                    monthlyData[mStr][w.name].points += pts;
+                    if (rank === 1) monthlyData[mStr][w.name].g++;
+                    if (rank === 2) monthlyData[mStr][w.name].s++;
+                    if (rank === 3) monthlyData[mStr][w.name].b++;
+                    if (rank <= 3) monthlyData[mStr][w.name].pods++;
+                });
+            });
 
+            // 2. PRZYDZIALANIE DUŻYCH PUNKTÓW ZA ZAMKNIĘTE MIESIĄCE
+            let grandPointsData = {}; 
+            playersData.forEach(p => { grandPointsData[p.name] = { grandPoints: 0, monthsWon: 0, allTimePods: 0, allTimePoints: 0, allTimeG: 0, allTimeS: 0, allTimeB: 0 }; });
+            const grandPointsDistribution = [10, 8, 6, 5, 4, 3, 2, 1];
+
+            Object.keys(monthlyData).forEach(mStr => {
+                const monthPlayers = Object.keys(monthlyData[mStr]).map(name => ({
+                    name: name,
+                    ...monthlyData[mStr][name]
+                }));
+                
+                // Sortowanie miesięczne do ustalenia miejsc (remisy rozstrzyga ilość złotych medali itp.)
+                monthPlayers.sort((a, b) => b.points - a.points || b.g - a.g || b.s - a.s || b.b - a.b);
+                
+                monthPlayers.forEach(mp => {
+                    if(grandPointsData[mp.name]) {
+                        grandPointsData[mp.name].allTimePods += mp.pods;
+                        grandPointsData[mp.name].allTimePoints += mp.points;
+                        grandPointsData[mp.name].allTimeG += mp.g;
+                        grandPointsData[mp.name].allTimeS += mp.s;
+                        grandPointsData[mp.name].allTimeB += mp.b;
+                    }
+                });
+
+                // Jeśli to miesiąc z przeszłości - przypisz duże punkty graczom z top 8
+                if (mStr !== currentMonthStr) {
+                    let lastRank = 1;
+                    monthPlayers.forEach((mp, idx) => {
+                        if (idx > 0) {
+                            const prev = monthPlayers[idx-1];
+                            if (mp.points !== prev.points || mp.g !== prev.g || mp.s !== prev.s || mp.b !== prev.b) {
+                                lastRank = idx + 1;
+                            }
+                        }
+                        
+                        if (lastRank <= 8) {
+                            const gp = grandPointsDistribution[lastRank - 1];
+                            if (grandPointsData[mp.name]) {
+                                grandPointsData[mp.name].grandPoints += gp;
+                                if (lastRank === 1) grandPointsData[mp.name].monthsWon++;
+                            }
+                        }
+                    });
+                }
+            });
+
+            // 3. TWORZENIE ZESTAWIENIA DLA BIEŻĄCEGO MIESIĄCA
+            currentMonthStats = playersData.map(p => {
+                const mStats = (monthlyData[currentMonthStr] && monthlyData[currentMonthStr][p.name]) || { points: 0, g: 0, s: 0, b: 0, pods: 0 };
+                return {
+                    name: p.name,
+                    votesUsed: p.votesThisMonth || 0,
+                    tb: p.tb || 0, // Remisy można używać do rozwiązywania problemów w obecnym mies.
+                    ...mStats
+                };
+            });
+            currentMonthStats.sort((a, b) => b.points - a.points || b.g - a.g || b.s - a.s || b.b - a.b);
+
+            // Obliczanie Trendu dla obecnego miesiąca (bez najnowszej rundy)
+            const oldCurrentMonthStats = playersData.map(p => {
+                let pts = 0;
+                // Pomijamy najnowszą rundę w historii, sprawdzając, czy z tego miesiąca
+                const oldHist = historyData.slice(1).filter(r => {
+                    const rDate = new Date(r.timestamp);
+                    return (rDate.getFullYear() + '_' + String(rDate.getMonth()+1).padStart(2, '0')) === currentMonthStr;
+                });
+                
+                oldHist.forEach(r => {
+                    const rDate = new Date(r.timestamp);
+                    const isPawelBonus = (p.name === "Paweł" && rDate >= new Date("2026-02-09T00:00:00") && rDate <= new Date("2026-02-10T23:59:59"));
                     r.winners.forEach((w, idx) => {
                         if(w.name === p.name) {
                             const rank = w.rank || (idx + 1);
-                            let pts = 0;
-                            
-                            if(rank === 1) { 
-                                pts = 3; g++; 
-                            } else if(rank === 2) { 
-                                pts = 2; s++; 
-                            } else if(rank === 3) { 
-                                pts = 1; b++; 
-                            }
-
-                            // APLIKUJEMY MNOŻNIK x2 DLA PAWŁA JEŚLI WARUNKI SPEŁNIONE
-                            if (isPawelBonus && rank <= 3) {
-                                pts = pts * 2;
-                            }
-                            
-                            points += pts;
+                            let ptsGained = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+                            if (isPawelBonus && rank <= 3) ptsGained *= 2;
+                            pts += ptsGained;
                         }
                     });
                 });
-
-                // Sprawdzanie 'On Fire' (3 wygrane z rzędu)
-                for(let i=0; i<historyData.length-2; i++){ if(historyData[i].winners.some(w=>w.name===p.name && w.rank===1) && historyData[i+1].winners.some(w=>w.name===p.name && w.rank===1) && historyData[i+2].winners.some(w=>w.name===p.name && w.rank===1)) fire=1; }
-                
-                const pods = g+s+b; 
-                return { ...p, points, g, s, b, pods, tb, avg:pods>0?(points/pods).toFixed(2):0, sniper: snipers.has(p.name), fire };
+                return { name: p.name, points: pts };
             });
+            oldCurrentMonthStats.sort((a,b) => b.points - a.points);
+            const prevRanksCM = {};
+            oldCurrentMonthStats.forEach((p, i) => { prevRanksCM[p.name] = i + 1; }); // Prosty rank do strzałek
 
-            globalStats.sort((a,b) => (b.points - a.points) || (b.g - a.g) || (b.s - a.s) || (b.b - a.b) || (b.tb - a.tb));
-
-            // --- OBLICZANIE TRENDU ---
-            const prevStats = playersData.map(p => {
-                let points = 0;
-                // Liczymy wszystko OPRÓCZ najnowszej rundy
-                const oldHistory = historyData.slice(1); 
-                
-                oldHistory.forEach(r => {
-                    const roundDate = new Date(r.timestamp);
-                    const bonusStart = new Date("2026-02-09T00:00:00");
-                    const bonusEnd = new Date("2026-02-10T23:59:59");
-                    const isPawelBonus = (p.name === "Paweł" && roundDate >= bonusStart && roundDate <= bonusEnd);
-
-                    r.winners.forEach((w, idx) => {
-                        if(w.name === p.name) {
-                            const rank = w.rank || (idx + 1);
-                            let pts = 0;
-                            if(rank === 1) pts = 3; else if(rank === 2) pts = 2; else if(rank === 3) pts = 1;
-                            if (isPawelBonus && rank <= 3) pts *= 2;
-                            points += pts;
-                        }
-                    });
-                });
-                return { name: p.name, points, tb: p.tb || 0 };
-            });
+            const tbodyMonth = document.querySelector("#monthTable tbody"); tbodyMonth.innerHTML = "";
+            let lastRankNumCM = 1;
             
-            // Sortowanie poprzedniego rankingu
-            prevStats.sort((a,b) => (b.points - a.points) || (b.tb - a.tb));
-            
-            const prevRanks = {}; 
-            let lastR = 1;
-            prevStats.forEach((p,i) => {
-                 if(i>0) {
-                    const prev = prevStats[i-1];
-                    if(p.points !== prev.points || p.tb !== prev.tb) lastR = i+1;
-                 }
-                 prevRanks[p.name] = lastR;
-            });
-
-            // ---------------------------------------------------------
-
-            document.getElementById('top-player').textContent = globalStats[0].name;
-            document.getElementById('total-rounds').textContent = historyData.length;
-            if(historyData.length > 0) document.getElementById('last-winner').textContent = historyData[0].winners.filter(w=>w.rank===1||(!w.rank && historyData[0].winners.indexOf(w)===0)).map(w=>w.name).join(", ");
-
-            const tbody = document.querySelector("#rankTable tbody"); tbody.innerHTML = "";
-            let lastRankNum = 1;
-
-            globalStats.forEach((p, i) => {
-                if (i > 0) { const prev = globalStats[i-1]; if (!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b && p.tb===prev.tb)) lastRankNum = i + 1; }
-                const curR = lastRankNum;
-                const oldR = prevRanks[p.name] || curR;
+            currentMonthStats.forEach((p, i) => {
+                if (i > 0) { const prev = currentMonthStats[i-1]; if (!(p.points===prev.points && p.g===prev.g && p.s===prev.s && p.b===prev.b)) lastRankNumCM = i + 1; }
+                const curR = lastRankNumCM;
+                const oldR = prevRanksCM[p.name] || curR;
 
                 let trendClass = "trend-neutral"; let trendSym = "―";
                 if (curR < oldR) { trendClass = "trend-up"; trendSym = "▲"; }
                 else if (curR > oldR) { trendClass = "trend-down"; trendSym = "▼"; }
 
                 let trend = `<span class="trend-icon ${trendClass}">${trendSym}</span>`;
-                const next = globalStats[i+1]; const prevP = globalStats[i-1];
                 
-                // POPRAWIONA LOGIKA REMISU:
-                let isTieWithNext = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b && p.tb===next.tb);
-                let isTieWithPrev = (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b && p.tb===prevP.tb);
-
+                // Tie breaker logika dla bieżącego miesiąca
+                const next = currentMonthStats[i+1]; const prevP = currentMonthStats[i-1];
+                let isTieWithNext = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b);
+                let isTieWithPrev = (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b);
                 let tieBtn = "";
-                if (isTieWithNext) {
-                    // Jeśli remis z następnym -> wyzwij następnego
-                    tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>`;
-                } else if (isTieWithPrev) {
-                    // Jeśli remis z poprzednim -> wyzwij poprzedniego (to pozwoli dołączyć do gry)
-                    tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${prevP.name}')">REMIS</button>`;
-                }
-                
-                let badges = ""; if(p.g===Math.max(...globalStats.map(s=>s.g)) && p.g>0) badges += `<span class="badge">👑</span>`; if(p.fire) badges += `<span class="badge">🔥</span>`; if(p.sniper) badges += `<span class="badge">🎯</span>`; if(p.pods===Math.max(...globalStats.map(s=>s.pods)) && p.pods>0) badges += `<span class="badge">🛡️</span>`;
-                
-                tbody.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}<div class="badge-container">${badges}</div></td><td style="color:var(--gold)">${p.points} <small>(${p.g}🥇)</small></td><td>${p.pods}</td></tr>`;
+                if (isTieWithNext) tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>`;
+                else if (isTieWithPrev) tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${prevP.name}')">REMIS</button>`;
+
+                // Ostylowanie limitu głosów
+                let limitClass = "limit-ok";
+                if (p.votesUsed >= 20) limitClass = "limit-bad";
+                else if (p.votesUsed >= 15) limitClass = "limit-warn";
+
+                tbodyMonth.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--cyan); font-weight:bold;">${p.points} <small>(${p.g}🥇)</small></td><td class="${limitClass}">${p.votesUsed} / 20</td><td>${p.pods}</td></tr>`;
             });
+
+            // 4. TWORZENIE GŁÓWNEGO ZESTAWIENIA (GRAND RANKING)
+            grandStats = playersData.map(p => ({
+                name: p.name,
+                grandPoints: grandPointsData[p.name].grandPoints,
+                monthsWon: grandPointsData[p.name].monthsWon,
+                allTimePods: grandPointsData[p.name].allTimePods,
+                allTimePoints: grandPointsData[p.name].allTimePoints,
+                allTimeG: grandPointsData[p.name].allTimeG,
+                allTimeS: grandPointsData[p.name].allTimeS,
+                allTimeB: grandPointsData[p.name].allTimeB,
+                tb: p.tb || 0
+            }));
+            grandStats.sort((a, b) => b.grandPoints - a.grandPoints || b.monthsWon - a.monthsWon || b.tb - a.tb || b.allTimePoints - a.allTimePoints);
+
+            document.getElementById('top-player').textContent = grandStats.length > 0 ? grandStats[0].name : "-";
+            document.getElementById('total-rounds').textContent = historyData.length;
+            if(historyData.length > 0) document.getElementById('last-winner').textContent = historyData[0].winners.filter(w=>w.rank===1||(!w.rank && historyData[0].winners.indexOf(w)===0)).map(w=>w.name).join(", ");
+
+            const tbodyGrand = document.querySelector("#rankTable tbody"); tbodyGrand.innerHTML = "";
+            let lastRankNumG = 1;
+
+            grandStats.forEach((p, i) => {
+                if (i > 0) { const prev = grandStats[i-1]; if (!(p.grandPoints===prev.grandPoints && p.monthsWon===prev.monthsWon && p.tb===prev.tb)) lastRankNumG = i + 1; }
+                const curR = lastRankNumG;
+                
+                tbodyGrand.innerHTML += `<tr><td><b style="color:var(--gold)">${curR}</b></td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span></td><td style="color:var(--gold); font-size: 16px; font-weight:900;">${p.grandPoints}</td><td>${p.monthsWon}</td><td>${p.tb}</td></tr>`;
+            });
+
             updateCharts();
         }
 
         function updateCharts() {
-            const names = globalStats.map(s => s.name);
-            medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: globalStats.map(s=>s.g), backgroundColor: '#d4af37' }, { label: 'Srebro', data: globalStats.map(s=>s.s), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: globalStats.map(s=>s.b), backgroundColor: '#cd7f32' }] }; medalChart.update();
-            barChart.data = { labels: names, datasets: [{ data: globalStats.map(s=>s.points), backgroundColor: '#d4af37' }] }; barChart.update();
-            pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [globalStats.reduce((a,b)=>a+b.g,0), globalStats.reduce((a,b)=>a+b.s,0), globalStats.reduce((a,b)=>a+b.b,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
-            lineChart.data = { labels: names, datasets: [{ label: 'Średnia', data: globalStats.map(s=>s.avg), borderColor: '#d4af37', tension: 0.4 }] }; lineChart.update();
+            const names = grandStats.map(s => s.name);
+            medalChart.data = { labels: names, datasets: [{ label: 'Złoto', data: grandStats.map(s=>s.allTimeG), backgroundColor: '#d4af37' }, { label: 'Srebro', data: grandStats.map(s=>s.allTimeS), backgroundColor: '#c0c0c0' }, { label: 'Brąz', data: grandStats.map(s=>s.allTimeB), backgroundColor: '#cd7f32' }] }; medalChart.update();
+            barChart.data = { labels: names, datasets: [{ data: grandStats.map(s=>s.grandPoints), backgroundColor: '#d4af37' }] }; barChart.update();
+            pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [grandStats.reduce((a,b)=>a+b.allTimeG,0), grandStats.reduce((a,b)=>a+b.allTimeS,0), grandStats.reduce((a,b)=>a+b.allTimeB,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
 
-            // WYKRES HISTORII
+            // WYKRES HISTORII (Dla ruchu punktów All Time)
             const roundsReversed = [...historyData]; 
             const numberOfRoundsToShow = 10;
             const historySteps = []; 
 
-            // Musimy obliczać historię "wstecz" odejmując punkty
-            let currentSnapshot = globalStats.map(p => ({
-                name: p.name, points: p.points, g: p.g, s: p.s, b: p.b, tb: p.tb || 0
-            }));
-
+            let currentSnapshot = grandStats.map(p => ({ name: p.name, points: p.allTimePoints, tb: p.tb || 0 }));
             historySteps.push({ roundLabel: `Runda ${historyData.length}`, ranks: calculateRankMap(currentSnapshot) });
 
             for (let i = 0; i < Math.min(numberOfRoundsToShow, roundsReversed.length); i++) {
                 const round = roundsReversed[i];
                 const roundDate = new Date(round.timestamp);
-                const bonusStart = new Date("2026-02-09T00:00:00");
-                const bonusEnd = new Date("2026-02-10T23:59:59");
-                const isPawelBonus = roundDate >= bonusStart && roundDate <= bonusEnd;
+                const isPawelBonus = roundDate >= new Date("2026-02-09T00:00:00") && roundDate <= new Date("2026-02-10T23:59:59");
 
                 round.winners.forEach((w, idx) => {
                     const pStat = currentSnapshot.find(p => p.name === w.name);
                     if (pStat) {
                         const rank = w.rank || (idx + 1);
-                        let ptsGained = 0;
-                        if(rank === 1) ptsGained = 3; else if(rank === 2) ptsGained = 2; else if(rank === 3) ptsGained = 1;
-                        
-                        if (pStat.name === "Paweł" && isPawelBonus && rank <= 3) {
-                            ptsGained *= 2;
-                        }
-
+                        let ptsGained = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+                        if (pStat.name === "Paweł" && isPawelBonus && rank <= 3) ptsGained *= 2;
                         pStat.points -= ptsGained;
-                        // Nie odejmujemy medali w symulacji wstecznej
                     }
                 });
 
                 if (historyData.length - 1 - i > 0) {
-                     historySteps.push({ 
-                         roundLabel: `Runda ${historyData.length - 1 - i}`, 
-                         ranks: calculateRankMap(currentSnapshot) 
-                     });
+                     historySteps.push({ roundLabel: `Runda ${historyData.length - 1 - i}`, ranks: calculateRankMap(currentSnapshot) });
                 }
             }
 
             historySteps.reverse();
-
-            const datasets = playersData.map((p, idx) => {
+            const datasets = grandStats.map((p, idx) => {
                 const data = historySteps.map(step => step.ranks[p.name] || null); 
-                return {
-                    label: p.name,
-                    data: data,
-                    borderColor: `hsl(${(idx * 360 / playersData.length)}, 70%, 50%)`,
-                    tension: 0.3,
-                    fill: false
-                };
+                return { label: p.name, data: data, borderColor: `hsl(${(idx * 360 / grandStats.length)}, 70%, 50%)`, tension: 0.3, fill: false };
             });
 
-            histChart.data = { 
-                labels: historySteps.map(step => step.roundLabel), 
-                datasets: datasets 
-            };
+            histChart.data = { labels: historySteps.map(step => step.roundLabel), datasets: datasets };
             histChart.update();
         }
 
@@ -584,42 +623,27 @@
             const rankMap = {};
             let lastRank = 1;
             sorted.forEach((p, i) => {
-                if(i > 0) {
-                    const prev = sorted[i-1];
-                    if(p.points !== prev.points || p.tb !== prev.tb) {
-                        lastRank = i + 1;
-                    }
-                }
+                if(i > 0) { const prev = sorted[i-1]; if(p.points !== prev.points || p.tb !== prev.tb) { lastRank = i + 1; } }
                 rankMap[p.name] = lastRank;
             });
             return rankMap;
         }
 
-        // --- ZMIANA W HISTORII: Wyświetlanie Top 3 + Reszta z godzinami ---
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
             historyData = []; const hbody = document.querySelector("#historyTable tbody"); hbody.innerHTML = "";
             snap.forEach(d => { 
                 const data = d.data(); 
                 historyData.push(data);
                 
-                const top3 = [];
-                const rest = [];
-                
+                const top3 = []; const rest = [];
                 data.winners.forEach((w, idx) => {
                     const rank = w.rank || (idx + 1);
                     const timeStr = w.hour ? ` ${w.hour}` : "";
-                    
-                    if (rank <= 3) {
-                        top3.push(`${rank}. ${w.name}${timeStr}`);
-                    } else {
-                        rest.push(`${rank}. ${w.name}${timeStr}`);
-                    }
+                    if (rank <= 3) top3.push(`${rank}. ${w.name}${timeStr}`); else rest.push(`${rank}. ${w.name}${timeStr}`);
                 });
 
                 let resultStr = top3.join(", ");
-                if (rest.length > 0) {
-                    resultStr += ` <span style="color:#888; font-size:0.9em;">(${rest.join(", ")})</span>`;
-                }
+                if (rest.length > 0) resultStr += ` <span style="color:#888; font-size:0.9em;">(${rest.join(", ")})</span>`;
 
                 hbody.innerHTML += `<tr><td>${data.date}</td><td>${resultStr}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
             }); 
