@@ -52,6 +52,8 @@
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
       color: #fff; font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box;
+      /* Upewnijmy się, że przyciski mogą się płynnie przesuwać na złość graczowi */
+      transition: transform 0.15s ease-out, background 0.3s;
     }
     .btn-cyber:hover { transform: translateY(-3px); }
     .btn-service { background: linear-gradient(135deg, #ea580c, #c2410c); border: 1px solid rgba(234, 88, 12, 0.3); }
@@ -214,6 +216,8 @@
 </head>
 <body>
 
+  <div id="anger-overlay" style="position: fixed; inset: 0; background: radial-gradient(circle, transparent 10%, red 150%); opacity: 0; pointer-events: none; z-index: 9998; transition: opacity 0.2s;"></div>
+
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
@@ -252,6 +256,7 @@
         </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
+            <div>Update (01.04.2026) - Rick Astley pozdrawia</div>
             <div>Update (31.03.2026) - Wprowadzono limity 20 typowań i podział na Grand Ranking (SD.34.AŻ.2026)</div>
             <div>Update (05.03.2026) V.510 - Wprowadzono zmiany w wyborze jedzenia</div>
             <div>Update (12.02.2026) V.489 - Wprowadzono zmiany w service desk (filtracja i numery spraw)</div>
@@ -260,8 +265,6 @@
             <div>Update (05.02.2026) V.441 - Historia rekordów przedstawia również obstawiane godziny oraz miejsca poza podium</div>
             <div>Update (05.02.2026) V.435 - dodano przyciski wróć w dodaj.html, lista.html, ranking.html oraz regulamin.html</div>
             <div>Update (04.02.2026) V.423 - Zarządzanie graczami (dodawanie/edycja) tylko dla Admina</div>
-            <div>Update (28.01.2026) V.398 - Naciśnięcie stop na dowolnym komputerze wywoła animacje na każdym innym z otwartą lista.html</div>
-            <div>Update (28.01.2026) V.394 - Wprowadzono centralne logowanie na stronie głównej, usunięto moduły logowania z pozostałych podstron</div>
         </div>
     </div>
   </div>
@@ -362,7 +365,7 @@
       const today = new Date();
       const savedDate = localStorage.getItem("rickRolled");
       
-      // Sprawdzamy czy to 1 kwietnia (dzisiaj testowo zostawię 1.04, aby przetestować w ciemno daj: dzisiaj to miesiąc 2, dzień 31)
+      // Sprawdzamy czy to 1 kwietnia. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
       if (today.getMonth() === 2 && today.getDate() === 31 && savedDate !== "true") {
           document.getElementById('login-container').style.display = 'none';
           document.getElementById('logoutBtn').style.display = 'none';
@@ -386,7 +389,6 @@
       countdownEl.style.display = 'block';
       iframe.style.display = 'block';
       
-      // Dodany click wymusza na przeglądarce zdjęcie blokady audio
       iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&modestbranding=1&rel=0";
 
       let timeLeft = 30;
@@ -398,9 +400,9 @@
           if (timeLeft <= 0) {
               clearInterval(timer);
               document.getElementById('rickroll-overlay').style.display = 'none';
-              iframe.src = ""; // Stop video
-              localStorage.setItem("rickRolled", "true"); // Zapamiętaj
-              initAppNormal(); // Wracamy do gry
+              iframe.src = ""; 
+              localStorage.setItem("rickRolled", "true"); 
+              initAppNormal(); 
           }
       }, 1000);
   }
@@ -687,6 +689,69 @@
   }).catch(err => console.log("Messaging unsupported on this device."));
 
 
+  // --- UCIEKAJĄCE KAFELKI NA PRIMA APRILIS ---
+  function initRunningButtons() {
+      const today = new Date();
+      // ODPALA SIĘ 1 KWIETNIA. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
+      if (today.getMonth() === 2 && today.getDate() === 31 && localStorage.getItem("buttonsTamed") !== "true") {
+          const buttons = document.querySelectorAll('#initial-view .btn-cyber');
+          const angerOverlay = document.getElementById('anger-overlay');
+          let globalAnger = 0;
+          const maxEscapes = 5;
+
+          buttons.forEach(btn => {
+              btn.dataset.escapes = 0;
+
+              const runAway = (e) => {
+                  let escapes = parseInt(btn.dataset.escapes);
+                  if (escapes < maxEscapes) {
+                      e.preventDefault(); 
+                      e.stopPropagation();
+                      
+                      escapes++;
+                      btn.dataset.escapes = escapes;
+                      globalAnger++;
+
+                      // Ucieczka w losowe miejsce (od -150px do +150px w osi X i Y)
+                      const x = (Math.random() - 0.5) * 300;
+                      const y = (Math.random() - 0.5) * 300;
+                      btn.style.transform = `translate(${x}px, ${y}px)`;
+
+                      // Ekran robi się coraz bardziej czerwony
+                      angerOverlay.style.opacity = Math.min(globalAnger / 25, 0.85);
+
+                      // Lekkie trzęsienie ekranu
+                      document.body.classList.add('nightmare-shake');
+                      setTimeout(() => document.body.classList.remove('nightmare-shake'), 150);
+
+                      // Sprawdzamy czy wszystkie uciekły po 5 razy
+                      let allDone = true;
+                      document.querySelectorAll('#initial-view .btn-cyber').forEach(b => {
+                          if (parseInt(b.dataset.escapes) < maxEscapes) allDone = false;
+                      });
+
+                      if (allDone) {
+                          localStorage.setItem("buttonsTamed", "true");
+                          setTimeout(() => {
+                              angerOverlay.style.opacity = 0;
+                              document.querySelectorAll('#initial-view .btn-cyber').forEach(b => {
+                                  b.style.transform = "translate(0, 0)";
+                              });
+                          }, 1000);
+                      }
+                  } else {
+                      // Przycisk się poddał - wraca i działa normalnie
+                      btn.style.transform = "translate(0, 0)";
+                  }
+              };
+
+              btn.addEventListener('mouseenter', runAway);
+              btn.addEventListener('touchstart', runAway, {passive: false});
+          });
+      }
+  }
+
+
   function renderHubData(user) {
       document.getElementById('login-container').style.display = 'none'; 
       document.getElementById('hub-view').style.display = 'block'; 
@@ -705,6 +770,9 @@
       document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'block'); document.getElementById('add-hour-btn').style.display = 'block'; 
       if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
+      
+      // Inicjalizacja uciekających przycisków 
+      initRunningButtons();
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
