@@ -142,7 +142,7 @@
 
         <div class="tabs">
             <button class="tab-link active" onclick="openTab(event, 'ranking-tab')">🏆 Grand Ranking</button>
-            <button class="tab-link" onclick="openTab(event, 'month-tab')">📅 Obecny Miesiąc</button>
+            <button class="tab-link" onclick="openTab(event, 'month-tab')">📅 Miesiące</button>
             <button class="tab-link" onclick="openTab(event, 'stats-tab')">📈 Wykresy</button>
             <button class="tab-link" onclick="openTab(event, 'history-tab')">📋 Historia</button>
         </div>
@@ -160,8 +160,8 @@
         </div>
 
         <div id="month-tab" class="tab-content">
-            <div class="glass-panel">
-                <h4 style="color:var(--cyan); text-align:center; font-size:16px;">WYNIKI BIEŻĄCEGO MIESIĄCA (MAŁE PUNKTY)</h4>
+            <div class="glass-panel" id="currentMonthPanel">
+                <h4 style="color:var(--cyan); text-align:center; font-size:16px;">BIEŻĄCY MIESIĄC</h4>
                 <p style="text-align:center; font-size:11px; color:#888; margin-top:-10px;">Limit 20 typowań / Wyniki zerowane co miesiąc</p>
                 <div style="overflow-x: auto;">
                     <table id="monthTable">
@@ -170,6 +170,9 @@
                     </table>
                 </div>
             </div>
+            
+            <h3 style="text-align:center; color:var(--gold); margin-top:40px; letter-spacing:2px; text-transform:uppercase;">Archiwum Miesięcy</h3>
+            <div id="historical-months-container"></div>
         </div>
 
         <div id="stats-tab" class="tab-content">
@@ -256,8 +259,8 @@
         };
 
         let historyData = [], playersData = [];
-        let grandStats = []; // Tablica dla dużych punktów
-        let currentMonthStats = []; // Tablica dla małych punktów w trwającym miesiącu
+        let grandStats = []; 
+        let currentMonthStats = []; 
 
         // --- NOWA ASYNCHRONICZNA LOGIKA KPN ---
         let creationMoves = [];
@@ -391,6 +394,13 @@
         };
         window.closePlayerCard = () => document.getElementById('playerCardOverlay').style.display = 'none';
 
+        // Funkcja do ładnego formatowania daty w archiwum
+        function getMonthNamePL(mStr) {
+            const parts = mStr.split('_');
+            const date = new Date(parts[0], parseInt(parts[1]) - 1, 1);
+            return date.toLocaleString('pl-PL', { month: 'long', year: 'numeric' }).toUpperCase();
+        }
+
         // --- GŁÓWNY SILNIK DANYCH (MIESIĄCE I DUŻE PUNKTY) ---
         function refreshStats() {
             if (!playersData.length) return;
@@ -439,7 +449,7 @@
                     ...monthlyData[mStr][name]
                 }));
                 
-                // Sortowanie miesięczne do ustalenia miejsc (remisy rozstrzyga ilość złotych medali itp.)
+                // Sortowanie miesięczne
                 monthPlayers.sort((a, b) => b.points - a.points || b.g - a.g || b.s - a.s || b.b - a.b);
                 
                 monthPlayers.forEach(mp => {
@@ -452,7 +462,7 @@
                     }
                 });
 
-                // Jeśli to miesiąc z przeszłości - przypisz duże punkty graczom z top 8
+                // Punkty tylko z przeszłych miesięcy
                 if (mStr !== currentMonthStr) {
                     let lastRank = 1;
                     monthPlayers.forEach((mp, idx) => {
@@ -477,19 +487,12 @@
             // 3. TWORZENIE ZESTAWIENIA DLA BIEŻĄCEGO MIESIĄCA
             currentMonthStats = playersData.map(p => {
                 const mStats = (monthlyData[currentMonthStr] && monthlyData[currentMonthStr][p.name]) || { points: 0, g: 0, s: 0, b: 0, pods: 0 };
-                return {
-                    name: p.name,
-                    votesUsed: p.votesThisMonth || 0,
-                    tb: p.tb || 0, // Remisy można używać do rozwiązywania problemów w obecnym mies.
-                    ...mStats
-                };
+                return { name: p.name, votesUsed: p.votesThisMonth || 0, tb: p.tb || 0, ...mStats };
             });
             currentMonthStats.sort((a, b) => b.points - a.points || b.g - a.g || b.s - a.s || b.b - a.b);
 
-            // Obliczanie Trendu dla obecnego miesiąca (bez najnowszej rundy)
             const oldCurrentMonthStats = playersData.map(p => {
                 let pts = 0;
-                // Pomijamy najnowszą rundę w historii, sprawdzając, czy z tego miesiąca
                 const oldHist = historyData.slice(1).filter(r => {
                     const rDate = new Date(r.timestamp);
                     return (rDate.getFullYear() + '_' + String(rDate.getMonth()+1).padStart(2, '0')) === currentMonthStr;
@@ -511,7 +514,7 @@
             });
             oldCurrentMonthStats.sort((a,b) => b.points - a.points);
             const prevRanksCM = {};
-            oldCurrentMonthStats.forEach((p, i) => { prevRanksCM[p.name] = i + 1; }); // Prosty rank do strzałek
+            oldCurrentMonthStats.forEach((p, i) => { prevRanksCM[p.name] = i + 1; });
 
             const tbodyMonth = document.querySelector("#monthTable tbody"); tbodyMonth.innerHTML = "";
             let lastRankNumCM = 1;
@@ -524,10 +527,8 @@
                 let trendClass = "trend-neutral"; let trendSym = "―";
                 if (curR < oldR) { trendClass = "trend-up"; trendSym = "▲"; }
                 else if (curR > oldR) { trendClass = "trend-down"; trendSym = "▼"; }
-
                 let trend = `<span class="trend-icon ${trendClass}">${trendSym}</span>`;
                 
-                // Tie breaker logika dla bieżącego miesiąca
                 const next = currentMonthStats[i+1]; const prevP = currentMonthStats[i-1];
                 let isTieWithNext = (next && p.points===next.points && p.g===next.g && p.s===next.s && p.b===next.b);
                 let isTieWithPrev = (prevP && p.points===prevP.points && p.g===prevP.g && p.s===prevP.s && p.b===prevP.b);
@@ -535,7 +536,6 @@
                 if (isTieWithNext) tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${next.name}')">REMIS</button>`;
                 else if (isTieWithPrev) tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${prevP.name}')">REMIS</button>`;
 
-                // Ostylowanie limitu głosów
                 let limitClass = "limit-ok";
                 if (p.votesUsed >= 20) limitClass = "limit-bad";
                 else if (p.votesUsed >= 15) limitClass = "limit-warn";
@@ -543,16 +543,59 @@
                 tbodyMonth.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--cyan); font-weight:bold;">${p.points} <small>(${p.g}🥇)</small></td><td class="${limitClass}">${p.votesUsed} / 20</td><td>${p.pods}</td></tr>`;
             });
 
+            // 3.5 GENEROWANIE ARCHIWUM MIESIĘCY (NOWOŚĆ)
+            const histContainer = document.getElementById("historical-months-container");
+            histContainer.innerHTML = ""; 
+
+            // Pobieramy miesiące z wykluczeniem obecnego i sortujemy od najnowszego wstecz
+            const historicalMonths = Object.keys(monthlyData).filter(m => m !== currentMonthStr).sort().reverse();
+
+            historicalMonths.forEach(mStr => {
+                const monthPlayers = Object.keys(monthlyData[mStr]).map(name => ({
+                    name: name,
+                    ...monthlyData[mStr][name]
+                }));
+                monthPlayers.sort((a, b) => b.points - a.points || b.g - a.g || b.s - a.s || b.b - a.b);
+
+                let tableHTML = `
+                <div class="glass-panel" style="margin-top: 20px; padding: 15px;">
+                    <h4 style="color:#888; text-align:center; font-size:14px; margin-bottom:15px;">WYNIKI: ${getMonthNamePL(mStr)}</h4>
+                    <div style="overflow-x: auto;">
+                        <table style="width:100%; border-collapse:collapse;">
+                            <thead><tr><th>#</th><th>Gracz</th><th>Punkty</th><th>Podium</th></tr></thead>
+                            <tbody>
+                `;
+
+                let histRank = 1;
+                monthPlayers.forEach((p, idx) => {
+                    if (idx > 0) {
+                        const prev = monthPlayers[idx-1];
+                        if (p.points !== prev.points || p.g !== prev.g || p.s !== prev.s || p.b !== prev.b) {
+                            histRank = idx + 1;
+                        }
+                    }
+                    
+                    let grandPts = histRank <= 8 ? grandPointsDistribution[histRank - 1] : 0;
+                    let grandTag = grandPts > 0 ? `<span style="color:var(--gold); font-size:10px; margin-left:5px;">(+${grandPts} GP)</span>` : '';
+
+                    tableHTML += `<tr>
+                        <td style="padding:10px; border-bottom:1px solid var(--border);">${histRank}</td>
+                        <td style="padding:10px; border-bottom:1px solid var(--border);"><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span></td>
+                        <td style="color:var(--cyan); font-weight:bold; padding:10px; border-bottom:1px solid var(--border);">${p.points} <small>(${p.g}🥇)</small> ${grandTag}</td>
+                        <td style="padding:10px; border-bottom:1px solid var(--border);">${p.pods}</td>
+                    </tr>`;
+                });
+
+                tableHTML += `</tbody></table></div></div>`;
+                histContainer.innerHTML += tableHTML;
+            });
+
+
             // 4. TWORZENIE GŁÓWNEGO ZESTAWIENIA (GRAND RANKING)
             grandStats = playersData.map(p => ({
-                name: p.name,
-                grandPoints: grandPointsData[p.name].grandPoints,
-                monthsWon: grandPointsData[p.name].monthsWon,
-                allTimePods: grandPointsData[p.name].allTimePods,
-                allTimePoints: grandPointsData[p.name].allTimePoints,
-                allTimeG: grandPointsData[p.name].allTimeG,
-                allTimeS: grandPointsData[p.name].allTimeS,
-                allTimeB: grandPointsData[p.name].allTimeB,
+                name: p.name, grandPoints: grandPointsData[p.name].grandPoints, monthsWon: grandPointsData[p.name].monthsWon,
+                allTimePods: grandPointsData[p.name].allTimePods, allTimePoints: grandPointsData[p.name].allTimePoints,
+                allTimeG: grandPointsData[p.name].allTimeG, allTimeS: grandPointsData[p.name].allTimeS, allTimeB: grandPointsData[p.name].allTimeB,
                 tb: p.tb || 0
             }));
             grandStats.sort((a, b) => b.grandPoints - a.grandPoints || b.monthsWon - a.monthsWon || b.tb - a.tb || b.allTimePoints - a.allTimePoints);
@@ -567,7 +610,6 @@
             grandStats.forEach((p, i) => {
                 if (i > 0) { const prev = grandStats[i-1]; if (!(p.grandPoints===prev.grandPoints && p.monthsWon===prev.monthsWon && p.tb===prev.tb)) lastRankNumG = i + 1; }
                 const curR = lastRankNumG;
-                
                 tbodyGrand.innerHTML += `<tr><td><b style="color:var(--gold)">${curR}</b></td><td><span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span></td><td style="color:var(--gold); font-size: 16px; font-weight:900;">${p.grandPoints}</td><td>${p.monthsWon}</td><td>${p.tb}</td></tr>`;
             });
 
@@ -580,7 +622,6 @@
             barChart.data = { labels: names, datasets: [{ data: grandStats.map(s=>s.grandPoints), backgroundColor: '#d4af37' }] }; barChart.update();
             pieChart.data = { labels: ['Złoto', 'Srebro', 'Brąz'], datasets: [{ data: [grandStats.reduce((a,b)=>a+b.allTimeG,0), grandStats.reduce((a,b)=>a+b.allTimeS,0), grandStats.reduce((a,b)=>a+b.allTimeB,0)], backgroundColor: ['#d4af37', '#c0c0c0', '#cd7f32'] }] }; pieChart.update();
 
-            // WYKRES HISTORII (Dla ruchu punktów All Time)
             const roundsReversed = [...historyData]; 
             const numberOfRoundsToShow = 10;
             const historySteps = []; 
@@ -620,8 +661,7 @@
 
         function calculateRankMap(statsArray) {
             const sorted = [...statsArray].sort((a,b) => (b.points - a.points) || (b.tb - a.tb));
-            const rankMap = {};
-            let lastRank = 1;
+            const rankMap = {}; let lastRank = 1;
             sorted.forEach((p, i) => {
                 if(i > 0) { const prev = sorted[i-1]; if(p.points !== prev.points || p.tb !== prev.tb) { lastRank = i + 1; } }
                 rankMap[p.name] = lastRank;
@@ -632,19 +672,13 @@
         onSnapshot(query(collection(db, "history"), orderBy("timestamp", "desc")), snap => {
             historyData = []; const hbody = document.querySelector("#historyTable tbody"); hbody.innerHTML = "";
             snap.forEach(d => { 
-                const data = d.data(); 
-                historyData.push(data);
-                
+                const data = d.data(); historyData.push(data);
                 const top3 = []; const rest = [];
                 data.winners.forEach((w, idx) => {
-                    const rank = w.rank || (idx + 1);
-                    const timeStr = w.hour ? ` ${w.hour}` : "";
+                    const rank = w.rank || (idx + 1); const timeStr = w.hour ? ` ${w.hour}` : "";
                     if (rank <= 3) top3.push(`${rank}. ${w.name}${timeStr}`); else rest.push(`${rank}. ${w.name}${timeStr}`);
                 });
-
-                let resultStr = top3.join(", ");
-                if (rest.length > 0) resultStr += ` <span style="color:#888; font-size:0.9em;">(${rest.join(", ")})</span>`;
-
+                let resultStr = top3.join(", "); if (rest.length > 0) resultStr += ` <span style="color:#888; font-size:0.9em;">(${rest.join(", ")})</span>`;
                 hbody.innerHTML += `<tr><td>${data.date}</td><td>${resultStr}</td><td><span class="deleteBtn" onclick="deleteHistoryRecord('${d.id}')">×</span></td></tr>`;
             }); 
             refreshStats();
