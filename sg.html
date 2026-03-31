@@ -52,8 +52,8 @@
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
       color: #fff; font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box;
-      /* Upewnijmy się, że przyciski mogą się płynnie przesuwać na złość graczowi */
-      transition: transform 0.15s ease-out, background 0.3s;
+      /* 0.02s to ekstremalnie krótki czas. Kafelki będą się wręcz teleportować */
+      transition: transform 0.02s linear, background 0.3s;
     }
     .btn-cyber:hover { transform: translateY(-3px); }
     .btn-service { background: linear-gradient(135deg, #ea580c, #c2410c); border: 1px solid rgba(234, 88, 12, 0.3); }
@@ -338,7 +338,7 @@
 
       <div id="penance-container">
           <h1>GRZESZYSZ GRZESIU...</h1>
-          <p>Musisz przeprosić za każdy ze swoich podpisów:</p>
+          <p>Musisz przeprosić za każdy ze main podpisy:</p>
           <img id="sin-preview" src="" alt="Twój podpis">
           <span id="spam-count" style="font-size: 30px;">Pozostało: 0</span>
           <br>
@@ -366,7 +366,7 @@
       const savedDate = localStorage.getItem("rickRolled");
       
       // Sprawdzamy czy to 1 kwietnia. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
-      if (today.getMonth() === 2 && today.getDate() === 31 && savedDate !== "true") {
+      if (today.getMonth() === 3 && today.getDate() === 1 && savedDate !== "true") {
           document.getElementById('login-container').style.display = 'none';
           document.getElementById('logoutBtn').style.display = 'none';
           document.getElementById('rickroll-overlay').style.display = 'flex';
@@ -693,7 +693,7 @@
   function initRunningButtons() {
       const today = new Date();
       // ODPALA SIĘ 1 KWIETNIA. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
-      if (today.getMonth() === 2 && today.getDate() === 31 && localStorage.getItem("buttonsTamed") !== "true") {
+      if (today.getMonth() === 3 && today.getDate() === 1 && localStorage.getItem("buttonsTamed") !== "true") {
           const buttons = document.querySelectorAll('#initial-view .btn-cyber');
           const angerOverlay = document.getElementById('anger-overlay');
           let globalAnger = 0;
@@ -712,9 +712,13 @@
                       btn.dataset.escapes = escapes;
                       globalAnger++;
 
-                      // Ucieczka w losowe miejsce (od -150px do +150px w osi X i Y)
-                      const x = (Math.random() - 0.5) * 300;
-                      const y = (Math.random() - 0.5) * 300;
+                      // Skok musi być daleki i GWAŁTOWNY. 
+                      // Wymuszamy przesunięcie co najmniej o 200px do 500px od środka w losową stronę.
+                      let signX = Math.random() > 0.5 ? 1 : -1;
+                      let signY = Math.random() > 0.5 ? 1 : -1;
+                      const x = signX * (Math.random() * 300 + 200); 
+                      const y = signY * (Math.random() * 300 + 200);
+
                       btn.style.transform = `translate(${x}px, ${y}px)`;
 
                       // Ekran robi się coraz bardziej czerwony
