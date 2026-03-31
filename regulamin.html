@@ -61,7 +61,8 @@
 
         h1 { text-align: center; color: var(--gold); font-size: 28px; text-transform: uppercase; letter-spacing: 3px; margin-bottom: 30px; }
         h2 { border-bottom: 2px solid var(--cyan); padding-bottom: 5px; margin-top: 35px; font-size: 20px; color: var(--gold); }
-        p { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+        h3 { color: var(--cyan); font-size: 16px; margin-top: 25px; }
+        p, li { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.8); }
 
         .point-box { 
             background: rgba(0, 212, 255, 0.1); 
@@ -143,12 +144,12 @@
 
         <section>
             <h2>1. Zasady Ogólne</h2>
-            <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP). Każdy uczestnik może oddać jeden głos w danej rundzie.</p>
+            <p>Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP). W celu uniknięcia dysproporcji na zmianach o różnej długości, każdy gracz posiada <strong>limit 20 głosów w skali miesiąca</strong>, do wykorzystania w dowolne dni. Należy przyjąć, że głosowanie na jedną osobę to 1 głos, czyli standardowo w ciągu dnia oddawane są 2 głosy.</p>
         </section>
 
         <section>
-            <h2>2. System Punktacji (Sportowy)</h2>
-            <p>Punkty przyznawane są trzem najlepszym wynikom. W przypadku remisów stosujemy system sportowy (miejsca dzielone):</p>
+            <h2>2. System Punktacji</h2>
+            <p>Sposób przyznawania punktów za pojedynczą grę (tzw. "małe punkty") pozostaje w systemie sportowym:</p>
             
             <div class="point-box">
                 🥇 1. miejsce: 3 pkt | 🥈 2. miejsce: 2 pkt | 🥉 3. miejsce: 1 pkt
@@ -166,6 +167,20 @@
                     <tr><td>1 osoba na 1., 1 na 2. i 2 na 3.</td><td>1. msc (3 pkt), 2. msc (2 pkt), obie osoby na 3. msc po 1 pkt.</td></tr>
                 </tbody>
             </table>
+
+            <h3>Podsumowanie Miesięczne (Grand Ranking)</h3>
+            <p>Na koniec miesiąca, następuje podsumowanie rankingu zdobytych punktów z wszystkich (maksymalnie 20) typowań w bieżącym miesiącu. Na tej podstawie przyznawane są <strong>Punkty Miesięczne (Duże Punkty)</strong>, które sumują się w Grand Rankingu, według następującego kryterium:</p>
+            <ul>
+                <li><strong>1. miejsce</strong> – 10 pkt</li>
+                <li><strong>2. miejsce</strong> – 8 pkt</li>
+                <li><strong>3. miejsce</strong> – 6 pkt</li>
+                <li><strong>4. miejsce</strong> – 5 pkt</li>
+                <li><strong>5. miejsce</strong> – 4 pkt</li>
+                <li><strong>6. miejsce</strong> – 3 pkt</li>
+                <li><strong>7. miejsce</strong> – 2 pkt</li>
+                <li><strong>8. miejsce</strong> – 1 pkt</li>
+            </ul>
+            <p>Ewentualne kolejne miejsca pozostają bez punktów miesięcznych.</p>
         </section>
 
         <section>
@@ -175,10 +190,10 @@
 
         <section>
             <h2>4. Czas Obstawiania</h2>
-            <p>Godzina obstawiania nie może być późniejsza niż 13:15.  O wskazanej godzinie lista jest w sposób automatyczny zamykana, a jej ponowne otwarcie wymaga przegłosowania przez komisję większościową.
+            <p>Godzina obstawiania nie może być późniejsza niż 13:15. O wskazanej godzinie lista jest w sposób automatyczny zamykana, a jej ponowne otwarcie wymaga przegłosowania przez komisję większościową.
 Odblokowanie bez przegłosowania przez komisję większościową skutkuje banem na tydzień.
 
-Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres trzech dni oraz usunięciem zdobytych przez tą osobę punktów zdobytych w tym dniu.</p>
+Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres trzech dni oraz usunięciem zdobytych przez tą osobę punktów w tym dniu.</p>
         </section>
 
         <section>
@@ -188,13 +203,13 @@ Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres tr
 
         <div class="acceptance-flow">
             <div id="already-signed-msg" style="display: none;">
-                <h3 style='color: var(--cyan)'>✅ REGULAMIN ZAAKCEPTOWANY</h3>
+                <h3 style='color: var(--cyan); margin-top:0;'>✅ REGULAMIN ZAAKCEPTOWANY</h3>
                 <p>Twój podpis widnieje już na liście. Dziękujemy!</p>
             </div>
 
             <div id="signing-form">
                 <div id="step-1">
-                    <h3>🔐 Akceptacja Regulaminu</h3>
+                    <h3 style="margin-top:0;">🔐 Akceptacja Regulaminu</h3>
                     <p>KROK 1: Przytrzymaj palec na skanerze (2 sek), aby zweryfikować tożsamość.</p>
                     <div id="scan-zone">
                         <div class="pulse" id="pulse-ring"></div>
@@ -204,7 +219,7 @@ Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres tr
                 </div>
 
                 <div id="signature-section">
-                    <h3>✍️ Podpis Elektroniczny</h3>
+                    <h3 style="margin-top:0;">✍️ Podpis Elektroniczny</h3>
                     <p>KROK 2: Wpisz imię i złóż podpis palcem na polu poniżej.</p>
                     <input type="text" id="signer-name" placeholder="Twoje imię / ksywka" disabled>
                     <br>
@@ -218,7 +233,7 @@ Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres tr
         </div>
 
         <div id="history">
-            <h3>📄 Lista Akceptacji (Podpisy)</h3>
+            <h3 style="margin-top:0;">📄 Lista Akceptacji (Podpisy)</h3>
             <div id="sig-list">Pobieranie danych...</div>
         </div>
     </div>
@@ -415,5 +430,3 @@ Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres tr
 </script>
 </body>
 </html>
-
-
