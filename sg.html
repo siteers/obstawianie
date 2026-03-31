@@ -45,7 +45,7 @@
     
     .auth-links { margin-top: 15px; display: flex; flex-direction: column; gap: 10px; }
     .auth-link { font-size: 11px; color: var(--cyan); text-decoration: none; font-weight: bold; cursor: pointer; }
-    .changelog { margin-top: 30px; text-align: left; font-size: 10px; color: var(--cyan); opacity: 0.8; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 10px; }
+    .changelog { margin-top: 30px; text-align: left; font-size: 10px; color: var(--cyan); opacity: 0.8; border-top: 1px solid rgba(0, 212, 255, 0.2); padding-top: 10px; max-height: 120px; overflow-y: auto; }
     
     .btn-cyber {
       display: block; width: 100%; padding: 22px; margin: 12px 0;
@@ -177,6 +177,28 @@
         padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 12px; transition: 0.3s;
     }
     #skip-intro-btn:hover { background: rgba(255,255,255,0.3); color: #fff; }
+
+    /* --- PRIMA APRILIS RICKROLL OVERLAY --- */
+    #rickroll-overlay {
+        position: fixed; inset: 0; background: black; z-index: 999999;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #rickroll-video {
+        width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 10;
+        opacity: 0.8;
+    }
+    #rickroll-countdown {
+        position: relative; z-index: 20;
+        font-size: 80px; font-weight: 900; color: #fff;
+        text-shadow: 0 0 30px var(--cyan), 0 0 10px var(--cyan);
+        background: rgba(0,0,0,0.5); padding: 20px 40px; border-radius: 20px;
+        border: 2px solid var(--cyan);
+    }
+    .rickroll-text {
+        position: relative; z-index: 20; color: var(--gold); font-size: 24px;
+        margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
+        text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    }
   </style>
 </head>
 <body>
@@ -184,6 +206,13 @@
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
+
+  <div id="rickroll-overlay">
+      <div class="rickroll-text">PRIMA APRILIS SYSTEM LOCK</div>
+      <div id="rickroll-countdown">30</div>
+      <div class="rickroll-text" style="font-size:12px; margin-top:20px; color:#888;">Nigdzie nie uciekniesz.</div>
+      <iframe id="rickroll-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
 
   <div id="global-intro-overlay">
       <video id="global-intro-video" playsinline>
@@ -209,7 +238,8 @@
         </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
-           <div>Update (05.03.2026) V.510 - Wprowadzono zmiany w wyborze jedzenia</div>
+            <div>Update (31.03.2026) - Wprowadzono limity 20 typowań i podział na Grand Ranking (SD.34.AŻ.2026)</div>
+            <div>Update (05.03.2026) V.510 - Wprowadzono zmiany w wyborze jedzenia</div>
             <div>Update (12.02.2026) V.489 - Wprowadzono zmiany w service desk (filtracja i numery spraw)</div>
             <div>Update (11.02.2026) V.454 - Lista zamykana jest automatycznie o godz. 13:15</div>
             <div>Update (05.02.2026) V.442 - Dodano konto SCIANA (tylko podgląd) oraz zabezpieczono system przed self-votingiem</div>
@@ -307,27 +337,73 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import { getFirestore, doc, getDoc, setDoc, deleteDoc, collection, onSnapshot, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-  
-  // IMPORT BEZPIECZNY DLA TELEFONÓW (Dodane isSupported)
   import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-messaging.js";
 
   const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  onSnapshot(collection(db, "passwords"), (snap) => {
-      const select = document.getElementById('userSelect');
-      select.innerHTML = `<option value="" disabled selected>Wybierz użytkownika</option><option disabled>──────────</option><option value="Admin">🔑 ADMIN SYSTEMU</option>`;
-      snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.insertBefore(opt, select.children[1]); } });
-  });
+  // --- PRIMA APRILIS CHECK ---
+  function checkPrimaAprilis() {
+      const today = new Date();
+      const savedDate = localStorage.getItem("rickRolled");
+      
+      // Sprawdzamy czy to 1 kwietnia i czy nie był już dzisiaj rzucony rickroll
+      if (today.getMonth() === 2 && today.getDate() === 31 && savedDate !== "true") {
+          startRickRoll();
+      } else {
+          initAppNormal();
+      }
+  }
 
-  const savedUser = localStorage.getItem('cyberUser');
-  if (savedUser === "Grzesiek Sz") {
-      const now = new Date();
-      const banEnd = new Date("2026-02-09T12:30:00");
-      if (now >= banEnd) { triggerHubWithIntro(savedUser); } else { localStorage.removeItem('cyberUser'); }
-  } 
-  else if (savedUser) { triggerHubWithIntro(savedUser); }
+  function startRickRoll() {
+      const overlay = document.getElementById('rickroll-overlay');
+      const iframe = document.getElementById('rickroll-video');
+      const countdownEl = document.getElementById('rickroll-countdown');
+      
+      document.getElementById('login-container').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      
+      // Auto-play iframe url for Youtube Rick Roll
+      iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&modestbranding=1&rel=0";
+      overlay.style.display = 'flex';
+
+      let timeLeft = 30;
+      
+      const timer = setInterval(() => {
+          timeLeft--;
+          countdownEl.innerText = timeLeft;
+          
+          if (timeLeft <= 0) {
+              clearInterval(timer);
+              overlay.style.display = 'none';
+              iframe.src = ""; // Stop video
+              localStorage.setItem("rickRolled", "true"); // Zapamiętaj, żeby nie wkurzać go co chwile dzisiaj
+              initAppNormal(); // Wracamy do gry
+          }
+      }, 1000);
+  }
+
+  function initAppNormal() {
+      onSnapshot(collection(db, "passwords"), (snap) => {
+          const select = document.getElementById('userSelect');
+          select.innerHTML = `<option value="" disabled selected>Wybierz użytkownika</option><option disabled>──────────</option><option value="Admin">🔑 ADMIN SYSTEMU</option>`;
+          snap.forEach(d => { if (d.id !== "Admin") { const opt = document.createElement('option'); opt.value = d.id; opt.innerText = d.id; select.insertBefore(opt, select.children[1]); } });
+      });
+
+      const savedUser = localStorage.getItem('cyberUser');
+      if (savedUser === "Grzesiek Sz") {
+          const now = new Date();
+          const banEnd = new Date("2026-02-09T12:30:00");
+          if (now >= banEnd) { triggerHubWithIntro(savedUser); } else { localStorage.removeItem('cyberUser'); document.getElementById('login-container').style.display = 'flex';}
+      } 
+      else if (savedUser) { triggerHubWithIntro(savedUser); }
+      else { document.getElementById('login-container').style.display = 'flex'; }
+  }
+
+  // --- ODPALAMY GLÓWNY TEST PRZY WEJŚCIU ---
+  checkPrimaAprilis();
+
 
   window.forgotPassword = async () => {
       const user = prompt("SYSTEM ODZYSKIWANIA:\nPodaj nazwę użytkownika:");
@@ -533,9 +609,25 @@
   // --- FUNKCJA BEZPIECZNEGO AKTYWOWANIA POWIADOMIEN NA KLIKNIECIE ---
   window.enablePushNotifications = async () => {
       try {
+          const isIos = () => {
+              const userAgent = window.navigator.userAgent.toLowerCase();
+              return /iphone|ipad|ipod/.test(userAgent);
+          };
+          const isStandalone = window.navigator.standalone === true || window.matchMedia('(display-mode: standalone)').matches;
+
+          if (isIos() && !isStandalone) {
+              alert("🍎 NA IPHONE: Aby włączyć powiadomienia, musisz zainstalować aplikację! Kliknij ikonę 'Udostępnij' (kwadrat ze strzałką) na dole ekranu i wybierz 'Dodaj do ekranu początkowego'. Następnie otwórz Cyber-Bet z nowego skrótu.");
+              return;
+          }
+
+          if (!('Notification' in window)) {
+              alert("Twoja przeglądarka nie wspiera powiadomień. Upewnij się, że masz aktualny system (iOS 16.4+) lub użyj Chrome na PC/Androidzie.");
+              return;
+          }
+
           const supported = await isSupported();
           if (!supported) {
-              alert("Twoja przeglądarka (lub obecny tryb) nie wspiera powiadomień Push.");
+              alert("Twoje urządzenie/przeglądarka zablokowała usługę Firebase Messaging.");
               return;
           }
 
@@ -544,8 +636,10 @@
               const messaging = getMessaging(app);
               const currentUser = localStorage.getItem('cyberUser');
               
+              const registration = await navigator.serviceWorker.ready;
               const token = await getToken(messaging, { 
-                  vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos' 
+                  vapidKey: 'BNvsZjE0ThLUCprTas-M06rwgaJ0UJRMxDcxDIAXvucV6SFEKGGa_jRcw-Sm7SNc55FV95DvtSEwLPlif8BPVos',
+                  serviceWorkerRegistration: registration 
               });
 
               if (token && currentUser) {
@@ -561,11 +655,10 @@
           }
       } catch (error) {
           console.error("Błąd podczas konfiguracji powiadomień:", error);
-          alert("Wystąpił błąd przy włączaniu powiadomień.");
+          alert("Wystąpił błąd przy włączaniu powiadomień. Spróbuj odświeżyć stronę.");
       }
   };
 
-  // Uruchomienie nasłuchu w tle - tylko jeśli jest wspierane (nie zablokuje strony)
   isSupported().then(supported => {
       if (supported) {
           const messaging = getMessaging(app);
