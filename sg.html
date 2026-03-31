@@ -185,19 +185,30 @@
     }
     #rickroll-video {
         width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 10;
-        opacity: 0.8;
+        opacity: 0.8; display: none;
+    }
+    #rickroll-content {
+        position: relative; z-index: 20; text-align: center; width: 90%; max-width: 400px;
+    }
+    #rr-title {
+        color: red; font-size: 28px; font-weight: 900; margin-bottom: 30px;
+        text-shadow: 0 0 20px red; text-transform: uppercase;
+    }
+    #rickroll-start-btn {
+        background: linear-gradient(135deg, #ff0000, #800000); border: 2px solid red;
+        color: white; padding: 25px; font-size: 20px; font-weight: bold; width: 100%;
+        border-radius: 15px; cursor: pointer; box-shadow: 0 0 30px rgba(255,0,0,0.5);
+        animation: glitch 0.2s infinite; text-transform: uppercase;
     }
     #rickroll-countdown {
-        position: relative; z-index: 20;
         font-size: 80px; font-weight: 900; color: #fff;
         text-shadow: 0 0 30px var(--cyan), 0 0 10px var(--cyan);
-        background: rgba(0,0,0,0.5); padding: 20px 40px; border-radius: 20px;
-        border: 2px solid var(--cyan);
+        background: rgba(0,0,0,0.7); padding: 20px 40px; border-radius: 20px;
+        border: 2px solid var(--cyan); display: none; margin: 0 auto;
     }
-    .rickroll-text {
-        position: relative; z-index: 20; color: var(--gold); font-size: 24px;
-        margin-bottom: 20px; font-weight: bold; text-transform: uppercase; letter-spacing: 2px;
-        text-shadow: 0 0 10px rgba(0,0,0,0.8);
+    #rr-subtitle {
+        color: #888; font-size: 14px; margin-top: 20px; font-weight: bold; 
+        text-transform: uppercase; letter-spacing: 2px; display: none;
     }
   </style>
 </head>
@@ -208,9 +219,12 @@
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
   <div id="rickroll-overlay">
-      <div class="rickroll-text">PRIMA APRILIS SYSTEM LOCK</div>
-      <div id="rickroll-countdown">30</div>
-      <div class="rickroll-text" style="font-size:12px; margin-top:20px; color:#888;">Nigdzie nie uciekniesz.</div>
+      <div id="rickroll-content">
+          <div id="rr-title">⚠️ KRYTYCZNY BŁĄD SYSTEMU ⚠️</div>
+          <button id="rickroll-start-btn" onclick="startRickRoll()">NAPRAW SYSTEM</button>
+          <div id="rickroll-countdown">30</div>
+          <div id="rr-subtitle">Nigdzie nie uciekniesz.</div>
+      </div>
       <iframe id="rickroll-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
   </div>
 
@@ -348,25 +362,32 @@
       const today = new Date();
       const savedDate = localStorage.getItem("rickRolled");
       
-      // Sprawdzamy czy to 1 kwietnia i czy nie był już dzisiaj rzucony rickroll
+      // Sprawdzamy czy to 1 kwietnia (dzisiaj testowo zostawię 1.04, aby przetestować w ciemno daj: dzisiaj to miesiąc 2, dzień 31)
       if (today.getMonth() === 2 && today.getDate() === 31 && savedDate !== "true") {
-          startRickRoll();
+          document.getElementById('login-container').style.display = 'none';
+          document.getElementById('logoutBtn').style.display = 'none';
+          document.getElementById('rickroll-overlay').style.display = 'flex';
       } else {
           initAppNormal();
       }
   }
 
-  function startRickRoll() {
-      const overlay = document.getElementById('rickroll-overlay');
+  // --- ODPALAMY GLÓWNY TEST PRZY WEJŚCIU ---
+  checkPrimaAprilis();
+
+  // FUNKCJA WYWOŁYWANA PO KLIKNIĘCIU "NAPRAW SYSTEM"
+  window.startRickRoll = () => {
       const iframe = document.getElementById('rickroll-video');
       const countdownEl = document.getElementById('rickroll-countdown');
       
-      document.getElementById('login-container').style.display = 'none';
-      document.getElementById('logoutBtn').style.display = 'none';
+      document.getElementById('rickroll-start-btn').style.display = 'none';
+      document.getElementById('rr-title').innerText = "PRIMA APRILIS SYSTEM LOCK";
+      document.getElementById('rr-subtitle').style.display = 'block';
+      countdownEl.style.display = 'block';
+      iframe.style.display = 'block';
       
-      // Auto-play iframe url for Youtube Rick Roll
+      // Dodany click wymusza na przeglądarce zdjęcie blokady audio
       iframe.src = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&modestbranding=1&rel=0";
-      overlay.style.display = 'flex';
 
       let timeLeft = 30;
       
@@ -376,9 +397,9 @@
           
           if (timeLeft <= 0) {
               clearInterval(timer);
-              overlay.style.display = 'none';
+              document.getElementById('rickroll-overlay').style.display = 'none';
               iframe.src = ""; // Stop video
-              localStorage.setItem("rickRolled", "true"); // Zapamiętaj, żeby nie wkurzać go co chwile dzisiaj
+              localStorage.setItem("rickRolled", "true"); // Zapamiętaj
               initAppNormal(); // Wracamy do gry
           }
       }, 1000);
@@ -400,9 +421,6 @@
       else if (savedUser) { triggerHubWithIntro(savedUser); }
       else { document.getElementById('login-container').style.display = 'flex'; }
   }
-
-  // --- ODPALAMY GLÓWNY TEST PRZY WEJŚCIU ---
-  checkPrimaAprilis();
 
 
   window.forgotPassword = async () => {
