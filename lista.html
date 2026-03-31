@@ -265,7 +265,14 @@ function triggerStopEffect(id, timestamp, winners) {
     renderTable(id, timestamp/1000); 
 }
 
-// --- ZAPIS DO HISTORII ---
+// --- LOGIKA MIESIĄCA (Klucz do SD.34.AŻ.2026) ---
+function getCurrentMonthKey() {
+    const d = new Date();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    return `points_${month}_${d.getFullYear()}`;
+}
+
+// --- ZAPIS DO HISTORII I ZAPIS PUNKTÓW ---
 window.stopSlot = async (id) => {
     const btn = document.getElementById(`stopBtn${id}`);
     if(btn) {
@@ -311,7 +318,6 @@ window.stopSlot = async (id) => {
                 pts = pts * 2; // Mnożymy punkty x2
             }
         }
-        // ---------------------------------------------------------
 
         playersWithPoints.push({ 
             name: sorted[i].name, 
@@ -322,10 +328,22 @@ window.stopSlot = async (id) => {
         });
     }
 
+    const currentMonthKey = getCurrentMonthKey(); // np. "points_03_2026"
+
     for(const p of playersWithPoints) {
         if (p.points > 0) {
-            const ref = doc(db, "ranking", p.name); const snap = await getDoc(ref);
-            if(snap.exists()) await updateDoc(ref, { points: increment(p.points) }); else await setDoc(ref, { points: p.points });
+            const ref = doc(db, "ranking", p.name);
+            const updateData = {
+                points: increment(p.points),
+                [currentMonthKey]: increment(p.points) // Dodajemy małe punkty do puli miesięcznej
+            };
+            
+            const snap = await getDoc(ref);
+            if(snap.exists()) {
+                await updateDoc(ref, updateData);
+            } else {
+                await setDoc(ref, { points: p.points, [currentMonthKey]: p.points });
+            }
         }
     }
     
@@ -346,8 +364,8 @@ window.clearSlot = async (id) => {
     await setDoc(appStateRef, { 
         [`isLocked${id}`]: false, 
         [`target${id}`]: "Brak",
-        [`stop${id}`]: null,       
-        [`winners${id}`]: null     
+        [`stop${id}`]: null,        
+        [`winners${id}`]: null      
     }, { merge: true });
 };
 
@@ -524,7 +542,3 @@ window.deleteOne = async id => await deleteDoc(doc(db, "users", id));
 </script>
 </body>
 </html>
-
-
-
-
