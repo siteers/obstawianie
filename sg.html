@@ -366,7 +366,7 @@
       const savedDate = localStorage.getItem("rickRolled");
       
       // Sprawdzamy czy to 1 kwietnia. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
-      if (today.getMonth() === 2 && today.getDate() === 31 && savedDate !== "true") {
+      if (today.getMonth() === 3 && today.getDate() === 1 && savedDate !== "true") {
           document.getElementById('login-container').style.display = 'none';
           document.getElementById('logoutBtn').style.display = 'none';
           document.getElementById('rickroll-overlay').style.display = 'flex';
@@ -693,7 +693,7 @@
   function initRunningButtons() {
       const today = new Date();
       // ODPALA SIĘ 1 KWIETNIA. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
-      if (today.getMonth() === 2 && today.getDate() === 31 && localStorage.getItem("buttonsTamed") !== "true") {
+      if (today.getMonth() === 3 && today.getDate() === 1 && localStorage.getItem("buttonsTamed") !== "true") {
           const buttons = document.querySelectorAll('#initial-view .btn-cyber');
           const angerOverlay = document.getElementById('anger-overlay');
           let globalAnger = 0;
