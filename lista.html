@@ -503,8 +503,21 @@ function renderTable(id, sec) {
         sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
     }
 
+    // --- UKRYWANIE WYNIKÓW (10:00 - 13:15) ---
+    const now = new Date();
+    const currentMins = now.getHours() * 60 + now.getMinutes();
+    if (currentMins >= 600 && currentMins < 795 && !isStopped && !isLocked && currentUser !== "Admin") {
+        sortedData = sortedData.filter(u => u.name === currentUser);
+    }
+
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
+    if (sortedData.length === 0 && currentMins >= 600 && currentMins < 795 && !isStopped && !isLocked && currentUser !== "Admin") {
+        table.innerHTML += `<tr><td colspan="4" style="padding: 15px; color: var(--gold); text-align: center; font-size: 13px;">🤫 Lista ukryta do 13:15</td></tr>`;
+        return;
+    }
+    // ----------------------------------------
+
     sortedData.forEach((u, i) => {
         const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
         const isLeader = displayRank === 1;
