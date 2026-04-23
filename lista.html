@@ -347,7 +347,8 @@ window.stopSlot = async (id) => {
         }
     }
     
-    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints });
+    const targetNameForHistory = document.getElementById(`targetName${id}`).textContent;
+    await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints, target: targetNameForHistory });
 
     await setDoc(appStateRef, { 
         [`stop${id}`]: now.getTime(),
