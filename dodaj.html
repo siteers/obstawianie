@@ -105,12 +105,14 @@
       <div class="hour-grid">
           <div class="target-group" id="group1">
               <span id="targetName1" class="target-name">---</span>
+              <div id="targetAvg1" style="font-size: 9px; color: #888; margin-top: -6px; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px; display: none;"></div>
               <input id="hour1" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" 
                      oninput="formatTime(this)" 
                      onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
           </div>
           <div class="target-group" id="group2">
               <span id="targetName2" class="target-name">---</span>
+              <div id="targetAvg2" style="font-size: 9px; color: #888; margin-top: -6px; margin-bottom: 6px; font-weight: bold; letter-spacing: 1px; display: none;"></div>
               <input id="hour2" type="text" placeholder="--:--" inputmode="numeric" maxlength="5" 
                      oninput="formatTime(this)"
                      onkeydown="if(event.key === 'Enter' && !document.getElementById('saveBtn').disabled) saveData()">
@@ -143,6 +145,7 @@ document.getElementById('mainContainer').style.display = 'block';
 
 let currentTargets = { t1: null, t2: null }, slotLocks = { l1: false, l2: false };
 let votesLeft = 20; // Domyślny limit z SD.34.AŻ.2026
+let targetAverages = {}; // Obiekt do trzymania średnich czasów
 
 // Pobieranie limitu z bazy danych
 async function fetchUserStats() {
@@ -169,6 +172,34 @@ async function fetchUserStats() {
 }
 fetchUserStats();
 
+// Pobieranie historii do wyliczenia średniej
+onSnapshot(collection(db, "history"), (snap) => {
+    const targetTimes = {};
+    snap.forEach(d => {
+        const data = d.data();
+        if (data.target && data.timestamp) {
+            if (!targetTimes[data.target]) targetTimes[data.target] = [];
+            
+            const date = new Date(data.timestamp);
+            const secs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
+            targetTimes[data.target].push(secs);
+        }
+    });
+
+    for (const [target, times] of Object.entries(targetTimes)) {
+        if (times.length > 0) {
+            const avgSecs = Math.round(times.reduce((a, b) => a + b, 0) / times.length);
+            const h = String(Math.floor(avgSecs / 3600)).padStart(2, '0');
+            const m = String(Math.floor((avgSecs % 3600) / 60)).padStart(2, '0');
+            targetAverages[target] = `${h}:${m}`;
+        }
+    }
+    
+    // Wymuś odświeżenie UI po wyliczeniu średnich
+    updateSlotUI(1, currentTargets.t1, slotLocks.l1);
+    updateSlotUI(2, currentTargets.t2, slotLocks.l2);
+});
+
 window.formatTime = (input) => {
     let v = input.value.replace(/\D/g, '');
     if (v.length >= 2) { let h = parseInt(v.slice(0, 2)); if (h > 23) v = "23" + v.slice(2); }
@@ -188,10 +219,18 @@ onSnapshot(doc(db, "appState", "status"), (snap) => {
 
 function updateSlotUI(id, name, isLocked) {
     const input = document.getElementById(`hour${id}`), nameDisplay = document.getElementById(`targetName${id}`);
+    const avgDisplay = document.getElementById(`targetAvg${id}`);
     const group = document.getElementById(`group${id}`);
     const isEmpty = (!name || name === "Brak"), isSelfBet = (currentUser === name && !isEmpty);
     
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
+    
+    if (!isEmpty) {
+        avgDisplay.innerText = targetAverages[name] ? `ŚREDNIA: ${targetAverages[name]}` : `ŚREDNIA: BRAK DANYCH`;
+        avgDisplay.style.display = "block";
+    } else {
+        avgDisplay.style.display = "none";
+    }
     
     // Blokujemy też pole, jeśli gracz zużył 20 głosów
     input.disabled = isLocked || isEmpty || isSelfBet || votesLeft <= 0;
