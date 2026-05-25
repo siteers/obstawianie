@@ -5,103 +5,89 @@
     <title>Cyber-Bet | Mundial 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); --error: #ff4d4d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; min-height: 100vh; }
-        .nav { margin-bottom: 20px; text-align: center; }
-        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #aaa; text-decoration: none; border-radius: 10px; }
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.9); --border: rgba(255, 255, 255, 0.1); --error: #ff4d4d; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; }
+        .nav { margin-bottom: 20px; }
+        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #fff; text-decoration: none; border-radius: 10px; }
         
+        /* Grid */
         .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .group-card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; }
-        .group-title { color: var(--gold); font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #333; padding-bottom: 5px; text-transform: uppercase; }
-        .group-locked { color: #ff4d4d; font-size: 0.7rem; font-weight: bold; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; }
+        .title { color: var(--gold); font-size: 1.1rem; border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; text-transform: uppercase; }
         
-        .match-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-top: 5px; font-size: 0.85rem; text-align: center; }
-        .bet-input { width: 40px; height: 35px; text-align: center; font-size: 16px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 5px; }
-        .btn-action { background: var(--gold); border: none; padding: 6px 12px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; text-transform: uppercase; margin-top: 5px; width: 100%; }
-        .btn-confirm { background: var(--cyan); }
+        .match-row { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; margin-bottom: 8px; font-size: 0.85rem; }
+        .bet-input { width: 40px; height: 35px; text-align: center; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 5px; }
+        .btn-act { background: var(--gold); border: none; padding: 6px 12px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; width: 100%; margin-top: 5px; }
+        .btn-conf { background: var(--cyan); }
     </style>
 </head>
 <body>
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
-    <h1 style="text-align:center; color: var(--gold); letter-spacing: 3px;">MUNDIAL 2026</h1>
+    <h1 style="text-align:center; color: var(--gold);">MUNDIAL 2026</h1>
     <div class="groups-grid" id="groupsContainer"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // Konfiguracja Twojego Firebase (z Twojego sg.html)
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const db = getFirestore(initializeApp(firebaseConfig));
     const currentUser = localStorage.getItem('cyberUser');
 
-    // PEŁNA KONFIGURACJA GRUP
+    // PEŁNA TABELA GRUP
     const GROUPS = {
         "Grupa A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"],
         "Grupa B": ["Kanada", "Bośnia i Hercegowina", "Katar", "Szwajcaria"],
         "Grupa C": ["Brazylia", "Maroko", "Haiti", "Szkocja"],
         "Grupa D": ["USA", "Paragwaj", "Australia", "Turcja"],
-        "Grupa E": ["Niemcy", "Curaçao", "Wybrzeże Kości Słoniowej", "Ekwador"],
+        "Grupa E": ["Niemcy", "Curaçao", "WKS", "Ekwador"],
         "Grupa F": ["Holandia", "Japonia", "Szwecja", "Tunezja"],
         "Grupa G": ["Belgia", "Egipt", "Iran", "Nowa Zelandia"],
-        "Grupa H": ["Hiszpania", "Cabo Verde", "Arabia Saudyjska", "Urugwaj"],
+        "Grupa H": ["Hiszpania", "Cabo Verde", "Arabia", "Urugwaj"],
         "Grupa I": ["Francja", "Senegal", "Irak", "Norwegia"],
         "Grupa J": ["Argentyna", "Algieria", "Austria", "Jordania"],
         "Grupa K": ["Portugalia", "DR Konga", "Uzbekistan", "Kolumbia"],
         "Grupa L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
     };
 
-    // TERMINARZ (Dodaj tu resztę meczów)
-    const MUNDIAL_SCHEDULE = [
-        { group: "Grupa A", id: "m1", team1: "Meksyk", team2: "RPA", date: "2026-06-11T21:00:00" },
-        { group: "Grupa A", id: "m2", team1: "Korea Płd.", team2: "Czechy", date: "2026-06-12T18:00:00" }
-    ];
-
-    window.proposeResult = async (id) => {
+    // MECHANIZM WERYFIKACJI
+    window.propose = async (id) => {
         const s1 = document.getElementById(`s1_${id}`).value;
         const s2 = document.getElementById(`s2_${id}`).value;
         if(s1 === "" || s2 === "") return alert("Wpisz wynik!");
         await updateDoc(doc(db, "mundial_matches", id), {
             status: "pending", proposedScore1: parseInt(s1), proposedScore2: parseInt(s2), proposer: currentUser
         });
+        alert("Zgłoszono!");
     };
 
-    window.confirmResult = async (id) => {
-        const docRef = doc(db, "mundial_matches", id);
-        const data = (await getDoc(docRef)).data();
-        if(data.proposer === currentUser) return alert("Nie możesz sam zatwierdzić wyniku!");
-        await updateDoc(docRef, { status: "finished", realScore1: data.proposedScore1, realScore2: data.proposedScore2, verifier: currentUser });
+    window.confirm = async (id) => {
+        const ref = doc(db, "mundial_matches", id);
+        const data = (await getDoc(ref)).data();
+        if(data.proposer === currentUser) return alert("Nie możesz sam zatwierdzić!");
+        await updateDoc(ref, { status: "finished", realScore1: data.proposedScore1, realScore2: data.proposedScore2, verifier: currentUser });
     };
 
+    // ŁADOWANIE DANYCH
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         const container = document.getElementById('groupsContainer');
         container.innerHTML = "";
         
-        // Logika blokowania grup (6 meczów = zamknięta)
-        const groupStats = {};
-        MUNDIAL_SCHEDULE.forEach(m => {
-            if(!groupStats[m.group]) groupStats[m.group] = { total: 0, finished: 0 };
-            groupStats[m.group].total++;
-            const dbMatch = snap.docs.find(d => d.id === m.id)?.data();
-            if(dbMatch && dbMatch.status === "finished") groupStats[m.group].finished++;
-        });
-
         Object.entries(GROUPS).forEach(([gName, teams]) => {
-            const isGroupLocked = groupStats[gName]?.finished >= 6;
-            let html = `<div class="group-card"><div class="group-title">${gName} ${isGroupLocked ? '<span class="group-locked">LOCKED</span>' : ''}</div>`;
-            html += `<div style="font-size:0.75rem; color:#666; margin-bottom:10px;">${teams.join(", ")}</div>`;
-
-            MUNDIAL_SCHEDULE.filter(m => m.group === gName).forEach(m => {
-                const dbMatch = snap.docs.find(d => d.id === m.id)?.data() || { status: "upcoming" };
-                const isLocked = new Date() > new Date(m.date) || isGroupLocked;
-
-                html += `<div class="match-item">
+            let html = `<div class="card"><div class="title">${gName}</div>`;
+            
+            // Filtrowanie meczów z bazy dla tej grupy
+            snap.docs.filter(d => d.data().group === gName).forEach(d => {
+                const m = d.data();
+                const id = d.id;
+                html += `<div class="match-row">
                     <b>${m.team1} vs ${m.team2}</b><br>`;
                 
-                if(dbMatch.status === "finished") html += `Wynik: <b>${dbMatch.realScore1}:${dbMatch.realScore2}</b>`;
-                else if(dbMatch.status === "pending") html += `Oczekuje: ${dbMatch.proposedScore1}:${dbMatch.proposedScore2}<br><button class="btn-action btn-confirm" onclick="confirmResult('${m.id}')">POTWIERDŹ</button>`;
-                else if(isLocked) html += `<p style="color:var(--error); margin:2px 0;">ZAMKNIĘTE</p>`;
-                else html += `<input type="number" id="s1_${m.id}" class="bet-input"> : <input type="number" id="s2_${m.id}" class="bet-input"><br>
-                             <button class="btn-action" onclick="proposeResult('${m.id}')">ZGŁOŚ TYP</button>`;
+                if(m.status === "finished") html += `Wynik: <b>${m.realScore1}:${m.realScore2}</b>`;
+                else if(m.status === "pending") html += `Typ: ${m.proposedScore1}:${m.proposedScore2}<br><button class="btn-act btn-conf" onclick="confirm('${id}')">POTWIERDŹ</button>`;
+                else html += `<input type="number" id="s1_${id}" class="bet-input"> : <input type="number" id="s2_${id}" class="bet-input"><br>
+                             <button class="btn-act" onclick="propose('${id}')">ZGŁOŚ TYP</button>`;
                 html += `</div>`;
             });
             container.innerHTML += html + "</div>";
