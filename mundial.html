@@ -4,43 +4,51 @@
     <meta charset="UTF-8">
     <title>Cyber-Bet | Mundial 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
-    <link rel="manifest" href="./manifest.json">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.9); --border: rgba(255, 255, 255, 0.1); --error: #ff4d4d; --success: #10b981; }
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.15); --error: #ff4d4d; --success: #10b981; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; overflow-x: hidden; }
-        .nav { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; }
-        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #fff; text-decoration: none; border-radius: 10px; font-weight: bold; }
+        #bg-canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         
-        h1 { text-align: center; color: var(--gold); letter-spacing: 3px; font-size: 28px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(212,175,55,0.3); }
-        .section-title { color: var(--cyan); border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin: 40px 0 20px; text-transform: uppercase; font-size: 22px; }
+        .nav { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
+        .btn-back { background: rgba(0,0,0,0.5); border: 1px solid var(--border); padding: 10px 20px; color: #fff; text-decoration: none; border-radius: 10px; font-weight: bold; backdrop-filter: blur(5px); }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+        h1 { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 28px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(212,175,55,0.4); position: relative; z-index: 10; }
+        .section-title { color: var(--cyan); border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin: 50px 0 20px; text-transform: uppercase; font-size: 22px; position: relative; z-index: 10; text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; position: relative; z-index: 10; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
         .title { color: var(--gold); font-size: 1.2rem; font-weight: 900; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         
-        /* Tabela Grupy */
+        /* Tabele */
         .standings { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.8rem; text-align: center; }
         .standings th { color: #888; padding-bottom: 5px; border-bottom: 1px solid #333; }
-        .standings td { padding: 4px 0; }
-        .standings tr:nth-child(1) td, .standings tr:nth-child(2) td { color: var(--success); font-weight: bold; } /* Miejsca awansujące */
+        .standings td { padding: 5px 0; }
+        .standings tr:nth-child(1) td, .standings tr:nth-child(2) td { color: var(--success); font-weight: bold; }
 
         /* Mecze */
-        .match-row { background: rgba(0,0,0,0.4); padding: 12px; border-radius: 10px; margin-bottom: 10px; text-align: center; position: relative; border: 1px solid rgba(255,255,255,0.05); }
-        .match-date { font-size: 0.7rem; color: var(--cyan); margin-bottom: 5px; font-weight: bold; letter-spacing: 1px; }
-        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 10px; }
+        .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-bottom: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
+        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
         
-        /* Kontrolki */
+        /* Sekcja Typowania (Gracz) */
         .bet-box { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
-        .bet-input { width: 45px; height: 40px; text-align: center; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 8px; font-size: 18px; font-weight: bold; }
-        .btn-act { background: linear-gradient(135deg, #d4af37, #b4912f); border: none; padding: 8px 15px; border-radius: 8px; font-weight: 900; cursor: pointer; color: #000; width: 100%; text-transform: uppercase; transition: 0.2s; }
-        .btn-act:hover { transform: scale(1.02); }
-        .btn-conf { background: linear-gradient(135deg, #00d4ff, #0096c7); color: #fff; }
-        .locked-text { color: var(--error); font-size: 12px; font-weight: bold; margin-top: 5px; }
+        .bet-input { width: 40px; height: 35px; text-align: center; background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 5px; font-size: 16px; font-weight: bold; }
+        .btn-bet { background: linear-gradient(135deg, #00d4ff, #0096c7); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; width: 100%; text-transform: uppercase; }
+        
+        /* Sekcja Admina (Zwijana) */
+        details { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 5px; margin-top: 15px; font-size: 0.8rem; border: 1px dashed #333; }
+        summary { color: var(--gold); cursor: pointer; font-weight: bold; outline: none; margin-bottom: 10px; }
+        .admin-input { width: 35px; height: 30px; text-align: center; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 4px; }
+        .btn-admin { background: var(--gold); color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 5px; }
+
+        .locked-text { color: var(--error); font-size: 12px; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+        .real-score { font-size: 20px; font-weight: 900; color: var(--gold); margin: 10px 0; letter-spacing: 2px; }
     </style>
 </head>
 <body>
+    <canvas id="bg-canvas"></canvas>
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
-    <h1>MUNDIAL 2026</h1>
+    <h1>⚽ MUNDIAL 2026</h1>
 
     <div class="section-title">FAZA GRUPOWA</div>
     <div class="grid" id="groupsContainer"></div>
@@ -50,76 +58,107 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getFirestore, collection, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser');
 
-    // 1. ZDEFINIOWANE GRUPY
+    // --- GENERATOR TŁA (GALAXY) ---
+    const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
+    let pts = [];
+    function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
+    function drawBg() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(drawBg); }
+    window.onresize = initBg; initBg(); drawBg();
+
+    // --- DANE MUNDIALU ---
     const GROUPS = {
-        "Grupa A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"],
-        "Grupa B": ["Kanada", "Bośnia i Hercegowina", "Katar", "Szwajcaria"],
-        "Grupa C": ["Brazylia", "Maroko", "Haiti", "Szkocja"],
-        "Grupa D": ["USA", "Paragwaj", "Australia", "Turcja"],
-        "Grupa E": ["Niemcy", "Curaçao", "WKS", "Ekwador"],
-        "Grupa F": ["Holandia", "Japonia", "Szwecja", "Tunezja"],
-        "Grupa G": ["Belgia", "Egipt", "Iran", "Nowa Zelandia"],
-        "Grupa H": ["Hiszpania", "Cabo Verde", "Arabia Saud.", "Urugwaj"],
-        "Grupa I": ["Francja", "Senegal", "Irak", "Norwegia"],
-        "Grupa J": ["Argentyna", "Algieria", "Austria", "Jordania"],
-        "Grupa K": ["Portugalia", "DR Konga", "Uzbekistan", "Kolumbia"],
-        "Grupa L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
+        "A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"], "B": ["Kanada", "Bośnia", "Katar", "Szwajcaria"],
+        "C": ["Brazylia", "Maroko", "Haiti", "Szkocja"], "D": ["USA", "Paragwaj", "Australia", "Turcja"],
+        "E": ["Niemcy", "Curaçao", "WKS", "Ekwador"], "F": ["Holandia", "Japonia", "Szwecja", "Tunezja"],
+        "G": ["Belgia", "Egipt", "Iran", "N. Zelandia"], "H": ["Hiszpania", "Cabo Verde", "Arabia", "Urugwaj"],
+        "I": ["Francja", "Senegal", "Irak", "Norwegia"], "J": ["Argentyna", "Algieria", "Austria", "Jordania"],
+        "K": ["Portugalia", "DR Konga", "Uzbekistan", "Kolumbia"], "L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
     };
 
-    // 2. TERMINARZ BAZOWY (Z danymi pobranymi z terminarza FIFA)
-    const MATCHES = [
-        // Grupa A
-        { id: "A1", group: "Grupa A", t1: "Meksyk", t2: "RPA", date: "2026-06-11T21:00" },
-        { id: "A2", group: "Grupa A", t1: "Korea Płd.", t2: "Czechy", date: "2026-06-12T04:00" },
-        { id: "A3", group: "Grupa A", t1: "Meksyk", t2: "Korea Płd.", date: "2026-06-16T21:00" },
-        { id: "A4", group: "Grupa A", t1: "RPA", t2: "Czechy", date: "2026-06-16T21:00" },
-        { id: "A5", group: "Grupa A", t1: "Czechy", t2: "Meksyk", date: "2026-06-20T21:00" },
-        { id: "A6", group: "Grupa A", t1: "RPA", t2: "Korea Płd.", date: "2026-06-20T21:00" },
-        // Grupa B
-        { id: "B1", group: "Grupa B", t1: "Kanada", t2: "Bośnia i Hercegowina", date: "2026-06-12T21:00" },
-        { id: "B2", group: "Grupa B", t1: "Katar", t2: "Szwajcaria", date: "2026-06-13T21:00" },
-        { id: "B3", group: "Grupa B", t1: "Kanada", t2: "Katar", date: "2026-06-18T21:00" },
-        { id: "B4", group: "Grupa B", t1: "Bośnia i Hercegowina", t2: "Szwajcaria", date: "2026-06-18T21:00" },
-        { id: "B5", group: "Grupa B", t1: "Szwajcaria", t2: "Kanada", date: "2026-06-23T21:00" },
-        { id: "B6", group: "Grupa B", t1: "Bośnia i Hercegowina", t2: "Katar", date: "2026-06-23T21:00" },
-        // Możesz w ten sam sposób dopisać pozostałe mecze dla grup C-L...
-    ];
+    // GENERATOR 72 MECZÓW GRUPOWYCH
+    const MATCHES = [];
+    let mId = 1;
+    const gDates = ["2026-06-11T21:00", "2026-06-12T18:00", "2026-06-16T21:00", "2026-06-17T18:00", "2026-06-21T21:00", "2026-06-21T21:00"];
+    Object.entries(GROUPS).forEach(([g, t]) => {
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[1], date: gDates[0] });
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[2], t2: t[3], date: gDates[1] });
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[2], date: gDates[2] });
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[1], date: gDates[3] });
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[0], date: gDates[4] });
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[1], t2: t[2], date: gDates[5] });
+    });
 
-    // 3. DRABINKA PUCHAROWA (Z dynamicznymi referencjami)
+    // DRABINKA PUCHAROWA (Daty z Twojego ekranu Wiki)
     const KNOCKOUTS = [
-        { id: "R32_1", stage: "1/16 Finału", ref1: "1A", ref2: "3C/D/E", date: "2026-06-28T18:00" },
-        { id: "R32_2", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T22:00" },
-        { id: "R32_3", stage: "1/16 Finału", ref1: "1B", ref2: "3E/F/G", date: "2026-06-29T18:00" }
+        // 1/16 Finału
+        { id: "R32_1", stage: "1/16 Finału", ref1: "1A", ref2: "3CDEFHI", date: "2026-06-28T18:00" },
+        { id: "R32_2", stage: "1/16 Finału", ref1: "1B", ref2: "3EFGIJ", date: "2026-06-28T21:00" },
+        { id: "R32_3", stage: "1/16 Finału", ref1: "1C", ref2: "3ABDEF", date: "2026-06-29T18:00" },
+        { id: "R32_4", stage: "1/16 Finału", ref1: "1D", ref2: "3BEFIJ", date: "2026-06-29T21:00" },
+        { id: "R32_5", stage: "1/16 Finału", ref1: "1E", ref2: "3ABCDF", date: "2026-06-30T18:00" },
+        { id: "R32_6", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T21:00" },
+        { id: "R32_7", stage: "1/16 Finału", ref1: "1G", ref2: "3AEHIJ", date: "2026-07-01T18:00" },
+        { id: "R32_8", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-01T21:00" },
+        { id: "R32_9", stage: "1/16 Finału", ref1: "1I", ref2: "3CDFGH", date: "2026-07-02T18:00" },
+        { id: "R32_10", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T21:00" },
+        { id: "R32_11", stage: "1/16 Finału", ref1: "1K", ref2: "3DEIJL", date: "2026-07-03T18:00" },
+        { id: "R32_12", stage: "1/16 Finału", ref1: "1L", ref2: "3EHIJK", date: "2026-07-03T21:00" },
+        { id: "R32_13", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T15:00" },
+        { id: "R32_14", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T15:00" },
+        { id: "R32_15", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T15:00" },
+        { id: "R32_16", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T15:00" },
+        // 1/8 Finału
+        { id: "R16_1", stage: "1/8 Finału", ref1: "W_R32_1", ref2: "W_R32_2", date: "2026-07-04T18:00" },
+        { id: "R16_2", stage: "1/8 Finału", ref1: "W_R32_3", ref2: "W_R32_4", date: "2026-07-04T21:00" },
+        { id: "R16_3", stage: "1/8 Finału", ref1: "W_R32_5", ref2: "W_R32_6", date: "2026-07-05T18:00" },
+        { id: "R16_4", stage: "1/8 Finału", ref1: "W_R32_7", ref2: "W_R32_8", date: "2026-07-05T21:00" },
+        { id: "R16_5", stage: "1/8 Finału", ref1: "W_R32_9", ref2: "W_R32_10", date: "2026-07-06T18:00" },
+        { id: "R16_6", stage: "1/8 Finału", ref1: "W_R32_11", ref2: "W_R32_12", date: "2026-07-06T21:00" },
+        { id: "R16_7", stage: "1/8 Finału", ref1: "W_R32_13", ref2: "W_R32_14", date: "2026-07-07T18:00" },
+        { id: "R16_8", stage: "1/8 Finału", ref1: "W_R32_15", ref2: "W_R32_16", date: "2026-07-07T21:00" },
+        // Ćwierćfinały
+        { id: "QF_1", stage: "Ćwierćfinał", ref1: "W_R16_1", ref2: "W_R16_2", date: "2026-07-09T18:00" },
+        { id: "QF_2", stage: "Ćwierćfinał", ref1: "W_R16_3", ref2: "W_R16_4", date: "2026-07-10T18:00" },
+        { id: "QF_3", stage: "Ćwierćfinał", ref1: "W_R16_5", ref2: "W_R16_6", date: "2026-07-11T18:00" },
+        { id: "QF_4", stage: "Ćwierćfinał", ref1: "W_R16_7", ref2: "W_R16_8", date: "2026-07-11T21:00" },
+        // Półfinały
+        { id: "SF_1", stage: "Półfinał", ref1: "W_QF_1", ref2: "W_QF_2", date: "2026-07-14T20:00" },
+        { id: "SF_2", stage: "Półfinał", ref1: "W_QF_3", ref2: "W_QF_4", date: "2026-07-15T20:00" },
+        // Mecz o 3
+        { id: "TP_1", stage: "Mecz o 3. miejsce", ref1: "L_SF_1", ref2: "L_SF_2", date: "2026-07-18T20:00" },
+        // Finał
+        { id: "F_1", stage: "FINAŁ", ref1: "W_SF_1", ref2: "W_SF_2", date: "2026-07-19T20:00" }
     ];
 
-    // --- FUNKCJE OBSŁUGI ZAKŁADÓW ---
-    window.propose = async (id) => {
-        const s1 = document.getElementById(`s1_${id}`).value;
-        const s2 = document.getElementById(`s2_${id}`).value;
-        if(s1 === "" || s2 === "") return alert("Musisz podać wynik!");
-        await updateDoc(doc(db, "mundial_matches", id), {
-            status: "pending", proposedScore1: parseInt(s1), proposedScore2: parseInt(s2), proposer: currentUser
-        }).catch(err => {
-            // Jeśli dokument nie istnieje, stwórz go (First bet)
-            import("https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js").then(({setDoc}) => {
-                setDoc(doc(db, "mundial_matches", id), { status: "pending", proposedScore1: parseInt(s1), proposedScore2: parseInt(s2), proposer: currentUser });
-            });
-        });
+    // --- FUNKCJE BAZY DANYCH ---
+    // Gracz zapisuje SWÓJ typ (zapisuje się jako pole z jego nickiem w dokumencie meczu)
+    window.saveBet = async (matchId) => {
+        const s1 = document.getElementById(`b1_${matchId}`).value;
+        const s2 = document.getElementById(`b2_${matchId}`).value;
+        if(s1 === "" || s2 === "") return alert("Wpisz oba gole, żeby zapisać typ!");
+        
+        const ref = doc(db, "mundial_matches", matchId);
+        await setDoc(ref, { bets: { [currentUser]: { s1: parseInt(s1), s2: parseInt(s2) } } }, { merge: true });
+        alert("Zapisano Twój typ!");
     };
 
-    window.confirm = async (id) => {
-        const ref = doc(db, "mundial_matches", id);
-        const data = (await getDoc(ref)).data();
-        if(data.proposer === currentUser) return alert("Błąd: Nie możesz sam zatwierdzić swojego wyniku!");
-        await updateDoc(ref, { status: "finished", realScore1: data.proposedScore1, realScore2: data.proposedScore2, verifier: currentUser });
+    // Admin/Użytkownik wprowadza PRAWDZIWY wynik (żeby grupy się zaktualizowały)
+    window.setRealScore = async (matchId) => {
+        const s1 = document.getElementById(`a1_${matchId}`).value;
+        const s2 = document.getElementById(`a2_${matchId}`).value;
+        if(s1 === "" || s2 === "") return alert("Podaj rzeczywisty wynik!");
+        
+        await setDoc(doc(db, "mundial_matches", matchId), {
+            status: "finished", realScore1: parseInt(s1), realScore2: parseInt(s2)
+        }, { merge: true });
     };
 
-    // --- GŁÓWNY SILNIK (RENDEROWANIE + TABELE) ---
+    // --- SILNIK ---
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         const gCont = document.getElementById('groupsContainer');
         const kCont = document.getElementById('knockoutContainer');
@@ -128,21 +167,21 @@
         const dbData = {};
         snap.forEach(d => dbData[d.id] = d.data());
 
-        // SILNIK OBLICZANIA TABEL
         const standings = {};
         const groupLockStatus = {};
 
-        Object.keys(GROUPS).forEach(gName => {
-            standings[gName] = {};
-            GROUPS[gName].forEach(t => standings[gName][t] = { pts: 0, gd: 0, gs: 0, played: 0 });
+        // Obliczanie Grup
+        Object.keys(GROUPS).forEach(g => {
+            standings[g] = {};
+            GROUPS[g].forEach(t => standings[g][t] = { pts: 0, gd: 0, gs: 0, played: 0 });
             
-            let finishedMatches = 0;
-            MATCHES.filter(m => m.group === gName).forEach(m => {
+            let fMatches = 0;
+            MATCHES.filter(m => m.group === g).forEach(m => {
                 const dbM = dbData[m.id];
                 if (dbM && dbM.status === "finished") {
-                    finishedMatches++;
+                    fMatches++;
                     const s1 = dbM.realScore1, s2 = dbM.realScore2;
-                    const t1 = standings[gName][m.t1], t2 = standings[gName][m.t2];
+                    const t1 = standings[g][m.t1], t2 = standings[g][m.t2];
                     
                     t1.played++; t2.played++;
                     t1.gs += s1; t2.gs += s2;
@@ -153,52 +192,51 @@
                     else { t1.pts += 1; t2.pts += 1; }
                 }
             });
-            groupLockStatus[gName] = finishedMatches >= 6; // Grupa zamyka się po 6 meczach
+            groupLockStatus[g] = fMatches >= 6;
         });
 
-        // Generowanie Widoku Grup
-        Object.keys(GROUPS).forEach(gName => {
-            // Sortowanie: Punkty -> Bilans -> Zdobyte
-            const sortedTeams = Object.keys(standings[gName]).sort((a,b) => {
-                const tA = standings[gName][a], tB = standings[gName][b];
+        // RENDER FAZY GRUPOWEJ
+        Object.keys(GROUPS).forEach(g => {
+            const sortedTeams = Object.keys(standings[g]).sort((a,b) => {
+                const tA = standings[g][a], tB = standings[g][b];
                 if (tA.pts !== tB.pts) return tB.pts - tA.pts;
                 if (tA.gd !== tB.gd) return tB.gd - tA.gd;
                 return tB.gs - tA.gs;
             });
 
-            const isLocked = groupLockStatus[gName];
-            let html = `<div class="card">
-                <div class="title">${gName} ${isLocked ? '<span style="color:var(--error); font-size:0.7rem;">(ZAKOŃCZONA)</span>' : ''}</div>
-                <table class="standings">
-                    <tr><th>Drużyna</th><th>M</th><th>Bilans</th><th>PKT</th></tr>`;
-            
-            sortedTeams.forEach((t, index) => {
-                const st = standings[gName][t];
-                html += `<tr><td>${index+1}. ${t}</td><td>${st.played}</td><td>${st.gd > 0 ? '+'+st.gd : st.gd}</td><td><b>${st.pts}</b></td></tr>`;
-            });
-            html += `</table><hr style="border:0; border-top:1px solid #333; margin:15px 0;">`;
+            const isLocked = groupLockStatus[g];
+            let html = `<div class="card"><div class="title">Grupa ${g} ${isLocked ? '<span style="color:var(--error); font-size:12px;">(ZAMKNIĘTA)</span>' : ''}</div>
+                <table class="standings"><tr><th>Zespół</th><th>M</th><th>B</th><th>PKT</th></tr>`;
+            sortedTeams.forEach((t, i) => html += `<tr><td>${i+1}. ${t}</td><td>${standings[g][t].played}</td><td>${standings[g][t].gd}</td><td><b>${standings[g][t].pts}</b></td></tr>`);
+            html += `</table><hr style="border:1px solid #333;">`;
 
-            MATCHES.filter(m => m.group === gName).forEach(m => {
-                const dbM = dbData[m.id] || { status: "upcoming" };
+            MATCHES.filter(m => m.group === g).forEach(m => {
+                const dbM = dbData[m.id] || {};
                 const matchLocked = new Date() > new Date(m.date) || isLocked;
+                const myBet = dbM.bets?.[currentUser];
 
                 html += `<div class="match-row">
-                    <div class="match-date">${m.date.replace('T', ' | ')}</div>
+                    <div class="match-date">${m.date.replace('T', ' ')}</div>
                     <div class="match-teams">${m.t1} - ${m.t2}</div>`;
                 
                 if (dbM.status === "finished") {
-                    html += `<div style="color:var(--gold); font-size:18px; font-weight:900;">${dbM.realScore1} : ${dbM.realScore2}</div>`;
-                } else if (dbM.status === "pending") {
-                    html += `<div style="color:var(--cyan); margin-bottom:5px;">Oczekuje: ${dbM.proposedScore1}:${dbM.proposedScore2}</div>
-                             <button class="btn-act btn-conf" onclick="confirm('${m.id}')">POTWIERDŹ</button>`;
-                } else if (matchLocked) {
-                    html += `<div class="locked-text">MECZ ZABLOKOWANY</div>`;
+                    html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
+                    if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
                 } else {
+                    // Pole typowania dla Gracza
                     html += `<div class="bet-box">
-                                <input type="number" id="s1_${m.id}" class="bet-input" placeholder="-">
-                                <input type="number" id="s2_${m.id}" class="bet-input" placeholder="-">
-                             </div>
-                             <button class="btn-act" onclick="propose('${m.id}')">ZGŁOŚ WYNIK</button>`;
+                                <input type="number" id="b1_${m.id}" class="bet-input" placeholder="-" value="${myBet ? myBet.s1 : ''}" ${matchLocked ? 'disabled' : ''}> : 
+                                <input type="number" id="b2_${m.id}" class="bet-input" placeholder="-" value="${myBet ? myBet.s2 : ''}" ${matchLocked ? 'disabled' : ''}>
+                             </div>`;
+                    if(matchLocked) html += `<div class="locked-text">ZAKŁADY ZAMKNIĘTE</div>`;
+                    else html += `<button class="btn-act" onclick="saveBet('${m.id}')">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
+                }
+                
+                // Panel Admina (Wprowadzanie prawdziwego wyniku) - Zwijany!
+                if(!dbM.status || dbM.status !== "finished") {
+                    html += `<details><summary>Admin: Podaj wynik</summary>
+                             <input type="number" id="a1_${m.id}" class="admin-input"> : <input type="number" id="a2_${m.id}" class="admin-input">
+                             <button class="btn-admin" onclick="setRealScore('${m.id}')">ZATWIERDŹ</button></details>`;
                 }
                 html += `</div>`;
             });
@@ -206,52 +244,72 @@
             gCont.innerHTML += html;
         });
 
-        // Generowanie Fazy Pucharowej (z dynamicznym podmienianiem nazw!)
-        KNOCKOUTS.forEach(k => {
-            const dbM = dbData[k.id] || { status: "upcoming" };
-            const matchLocked = new Date() > new Date(k.date);
-
-            // AUTOMATYZACJA: Podmiana "1A" na zwycięzcę Grupy A, jeśli grupa jest zakończona
-            const getTeamName = (ref) => {
-                if (ref.length === 2 && ['1','2'].includes(ref[0])) {
-                    const pos = parseInt(ref[0]) - 1;
-                    const group = "Grupa " + ref[1];
-                    if (groupLockStatus[group]) {
-                        const sorted = Object.keys(standings[group]).sort((a,b) => {
-                            const tA = standings[group][a], tB = standings[group][b];
-                            if (tA.pts !== tB.pts) return tB.pts - tA.pts;
-                            if (tA.gd !== tB.gd) return tB.gd - tA.gd;
-                            return tB.gs - tA.gs;
-                        });
-                        return sorted[pos]; // Zwraca prawdziwą nazwę drużyny!
-                    }
+        // RENDER FAZY PUCHAROWEJ (Magia auto-uzupełniania)
+        const resolveKnockoutTeam = (ref) => {
+            // Rozpoznawanie zwycięzców grup (np. "1A")
+            if (ref.length === 2 && ['1','2'].includes(ref[0])) {
+                const gName = ref[1];
+                if (groupLockStatus[gName]) {
+                    const sorted = Object.keys(standings[gName]).sort((a,b) => {
+                        const tA = standings[gName][a], tB = standings[gName][b];
+                        if (tA.pts !== tB.pts) return tB.pts - tA.pts;
+                        if (tA.gd !== tB.gd) return tB.gd - tA.gd;
+                        return tB.gs - tA.gs;
+                    });
+                    return sorted[parseInt(ref[0]) - 1]; // Prawdziwa nazwa!
                 }
-                return ref; // Jeśli grupa wciąż gra, wyświetla np. "1A" lub "3C/D/E"
-            };
+                return `${ref[0]}. msce Gr. ${gName}`;
+            }
+            // Rozpoznawanie zwycięzców poprzednich faz pucharowych (np. "W_R32_1")
+            if (ref.startsWith('W_') || ref.startsWith('L_')) {
+                const isWinner = ref.startsWith('W_');
+                const matchId = ref.substring(2);
+                const prevM = dbData[matchId];
+                if(prevM && prevM.status === "finished") {
+                    // Trzeba ustalić nazwy drużyn z poprzedniego meczu (rekursywnie)
+                    const prevDef = KNOCKOUTS.find(k => k.id === matchId);
+                    const pt1 = resolveKnockoutTeam(prevDef.ref1);
+                    const pt2 = resolveKnockoutTeam(prevDef.ref2);
+                    
+                    if(prevM.realScore1 > prevM.realScore2) return isWinner ? pt1 : pt2;
+                    if(prevM.realScore2 > prevM.realScore1) return isWinner ? pt2 : pt1;
+                    return `Zwycięzca ${matchId} (Karny?)`; // Proste zabezpieczenie przy remisach
+                }
+                return isWinner ? `Zwyc. meczu ${matchId}` : `Przegr. meczu ${matchId}`;
+            }
+            return `3. msce z ${ref.substring(1)}`; // Fallback dla miejsc z 3 pozycji
+        };
 
-            const t1 = getTeamName(k.ref1);
-            const t2 = getTeamName(k.ref2);
+        KNOCKOUTS.forEach(k => {
+            const dbM = dbData[k.id] || {};
+            const matchLocked = new Date() > new Date(k.date);
+            const myBet = dbM.bets?.[currentUser];
 
-            let html = `<div class="card">
-                <div class="title">${k.stage}</div>
-                <div class="match-row">
-                    <div class="match-date">${k.date.replace('T', ' | ')}</div>
-                    <div class="match-teams">${t1} - ${t2}</div>`;
+            const t1 = resolveKnockoutTeam(k.ref1);
+            const t2 = resolveKnockoutTeam(k.ref2);
+
+            let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div>
+                <div class="match-row" style="margin:0;">
+                    <div class="match-date">${k.date.replace('T', ' ')}</div>
+                    <div class="match-teams">${t1}<br><span style="font-size:12px; color:#666; font-weight:normal;">vs</span><br>${t2}</div>`;
 
             if (dbM.status === "finished") {
-                html += `<div style="color:var(--gold); font-size:18px; font-weight:900;">${dbM.realScore1} : ${dbM.realScore2}</div>`;
-            } else if (dbM.status === "pending") {
-                html += `<div style="color:var(--cyan); margin-bottom:5px;">Oczekuje: ${dbM.proposedScore1}:${dbM.proposedScore2}</div>
-                         <button class="btn-act btn-conf" onclick="confirm('${k.id}')">POTWIERDŹ</button>`;
-            } else if (matchLocked || t1 === k.ref1 || t2 === k.ref2) {
-                // Blokujemy zakład, jeśli jeszcze nie znamy drużyn lub mecz już się zaczął
-                html += `<div class="locked-text">ZAKŁADY ZABLOKOWANE</div>`;
+                html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
+                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
             } else {
                 html += `<div class="bet-box">
-                            <input type="number" id="s1_${k.id}" class="bet-input" placeholder="-">
-                            <input type="number" id="s2_${k.id}" class="bet-input" placeholder="-">
-                         </div>
-                         <button class="btn-act" onclick="propose('${k.id}')">ZGŁOŚ WYNIK</button>`;
+                            <input type="number" id="b1_${k.id}" class="bet-input" value="${myBet ? myBet.s1 : ''}" ${matchLocked ? 'disabled' : ''}> : 
+                            <input type="number" id="b2_${k.id}" class="bet-input" value="${myBet ? myBet.s2 : ''}" ${matchLocked ? 'disabled' : ''}>
+                         </div>`;
+                if (matchLocked || t1.includes("msce") || t1.includes("Zwyc.")) html += `<div class="locked-text">OCZEKIWANIE NA DRUŻYNY / ZABLOKOWANE</div>`;
+                else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}')">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
+            }
+            
+            // Panel Admina
+            if(!dbM.status || dbM.status !== "finished") {
+                html += `<details><summary>Admin: Podaj wynik</summary>
+                         <input type="number" id="a1_${k.id}" class="admin-input"> : <input type="number" id="a2_${k.id}" class="admin-input">
+                         <button class="btn-admin" onclick="setRealScore('${k.id}')">ZATWIERDŹ</button></details>`;
             }
             html += `</div></div>`;
             kCont.innerHTML += html;
