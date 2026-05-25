@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -174,7 +173,7 @@ let stoppedSec1 = 0, stoppedSec2 = 0;
 let savedWinners1 = null, savedWinners2 = null; 
 let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
-let ignoreAutoLock = false; // Flaga ignorująca auto-blokadę po ręcznym odblokowaniu
+let ignoreAutoLock = false;
 
 let isMuted = localStorage.getItem('appMuted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
@@ -266,14 +265,12 @@ function triggerStopEffect(id, timestamp, winners) {
     renderTable(id, timestamp/1000); 
 }
 
-// --- LOGIKA MIESIĄCA (Klucz do SD.34.AŻ.2026) ---
 function getCurrentMonthKey() {
     const d = new Date();
     const month = String(d.getMonth() + 1).padStart(2, '0');
     return `points_${month}_${d.getFullYear()}`;
 }
 
-// --- ZAPIS DO HISTORII I ZAPIS PUNKTÓW ---
 window.stopSlot = async (id) => {
     const btn = document.getElementById(`stopBtn${id}`);
     if(btn) {
@@ -312,11 +309,10 @@ window.stopSlot = async (id) => {
         if (i > 0 && Math.abs(toSec(sorted[i].hour) - s) !== Math.abs(toSec(sorted[i-1].hour) - s)) rank = i + 1;
         let pts = (rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0);
         
-        // --- BONUS URODZINOWY DLA PAWŁA (DO 10.02.2026 23:59) ---
         if (sorted[i].name === "Paweł") {
             const promoEnd = new Date("2026-02-10T23:59:59");
             if (now <= promoEnd) {
-                pts = pts * 2; // Mnożymy punkty x2
+                pts = pts * 2; 
             }
         }
 
@@ -329,14 +325,14 @@ window.stopSlot = async (id) => {
         });
     }
 
-    const currentMonthKey = getCurrentMonthKey(); // np. "points_03_2026"
+    const currentMonthKey = getCurrentMonthKey(); 
 
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name);
             const updateData = {
                 points: increment(p.points),
-                [currentMonthKey]: increment(p.points) // Dodajemy małe punkty do puli miesięcznej
+                [currentMonthKey]: increment(p.points) 
             };
             
             const snap = await getDoc(ref);
@@ -371,7 +367,6 @@ window.clearSlot = async (id) => {
     }, { merge: true });
 };
 
-// NOWOŚĆ: Funkcja do automatycznego czyszczenia w tle bez okienka confirm()
 async function autoClearSlot(id) {
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
@@ -438,24 +433,20 @@ onSnapshot(collection(db, "users"), snap => {
 
 function updateLockUI(id, isLocked) { const btn = document.getElementById(`lockBtn${id}`); const panel = document.getElementById(`panel${id}`); if(isLocked) { panel.classList.add('slot-locked'); btn.textContent = "🔓 ODBLOKUJ LISTĘ 🔓"; btn.style.background = "var(--gold)"; btn.style.color = "#000"; btn.style.display = "block"; } else { panel.classList.remove('slot-locked'); btn.textContent = "⛔ ZAMKNIJ LISTĘ ⛔"; btn.style.background = "linear-gradient(135deg, #ff0000, #8b0000)"; btn.style.color = "#fff"; } }
 
-// --- RĘCZNE BLOKOWANIE / ODBLOKOWANIE Z HASŁEM W STREFIE CZASOWEJ ---
 window.toggleLock = async (id) => { 
     const now = new Date();
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const startBlock = 13 * 60 + 15; // 13:15
-    const endBlock = 14 * 60 + 15;   // 14:15
+    const startBlock = 13 * 60 + 15; 
+    const endBlock = 14 * 60 + 15;   
 
     const snap = await getDoc(appStateRef); 
     const field = `isLocked${id}`; 
     const currentState = snap.data()[field];
     const newState = !currentState; 
 
-    // JEŚLI JEST CZAS BLOKADY I CHCEMY ODBLOKOWAĆ -> WYMAGA HASŁA
     if (newState === false && currentMinutes >= startBlock && currentMinutes < endBlock) {
         const pass = prompt("CZAS BLOKADY ADMINISTRACYJNEJ.\nPodaj hasło aby odblokować:");
         if (pass !== "0000") return alert("Błędne hasło!");
-        
-        // POPRAWNE HASŁO -> ZEZWALAJ NA ODBLOKOWANIE I IGNORUJ AUTO-BLOCK W TEY SESJI
         ignoreAutoLock = true; 
     }
 
@@ -468,31 +459,30 @@ setInterval(() => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
-    // --- INTELIGENTNA AUTOMATYZACJA BLOKADY (STRAŻNIK CZASU) ---
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
-    const startBlock = 13 * 60 + 15; // 13:15
-    const endBlock = 14 * 60 + 15;   // 14:15
+    const startBlock = 13 * 60 + 15; 
+    const endBlock = 14 * 60 + 15;   
     
-    // JEŚLI JESTEŚMY W STREFIE CZASOWEJ (13:15 - 14:15)
     if (currentMinutes >= startBlock && currentMinutes < endBlock) {
-        // JEŚLI NIE ODZNACZONO IGNOROWANIA (RĘCZNEGO ODBLOKOWANIA) -> WYMUŚ BLOKADĘ
         if (!ignoreAutoLock) {
             if (!isLocked1) setDoc(appStateRef, { isLocked1: true }, { merge: true });
             if (!isLocked2) setDoc(appStateRef, { isLocked2: true }, { merge: true });
         }
     }
 
-    // JEŚLI WYBIŁA GODZINA 14:15 -> AUTOMATYCZNE OTWARCIE (KONIEC BLOKADY)
-    // Sprawdzamy tylko w pierwszej sekundzie 14:15, żeby nie spamować bazy
     if (now.getHours() === 14 && now.getMinutes() === 15 && now.getSeconds() < 2) {
         if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
 
-    // --- AUTOMATYCZNE CZYSZCZENIE LISTY O OBRANEJ GODZINIE (16:00) ---
-    if (now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() < 2) {
-        autoClearSlot(1);
-        autoClearSlot(2);
+    // --- AUTOMATYCZNE CZYSZCZENIE LISTY O OBRANEJ GODZINIE (16:07) ---
+    if (now.getHours() === 16 && now.getMinutes() === 7) {
+        const todayStr = now.toDateString();
+        if (localStorage.getItem("lastAutoClear") !== todayStr) {
+            autoClearSlot(1);
+            autoClearSlot(2);
+            localStorage.setItem("lastAutoClear", todayStr);
+        }
     }
     // -----------------------------------------------------------------
 
