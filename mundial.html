@@ -6,15 +6,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
     <link rel="manifest" href="./manifest.json">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --error: #ff4d4d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .match-card { background: var(--glass); border-radius: 20px; border: 1px solid rgba(255,255,255,0.1); padding: 20px; width: 100%; max-width: 400px; margin-bottom: 20px; text-align: center; }
-        .bet-input { width: 40px; height: 40px; text-align: center; font-size: 20px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 10px; }
-        .btn-action { background: var(--gold); border: none; padding: 10px 20px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: 10px; }
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .match-card { background: var(--glass); border-radius: 20px; border: 1px solid var(--border); padding: 20px; width: 100%; max-width: 400px; margin-bottom: 20px; text-align: center; }
+        .bet-input { width: 50px; height: 50px; text-align: center; font-size: 20px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 10px; }
+        .btn-action { background: var(--gold); border: none; padding: 15px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: 15px; color: #000; text-transform: uppercase; }
         .btn-confirm { background: var(--cyan); }
+        .bet-form { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; }
+        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 3px; }
+        .btn-back { display: block; width: 100%; max-width: 400px; padding: 15px; margin-bottom: 20px; background: var(--glass); border: 1px solid var(--border); color: #aaa; text-align: center; text-decoration: none; border-radius: 15px; }
     </style>
 </head>
 <body>
+    <a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a>
     <h1>⚽ MUNDIAL 2026</h1>
     <div id="matchesContainer" style="width: 100%; max-width: 400px;"></div>
 
@@ -22,22 +26,25 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+    const app = initializeApp(firebaseConfig); 
+    const db = getFirestore(app);
     const currentUser = localStorage.getItem('cyberUser');
-    const db = getFirestore(initializeApp({ /* Twój config Firebase */ }));
 
-    // Funkcja do proponowania wyniku
     window.proposeResult = async (matchId) => {
         const s1 = document.getElementById(`s1_${matchId}`).value;
         const s2 = document.getElementById(`s2_${matchId}`).value;
+        if(s1 === "" || s2 === "") return alert("Wpisz wynik!");
+        
         await updateDoc(doc(db, "mundial_matches", matchId), {
             status: "pending_verification",
             proposedScore1: parseInt(s1),
             proposedScore2: parseInt(s2),
             proposer: currentUser
         });
+        alert("Wynik zgłoszony. Czekam na weryfikację...");
     };
 
-    // Funkcja do zatwierdzania wyniku przez drugą osobę
     window.confirmResult = async (matchId) => {
         const matchRef = doc(db, "mundial_matches", matchId);
         const snap = await getDoc(matchRef);
@@ -51,12 +58,9 @@
             realScore2: data.proposedScore2,
             verifier: currentUser
         });
-        
-        // Tutaj wywołałaby się funkcja przeliczająca ranking
         alert("Wynik zatwierdzony!");
     };
 
-    // Renderowanie widoku
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         const container = document.getElementById('matchesContainer');
         container.innerHTML = "";
@@ -68,7 +72,7 @@
             
             if (m.status === "pending_verification") {
                 html += `<p>Oczekuje na weryfikację (Zgłosił: ${m.proposer})</p>
-                         <p>Wynik: ${m.proposedScore1}:${m.proposedScore2}</p>
+                         <p>Wynik: <b>${m.proposedScore1}:${m.proposedScore2}</b></p>
                          <button class="btn-action btn-confirm" onclick="confirmResult('${id}')">POTWIERDŹ WYNIK</button>`;
             } else if (m.status === "finished") {
                 html += `<p>Wynik oficjalny: <b>${m.realScore1}:${m.realScore2}</b></p>`;
@@ -76,8 +80,8 @@
                 html += `<div class="bet-form">
                             <input type="number" id="s1_${id}" class="bet-input"> : 
                             <input type="number" id="s2_${id}" class="bet-input">
-                            <button class="btn-action" onclick="proposeResult('${id}')">ZGŁOŚ WYNIK</button>
-                         </div>`;
+                         </div>
+                         <button class="btn-action" onclick="proposeResult('${id}')">ZGŁOŚ WYNIK</button>`;
             }
             container.innerHTML += html + `</div>`;
         });
