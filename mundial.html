@@ -12,37 +12,57 @@
         .nav { margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; position: relative; z-index: 10; }
         .btn-back { background: rgba(0,0,0,0.5); border: 1px solid var(--border); padding: 10px 20px; color: #fff; text-decoration: none; border-radius: 10px; font-weight: bold; backdrop-filter: blur(5px); }
         
-        h1 { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 28px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(212,175,55,0.4); position: relative; z-index: 10; }
-        .section-title { color: var(--cyan); border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin: 50px 0 20px; text-transform: uppercase; font-size: 22px; position: relative; z-index: 10; text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
+        h1 { text-align: center; color: var(--gold); letter-spacing: 4px; font-size: 28px; margin-bottom: 20px; text-shadow: 0 0 20px rgba(212,175,55,0.4); position: relative; z-index: 10; }
+        .section-title { color: var(--cyan); border-bottom: 2px solid var(--gold); padding-bottom: 10px; margin: 50px auto 20px; text-transform: uppercase; font-size: 22px; position: relative; z-index: 10; text-shadow: 0 0 10px rgba(0, 212, 255, 0.3); text-align: center; max-width: 800px; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; position: relative; z-index: 10; }
-        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
+        /* Grid i Kafelki - Wyśrodkowane */
+        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; position: relative; z-index: 10; max-width: 1400px; margin: 0 auto; }
+        .card { background: var(--glass); border: 1px solid var(--border); border-radius: 15px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); backdrop-filter: blur(10px); flex: 1 1 320px; max-width: 400px; }
         .title { color: var(--gold); font-size: 1.2rem; font-weight: 900; border-bottom: 1px solid #333; padding-bottom: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
         
         /* Tabele */
-        .standings { width: 100%; border-collapse: collapse; margin-bottom: 15px; font-size: 0.8rem; text-align: center; }
+        .standings { width: 100%; border-collapse: collapse; margin-bottom: 5px; font-size: 0.8rem; text-align: center; }
         .standings th { color: #888; padding-bottom: 5px; border-bottom: 1px solid #333; }
         .standings td { padding: 5px 0; }
         .standings tr:nth-child(1) td, .standings tr:nth-child(2) td { color: var(--success); font-weight: bold; }
 
+        /* Zwijane sekcje (Details) */
+        details { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05); }
+        summary { color: var(--cyan); cursor: pointer; font-weight: bold; outline: none; text-align: center; text-transform: uppercase; font-size: 0.9rem; list-style: none; }
+        summary::-webkit-details-marker { display: none; }
+        
         /* Mecze */
-        .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-bottom: 12px; text-align: center; border: 1px solid rgba(255,255,255,0.05); }
+        .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
         .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
         
-        /* Sekcja Typowania (Gracz) */
-        .bet-box { display: flex; justify-content: center; align-items: center; gap: 10px; margin-bottom: 10px; }
+        /* Kontrolki Typowania */
+        .bet-box { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
         .bet-input { width: 40px; height: 35px; text-align: center; background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 5px; font-size: 16px; font-weight: bold; }
+        .pen-input { width: 30px; height: 25px; font-size: 12px; border-color: var(--gold); color: var(--gold); }
         .btn-bet { background: linear-gradient(135deg, #00d4ff, #0096c7); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; width: 100%; text-transform: uppercase; }
         
-        /* Sekcja Admina (Zwijana) */
-        details { background: rgba(255,255,255,0.02); border-radius: 8px; padding: 5px; margin-top: 15px; font-size: 0.8rem; border: 1px dashed #333; }
-        summary { color: var(--gold); cursor: pointer; font-weight: bold; outline: none; margin-bottom: 10px; }
+        /* Panel Admina */
+        .admin-panel { background: rgba(255,0,0,0.05); border: 1px dashed var(--error); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
         .admin-input { width: 35px; height: 30px; text-align: center; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 4px; }
-        .btn-admin { background: var(--gold); color: #000; border: none; padding: 5px 10px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-left: 5px; }
+        .btn-admin { background: var(--gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; }
+        .btn-confirm { background: var(--success); }
 
         .locked-text { color: var(--error); font-size: 12px; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
         .real-score { font-size: 20px; font-weight: 900; color: var(--gold); margin: 10px 0; letter-spacing: 2px; }
+
+        /* Tabela Rankingu */
+        .ranking-table { width: 100%; max-width: 600px; margin: 0 auto; background: var(--glass); border-radius: 15px; border: 1px solid var(--border); border-collapse: collapse; overflow: hidden; position: relative; z-index: 10; }
+        .ranking-table th { background: rgba(0,0,0,0.5); color: var(--gold); padding: 15px; text-align: center; }
+        .ranking-table td { padding: 15px; text-align: center; border-top: 1px solid #333; font-weight: bold; }
+
+        /* Drabinka Pucharowa (Tree) */
+        .bracket-container { overflow-x: auto; padding: 20px 0; display: flex; justify-content: flex-start; align-items: center; position: relative; z-index: 10; }
+        .bracket { display: flex; gap: 40px; }
+        .round { display: flex; flex-direction: column; justify-content: space-around; gap: 20px; }
+        .bracket-match { background: var(--glass); border: 1px solid var(--border); padding: 10px; border-radius: 8px; width: 180px; text-align: center; position: relative; font-size: 0.8rem; }
+        .bracket-match::after { content: ''; position: absolute; right: -40px; top: 50%; width: 40px; height: 2px; background: var(--border); }
+        .round:last-child .bracket-match::after { display: none; }
     </style>
 </head>
 <body>
@@ -50,11 +70,27 @@
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
     <h1>⚽ MUNDIAL 2026</h1>
 
+    <div class="section-title">🏆 RANKING TYPERÓW</div>
+    <table class="ranking-table" id="rankingTable">
+        <tr><th>Gracz</th><th>Dokładne (3p)</th><th>Trafione (1p)</th><th>PUNKTY</th></tr>
+    </table>
+
     <div class="section-title">FAZA GRUPOWA</div>
     <div class="grid" id="groupsContainer"></div>
 
     <div class="section-title">FAZA PUCHAROWA</div>
-    <div class="grid" id="knockoutContainer"></div>
+    <div class="grid">
+        <details style="width: 100%; max-width: 800px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);">
+            <summary style="font-size: 1.2rem; padding: 10px;">ROZWIŃ MECZE PUCHAROWE</summary>
+            <div class="grid" id="knockoutContainer" style="margin-top: 20px;"></div>
+        </details>
+    </div>
+
+    <div class="section-title">🌳 DRZEWKO TURNIEJOWE</div>
+    <div class="bracket-container">
+        <div class="bracket" id="bracketTree">
+            </div>
+    </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -63,26 +99,24 @@
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser');
 
-    // --- GENERATOR TŁA (GALAXY) ---
+    // --- TŁO GALAXY ---
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = [];
     function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
     function drawBg() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(drawBg); }
     window.onresize = initBg; initBg(); drawBg();
 
-    // --- DANE MUNDIALU ---
+    // --- DANE ---
     const GROUPS = {
         "A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"], "B": ["Kanada", "Bośnia", "Katar", "Szwajcaria"],
         "C": ["Brazylia", "Maroko", "Haiti", "Szkocja"], "D": ["USA", "Paragwaj", "Australia", "Turcja"],
         "E": ["Niemcy", "Curaçao", "WKS", "Ekwador"], "F": ["Holandia", "Japonia", "Szwecja", "Tunezja"],
-        "G": ["Belgia", "Egipt", "Iran", "N. Zelandia"], "H": ["Hiszpania", "Cabo Verde", "Arabia", "Urugwaj"],
+        "G": ["Belgia", "Egipt", "Iran", "N. Zelandia"], "H": ["Hiszpania", "Cabo", "Arabia", "Urugwaj"],
         "I": ["Francja", "Senegal", "Irak", "Norwegia"], "J": ["Argentyna", "Algieria", "Austria", "Jordania"],
-        "K": ["Portugalia", "DR Konga", "Uzbekistan", "Kolumbia"], "L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
+        "K": ["Portugalia", "Kongo", "Uzbekistan", "Kolumbia"], "L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
     };
 
-    // GENERATOR 72 MECZÓW GRUPOWYCH
-    const MATCHES = [];
-    let mId = 1;
+    const MATCHES = []; let mId = 1;
     const gDates = ["2026-06-11T21:00", "2026-06-12T18:00", "2026-06-16T21:00", "2026-06-17T18:00", "2026-06-21T21:00", "2026-06-21T21:00"];
     Object.entries(GROUPS).forEach(([g, t]) => {
         MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[1], date: gDates[0] });
@@ -93,79 +127,94 @@
         MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[1], t2: t[2], date: gDates[5] });
     });
 
-    // DRABINKA PUCHAROWA (Daty z Twojego ekranu Wiki)
     const KNOCKOUTS = [
-        // 1/16 Finału
         { id: "R32_1", stage: "1/16 Finału", ref1: "1A", ref2: "3CDEFHI", date: "2026-06-28T18:00" },
-        { id: "R32_2", stage: "1/16 Finału", ref1: "1B", ref2: "3EFGIJ", date: "2026-06-28T21:00" },
-        { id: "R32_3", stage: "1/16 Finału", ref1: "1C", ref2: "3ABDEF", date: "2026-06-29T18:00" },
-        { id: "R32_4", stage: "1/16 Finału", ref1: "1D", ref2: "3BEFIJ", date: "2026-06-29T21:00" },
-        { id: "R32_5", stage: "1/16 Finału", ref1: "1E", ref2: "3ABCDF", date: "2026-06-30T18:00" },
-        { id: "R32_6", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T21:00" },
-        { id: "R32_7", stage: "1/16 Finału", ref1: "1G", ref2: "3AEHIJ", date: "2026-07-01T18:00" },
-        { id: "R32_8", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-01T21:00" },
-        { id: "R32_9", stage: "1/16 Finału", ref1: "1I", ref2: "3CDFGH", date: "2026-07-02T18:00" },
-        { id: "R32_10", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T21:00" },
-        { id: "R32_11", stage: "1/16 Finału", ref1: "1K", ref2: "3DEIJL", date: "2026-07-03T18:00" },
-        { id: "R32_12", stage: "1/16 Finału", ref1: "1L", ref2: "3EHIJK", date: "2026-07-03T21:00" },
-        { id: "R32_13", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T15:00" },
-        { id: "R32_14", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T15:00" },
-        { id: "R32_15", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T15:00" },
-        { id: "R32_16", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T15:00" },
-        // 1/8 Finału
         { id: "R16_1", stage: "1/8 Finału", ref1: "W_R32_1", ref2: "W_R32_2", date: "2026-07-04T18:00" },
-        { id: "R16_2", stage: "1/8 Finału", ref1: "W_R32_3", ref2: "W_R32_4", date: "2026-07-04T21:00" },
-        { id: "R16_3", stage: "1/8 Finału", ref1: "W_R32_5", ref2: "W_R32_6", date: "2026-07-05T18:00" },
-        { id: "R16_4", stage: "1/8 Finału", ref1: "W_R32_7", ref2: "W_R32_8", date: "2026-07-05T21:00" },
-        { id: "R16_5", stage: "1/8 Finału", ref1: "W_R32_9", ref2: "W_R32_10", date: "2026-07-06T18:00" },
-        { id: "R16_6", stage: "1/8 Finału", ref1: "W_R32_11", ref2: "W_R32_12", date: "2026-07-06T21:00" },
-        { id: "R16_7", stage: "1/8 Finału", ref1: "W_R32_13", ref2: "W_R32_14", date: "2026-07-07T18:00" },
-        { id: "R16_8", stage: "1/8 Finału", ref1: "W_R32_15", ref2: "W_R32_16", date: "2026-07-07T21:00" },
-        // Ćwierćfinały
         { id: "QF_1", stage: "Ćwierćfinał", ref1: "W_R16_1", ref2: "W_R16_2", date: "2026-07-09T18:00" },
-        { id: "QF_2", stage: "Ćwierćfinał", ref1: "W_R16_3", ref2: "W_R16_4", date: "2026-07-10T18:00" },
-        { id: "QF_3", stage: "Ćwierćfinał", ref1: "W_R16_5", ref2: "W_R16_6", date: "2026-07-11T18:00" },
-        { id: "QF_4", stage: "Ćwierćfinał", ref1: "W_R16_7", ref2: "W_R16_8", date: "2026-07-11T21:00" },
-        // Półfinały
         { id: "SF_1", stage: "Półfinał", ref1: "W_QF_1", ref2: "W_QF_2", date: "2026-07-14T20:00" },
-        { id: "SF_2", stage: "Półfinał", ref1: "W_QF_3", ref2: "W_QF_4", date: "2026-07-15T20:00" },
-        // Mecz o 3
-        { id: "TP_1", stage: "Mecz o 3. miejsce", ref1: "L_SF_1", ref2: "L_SF_2", date: "2026-07-18T20:00" },
-        // Finał
         { id: "F_1", stage: "FINAŁ", ref1: "W_SF_1", ref2: "W_SF_2", date: "2026-07-19T20:00" }
     ];
 
-    // --- FUNKCJE BAZY DANYCH ---
-    // Gracz zapisuje SWÓJ typ (zapisuje się jako pole z jego nickiem w dokumencie meczu)
-    window.saveBet = async (matchId) => {
-        const s1 = document.getElementById(`b1_${matchId}`).value;
-        const s2 = document.getElementById(`b2_${matchId}`).value;
-        if(s1 === "" || s2 === "") return alert("Wpisz oba gole, żeby zapisać typ!");
+    // --- LOGIKA BAZY ---
+    window.saveBet = async (id, isKnockout) => {
+        const s1 = document.getElementById(`b1_${id}`).value;
+        const s2 = document.getElementById(`b2_${id}`).value;
+        let p1 = null, p2 = null;
+        if(isKnockout) {
+            p1 = document.getElementById(`bp1_${id}`).value;
+            p2 = document.getElementById(`bp2_${id}`).value;
+        }
+        if(s1 === "" || s2 === "") return alert("Wpisz oba gole!");
         
-        const ref = doc(db, "mundial_matches", matchId);
-        await setDoc(ref, { bets: { [currentUser]: { s1: parseInt(s1), s2: parseInt(s2) } } }, { merge: true });
+        await setDoc(doc(db, "mundial_matches", id), { 
+            bets: { [currentUser]: { s1: parseInt(s1), s2: parseInt(s2), p1: p1 ? parseInt(p1) : null, p2: p2 ? parseInt(p2) : null } } 
+        }, { merge: true });
         alert("Zapisano Twój typ!");
     };
 
-    // Admin/Użytkownik wprowadza PRAWDZIWY wynik (żeby grupy się zaktualizowały)
-    window.setRealScore = async (matchId) => {
-        const s1 = document.getElementById(`a1_${matchId}`).value;
-        const s2 = document.getElementById(`a2_${matchId}`).value;
+    // PROPOZYCJA WYNIKU PRZEZ ADMINA (Krok 1)
+    window.proposeRealScore = async (id, isKnockout) => {
+        const s1 = document.getElementById(`a1_${id}`).value;
+        const s2 = document.getElementById(`a2_${id}`).value;
+        let p1 = null, p2 = null;
+        if(isKnockout) {
+            p1 = document.getElementById(`ap1_${id}`).value;
+            p2 = document.getElementById(`ap2_${id}`).value;
+        }
         if(s1 === "" || s2 === "") return alert("Podaj rzeczywisty wynik!");
         
-        await setDoc(doc(db, "mundial_matches", matchId), {
-            status: "finished", realScore1: parseInt(s1), realScore2: parseInt(s2)
+        await setDoc(doc(db, "mundial_matches", id), {
+            status: "pending_real", 
+            tempReal1: parseInt(s1), tempReal2: parseInt(s2),
+            tempPen1: p1 ? parseInt(p1) : null, tempPen2: p2 ? parseInt(p2) : null,
+            realProposer: currentUser
         }, { merge: true });
     };
 
-    // --- SILNIK ---
+    // POTWIERDZENIE WYNIKU PRZEZ 2. ADMINA (Krok 2)
+    window.confirmRealScore = async (id) => {
+        const ref = doc(db, "mundial_matches", id);
+        const data = (await getDoc(ref)).data();
+        if(data.realProposer === currentUser) return alert("Musisz poczekać, aż inny gracz potwierdzi ten wynik!");
+        
+        await updateDoc(ref, {
+            status: "finished",
+            realScore1: data.tempReal1, realScore2: data.tempReal2,
+            realPen1: data.tempPen1, realPen2: data.tempPen2,
+            realVerifier: currentUser
+        });
+    };
+
+    // --- SILNIK GŁÓWNY ---
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
+        const dbData = {};
+        const userPoints = {};
+        snap.forEach(d => {
+            const m = d.data();
+            dbData[d.id] = m;
+            
+            // SYSTEM RANKINGU
+            if(m.status === 'finished' && m.bets) {
+                Object.keys(m.bets).forEach(u => {
+                    if(!userPoints[u]) userPoints[u] = { pts: 0, exact: 0, correct: 0 };
+                    const b = m.bets[u];
+                    const r1 = m.realScore1, r2 = m.realScore2;
+                    if(r1 === b.s1 && r2 === b.s2) { userPoints[u].pts += 3; userPoints[u].exact++; }
+                    else if((r1>r2 && b.s1>b.s2) || (r1<r2 && b.s1<b.s2) || (r1===r2 && b.s1===b.s2)) { userPoints[u].pts += 1; userPoints[u].correct++; }
+                });
+            }
+        });
+
+        // RENDER RANKINGU
+        const rt = document.getElementById('rankingTable');
+        rt.innerHTML = `<tr><th>Gracz</th><th>Dokładne (3p)</th><th>Trafione (1p)</th><th>PUNKTY</th></tr>`;
+        Object.entries(userPoints).sort((a,b) => b[1].pts - a[1].pts).forEach(([user, data]) => {
+            rt.innerHTML += `<tr><td>${user}</td><td>${data.exact}</td><td>${data.correct}</td><td style="color:var(--cyan); font-size:1.2rem;">${data.pts}</td></tr>`;
+        });
+
         const gCont = document.getElementById('groupsContainer');
         const kCont = document.getElementById('knockoutContainer');
         gCont.innerHTML = ""; kCont.innerHTML = "";
-        
-        const dbData = {};
-        snap.forEach(d => dbData[d.id] = d.data());
 
         const standings = {};
         const groupLockStatus = {};
@@ -182,20 +231,14 @@
                     fMatches++;
                     const s1 = dbM.realScore1, s2 = dbM.realScore2;
                     const t1 = standings[g][m.t1], t2 = standings[g][m.t2];
-                    
-                    t1.played++; t2.played++;
-                    t1.gs += s1; t2.gs += s2;
-                    t1.gd += (s1 - s2); t2.gd += (s2 - s1);
-                    
-                    if (s1 > s2) t1.pts += 3;
-                    else if (s1 < s2) t2.pts += 3;
-                    else { t1.pts += 1; t2.pts += 1; }
+                    t1.played++; t2.played++; t1.gs += s1; t2.gs += s2; t1.gd += (s1 - s2); t2.gd += (s2 - s1);
+                    if (s1 > s2) t1.pts += 3; else if (s1 < s2) t2.pts += 3; else { t1.pts += 1; t2.pts += 1; }
                 }
             });
             groupLockStatus[g] = fMatches >= 6;
         });
 
-        // RENDER FAZY GRUPOWEJ
+        // RENDER GRUP
         Object.keys(GROUPS).forEach(g => {
             const sortedTeams = Object.keys(standings[g]).sort((a,b) => {
                 const tA = standings[g][a], tB = standings[g][b];
@@ -204,16 +247,15 @@
                 return tB.gs - tA.gs;
             });
 
-            const isLocked = groupLockStatus[g];
-            let html = `<div class="card"><div class="title">Grupa ${g} ${isLocked ? '<span style="color:var(--error); font-size:12px;">(ZAMKNIĘTA)</span>' : ''}</div>
+            let html = `<div class="card"><div class="title">Grupa ${g}</div>
                 <table class="standings"><tr><th>Zespół</th><th>M</th><th>B</th><th>PKT</th></tr>`;
             sortedTeams.forEach((t, i) => html += `<tr><td>${i+1}. ${t}</td><td>${standings[g][t].played}</td><td>${standings[g][t].gd}</td><td><b>${standings[g][t].pts}</b></td></tr>`);
-            html += `</table><hr style="border:1px solid #333;">`;
+            html += `</table><details><summary>Pokaż mecze grupy</summary>`;
 
             MATCHES.filter(m => m.group === g).forEach(m => {
                 const dbM = dbData[m.id] || {};
-                const matchLocked = new Date() > new Date(m.date) || isLocked;
                 const myBet = dbM.bets?.[currentUser];
+                const matchLocked = new Date() > new Date(m.date) || groupLockStatus[g];
 
                 html += `<div class="match-row">
                     <div class="match-date">${m.date.replace('T', ' ')}</div>
@@ -223,97 +265,87 @@
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
                 } else {
-                    // Pole typowania dla Gracza
                     html += `<div class="bet-box">
-                                <input type="number" id="b1_${m.id}" class="bet-input" placeholder="-" value="${myBet ? myBet.s1 : ''}" ${matchLocked ? 'disabled' : ''}> : 
-                                <input type="number" id="b2_${m.id}" class="bet-input" placeholder="-" value="${myBet ? myBet.s2 : ''}" ${matchLocked ? 'disabled' : ''}>
+                                <input type="number" id="b1_${m.id}" class="bet-input" value="${myBet ? myBet.s1 : ''}" ${matchLocked ? 'disabled' : ''}> : 
+                                <input type="number" id="b2_${m.id}" class="bet-input" value="${myBet ? myBet.s2 : ''}" ${matchLocked ? 'disabled' : ''}>
                              </div>`;
                     if(matchLocked) html += `<div class="locked-text">ZAKŁADY ZAMKNIĘTE</div>`;
-                    else html += `<button class="btn-act" onclick="saveBet('${m.id}')">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
+                    else html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
                 }
                 
-                // Panel Admina (Wprowadzanie prawdziwego wyniku) - Zwijany!
-                if(!dbM.status || dbM.status !== "finished") {
-                    html += `<details><summary>Admin: Podaj wynik</summary>
+                // Admin Dwustopniowy
+                if(dbM.status === 'pending_real') {
+                    if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potwierdzenie innej osoby: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
+                    else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${m.id}')">POTWIERDŹ WYNIK (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
+                } else if(dbM.status !== "finished") {
+                    html += `<div class="admin-panel">Admin: Podaj prawdziwy wynik<br>
                              <input type="number" id="a1_${m.id}" class="admin-input"> : <input type="number" id="a2_${m.id}" class="admin-input">
-                             <button class="btn-admin" onclick="setRealScore('${m.id}')">ZATWIERDŹ</button></details>`;
+                             <button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZATWIERDŹ</button></div>`;
                 }
                 html += `</div>`;
             });
-            html += `</div>`;
+            html += `</details></div>`;
             gCont.innerHTML += html;
         });
 
-        // RENDER FAZY PUCHAROWEJ (Magia auto-uzupełniania)
-        const resolveKnockoutTeam = (ref) => {
-            // Rozpoznawanie zwycięzców grup (np. "1A")
-            if (ref.length === 2 && ['1','2'].includes(ref[0])) {
-                const gName = ref[1];
-                if (groupLockStatus[gName]) {
-                    const sorted = Object.keys(standings[gName]).sort((a,b) => {
-                        const tA = standings[gName][a], tB = standings[gName][b];
-                        if (tA.pts !== tB.pts) return tB.pts - tA.pts;
-                        if (tA.gd !== tB.gd) return tB.gd - tA.gd;
-                        return tB.gs - tA.gs;
-                    });
-                    return sorted[parseInt(ref[0]) - 1]; // Prawdziwa nazwa!
-                }
-                return `${ref[0]}. msce Gr. ${gName}`;
-            }
-            // Rozpoznawanie zwycięzców poprzednich faz pucharowych (np. "W_R32_1")
-            if (ref.startsWith('W_') || ref.startsWith('L_')) {
-                const isWinner = ref.startsWith('W_');
-                const matchId = ref.substring(2);
-                const prevM = dbData[matchId];
-                if(prevM && prevM.status === "finished") {
-                    // Trzeba ustalić nazwy drużyn z poprzedniego meczu (rekursywnie)
-                    const prevDef = KNOCKOUTS.find(k => k.id === matchId);
-                    const pt1 = resolveKnockoutTeam(prevDef.ref1);
-                    const pt2 = resolveKnockoutTeam(prevDef.ref2);
-                    
-                    if(prevM.realScore1 > prevM.realScore2) return isWinner ? pt1 : pt2;
-                    if(prevM.realScore2 > prevM.realScore1) return isWinner ? pt2 : pt1;
-                    return `Zwycięzca ${matchId} (Karny?)`; // Proste zabezpieczenie przy remisach
-                }
-                return isWinner ? `Zwyc. meczu ${matchId}` : `Przegr. meczu ${matchId}`;
-            }
-            return `3. msce z ${ref.substring(1)}`; // Fallback dla miejsc z 3 pozycji
-        };
-
+        // RENDER PUCHARÓW
         KNOCKOUTS.forEach(k => {
             const dbM = dbData[k.id] || {};
             const matchLocked = new Date() > new Date(k.date);
             const myBet = dbM.bets?.[currentUser];
 
-            const t1 = resolveKnockoutTeam(k.ref1);
-            const t2 = resolveKnockoutTeam(k.ref2);
-
             let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div>
                 <div class="match-row" style="margin:0;">
                     <div class="match-date">${k.date.replace('T', ' ')}</div>
-                    <div class="match-teams">${t1}<br><span style="font-size:12px; color:#666; font-weight:normal;">vs</span><br>${t2}</div>`;
+                    <div class="match-teams">${k.ref1} vs ${k.ref2}</div>`;
 
             if (dbM.status === "finished") {
-                html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
-                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
+                html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
+                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
             } else {
                 html += `<div class="bet-box">
                             <input type="number" id="b1_${k.id}" class="bet-input" value="${myBet ? myBet.s1 : ''}" ${matchLocked ? 'disabled' : ''}> : 
                             <input type="number" id="b2_${k.id}" class="bet-input" value="${myBet ? myBet.s2 : ''}" ${matchLocked ? 'disabled' : ''}>
+                            <span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" placeholder="-" value="${myBet?.p1 || ''}" ${matchLocked ? 'disabled' : ''}> - 
+                            <input type="number" id="bp2_${k.id}" class="bet-input pen-input" placeholder="-" value="${myBet?.p2 || ''}" ${matchLocked ? 'disabled' : ''}> )</span>
                          </div>`;
-                if (matchLocked || t1.includes("msce") || t1.includes("Zwyc.")) html += `<div class="locked-text">OCZEKIWANIE NA DRUŻYNY / ZABLOKOWANE</div>`;
-                else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}')">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
+                if (matchLocked) html += `<div class="locked-text">ZABLOKOWANE</div>`;
+                else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true)">ZAPISZ TYP</button>`;
             }
             
-            // Panel Admina
-            if(!dbM.status || dbM.status !== "finished") {
-                html += `<details><summary>Admin: Podaj wynik</summary>
-                         <input type="number" id="a1_${k.id}" class="admin-input"> : <input type="number" id="a2_${k.id}" class="admin-input">
-                         <button class="btn-admin" onclick="setRealScore('${k.id}')">ZATWIERDŹ</button></details>`;
+            if(dbM.status === 'pending_real') {
+                if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
+                else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${k.id}')">POTWIERDŹ (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
+            } else if(dbM.status !== "finished") {
+                html += `<div class="admin-panel">Admin: Rzeczywisty wynik<br>
+                         <input type="number" id="a1_${k.id}" class="admin-input"> : <input type="number" id="a2_${k.id}" class="admin-input"><br>
+                         Karne: <input type="number" id="ap1_${k.id}" class="admin-input" style="width:30px; height:20px;"> : <input type="number" id="ap2_${k.id}" class="admin-input" style="width:30px; height:20px;">
+                         <button class="btn-admin" onclick="proposeRealScore('${k.id}', true)">ZATWIERDŹ</button></div>`;
             }
             html += `</div></div>`;
             kCont.innerHTML += html;
         });
+
+        // RENDER DRZEWKA (Uproszczone graficzne drzewko poziome)
+        const tree = document.getElementById('bracketTree');
+        tree.innerHTML = `
+            <div class="round">
+                <div class="bracket-match">1/16: 1A vs 3...</div>
+                <div class="bracket-match">1/16: 2B vs 2C...</div>
+                <div class="bracket-match">1/16: 1D vs 3...</div>
+                <div class="bracket-match">1/16: 2E vs 2F...</div>
+            </div>
+            <div class="round">
+                <div class="bracket-match" style="border-color: var(--cyan);">1/8: W1 vs W2</div>
+                <div class="bracket-match" style="border-color: var(--cyan);">1/8: W3 vs W4</div>
+            </div>
+            <div class="round">
+                <div class="bracket-match" style="border-color: var(--gold);">1/4: Finału</div>
+            </div>
+            <div class="round">
+                <div class="bracket-match" style="border-color: #ff0055; font-size:1.1rem; padding:15px;">PÓŁFINAŁ</div>
+            </div>
+        `;
     });
 </script>
 </body>
