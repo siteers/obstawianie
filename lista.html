@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
@@ -370,6 +371,20 @@ window.clearSlot = async (id) => {
     }, { merge: true });
 };
 
+// NOWOŚĆ: Funkcja do automatycznego czyszczenia w tle bez okienka confirm()
+async function autoClearSlot(id) {
+    const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
+    const snap = await getDocs(q);
+    for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
+    
+    await setDoc(appStateRef, { 
+        [`isLocked${id}`]: false, 
+        [`target${id}`]: "Brak",
+        [`stop${id}`]: null,        
+        [`winners${id}`]: null      
+    }, { merge: true });
+}
+
 onSnapshot(appStateRef, (snap) => { 
     const data = snap.data(); if(!data) return; 
     
@@ -440,7 +455,7 @@ window.toggleLock = async (id) => {
         const pass = prompt("CZAS BLOKADY ADMINISTRACYJNEJ.\nPodaj hasło aby odblokować:");
         if (pass !== "0000") return alert("Błędne hasło!");
         
-        // POPRAWNE HASŁO -> ZEZWALAJ NA ODBLOKOWANIE I IGNORUJ AUTO-BLOCK W TEJ SESJI
+        // POPRAWNE HASŁO -> ZEZWALAJ NA ODBLOKOWANIE I IGNORUJ AUTO-BLOCK W TEY SESJI
         ignoreAutoLock = true; 
     }
 
@@ -473,7 +488,13 @@ setInterval(() => {
         if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
-    // -----------------------------------------------------------
+
+    // --- AUTOMATYCZNE CZYSZCZENIE LISTY O OBRANEJ GODZINIE (16:00) ---
+    if (now.getHours() === 16 && now.getMinutes() === 0 && now.getSeconds() < 2) {
+        autoClearSlot(1);
+        autoClearSlot(2);
+    }
+    // -----------------------------------------------------------------
 
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
