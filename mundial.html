@@ -5,40 +5,51 @@
     <title>Cyber-Bet | Mundial 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); --error: #ff4d4d; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .match-card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); padding: 15px; width: 100%; max-width: 400px; margin-bottom: 10px; text-align: center; }
-        .bet-input { width: 45px; height: 45px; text-align: center; font-size: 18px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 8px; }
-        .btn-action { background: var(--gold); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; color: #000; text-transform: uppercase; }
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; min-height: 100vh; }
+        .nav { margin-bottom: 30px; text-align: center; }
+        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #aaa; text-decoration: none; border-radius: 10px; }
+        
+        /* GRID DLA GRUP */
+        .groups-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; justify-items: center; }
+        .group-card { background: var(--glass); border: 1px solid var(--border); border-radius: 20px; padding: 15px; width: 100%; max-width: 350px; }
+        .group-title { color: var(--gold); font-size: 1.2rem; margin-bottom: 15px; text-transform: uppercase; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        
+        .match-item { background: rgba(0,0,0,0.3); padding: 10px; border-radius: 10px; margin-bottom: 10px; font-size: 0.9rem; }
+        .bet-input { width: 40px; height: 35px; text-align: center; font-size: 16px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 5px; }
+        .btn-action { background: var(--gold); border: none; padding: 5px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; margin-top: 5px; }
         .btn-confirm { background: var(--cyan); }
-        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #aaa; text-decoration: none; border-radius: 10px; margin-bottom: 20px; }
-        .group-header { color: var(--gold); font-size: 18px; margin: 30px 0 10px; text-transform: uppercase; border-bottom: 2px solid var(--gold); padding-bottom: 5px; width: 100%; max-width: 400px; }
-        .group-locked { color: #888; font-size: 12px; font-style: italic; }
     </style>
 </head>
 <body>
-    <a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a>
-    <h1>⚽ MUNDIAL 2026</h1>
-    <div id="matchesContainer"></div>
+    <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
+    <h1>⚽ MUNDIAL 2026: TERMINARZ</h1>
+    <div class="groups-grid" id="groupsContainer"></div>
 
 <script type="module">
-    // --- HARMONOGRAM (Wpisz tutaj mecze z Wikipedii) ---
-    const MUNDIAL_DATA = [
-        { group: "Grupa A", id: "m1", team1: "Kanada", team2: "Francja", date: "2026-06-11T21:00:00" },
-        { group: "Grupa A", id: "m2", team1: "Meksyk", team2: "Polska", date: "2026-06-12T18:00:00" },
-        { group: "Grupa A", id: "m3", team1: "Kanada", team2: "Meksyk", date: "2026-06-13T18:00:00" },
-        { group: "Grupa A", id: "m4", team1: "Francja", team2: "Polska", date: "2026-06-14T18:00:00" },
-        { group: "Grupa A", id: "m5", team1: "Polska", team2: "Kanada", date: "2026-06-15T18:00:00" },
-        { group: "Grupa A", id: "m6", team1: "Francja", team2: "Meksyk", date: "2026-06-16T18:00:00" }
-        // Dodaj kolejne grupy analogicznie (po 6 meczów każda)
-    ];
-
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+    // TWOJA KONFIGURACJA
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
     const db = getFirestore(initializeApp(firebaseConfig));
     const currentUser = localStorage.getItem('cyberUser');
+
+    // PEŁNA STRUKTURA GRUP (Hardcoded dla stabilności)
+    const GROUPS = {
+        "Grupa A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"],
+        "Grupa B": ["Kanada", "Bośnia i Hercegowina", "Katar", "Szwajcaria"],
+        "Grupa C": ["Brazylia", "Maroko", "Haiti", "Szkocja"],
+        "Grupa D": ["USA", "Paragwaj", "Australia", "Turcja"],
+        "Grupa E": ["Niemcy", "Curacao", "Wybrzeże Kości Słoniowej", "Ekwador"],
+        "Grupa F": ["Holandia", "Japonia", "Szwecja", "Tunezja"],
+        "Grupa G": ["Belgia", "Egipt", "Iran", "Nowa Zelandia"],
+        "Grupa H": ["Hiszpania", "Rep. Zielonego Przylądka", "Arabia Saudyjska", "Urugwaj"],
+        "Grupa I": ["Francja", "Senegal", "Irak", "Norwegia"],
+        "Grupa J": ["Argentyna", "Algieria", "Austria", "Jordania"],
+        "Grupa K": ["Portugalia", "DR Konga", "Uzbekistan", "Kolumbia"],
+        "Grupa L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
+    };
 
     window.proposeResult = async (id) => {
         const s1 = document.getElementById(`s1_${id}`).value;
@@ -47,57 +58,38 @@
         await updateDoc(doc(db, "mundial_matches", id), {
             status: "pending", proposedScore1: parseInt(s1), proposedScore2: parseInt(s2), proposer: currentUser
         });
-        alert("Zgłoszono wynik!");
     };
 
     window.confirmResult = async (id) => {
         const docRef = doc(db, "mundial_matches", id);
         const data = (await getDoc(docRef)).data();
-        if(data.proposer === currentUser) return alert("Nie możesz sam zatwierdzić!");
+        if(data.proposer === currentUser) return alert("Nie możesz zatwierdzić własnego wyniku!");
         await updateDoc(docRef, { status: "finished", realScore1: data.proposedScore1, realScore2: data.proposedScore2, verifier: currentUser });
     };
 
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
-        const container = document.getElementById('matchesContainer');
+        const container = document.getElementById('groupsContainer');
         container.innerHTML = "";
         
-        // Obliczamy status grup (ile meczów rozegranych)
-        const groupStats = {};
-        MUNDIAL_DATA.forEach(m => {
-            if(!groupStats[m.group]) groupStats[m.group] = { total: 0, finished: 0 };
-            groupStats[m.group].total++;
-            const dbMatch = snap.docs.find(d => d.id === m.id)?.data();
-            if(dbMatch && dbMatch.status === "finished") groupStats[m.group].finished++;
-        });
+        Object.entries(GROUPS).forEach(([groupName, teams]) => {
+            let groupHtml = `<div class="group-card"><div class="group-title">${groupName}</div>`;
+            groupHtml += `<small style="color:#666">${teams.join(", ")}</small><hr style="border:0; border-top:1px solid #333; margin:10px 0;">`;
 
-        let lastGroup = "";
-        MUNDIAL_DATA.forEach(m => {
-            if(m.group !== lastGroup) {
-                const isGroupLocked = groupStats[m.group].finished >= 6;
-                container.innerHTML += `<div class="group-header">${m.group} ${isGroupLocked ? '<span class="group-locked">(Grupa Zamknięta)</span>' : ''}</div>`;
-                lastGroup = m.group;
-            }
-
-            const dbMatch = snap.docs.find(d => d.id === m.id)?.data() || { status: "upcoming" };
-            const isLocked = new Date() > new Date(m.date) || groupStats[m.group].finished >= 6;
-
-            let html = `<div class="match-card"><h3>${m.team1} vs ${m.team2}</h3>`;
-            
-            if(dbMatch.status === "finished") {
-                html += `<p>Wynik oficjalny: <b>${dbMatch.realScore1}:${dbMatch.realScore2}</b></p>`;
-            } else if(dbMatch.status === "pending") {
-                html += `<p>Weryfikacja: ${dbMatch.proposedScore1}:${dbMatch.proposedScore2}</p>
-                         <button class="btn-action btn-confirm" onclick="confirmResult('${m.id}')">POTWIERDŹ</button>`;
-            } else if(isLocked) {
-                html += `<p style="color:var(--error)">ZAKŁADY ZAMKNIĘTE</p>`;
-            } else {
-                html += `<div class="bet-form">
-                            <input type="number" id="s1_${m.id}" class="bet-input" placeholder="0"> : 
-                            <input type="number" id="s2_${m.id}" class="bet-input" placeholder="0">
-                         </div>
-                         <button class="btn-action" onclick="proposeResult('${m.id}')">ZGŁOŚ TYP</button>`;
-            }
-            container.innerHTML += html + "</div>";
+            // Tutaj filtrujemy mecze dla danej grupy
+            const matches = snap.docs.filter(d => d.data().group === groupName);
+            matches.forEach(d => {
+                const m = d.data();
+                const id = d.id;
+                groupHtml += `<div class="match-item">
+                    <b>${m.team1} vs ${m.team2}</b><br>`;
+                
+                if(m.status === "finished") groupHtml += `Wynik: <b>${m.realScore1}:${m.realScore2}</b>`;
+                else if(m.status === "pending") groupHtml += `<p>Oczekuje: ${m.proposedScore1}:${m.proposedScore2}</p><button class="btn-action btn-confirm" onclick="confirmResult('${id}')">POTWIERDŹ</button>`;
+                else groupHtml += `<input type="number" id="s1_${id}" class="bet-input">:<input type="number" id="s2_${id}" class="bet-input"> <button class="btn-action" onclick="proposeResult('${id}')">ZGŁOŚ</button>`;
+                
+                groupHtml += `</div>`;
+            });
+            container.innerHTML += groupHtml + "</div>";
         });
     });
 </script>
