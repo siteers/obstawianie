@@ -537,10 +537,17 @@
                 else if (isTieWithPrev) tieBtn = `<button class="tie-btn" onclick="startKpn('${p.name}','${prevP.name}')">REMIS</button>`;
 
                 let limitClass = "limit-ok";
-                if (p.votesUsed >= 20) limitClass = "limit-bad";
-                else if (p.votesUsed >= 15) limitClass = "limit-warn";
+                let votesDisplay = `${p.votesUsed} / 20`;
+                
+                if (p.name !== currentUser && currentUser !== "Admin") {
+                    votesDisplay = `<span style="color:#666; font-size: 11px;">🤫 Ukryte</span>`;
+                    limitClass = "";
+                } else {
+                    if (p.votesUsed >= 20) limitClass = "limit-bad";
+                    else if (p.votesUsed >= 15) limitClass = "limit-warn";
+                }
 
-                tbodyMonth.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--cyan); font-weight:bold;">${p.points} <small>(${p.g}🥇)</small></td><td class="${limitClass}">${p.votesUsed} / 20</td><td>${p.pods}</td></tr>`;
+                tbodyMonth.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--cyan); font-weight:bold;">${p.points} <small>(${p.g}🥇)</small></td><td class="${limitClass}">${votesDisplay}</td><td>${p.pods}</td></tr>`;
             });
 
             // 3.5 GENEROWANIE ARCHIWUM MIESIĘCY (NOWOŚĆ)
