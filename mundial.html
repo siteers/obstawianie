@@ -4,86 +4,100 @@
     <meta charset="UTF-8">
     <title>Cyber-Bet | Mundial 2026</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
-    <link rel="manifest" href="./manifest.json">
     <style>
-        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); }
+        :root { --gold: #d4af37; --cyan: #00d4ff; --bg: #020408; --glass: rgba(15, 23, 42, 0.85); --border: rgba(255, 255, 255, 0.1); --error: #ff4d4d; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
-        .match-card { background: var(--glass); border-radius: 20px; border: 1px solid var(--border); padding: 20px; width: 100%; max-width: 400px; margin-bottom: 20px; text-align: center; }
-        .bet-input { width: 50px; height: 50px; text-align: center; font-size: 20px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 10px; }
-        .btn-action { background: var(--gold); border: none; padding: 15px 30px; border-radius: 10px; font-weight: 900; cursor: pointer; margin-top: 15px; color: #000; text-transform: uppercase; }
+        .match-card { background: var(--glass); border-radius: 15px; border: 1px solid var(--border); padding: 15px; width: 100%; max-width: 400px; margin-bottom: 10px; text-align: center; }
+        .bet-input { width: 45px; height: 45px; text-align: center; font-size: 18px; background: #000; color: #fff; border: 1px solid var(--cyan); border-radius: 8px; }
+        .btn-action { background: var(--gold); border: none; padding: 10px 20px; border-radius: 8px; font-weight: 900; cursor: pointer; margin-top: 10px; color: #000; text-transform: uppercase; }
         .btn-confirm { background: var(--cyan); }
-        .bet-form { display: flex; justify-content: center; align-items: center; gap: 15px; margin-top: 15px; }
-        h1 { color: var(--gold); text-transform: uppercase; letter-spacing: 3px; }
-        .btn-back { display: block; width: 100%; max-width: 400px; padding: 15px; margin-bottom: 20px; background: var(--glass); border: 1px solid var(--border); color: #aaa; text-align: center; text-decoration: none; border-radius: 15px; }
+        .btn-back { background: var(--glass); border: 1px solid var(--border); padding: 10px 20px; color: #aaa; text-decoration: none; border-radius: 10px; margin-bottom: 20px; }
+        .group-header { color: var(--gold); font-size: 18px; margin: 30px 0 10px; text-transform: uppercase; border-bottom: 2px solid var(--gold); padding-bottom: 5px; width: 100%; max-width: 400px; }
+        .group-locked { color: #888; font-size: 12px; font-style: italic; }
     </style>
 </head>
 <body>
     <a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a>
     <h1>⚽ MUNDIAL 2026</h1>
-    <div id="matchesContainer" style="width: 100%; max-width: 400px;"></div>
+    <div id="matchesContainer"></div>
 
 <script type="module">
+    // --- HARMONOGRAM (Wpisz tutaj mecze z Wikipedii) ---
+    const MUNDIAL_DATA = [
+        { group: "Grupa A", id: "m1", team1: "Kanada", team2: "Francja", date: "2026-06-11T21:00:00" },
+        { group: "Grupa A", id: "m2", team1: "Meksyk", team2: "Polska", date: "2026-06-12T18:00:00" },
+        { group: "Grupa A", id: "m3", team1: "Kanada", team2: "Meksyk", date: "2026-06-13T18:00:00" },
+        { group: "Grupa A", id: "m4", team1: "Francja", team2: "Polska", date: "2026-06-14T18:00:00" },
+        { group: "Grupa A", id: "m5", team1: "Polska", team2: "Kanada", date: "2026-06-15T18:00:00" },
+        { group: "Grupa A", id: "m6", team1: "Francja", team2: "Meksyk", date: "2026-06-16T18:00:00" }
+        // Dodaj kolejne grupy analogicznie (po 6 meczów każda)
+    ];
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
     import { getFirestore, collection, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-    const app = initializeApp(firebaseConfig); 
-    const db = getFirestore(app);
+    const db = getFirestore(initializeApp(firebaseConfig));
     const currentUser = localStorage.getItem('cyberUser');
 
-    window.proposeResult = async (matchId) => {
-        const s1 = document.getElementById(`s1_${matchId}`).value;
-        const s2 = document.getElementById(`s2_${matchId}`).value;
+    window.proposeResult = async (id) => {
+        const s1 = document.getElementById(`s1_${id}`).value;
+        const s2 = document.getElementById(`s2_${id}`).value;
         if(s1 === "" || s2 === "") return alert("Wpisz wynik!");
-        
-        await updateDoc(doc(db, "mundial_matches", matchId), {
-            status: "pending_verification",
-            proposedScore1: parseInt(s1),
-            proposedScore2: parseInt(s2),
-            proposer: currentUser
+        await updateDoc(doc(db, "mundial_matches", id), {
+            status: "pending", proposedScore1: parseInt(s1), proposedScore2: parseInt(s2), proposer: currentUser
         });
-        alert("Wynik zgłoszony. Czekam na weryfikację...");
+        alert("Zgłoszono wynik!");
     };
 
-    window.confirmResult = async (matchId) => {
-        const matchRef = doc(db, "mundial_matches", matchId);
-        const snap = await getDoc(matchRef);
-        const data = snap.data();
-
-        if (data.proposer === currentUser) return alert("Nie możesz zatwierdzić własnego wyniku!");
-
-        await updateDoc(matchRef, {
-            status: "finished",
-            realScore1: data.proposedScore1,
-            realScore2: data.proposedScore2,
-            verifier: currentUser
-        });
-        alert("Wynik zatwierdzony!");
+    window.confirmResult = async (id) => {
+        const docRef = doc(db, "mundial_matches", id);
+        const data = (await getDoc(docRef)).data();
+        if(data.proposer === currentUser) return alert("Nie możesz sam zatwierdzić!");
+        await updateDoc(docRef, { status: "finished", realScore1: data.proposedScore1, realScore2: data.proposedScore2, verifier: currentUser });
     };
 
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         const container = document.getElementById('matchesContainer');
         container.innerHTML = "";
-        snap.forEach(doc => {
-            const m = doc.data();
-            const id = doc.id;
-            
+        
+        // Obliczamy status grup (ile meczów rozegranych)
+        const groupStats = {};
+        MUNDIAL_DATA.forEach(m => {
+            if(!groupStats[m.group]) groupStats[m.group] = { total: 0, finished: 0 };
+            groupStats[m.group].total++;
+            const dbMatch = snap.docs.find(d => d.id === m.id)?.data();
+            if(dbMatch && dbMatch.status === "finished") groupStats[m.group].finished++;
+        });
+
+        let lastGroup = "";
+        MUNDIAL_DATA.forEach(m => {
+            if(m.group !== lastGroup) {
+                const isGroupLocked = groupStats[m.group].finished >= 6;
+                container.innerHTML += `<div class="group-header">${m.group} ${isGroupLocked ? '<span class="group-locked">(Grupa Zamknięta)</span>' : ''}</div>`;
+                lastGroup = m.group;
+            }
+
+            const dbMatch = snap.docs.find(d => d.id === m.id)?.data() || { status: "upcoming" };
+            const isLocked = new Date() > new Date(m.date) || groupStats[m.group].finished >= 6;
+
             let html = `<div class="match-card"><h3>${m.team1} vs ${m.team2}</h3>`;
             
-            if (m.status === "pending_verification") {
-                html += `<p>Oczekuje na weryfikację (Zgłosił: ${m.proposer})</p>
-                         <p>Wynik: <b>${m.proposedScore1}:${m.proposedScore2}</b></p>
-                         <button class="btn-action btn-confirm" onclick="confirmResult('${id}')">POTWIERDŹ WYNIK</button>`;
-            } else if (m.status === "finished") {
-                html += `<p>Wynik oficjalny: <b>${m.realScore1}:${m.realScore2}</b></p>`;
+            if(dbMatch.status === "finished") {
+                html += `<p>Wynik oficjalny: <b>${dbMatch.realScore1}:${dbMatch.realScore2}</b></p>`;
+            } else if(dbMatch.status === "pending") {
+                html += `<p>Weryfikacja: ${dbMatch.proposedScore1}:${dbMatch.proposedScore2}</p>
+                         <button class="btn-action btn-confirm" onclick="confirmResult('${m.id}')">POTWIERDŹ</button>`;
+            } else if(isLocked) {
+                html += `<p style="color:var(--error)">ZAKŁADY ZAMKNIĘTE</p>`;
             } else {
                 html += `<div class="bet-form">
-                            <input type="number" id="s1_${id}" class="bet-input"> : 
-                            <input type="number" id="s2_${id}" class="bet-input">
+                            <input type="number" id="s1_${m.id}" class="bet-input" placeholder="0"> : 
+                            <input type="number" id="s2_${m.id}" class="bet-input" placeholder="0">
                          </div>
-                         <button class="btn-action" onclick="proposeResult('${id}')">ZGŁOŚ WYNIK</button>`;
+                         <button class="btn-action" onclick="proposeResult('${m.id}')">ZGŁOŚ TYP</button>`;
             }
-            container.innerHTML += html + `</div>`;
+            container.innerHTML += html + "</div>";
         });
     });
 </script>
