@@ -25,19 +25,32 @@
         .standings td { padding: 5px 0; }
         .standings tr:nth-child(1) td, .standings tr:nth-child(2) td { color: var(--success); font-weight: bold; }
 
+        /* Zwijane panele z dynamicznym tekstem */
         details { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05); }
         summary { color: var(--cyan); cursor: pointer; font-weight: bold; outline: none; text-align: center; text-transform: uppercase; font-size: 0.9rem; list-style: none; }
         summary::-webkit-details-marker { display: none; }
         
+        .group-details summary span::before { content: '▼ POKAŻ MECZE GRUPY'; }
+        .group-details[open] summary span::before { content: '▲ ZWIŃ MECZE GRUPY'; }
+        
+        .knockout-details summary span::before { content: '▼ ROZWIŃ MECZE PUCHAROWE'; font-size: 1.2rem; }
+        .knockout-details[open] summary span::before { content: '▲ ZWIŃ MECZE PUCHAROWE'; font-size: 1.2rem; }
+
+        .history-details summary span::before { content: '▼ HISTORIA PRZYZNAWANIA PUNKTÓW'; }
+        .history-details[open] summary span::before { content: '▲ ZWIŃ HISTORIĘ PUNKTÓW'; }
+
+        /* Mecze */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
         .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
         
+        /* Kontrolki Typowania */
         .bet-box { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
         .bet-input { width: 40px; height: 35px; text-align: center; background: #111; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 5px; font-size: 16px; font-weight: bold; }
         .pen-input { width: 30px; height: 25px; font-size: 12px; border-color: var(--gold); color: var(--gold); }
         .btn-bet { background: linear-gradient(135deg, #00d4ff, #0096c7); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; width: 100%; text-transform: uppercase; }
         
+        /* Panel Admina */
         .admin-panel { background: rgba(255,0,0,0.05); border: 1px dashed var(--error); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
         .admin-input { width: 35px; height: 30px; text-align: center; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 4px; }
         .admin-text { width: 40%; height: 25px; text-align: center; background: #111; color: #fff; border: 1px solid #333; border-radius: 4px; margin: 2px; }
@@ -52,8 +65,10 @@
         .ranking-table { width: 100%; background: var(--glass); border-radius: 15px; border: 1px solid var(--border); border-collapse: collapse; overflow: hidden; }
         .ranking-table th { background: rgba(0,0,0,0.5); color: var(--gold); padding: 15px; text-align: center; }
         .ranking-table td { padding: 15px; text-align: center; border-top: 1px solid #333; font-weight: bold; }
-        .history-list { font-size: 0.85rem; color: #ccc; text-align: left; max-height: 200px; overflow-y: auto; padding: 10px; }
-        .history-item { margin-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 5px; }
+        
+        .history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        .history-table th { background: rgba(0,0,0,0.5); padding: 8px; color: var(--gold); border-bottom: 1px solid #333; }
+        .history-table td { padding: 8px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         /* Drabinka Pionowa */
         .vertical-bracket { display: flex; flex-direction: column; align-items: center; gap: 30px; position: relative; z-index: 10; margin-bottom: 50px; }
@@ -72,9 +87,12 @@
         <table class="ranking-table" id="rankingTable">
             <tr><th>Gracz</th><th>PUNKTY SUMA</th></tr>
         </table>
-        <details>
-            <summary style="margin-top:15px;">HISTORIA PRZYZNAWANIA PUNKTÓW</summary>
-            <div class="history-list" id="historyLog"></div>
+        <details class="history-details" id="historyDetails" style="margin-top:15px; background: var(--glass);">
+            <summary><span></span></summary>
+            <table class="history-table">
+                <thead><tr><th>Gracz</th><th>Mecz</th><th>Typ</th><th>Wynik</th><th>Pkt</th></tr></thead>
+                <tbody id="historyLog"></tbody>
+            </table>
         </details>
     </div>
 
@@ -83,8 +101,8 @@
 
     <div class="section-title">FAZA PUCHAROWA</div>
     <div class="grid">
-        <details style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);">
-            <summary style="font-size: 1.2rem; padding: 10px;">ROZWIŃ MECZE PUCHAROWE</summary>
+        <details id="knockoutDetails" class="knockout-details" style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);">
+            <summary style="padding: 10px;"><span></span></summary>
             <div class="grid" id="knockoutContainer" style="margin-top: 20px;"></div>
         </details>
     </div>
@@ -98,6 +116,9 @@
 
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser') || "Gość";
+
+    // Rejestrowanie stanu otwartych detali, aby nie zamykały się przy odświeżaniu (zapisywaniu typów)
+    const uiState = { groups: {}, knockout: false, history: false };
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -120,70 +141,70 @@
     });
 
     const KNOCKOUTS = [
-        // 1/16 Finału (16 spotkań)
-        { id: "R32_1", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T15:00" },
-        { id: "R32_2", stage: "1/16 Finału", ref1: "1A", ref2: "3CDEFHI", date: "2026-06-28T18:00" },
-        { id: "R32_3", stage: "1/16 Finału", ref1: "1B", ref2: "3EFGIJ", date: "2026-06-28T21:00" },
-        { id: "R32_4", stage: "1/16 Finału", ref1: "1C", ref2: "3ABDEF", date: "2026-06-29T18:00" },
-        { id: "R32_5", stage: "1/16 Finału", ref1: "1D", ref2: "3BEFIJ", date: "2026-06-29T21:00" },
-        { id: "R32_6", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T15:00" },
-        { id: "R32_7", stage: "1/16 Finału", ref1: "1E", ref2: "3ABCDF", date: "2026-06-30T18:00" },
-        { id: "R32_8", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T21:00" },
-        { id: "R32_9", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T15:00" },
-        { id: "R32_10", stage: "1/16 Finału", ref1: "1G", ref2: "3AEHIJ", date: "2026-07-01T18:00" },
-        { id: "R32_11", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-01T21:00" },
-        { id: "R32_12", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T15:00" },
-        { id: "R32_13", stage: "1/16 Finału", ref1: "1I", ref2: "3CDFGH", date: "2026-07-02T18:00" },
-        { id: "R32_14", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T21:00" },
-        { id: "R32_15", stage: "1/16 Finału", ref1: "1K", ref2: "3DEIJL", date: "2026-07-03T18:00" },
-        { id: "R32_16", stage: "1/16 Finału", ref1: "1L", ref2: "3EHIJK", date: "2026-07-03T21:00" },
-        // 1/8 Finału
-        { id: "R16_1", stage: "1/8 Finału", ref1: "W_R32_1", ref2: "W_R32_2", date: "2026-07-04T18:00" },
-        { id: "R16_2", stage: "1/8 Finału", ref1: "W_R32_3", ref2: "W_R32_4", date: "2026-07-04T21:00" },
-        { id: "R16_3", stage: "1/8 Finału", ref1: "W_R32_5", ref2: "W_R32_6", date: "2026-07-05T18:00" },
-        { id: "R16_4", stage: "1/8 Finału", ref1: "W_R32_7", ref2: "W_R32_8", date: "2026-07-05T21:00" },
-        { id: "R16_5", stage: "1/8 Finału", ref1: "W_R32_9", ref2: "W_R32_10", date: "2026-07-06T18:00" },
-        { id: "R16_6", stage: "1/8 Finału", ref1: "W_R32_11", ref2: "W_R32_12", date: "2026-07-06T21:00" },
-        { id: "R16_7", stage: "1/8 Finału", ref1: "W_R32_13", ref2: "W_R32_14", date: "2026-07-07T18:00" },
-        { id: "R16_8", stage: "1/8 Finału", ref1: "W_R32_15", ref2: "W_R32_16", date: "2026-07-07T21:00" },
-        // Ćwierćfinały
-        { id: "QF_1", stage: "Ćwierćfinał", ref1: "W_R16_1", ref2: "W_R16_2", date: "2026-07-09T18:00" },
-        { id: "QF_2", stage: "Ćwierćfinał", ref1: "W_R16_3", ref2: "W_R16_4", date: "2026-07-10T18:00" },
-        { id: "QF_3", stage: "Ćwierćfinał", ref1: "W_R16_5", ref2: "W_R16_6", date: "2026-07-11T18:00" },
-        { id: "QF_4", stage: "Ćwierćfinał", ref1: "W_R16_7", ref2: "W_R16_8", date: "2026-07-11T21:00" },
-        // Półfinały
-        { id: "SF_1", stage: "Półfinał", ref1: "W_QF_1", ref2: "W_QF_2", date: "2026-07-14T20:00" },
-        { id: "SF_2", stage: "Półfinał", ref1: "W_QF_3", ref2: "W_QF_4", date: "2026-07-15T20:00" },
-        // Finały
-        { id: "TP_1", stage: "Mecz o 3. miejsce", ref1: "L_SF_1", ref2: "L_SF_2", date: "2026-07-18T20:00" },
-        { id: "F_1", stage: "FINAŁ", ref1: "W_SF_1", ref2: "W_SF_2", date: "2026-07-19T20:00" }
+        { id: "R32_1", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T15:00" }, { id: "R32_2", stage: "1/16 Finału", ref1: "1A", ref2: "3CDEFHI", date: "2026-06-28T18:00" },
+        { id: "R32_3", stage: "1/16 Finału", ref1: "1B", ref2: "3EFGIJ", date: "2026-06-28T21:00" }, { id: "R32_4", stage: "1/16 Finału", ref1: "1C", ref2: "3ABDEF", date: "2026-06-29T18:00" },
+        { id: "R32_5", stage: "1/16 Finału", ref1: "1D", ref2: "3BEFIJ", date: "2026-06-29T21:00" }, { id: "R32_6", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T15:00" },
+        { id: "R32_7", stage: "1/16 Finału", ref1: "1E", ref2: "3ABCDF", date: "2026-06-30T18:00" }, { id: "R32_8", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T21:00" },
+        { id: "R32_9", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T15:00" }, { id: "R32_10", stage: "1/16 Finału", ref1: "1G", ref2: "3AEHIJ", date: "2026-07-01T18:00" },
+        { id: "R32_11", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-01T21:00" }, { id: "R32_12", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T15:00" },
+        { id: "R32_13", stage: "1/16 Finału", ref1: "1I", ref2: "3CDFGH", date: "2026-07-02T18:00" }, { id: "R32_14", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T21:00" },
+        { id: "R32_15", stage: "1/16 Finału", ref1: "1K", ref2: "3DEIJL", date: "2026-07-03T18:00" }, { id: "R32_16", stage: "1/16 Finału", ref1: "1L", ref2: "3EHIJK", date: "2026-07-03T21:00" },
+        { id: "R16_1", stage: "1/8 Finału", ref1: "W_R32_1", ref2: "W_R32_2", date: "2026-07-04T18:00" }, { id: "R16_2", stage: "1/8 Finału", ref1: "W_R32_3", ref2: "W_R32_4", date: "2026-07-04T21:00" },
+        { id: "R16_3", stage: "1/8 Finału", ref1: "W_R32_5", ref2: "W_R32_6", date: "2026-07-05T18:00" }, { id: "R16_4", stage: "1/8 Finału", ref1: "W_R32_7", ref2: "W_R32_8", date: "2026-07-05T21:00" },
+        { id: "R16_5", stage: "1/8 Finału", ref1: "W_R32_9", ref2: "W_R32_10", date: "2026-07-06T18:00" }, { id: "R16_6", stage: "1/8 Finału", ref1: "W_R32_11", ref2: "W_R32_12", date: "2026-07-06T21:00" },
+        { id: "R16_7", stage: "1/8 Finału", ref1: "W_R32_13", ref2: "W_R32_14", date: "2026-07-07T18:00" }, { id: "R16_8", stage: "1/8 Finału", ref1: "W_R32_15", ref2: "W_R32_16", date: "2026-07-07T21:00" },
+        { id: "QF_1", stage: "Ćwierćfinał", ref1: "W_R16_1", ref2: "W_R16_2", date: "2026-07-09T18:00" }, { id: "QF_2", stage: "Ćwierćfinał", ref1: "W_R16_3", ref2: "W_R16_4", date: "2026-07-10T18:00" },
+        { id: "QF_3", stage: "Ćwierćfinał", ref1: "W_R16_5", ref2: "W_R16_6", date: "2026-07-11T18:00" }, { id: "QF_4", stage: "Ćwierćfinał", ref1: "W_R16_7", ref2: "W_R16_8", date: "2026-07-11T21:00" },
+        { id: "SF_1", stage: "Półfinał", ref1: "W_QF_1", ref2: "W_QF_2", date: "2026-07-14T20:00" }, { id: "SF_2", stage: "Półfinał", ref1: "W_QF_3", ref2: "W_QF_4", date: "2026-07-15T20:00" },
+        { id: "TP_1", stage: "Mecz o 3. miejsce", ref1: "L_SF_1", ref2: "L_SF_2", date: "2026-07-18T20:00" }, { id: "F_1", stage: "FINAŁ", ref1: "W_SF_1", ref2: "W_SF_2", date: "2026-07-19T20:00" }
     ];
+
+    const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
 
     window.saveBet = async (id, isKnockout) => {
         const s1 = document.getElementById(`b1_${id}`).value;
         const s2 = document.getElementById(`b2_${id}`).value;
+        if(!isValValid(s1) || !isValValid(s2)) return alert("Wynik musi być liczbą od 0 do 15!");
+        
         let p1 = null, p2 = null;
-        if(isKnockout) { p1 = document.getElementById(`bp1_${id}`).value; p2 = document.getElementById(`bp2_${id}`).value; }
-        if(s1 === "" || s2 === "") return alert("Wpisz oba gole!");
+        if(isKnockout) {
+            const tempP1 = document.getElementById(`bp1_${id}`).value;
+            const tempP2 = document.getElementById(`bp2_${id}`).value;
+            if (tempP1 || tempP2) {
+                if(!isValValid(tempP1) || !isValValid(tempP2)) return alert("Karne muszą być z przedziału 0-15!");
+                p1 = tempP1; p2 = tempP2;
+            }
+        }
         
         await setDoc(doc(db, "mundial_matches", id), { bets: { [currentUser]: { s1: parseInt(s1), s2: parseInt(s2), p1: p1 ? parseInt(p1) : null, p2: p2 ? parseInt(p2) : null } } }, { merge: true });
+    };
+
+    window.setOverrideTeams = async (id) => {
+        const t1 = document.getElementById(`override_t1_${id}`).value;
+        const t2 = document.getElementById(`override_t2_${id}`).value;
+        const updateData = {};
+        if (t1) updateData.override_t1 = t1; else updateData.override_t1 = null;
+        if (t2) updateData.override_t2 = t2; else updateData.override_t2 = null;
+        
+        await setDoc(doc(db, "mundial_matches", id), updateData, { merge: true });
     };
 
     window.proposeRealScore = async (id, isKnockout) => {
         const s1 = document.getElementById(`a1_${id}`).value;
         const s2 = document.getElementById(`a2_${id}`).value;
-        let p1 = null, p2 = null, ot1 = null, ot2 = null;
+        if(!isValValid(s1) || !isValValid(s2)) return alert("Wynik musi być od 0 do 15!");
+        
+        let p1 = null, p2 = null;
         if(isKnockout) {
-            p1 = document.getElementById(`ap1_${id}`).value; p2 = document.getElementById(`ap2_${id}`).value;
-            ot1 = document.getElementById(`override_t1_${id}`).value; ot2 = document.getElementById(`override_t2_${id}`).value;
+            const tempP1 = document.getElementById(`ap1_${id}`).value;
+            const tempP2 = document.getElementById(`ap2_${id}`).value;
+            if(tempP1 || tempP2) {
+                if(!isValValid(tempP1) || !isValValid(tempP2)) return alert("Karne muszą być od 0 do 15!");
+                p1 = tempP1; p2 = tempP2;
+            }
         }
-        if(s1 === "" || s2 === "") return alert("Podaj wynik!");
         
-        const updateData = { status: "pending_real", tempReal1: parseInt(s1), tempReal2: parseInt(s2), tempPen1: p1 ? parseInt(p1) : null, tempPen2: p2 ? parseInt(p2) : null, realProposer: currentUser };
-        if (ot1) updateData.override_t1 = ot1;
-        if (ot2) updateData.override_t2 = ot2;
-        
-        await setDoc(doc(db, "mundial_matches", id), updateData, { merge: true });
+        await setDoc(doc(db, "mundial_matches", id), { status: "pending_real", tempReal1: parseInt(s1), tempReal2: parseInt(s2), tempPen1: p1 ? parseInt(p1) : null, tempPen2: p2 ? parseInt(p2) : null, realProposer: currentUser }, { merge: true });
     };
 
     window.confirmRealScore = async (id) => {
@@ -191,10 +212,15 @@
         const data = (await getDoc(ref)).data();
         if(data.realProposer === currentUser) return alert("Inny gracz musi to potwierdzić!");
         
-        await updateDoc(ref, { status: "finished", realScore1: data.tempReal1, realScore2: data.tempReal2, realPen1: data.tempPen1, realPen2: data.tempPen2, override_t1: data.override_t1 || null, override_t2: data.override_t2 || null, realVerifier: currentUser });
+        await updateDoc(ref, { status: "finished", realScore1: data.tempReal1, realScore2: data.tempReal2, realPen1: data.tempPen1, realPen2: data.tempPen2, realVerifier: currentUser });
     };
 
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
+        // Przed czyszczeniem HTML, zachowajmy stan zwiniętych zakładek
+        document.querySelectorAll('details[data-group]').forEach(d => uiState.groups[d.dataset.group] = d.open);
+        uiState.knockout = document.getElementById('knockoutDetails')?.open;
+        uiState.history = document.getElementById('historyDetails')?.open;
+
         const dbData = {}; const userPoints = {}; const historyList = [];
         snap.forEach(d => {
             const m = d.data(); dbData[d.id] = m;
@@ -208,8 +234,14 @@
                     
                     userPoints[u] += gained;
                     if(gained > 0) {
-                        const matchName = m.override_t1 ? `${m.override_t1} - ${m.override_t2}` : d.id; // Z uproszczeniem dla logów
-                        historyList.push(`<div class="history-item">Gracz <b style="color:var(--cyan)">${u}</b> zdobył <b>${gained} pkt</b> (Typ: ${b.s1}:${b.s2}, Wynik: ${r1}:${r2})</div>`);
+                        let matchName = d.id;
+                        const gMatch = MATCHES.find(ma => ma.id === d.id);
+                        if(gMatch) matchName = `${gMatch.t1} - ${gMatch.t2}`;
+                        else {
+                            const kMatch = KNOCKOUTS.find(k => k.id === d.id);
+                            if(kMatch) matchName = `${m.override_t1 || kMatch.ref1} - ${m.override_t2 || kMatch.ref2}`;
+                        }
+                        historyList.push(`<tr><td><b style="color:var(--cyan)">${u}</b></td><td>${matchName}</td><td>${b.s1}:${b.s2}</td><td>${r1}:${r2}</td><td style="color:var(--success)"><b>+${gained}</b></td></tr>`);
                     }
                 });
             }
@@ -220,7 +252,7 @@
         Object.entries(userPoints).sort((a,b) => b[1] - a[1]).forEach(([user, pts]) => {
             rt.innerHTML += `<tr><td>${user}</td><td style="color:var(--cyan); font-size:1.2rem;">${pts}</td></tr>`;
         });
-        document.getElementById('historyLog').innerHTML = historyList.length ? historyList.join('') : "Brak historii punktów.";
+        document.getElementById('historyLog').innerHTML = historyList.length ? historyList.join('') : `<tr><td colspan="5">Brak historii...</td></tr>`;
 
         const gCont = document.getElementById('groupsContainer');
         const kCont = document.getElementById('knockoutContainer');
@@ -246,8 +278,10 @@
             const sortedTeams = Object.keys(standings[g]).sort((a,b) => { const tA = standings[g][a], tB = standings[g][b]; if (tA.pts !== tB.pts) return tB.pts - tA.pts; if (tA.gd !== tB.gd) return tB.gd - tA.gd; return tB.gs - tA.gs; });
             const isLocked = groupLockStatus[g];
             let html = `<div class="card"><div class="title">Grupa ${g}</div><table class="standings"><tr><th>Zespół</th><th>M</th><th>B</th><th>PKT</th></tr>`;
-            sortedTeams.forEach((t, i) => html += `<tr><td>${i+1}. ${t}</td><td>${standings[g][t].played}</td><td>${standings[g][t].gd}</td><td><b>${standings[g][t].pts}</b></td></tr>`);
-            html += `</table><details><summary>Pokaż mecze grupy</summary>`;
+            sortedTeams.forEach((t, i) => html += `<tr><td>${i+1}. ${t}</td><td>${standings[g][t].played}</td><td>${standings[g][t].gd > 0 ? '+'+standings[g][t].gd : standings[g][t].gd}</td><td><b>${standings[g][t].pts}</b></td></tr>`);
+            
+            const isOpen = uiState.groups[g] ? 'open' : '';
+            html += `</table><details data-group="${g}" class="group-details" ${isOpen}><summary><span></span></summary>`;
 
             MATCHES.filter(m => m.group === g).forEach(m => {
                 const dbM = dbData[m.id] || {}; const myBet = dbM.bets?.[currentUser]; const matchLocked = new Date() > new Date(m.date) || isLocked;
@@ -256,14 +290,14 @@
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
                 } else {
-                    html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
+                    html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
                     if(matchLocked) html += `<div class="locked-text">ZAMKNIĘTE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false)">ZAPISZ TYP</button>`;
                 }
                 if(dbM.status === 'pending_real') {
                     if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
-                    else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${m.id}')">POTWIERDŹ (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
+                    else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${m.id}')">POTWIERDŹ WYNIK (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
                 } else if(dbM.status !== "finished") {
-                    html += `<details class="admin-panel"><summary>Admin: Wynik</summary><input type="number" id="a1_${m.id}" class="admin-input">:<input type="number" id="a2_${m.id}" class="admin-input"><button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZATWIERDŹ</button></details>`;
+                    html += `<details class="admin-panel"><summary>Wprowadź oficjalny wynik</summary><input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${m.id}" class="admin-input" min="0" max="15"><button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZGŁOŚ WYNIK</button></details>`;
                 }
                 html += `</div>`;
             });
@@ -298,25 +332,35 @@
 
             let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
             if (dbM.status === "finished") {
-                html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
-                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
+                html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
+                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
             } else {
-                html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
+                html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
                 if (matchLocked) html += `<div class="locked-text">ZABLOKOWANE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true)">ZAPISZ TYP</button>`;
             }
             if(dbM.status === 'pending_real') {
-                if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
-                else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${k.id}')">POTWIERDŹ (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
+                if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
+                else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${k.id}')">POTWIERDŹ WYNIK (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
             } else if(dbM.status !== "finished") {
-                html += `<details class="admin-panel"><summary>Admin: Edycja Wyniku / Drużyn</summary>
-                         <input type="text" id="override_t1_${k.id}" class="admin-text" placeholder="D1 (Ręcznie)">
-                         <input type="text" id="override_t2_${k.id}" class="admin-text" placeholder="D2 (Ręcznie)"><br>
-                         <input type="number" id="a1_${k.id}" class="admin-input">:<input type="number" id="a2_${k.id}" class="admin-input">
-                         (K: <input type="number" id="ap1_${k.id}" class="admin-input" style="width:25px;height:20px;">:<input type="number" id="ap2_${k.id}" class="admin-input" style="width:25px;height:20px;">)
-                         <button class="btn-admin" onclick="proposeRealScore('${k.id}', true)">ZATWIERDŹ</button></details>`;
+                html += `<details class="admin-panel"><summary>Wpisz wynik / Drużyny</summary>
+                         <div style="margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                             <input type="text" id="override_t1_${k.id}" class="admin-text" placeholder="D1 (Ręcznie)" value="${dbM.override_t1 || ''}">
+                             <input type="text" id="override_t2_${k.id}" class="admin-text" placeholder="D2 (Ręcznie)" value="${dbM.override_t2 || ''}">
+                             <button class="btn-admin" onclick="setOverrideTeams('${k.id}')">USTAW DRUŻYNY</button>
+                         </div>
+                         <div>
+                             <input type="number" id="a1_${k.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${k.id}" class="admin-input" min="0" max="15">
+                             (K: <input type="number" id="ap1_${k.id}" class="admin-input" min="0" max="15" style="width:25px;height:20px;">:<input type="number" id="ap2_${k.id}" class="admin-input" min="0" max="15" style="width:25px;height:20px;">)
+                             <button class="btn-admin" onclick="proposeRealScore('${k.id}', true)">ZGŁOŚ WYNIK</button>
+                         </div>
+                         </details>`;
             }
             html += `</div></div>`; kCont.innerHTML += html;
         });
+
+        // Odtworzenie stanu głównych detali (Historia / Pucharowe)
+        const histD = document.getElementById('historyDetails'); if(histD && uiState.history) histD.open = true;
+        const knockD = document.getElementById('knockoutDetails'); if(knockD && uiState.knockout) knockD.open = true;
 
         // DRZEWKO PIONOWE
         const stages = ["1/16 Finału", "1/8 Finału", "Ćwierćfinał", "Półfinał", "FINAŁ"];
