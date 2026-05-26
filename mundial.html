@@ -39,6 +39,9 @@
         .history-details summary span::before { content: '▼ HISTORIA PRZYZNAWANIA PUNKTÓW'; }
         .history-details[open] summary span::before { content: '▲ ZWIŃ HISTORIĘ PUNKTÓW'; }
 
+        .rules-details summary span::before { content: '▼ REGULAMIN TYPOWANIA'; }
+        .rules-details[open] summary span::before { content: '▲ ZWIŃ REGULAMIN'; }
+
         /* Mecze */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
@@ -87,12 +90,59 @@
         <table class="ranking-table" id="rankingTable">
             <tr><th>Gracz</th><th>PUNKTY SUMA</th></tr>
         </table>
+        
         <details class="history-details" id="historyDetails" style="margin-top:15px; background: var(--glass);">
             <summary><span></span></summary>
             <table class="history-table">
                 <thead><tr><th>Gracz</th><th>Mecz</th><th>Typ</th><th>Wynik</th><th>Pkt</th></tr></thead>
                 <tbody id="historyLog"></tbody>
             </table>
+        </details>
+
+        <details class="rules-details" id="rulesDetails" style="margin-top:15px; background: var(--glass);">
+            <summary><span></span></summary>
+            <div style="padding: 15px; font-size: 0.85rem; color: #ccc; text-align: left; line-height: 1.5;">
+                <h3 style="color:var(--gold); text-align:center; margin-top:0;">📜 REGULAMIN TYPOWANIA: MUNDIAL 2026</h3>
+
+                <p><strong>§0. Zasady Ogólne</strong><br>
+                1. W sytuacji, gdy żaden uczestnik nie zdobędzie punktów w danym meczu - Dział ITS dobrowolnie przekaże pojedyczną studnie na poczet majątku AW<br>
+                2. Zakazuje się paradowania stażystek w stroju cheerleaderki<br>
+                3. Spożywanie napoi alkohowych w czasie trwania meczu w centrum sterowania ruchem jest dozwolone<br>
+                4. Podczas trwania rozgrywek kierownictwo jest zobowiązane do nie przydzielania zadań wynikających z obowiązków pracownika<br>
+                5. Osoba na ostatnim miejscu otrzymuje wypowiedzenie z pracy za porozumieniem stron<br>
+                6. Osoba na 1 miejscu otrzymuje 60% puli, 2 miejscu 30% puli, 3 miejscu 10% puli<br>
+                7. Główna nagroda pieniężna zostanie przekazana z rąk z-ca dyrektora Miejskiego Zarządu Ulic i Mostów</p>
+                
+                <p><strong>§1. Czas i Zasady Obstawiania</strong><br>
+                1. Typowanie każdego meczu jest możliwe wyłącznie do momentu jego oficjalnego rozpoczęcia.<br>
+                2. W chwili wybicia godziny rozpoczęcia spotkania, system automatycznie blokuje możliwość zapisywania i edytowania typu.<br>
+                3. Do momentu zablokowania zakładów, gracze mogą dowolnie aktualizować swoje typy. W systemie zapisuje się tylko ostatni zatwierdzony wariant.<br>
+                4. Spożywanie napoi alkohowych w czasie trwania meczu w centrum sterowania ruchem jest dozwolone</p>
+
+                <p><strong>§2. System Punktacji (Grand Ranking)</strong><br>
+                Punkty przyznawane są automatycznie po zatwierdzeniu oficjalnego wyniku meczu:<br>
+                • <strong>3 Punkty (Dokładny Wynik)</strong> – gracz wytypował perfekcyjnie liczbę bramek obu drużyn.<br>
+                • <strong>1 Punkt (Trafione Rozstrzygnięcie)</strong> – gracz poprawnie wytypował zwycięzcę meczu lub remis.<br>
+                • <strong>1 Punkt (Rzuty Karne)</strong> – w fazie pucharowej przyznawany jest dodatkowy punkt za poprawne wskazanie zwycięzcy konkursu rzutów karnych.<br>
+                • <strong>0 Punktów</strong> – błędne wytypowanie ostatecznego rozstrzygnięcia.</p>
+
+                <p><strong>§3. Faza Pucharowa i Rzuty Karne</strong><br>
+                1. W fazie pucharowej podstawowym wynikiem jest stan bramkowy bezpośrednio przed rzutami karnymi (po ewentualnej dogrywce).<br>
+                2. Jeśli przewidujesz karne, wpisujesz w główne pola remis, a w dodatkowe pola "K" przewidywany wynik rzutów karnych.<br>
+                3. Trafienie poprawnego zwycięzcy w rzutach karnych dolicza dodatkowy 1 punkt do Grand Rankingu.</p>
+
+                <p><strong>§4. Wprowadzanie Oficjalnych Wyników (Zasada 4 Oczu)</strong><br>
+                1. System wymaga weryfikacji dwuetapowej.<br>
+                2. Osoba A wprowadza wynik z boiska za pomocą panelu "Wprowadź oficjalny wynik". Mecz otrzymuje status oczekujący.<br>
+                3. Osoba B musi zweryfikować wprowadzony wynik i nacisnąć "POTWIERDŹ WYNIK".</p>
+
+                <p><strong>§5. Awanse i Tabele Grupowe</strong><br>
+                1. Tabele przeliczają się automatycznie po zatwierdzonym wyniku.<br>
+                2. O kolejności decydują kolejno: Suma punktów -> Bilans bramkowy -> Liczba goli strzelonych.<br>
+                3. Zespoły awansują automatycznie do fazy pucharowej. W panelu fazy pucharowej istnieje również możliwość ręcznej edycji nazw drużyn (niezbędne np. dla drużyn awansujących z 3. miejsc).</p>
+                
+                
+            </div>
         </details>
     </div>
 
@@ -107,7 +157,7 @@
         </details>
     </div>
 
-    <div class="section-title">🌳 PIONOWE DRZEWKO TURNIEJOWE</div>
+    <div class="section-title">🌳 DRZEWKO TURNIEJOWE</div>
     <div class="vertical-bracket" id="bracketTree"></div>
 
 <script type="module">
@@ -118,7 +168,7 @@
     const currentUser = localStorage.getItem('cyberUser') || "Gość";
 
     // Rejestrowanie stanu otwartych detali, aby nie zamykały się przy odświeżaniu (zapisywaniu typów)
-    const uiState = { groups: {}, knockout: false, history: false };
+    const uiState = { groups: {}, knockout: false, history: false, rules: false };
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -220,6 +270,7 @@
         document.querySelectorAll('details[data-group]').forEach(d => uiState.groups[d.dataset.group] = d.open);
         uiState.knockout = document.getElementById('knockoutDetails')?.open;
         uiState.history = document.getElementById('historyDetails')?.open;
+        uiState.rules = document.getElementById('rulesDetails')?.open;
 
         const dbData = {}; const userPoints = {}; const historyList = [];
         snap.forEach(d => {
@@ -232,6 +283,12 @@
                     if(r1 === b.s1 && r2 === b.s2) gained = 3;
                     else if((r1>r2 && b.s1>b.s2) || (r1<r2 && b.s1<b.s2) || (r1===r2 && b.s1===b.s2)) gained = 1;
                     
+                    if (r1 === r2 && b.s1 === b.s2 && m.realPen1 !== null && m.realPen2 !== null && b.p1 !== null && b.p2 !== null) {
+                        if ((m.realPen1 > m.realPen2 && b.p1 > b.p2) || (m.realPen1 < m.realPen2 && b.p1 < b.p2)) {
+                            gained += 1;
+                        }
+                    }
+
                     userPoints[u] += gained;
                     if(gained > 0) {
                         let matchName = d.id;
@@ -241,7 +298,12 @@
                             const kMatch = KNOCKOUTS.find(k => k.id === d.id);
                             if(kMatch) matchName = `${m.override_t1 || kMatch.ref1} - ${m.override_t2 || kMatch.ref2}`;
                         }
-                        historyList.push(`<tr><td><b style="color:var(--cyan)">${u}</b></td><td>${matchName}</td><td>${b.s1}:${b.s2}</td><td>${r1}:${r2}</td><td style="color:var(--success)"><b>+${gained}</b></td></tr>`);
+                        let betStr = `${b.s1}:${b.s2}`;
+                        if (b.p1 !== null && b.p2 !== null) betStr += ` (K:${b.p1}-${b.p2})`;
+                        let realStr = `${r1}:${r2}`;
+                        if (m.realPen1 !== null && m.realPen2 !== null) realStr += ` (K:${m.realPen1}-${m.realPen2})`;
+
+                        historyList.push(`<tr><td><b style="color:var(--cyan)">${u}</b></td><td>${matchName}</td><td>${betStr}</td><td>${realStr}</td><td style="color:var(--success)"><b>+${gained}</b></td></tr>`);
                     }
                 });
             }
@@ -358,9 +420,10 @@
             html += `</div></div>`; kCont.innerHTML += html;
         });
 
-        // Odtworzenie stanu głównych detali (Historia / Pucharowe)
+        // Odtworzenie stanu głównych detali (Historia / Pucharowe / Regulamin)
         const histD = document.getElementById('historyDetails'); if(histD && uiState.history) histD.open = true;
         const knockD = document.getElementById('knockoutDetails'); if(knockD && uiState.knockout) knockD.open = true;
+        const rulesD = document.getElementById('rulesDetails'); if(rulesD && uiState.rules) rulesD.open = true;
 
         // DRZEWKO PIONOWE
         const stages = ["1/16 Finału", "1/8 Finału", "Ćwierćfinał", "Półfinał", "FINAŁ"];
