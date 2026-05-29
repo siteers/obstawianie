@@ -25,7 +25,7 @@
         .standings td { padding: 5px 0; }
         .standings tr:nth-child(1) td, .standings tr:nth-child(2) td { color: var(--success); font-weight: bold; }
 
-        /* Zwijane panele z dynamicznym tekstem */
+        /* Zwijane panele */
         details { background: rgba(0,0,0,0.3); border-radius: 8px; padding: 10px; margin-top: 10px; border: 1px solid rgba(255,255,255,0.05); }
         summary { color: var(--cyan); cursor: pointer; font-weight: bold; outline: none; text-align: center; text-transform: uppercase; font-size: 0.9rem; list-style: none; }
         summary::-webkit-details-marker { display: none; }
@@ -42,7 +42,34 @@
         .rules-details summary span::before { content: '▼ REGULAMIN TYPOWANIA'; }
         .rules-details[open] summary span::before { content: '▲ ZWIŃ REGULAMIN'; }
 
-        /* Mecze */
+        /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
+        .schedule-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
+        .schedule-card { 
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); 
+            border: 1px solid var(--border); border-radius: 12px; padding: 15px; 
+            display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .schedule-header { 
+            display: flex; justify-content: space-between; align-items: center; 
+            border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; margin-bottom: 10px; 
+        }
+        .schedule-group-name { color: var(--gold); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .schedule-status { font-size: 0.75rem; color: #888; font-weight: bold; }
+        
+        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        .schedule-team { display: flex; flex-direction: column; align-items: center; flex: 1; width: 33%; }
+        .schedule-flag { width: 50px; height: 35px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); object-fit: cover; margin-bottom: 5px; }
+        .schedule-team-name { font-size: 0.85rem; font-weight: bold; color: #fff; text-align: center; }
+        
+        .schedule-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 34%; }
+        .schedule-time { font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
+        .schedule-date { font-size: 0.8rem; color: var(--cyan); font-weight: bold; }
+        .schedule-score-display { font-size: 1.8rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
+
+        .schedule-bet-area { margin-top: 15px; display: flex; flex-direction: column; align-items: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; border: 1px dashed rgba(255,255,255,0.1); }
+        .schedule-bet-info { font-size: 0.75rem; color: #aaa; margin-bottom: 8px; }
+        
+        /* Mecze (klasyczne kafelki grup) */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
         .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
@@ -103,21 +130,20 @@
             <summary><span></span></summary>
             <div style="padding: 15px; font-size: 0.85rem; color: #ccc; text-align: left; line-height: 1.5;">
                 <h3 style="color:var(--gold); text-align:center; margin-top:0;">📜 REGULAMIN TYPOWANIA: MUNDIAL 2026</h3>
-
                 <p><strong>§0. Zasady Ogólne</strong><br>
-                1. W sytuacji, gdy żaden uczestnik nie zdobędzie punktów w danym meczu - Dział ITS dobrowolnie przekaże pojedyczną studnie na poczet majątku AW<br>
+                1. W sytuacji, gdy żaden uczestnik nie zdobędzie punktów w danym meczu - Dział ITS dobrowolnie przekaże pojedynczą studnię na poczet majątku AW<br>
                 2. Zakazuje się paradowania stażystek w stroju cheerleaderki<br>
                 3. Spożywanie napoi alkohowych w czasie trwania meczu w centrum sterowania ruchem jest dozwolone<br>
                 4. Podczas trwania rozgrywek kierownictwo jest zobowiązane do nie przydzielania zadań wynikających z obowiązków pracownika<br>
                 5. Osoba na ostatnim miejscu otrzymuje wypowiedzenie z pracy za porozumieniem stron<br>
                 6. Osoba na 1 miejscu otrzymuje 60% puli, 2 miejscu 30% puli, 3 miejscu 10% puli<br>
                 7. Główna nagroda pieniężna zostanie przekazana z rąk z-ca dyrektora Miejskiego Zarządu Ulic i Mostów</p>
-                
+
                 <p><strong>§1. Czas i Zasady Obstawiania</strong><br>
                 1. Typowanie każdego meczu jest możliwe wyłącznie do momentu jego oficjalnego rozpoczęcia.<br>
                 2. W chwili wybicia godziny rozpoczęcia spotkania, system automatycznie blokuje możliwość zapisywania i edytowania typu.<br>
                 3. Do momentu zablokowania zakładów, gracze mogą dowolnie aktualizować swoje typy. W systemie zapisuje się tylko ostatni zatwierdzony wariant.<br>
-                4. Spożywanie napoi alkohowych w czasie trwania meczu w centrum sterowania ruchem jest dozwolone</p>
+                4. Wszelkie typy wprowadzone do systemu po faktycznym momencie rozpoczęcia meczu są automatycznie uznawane za nieważne.</p>
 
                 <p><strong>§2. System Punktacji (Grand Ranking)</strong><br>
                 Punkty przyznawane są automatycznie po zatwierdzeniu oficjalnego wyniku meczu:<br>
@@ -140,11 +166,12 @@
                 1. Tabele przeliczają się automatycznie po zatwierdzonym wyniku.<br>
                 2. O kolejności decydują kolejno: Suma punktów -> Bilans bramkowy -> Liczba goli strzelonych.<br>
                 3. Zespoły awansują automatycznie do fazy pucharowej. W panelu fazy pucharowej istnieje również możliwość ręcznej edycji nazw drużyn (niezbędne np. dla drużyn awansujących z 3. miejsc).</p>
-                
-                
             </div>
         </details>
     </div>
+
+    <div class="section-title">📅 HARMONOGRAM MECZÓW</div>
+    <div class="schedule-grid" id="upcomingContainer"></div>
 
     <div class="section-title">FAZA GRUPOWA</div>
     <div class="grid" id="groupsContainer"></div>
@@ -157,7 +184,7 @@
         </details>
     </div>
 
-    <div class="section-title">🌳 DRZEWKO TURNIEJOWE</div>
+    <div class="section-title">🌳 PIONOWE DRZEWKO TURNIEJOWE</div>
     <div class="vertical-bracket" id="bracketTree"></div>
 
 <script type="module">
@@ -167,13 +194,41 @@
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser') || "Gość";
 
-    // Rejestrowanie stanu otwartych detali, aby nie zamykały się przy odświeżaniu (zapisywaniu typów)
     const uiState = { groups: {}, knockout: false, history: false, rules: false };
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
     function drawBg() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(drawBg); }
     window.onresize = initBg; initBg(); drawBg();
+
+    // Słownik flag do API (Format ISO 3166-1 alpha-2)
+    const FLAG_MAP = {
+        "Meksyk": "mx", "RPA": "za", "Korea Płd.": "kr", "Czechy": "cz",
+        "Kanada": "ca", "Bośnia": "ba", "Katar": "qa", "Szwajcaria": "ch",
+        "Brazylia": "br", "Maroko": "ma", "Haiti": "ht", "Szkocja": "gb-sct",
+        "USA": "us", "Paragwaj": "py", "Australia": "au", "Turcja": "tr",
+        "Niemcy": "de", "Curaçao": "cw", "WKS": "ci", "Ekwador": "ec",
+        "Holandia": "nl", "Japonia": "jp", "Szwecja": "se", "Tunezja": "tn",
+        "Belgia": "be", "Egipt": "eg", "Iran": "ir", "N. Zelandia": "nz",
+        "Hiszpania": "es", "Cabo": "cv", "Arabia": "sa", "Urugwaj": "uy",
+        "Francja": "fr", "Senegal": "sn", "Irak": "iq", "Norwegia": "no",
+        "Argentyna": "ar", "Algieria": "dz", "Austria": "at", "Jordania": "jo",
+        "Portugalia": "pt", "Kongo": "cd", "Uzbekistan": "uz", "Kolumbia": "co",
+        "Anglia": "gb-eng", "Chorwacja": "hr", "Ghana": "gh", "Panama": "pa"
+    };
+
+    function getFlagUrl(teamName) {
+        const code = FLAG_MAP[teamName];
+        if (code) return `https://flagcdn.com/w80/${code}.png`;
+        return `https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Blue_question_mark_icon.svg/80px-Blue_question_mark_icon.svg.png`; // Fallback dla nieznanych/pucharowych "1A" itp
+    }
+
+    // Formatowanie daty na "12 cze"
+    function formatPolishDate(isoDate) {
+        const date = new Date(isoDate);
+        const months = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
+        return `${date.getDate()} ${months[date.getMonth()]}`;
+    }
 
     const GROUPS = {
         "A": ["Meksyk", "RPA", "Korea Płd.", "Czechy"], "B": ["Kanada", "Bośnia", "Katar", "Szwajcaria"],
@@ -212,14 +267,19 @@
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
 
     window.saveBet = async (id, isKnockout) => {
-        const s1 = document.getElementById(`b1_${id}`).value;
-        const s2 = document.getElementById(`b2_${id}`).value;
+        const s1El = document.getElementById(`b1_${id}`) || document.getElementById(`b1_up_${id}`);
+        const s2El = document.getElementById(`b2_${id}`) || document.getElementById(`b2_up_${id}`);
+        if (!s1El || !s2El) return alert("Błąd konfiguracji pól formularza.");
+
+        const s1 = s1El.value; const s2 = s2El.value;
         if(!isValValid(s1) || !isValValid(s2)) return alert("Wynik musi być liczbą od 0 do 15!");
         
         let p1 = null, p2 = null;
         if(isKnockout) {
-            const tempP1 = document.getElementById(`bp1_${id}`).value;
-            const tempP2 = document.getElementById(`bp2_${id}`).value;
+            const tempP1El = document.getElementById(`bp1_${id}`) || document.getElementById(`bp1_up_${id}`);
+            const tempP2El = document.getElementById(`bp2_${id}`) || document.getElementById(`bp2_up_${id}`);
+            const tempP1 = tempP1El ? tempP1El.value : null;
+            const tempP2 = tempP2El ? tempP2El.value : null;
             if (tempP1 || tempP2) {
                 if(!isValValid(tempP1) || !isValValid(tempP2)) return alert("Karne muszą być z przedziału 0-15!");
                 p1 = tempP1; p2 = tempP2;
@@ -227,6 +287,7 @@
         }
         
         await setDoc(doc(db, "mundial_matches", id), { bets: { [currentUser]: { s1: parseInt(s1), s2: parseInt(s2), p1: p1 ? parseInt(p1) : null, p2: p2 ? parseInt(p2) : null } } }, { merge: true });
+        alert("Zapisano Twój typ!");
     };
 
     window.setOverrideTeams = async (id) => {
@@ -266,7 +327,6 @@
     };
 
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
-        // Przed czyszczeniem HTML, zachowajmy stan zwiniętych zakładek
         document.querySelectorAll('details[data-group]').forEach(d => uiState.groups[d.dataset.group] = d.open);
         uiState.knockout = document.getElementById('knockoutDetails')?.open;
         uiState.history = document.getElementById('historyDetails')?.open;
@@ -318,7 +378,8 @@
 
         const gCont = document.getElementById('groupsContainer');
         const kCont = document.getElementById('knockoutContainer');
-        gCont.innerHTML = ""; kCont.innerHTML = "";
+        const upCont = document.getElementById('upcomingContainer');
+        gCont.innerHTML = ""; kCont.innerHTML = ""; upCont.innerHTML = "";
 
         const standings = {}; const groupLockStatus = {};
         Object.keys(GROUPS).forEach(g => {
@@ -336,6 +397,8 @@
             groupLockStatus[g] = fMatches >= 6;
         });
 
+        const upcomingList = [];
+
         Object.keys(GROUPS).forEach(g => {
             const sortedTeams = Object.keys(standings[g]).sort((a,b) => { const tA = standings[g][a], tB = standings[g][b]; if (tA.pts !== tB.pts) return tB.pts - tA.pts; if (tA.gd !== tB.gd) return tB.gd - tA.gd; return tB.gs - tA.gs; });
             const isLocked = groupLockStatus[g];
@@ -347,6 +410,11 @@
 
             MATCHES.filter(m => m.group === g).forEach(m => {
                 const dbM = dbData[m.id] || {}; const myBet = dbM.bets?.[currentUser]; const matchLocked = new Date() > new Date(m.date) || isLocked;
+                
+                if (!matchLocked && dbM.status !== "finished") {
+                    upcomingList.push({ ...m, displayGroup: `Grupa ${g}`, isKnockout: false, dbM });
+                }
+
                 html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams">${m.t1} - ${m.t2}</div>`;
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
@@ -392,6 +460,11 @@
             const dbM = dbData[k.id] || {}; const matchLocked = new Date() > new Date(k.date); const myBet = dbM.bets?.[currentUser];
             const t1 = dbM.override_t1 || resolveKnockoutTeam(k.ref1); const t2 = dbM.override_t2 || resolveKnockoutTeam(k.ref2);
 
+            const readyToBet = !t1.includes("m. Gr.") && !t1.includes("Zw. ") && !t1.includes("Prz. ") && !t2.includes("m. Gr.") && !t2.includes("Zw. ") && !t2.includes("Prz. ");
+            if (!matchLocked && dbM.status !== "finished" && readyToBet) {
+                upcomingList.push({ id: k.id, group: k.stage, t1, t2, date: k.date, isKnockout: true, dbM });
+            }
+
             let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
@@ -420,7 +493,52 @@
             html += `</div></div>`; kCont.innerHTML += html;
         });
 
-        // Odtworzenie stanu głównych detali (Historia / Pucharowe / Regulamin)
+        // WIDOK ZBIORCZY HARMONOGRAMU (KARTY Z FLAGAMI)
+        upcomingList.sort((a, b) => new Date(a.date) - new Date(b.date));
+        if (upcomingList.length === 0) {
+            upCont.innerHTML = `<div class="schedule-card" style="text-align:center;"><p style="color:#888; margin:0;">Brak zaplanowanych spotkań. Wszystkie mecze zostały już zakończone lub zablokowane.</p></div>`;
+        } else {
+            upcomingList.forEach(m => {
+                const myBet = m.dbM.bets?.[currentUser];
+                const matchTime = m.date.split("T")[1].substring(0, 5); // Zwraca "21:00"
+                const matchDate = formatPolishDate(m.date); // Zwraca np. "12 cze"
+                
+                let html = `
+                <div class="schedule-card">
+                    <div class="schedule-header">
+                        <span class="schedule-group-name">${m.displayGroup || m.group}</span>
+                    </div>
+                    <div class="schedule-teams-area">
+                        <div class="schedule-team">
+                            <img src="${getFlagUrl(m.t1)}" class="schedule-flag" alt="${m.t1}">
+                            <span class="schedule-team-name">${m.t1}</span>
+                        </div>
+                        <div class="schedule-center">
+                            <span class="schedule-time">${matchTime}</span>
+                            <span class="schedule-date">${matchDate}</span>
+                        </div>
+                        <div class="schedule-team">
+                            <img src="${getFlagUrl(m.t2)}" class="schedule-flag" alt="${m.t2}">
+                            <span class="schedule-team-name">${m.t2}</span>
+                        </div>
+                    </div>
+                    <div class="schedule-bet-area">
+                        <div class="schedule-bet-info">Wprowadź swój typ</div>
+                        <div class="bet-box">
+                            <input type="number" id="b1_up_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}">
+                            <span style="font-size:18px; font-weight:bold; color:#fff;">:</span>
+                            <input type="number" id="b2_up_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}">`;
+                if (m.isKnockout) {
+                    html += `<span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}">-<input type="number" id="bp2_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}"> )</span>`;
+                }
+                html += `</div>
+                        <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout})">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>
+                    </div>
+                </div>`;
+                upCont.innerHTML += html;
+            });
+        }
+
         const histD = document.getElementById('historyDetails'); if(histD && uiState.history) histD.open = true;
         const knockD = document.getElementById('knockoutDetails'); if(knockD && uiState.knockout) knockD.open = true;
         const rulesD = document.getElementById('rulesDetails'); if(rulesD && uiState.rules) rulesD.open = true;
