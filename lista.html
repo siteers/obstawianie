@@ -81,8 +81,10 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 12px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; font-size: 13px; }
         .action-group { display: flex; gap: 10px; margin-top: 15px; width: 100%; position: relative; z-index: 60; }
-        .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; }
-        .stop-btn:disabled { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); } 
+        
+        .stop-btn { flex: 1; background: linear-gradient(135deg, #ff4d4d, #b30000); color: white; padding: 15px; font-size: 18px; border-radius: 15px; border: none; cursor: pointer; font-weight: 900; transition: background 0.3s; }
+        .stop-btn.disabled-btn { background: #555; cursor: not-allowed; opacity: 0.8; filter: grayscale(1); } 
+        
         .clear-slot-btn { flex: 1; background: rgba(128,128,128,0.2); border: 1px solid var(--border); color: var(--text); border-radius: 15px; cursor: pointer; font-size: 11px; font-weight: bold; }
         .lock-btn-slot { width: 100%; margin-top: 10px; padding: 18px; border-radius: 15px; font-weight: 900; cursor: pointer; border: none; display: none; background: linear-gradient(135deg, #ff0000, #8b0000); color: #fff; z-index: 60; position: relative; }
         .winner-box { margin-top: 15px; padding: 15px; border-radius: 20px; background: rgba(0, 212, 255, 0.05); border: 1px solid var(--cyan); display: none; text-align: left; font-size: 13px; color: var(--text); line-height: 1.6; z-index: 60; position: relative; }
@@ -175,6 +177,13 @@ let assignedFakeNames = {};
 const funnyNames = ["leonard bogumił", "Adaś :*", "Bożenka :*", "Marcin ufam Tobie", "Jarołd", "Mariolka", "Kebab z falafelem", "Nooo cześć", " To jest skandal", "Nie traćmy pesymizmu", "Dziwne.. u mnie działa", "Dojadę go"];
 let ignoreAutoLock = false;
 
+// Timery dla blokady przycisków STOP
+let stopTimer1 = null;
+let stopTimer2 = null;
+
+// Leniwe czyszczenie - flaga lokalna
+let localLastClearCheck = "";
+
 let isMuted = localStorage.getItem('appMuted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
 
@@ -258,9 +267,6 @@ function triggerStopEffect(id, timestamp, winners) {
     
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
-    const btn = document.getElementById(`stopBtn${id}`);
-    if(btn) { btn.disabled = true; btn.textContent = "STOP"; }
-
     startCelebration(); 
     renderTable(id, timestamp/1000); 
 }
@@ -271,12 +277,37 @@ function getCurrentMonthKey() {
     return `points_${month}_${d.getFullYear()}`;
 }
 
+function lockStopButton(id) {
+    const btn = document.getElementById(`stopBtn${id}`);
+    if (!btn) return;
+
+    btn.disabled = true;
+    btn.classList.add("disabled-btn");
+    
+    let timeLeft = 60;
+    btn.textContent = `BLOKADA (${timeLeft}s)`;
+
+    const timerInterval = setInterval(() => {
+        timeLeft--;
+        btn.textContent = `BLOKADA (${timeLeft}s)`;
+        
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            btn.disabled = false;
+            btn.classList.remove("disabled-btn");
+            btn.textContent = "STOP";
+        }
+    }, 1000);
+    
+    if(id === 1) stopTimer1 = timerInterval;
+    else stopTimer2 = timerInterval;
+}
+
 window.stopSlot = async (id) => {
     const btn = document.getElementById(`stopBtn${id}`);
-    if(btn) {
-        btn.disabled = true;
-        btn.textContent = "ZAPIS...";
-    }
+    if(btn.disabled) return;
+
+    lockStopButton(id);
 
     try {
         const checkSnap = await getDoc(appStateRef);
@@ -289,13 +320,11 @@ window.stopSlot = async (id) => {
         }
     } catch(e) {
         console.error("Błąd sprawdzania stanu:", e);
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; } 
         return;
     }
 
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
     if(!slotData.length) {
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
         return;
     }
 
@@ -359,11 +388,20 @@ window.clearSlot = async (id) => {
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
     
+    if (id === 1 && stopTimer1) clearInterval(stopTimer1);
+    if (id === 2 && stopTimer2) clearInterval(stopTimer2);
+    const btn = document.getElementById(`stopBtn${id}`);
+    if(btn) {
+        btn.disabled = false;
+        btn.classList.remove("disabled-btn");
+        btn.textContent = "STOP";
+    }
+
     await setDoc(appStateRef, { 
         [`isLocked${id}`]: false, 
         [`target${id}`]: "Brak",
         [`stop${id}`]: null,        
-        [`winners${id}`]: null      
+        [`winners${id}`]: null     
     }, { merge: true });
 };
 
@@ -376,7 +414,7 @@ async function autoClearSlot(id) {
         [`isLocked${id}`]: false, 
         [`target${id}`]: "Brak",
         [`stop${id}`]: null,        
-        [`winners${id}`]: null      
+        [`winners${id}`]: null     
     }, { merge: true });
 }
 
@@ -399,8 +437,11 @@ onSnapshot(appStateRef, (snap) => {
         document.getElementById("panel1").classList.remove("frozen");
         document.getElementById("winner1").style.display = "none";
         document.getElementById("stoppedTime1").textContent = "";
+        
         const btn = document.getElementById("stopBtn1");
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
+        if(btn && !btn.classList.contains("disabled-btn")) { 
+            btn.disabled = false; btn.textContent = "STOP"; 
+        }
         renderTable(1, 0); 
     }
 
@@ -412,8 +453,11 @@ onSnapshot(appStateRef, (snap) => {
         document.getElementById("panel2").classList.remove("frozen");
         document.getElementById("winner2").style.display = "none";
         document.getElementById("stoppedTime2").textContent = "";
+        
         const btn = document.getElementById("stopBtn2");
-        if(btn) { btn.disabled = false; btn.textContent = "STOP"; }
+        if(btn && !btn.classList.contains("disabled-btn")) { 
+            btn.disabled = false; btn.textContent = "STOP"; 
+        }
         renderTable(2, 0);
     }
 });
@@ -454,7 +498,7 @@ window.toggleLock = async (id) => {
     if(newState) lockSound.play().catch(()=>{}); 
 };
 
-setInterval(() => { 
+setInterval(async () => { 
     const now = new Date(); 
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
@@ -475,16 +519,31 @@ setInterval(() => {
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
 
-    // --- AUTOMATYCZNE CZYSZCZENIE LISTY O OBRANEJ GODZINIE (16:07) ---
-    if (now.getHours() === 16 && now.getMinutes() === 7) {
-        const todayStr = now.toDateString();
-        if (localStorage.getItem("lastAutoClear") !== todayStr) {
-            autoClearSlot(1);
-            autoClearSlot(2);
-            localStorage.setItem("lastAutoClear", todayStr);
+    // --- AUTOMATYCZNE "LENIWE" CZYSZCZENIE LISTY PO 16:07 ---
+    const clearTimeMins = 16 * 60 + 7; // 16:07
+    const todayStr = now.toDateString();
+
+    if (currentMinutes >= clearTimeMins) {
+        if (localLastClearCheck !== todayStr) {
+            try {
+                const stateSnap = await getDoc(appStateRef);
+                const stateData = stateSnap.data() || {};
+                if (stateData.lastAutoClearDate !== todayStr) {
+                    console.log("Wykryto brak czyszczenia po 16:07. Uruchamiam Auto-Clear...");
+                    await setDoc(appStateRef, { lastAutoClearDate: todayStr }, { merge: true });
+                    localLastClearCheck = todayStr;
+                    await autoClearSlot(1);
+                    await autoClearSlot(2);
+                } else {
+                    localLastClearCheck = todayStr; 
+                }
+            } catch(e) { console.error(e); }
         }
+    } else if (localLastClearCheck !== todayStr && localLastClearCheck !== "") {
+        // Reset następnego dnia
+        localLastClearCheck = ""; 
     }
-    // -----------------------------------------------------------------
+    // --------------------------------------------------------
 
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
@@ -515,7 +574,6 @@ function renderTable(id, sec) {
         sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
     }
 
-    // --- UKRYWANIE WYNIKÓW (10:00 - 13:15) ---
     const now = new Date();
     const currentMins = now.getHours() * 60 + now.getMinutes();
     if (currentMins >= 600 && currentMins < 795 && !isStopped && !isLocked && currentUser !== "Admin") {
@@ -528,7 +586,6 @@ function renderTable(id, sec) {
         table.innerHTML += `<tr><td colspan="4" style="padding: 15px; color: var(--gold); text-align: center; font-size: 13px;">🤫 Lista ukryta do 13:15</td></tr>`;
         return;
     }
-    // ----------------------------------------
 
     sortedData.forEach((u, i) => {
         const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
