@@ -294,9 +294,10 @@
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
 
-    window.saveBet = async (id, isKnockout) => {
-        const s1El = document.getElementById(`b1_${id}`) || document.getElementById(`b1_up_${id}`);
-        const s2El = document.getElementById(`b2_${id}`) || document.getElementById(`b2_up_${id}`);
+    window.saveBet = async (id, isKnockout, isUpcoming = false) => {
+        const pre = isUpcoming ? "up_" : "";
+        const s1El = document.getElementById(`b1_${pre}${id}`);
+        const s2El = document.getElementById(`b2_${pre}${id}`);
         if (!s1El || !s2El) return alert("Błąd konfiguracji pól formularza.");
 
         const s1 = s1El.value; const s2 = s2El.value;
@@ -304,8 +305,8 @@
         
         let p1 = null, p2 = null;
         if(isKnockout) {
-            const tempP1El = document.getElementById(`bp1_${id}`) || document.getElementById(`bp1_up_${id}`);
-            const tempP2El = document.getElementById(`bp2_${id}`) || document.getElementById(`bp2_up_${id}`);
+            const tempP1El = document.getElementById(`bp1_${pre}${id}`);
+            const tempP2El = document.getElementById(`bp2_${pre}${id}`);
             const tempP1 = tempP1El ? tempP1El.value : null;
             const tempP2 = tempP2El ? tempP2El.value : null;
             if (tempP1 || tempP2) {
@@ -450,7 +451,7 @@
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
                 } else {
                     html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
-                    if(matchLocked) html += `<div class="locked-text">ZAMKNIĘTE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false)">ZAPISZ TYP</button>`;
+                    if(matchLocked) html += `<div class="locked-text">ZAMKNIĘTE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                 }
                 if(dbM.status === 'pending_real') {
                     if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
@@ -500,7 +501,7 @@
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
             } else {
                 html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
-                if (matchLocked) html += `<div class="locked-text">ZABLOKOWANE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true)">ZAPISZ TYP</button>`;
+                if (matchLocked) html += `<div class="locked-text">ZABLOKOWANE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
             }
             if(dbM.status === 'pending_real') {
                 if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
@@ -561,7 +562,7 @@
                     html += `<span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}">-<input type="number" id="bp2_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}"> )</span>`;
                 }
                 html += `</div>
-                        <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout})">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>
+                        <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>
                     </div>
                 </div>`;
                 upCont.innerHTML += html;
