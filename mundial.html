@@ -46,12 +46,32 @@
         .schedule-details[open] summary span::before { content: '▲ ZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
 
         /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
-        .schedule-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
+        .schedule-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; padding-top: 15px; padding-bottom: 15px; }
         .schedule-card { 
             background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95)); 
             border: 1px solid var(--border); border-radius: 12px; padding: 15px; 
             display: flex; flex-direction: column; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            position: relative; transition: all 0.3s ease;
         }
+        
+        /* WZMOCNIONY Efekt pulsowania dla najbliższego meczu */
+        @keyframes pulseClosest {
+            0% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); border-color: rgba(0, 212, 255, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8), inset 0 0 20px rgba(0, 212, 255, 0.2); border-color: var(--cyan); transform: scale(1.03); background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1)); }
+            100% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); border-color: rgba(0, 212, 255, 0.3); transform: scale(1); }
+        }
+        .closest-match {
+            animation: pulseClosest 1.5s infinite;
+            border: 2px solid var(--cyan) !important;
+            margin-top: 10px; margin-bottom: 10px;
+        }
+        .closest-badge {
+            position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
+            background: var(--cyan); color: #000; font-size: 0.8rem; font-weight: 900;
+            padding: 5px 15px; border-radius: 20px; text-transform: uppercase;
+            letter-spacing: 1px; box-shadow: 0 0 15px var(--cyan); z-index: 10;
+        }
+
         .schedule-header { 
             display: flex; justify-content: space-between; align-items: center; 
             border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 10px; margin-bottom: 10px; 
@@ -177,7 +197,7 @@
     <div class="grid">
         <details id="scheduleDetails" class="schedule-details" style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);" open>
             <summary style="padding: 10px;"><span></span></summary>
-            <div class="schedule-grid" id="upcomingContainer" style="margin-top: 20px;"></div>
+            <div class="schedule-grid" id="upcomingContainer"></div>
         </details>
     </div>
 
@@ -246,7 +266,6 @@
         "K": ["Portugalia", "Kongo", "Uzbekistan", "Kolumbia"], "L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
     };
 
-    // Precyzyjne Daty i Godziny (Czas Polski - z oficjalnych informacji i Google Sports)
     const groupDates = {
         "A": ["2026-06-11T21:00", "2026-06-12T04:00", "2026-06-18T18:00", "2026-06-19T03:00", "2026-06-25T03:00", "2026-06-25T03:00"],
         "B": ["2026-06-12T21:00", "2026-06-13T21:00", "2026-06-18T21:00", "2026-06-19T00:00", "2026-06-24T21:00", "2026-06-24T21:00"],
@@ -528,13 +547,18 @@
         if (upcomingList.length === 0) {
             upCont.innerHTML = `<div class="schedule-card" style="text-align:center;"><p style="color:#888; margin:0;">Brak zaplanowanych spotkań. Wszystkie mecze zostały już zakończone lub zablokowane.</p></div>`;
         } else {
-            upcomingList.forEach(m => {
+            upcomingList.forEach((m, index) => {
                 const myBet = m.dbM.bets?.[currentUser];
                 const matchTime = m.date.split("T")[1].substring(0, 5);
                 const matchDate = formatPolishDate(m.date); 
                 
+                const isClosest = (index === 0);
+                const closestClass = isClosest ? "closest-match" : "";
+                const closestBadge = isClosest ? `<div class="closest-badge">🔥 Najbliższy mecz</div>` : "";
+
                 let html = `
-                <div class="schedule-card">
+                <div class="schedule-card ${closestClass}">
+                    ${closestBadge}
                     <div class="schedule-header">
                         <span class="schedule-group-name">${m.displayGroup || m.group}</span>
                     </div>
