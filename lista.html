@@ -181,8 +181,9 @@ let ignoreAutoLock = false;
 let stopTimer1 = null;
 let stopTimer2 = null;
 
-// Leniwe czyszczenie - flaga lokalna
+// Leniwe czyszczenie - flagi lokalne
 let localLastClearCheck = "";
+let hasCheckedMissedClear = false;
 
 let isMuted = localStorage.getItem('appMuted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
@@ -324,9 +325,7 @@ window.stopSlot = async (id) => {
     }
 
     const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-    if(!slotData.length) {
-        return;
-    }
+    if(!slotData.length) return;
 
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
@@ -340,18 +339,10 @@ window.stopSlot = async (id) => {
         
         if (sorted[i].name === "Paweł") {
             const promoEnd = new Date("2026-02-10T23:59:59");
-            if (now <= promoEnd) {
-                pts = pts * 2; 
-            }
+            if (now <= promoEnd) { pts = pts * 2; }
         }
 
-        playersWithPoints.push({ 
-            name: sorted[i].name, 
-            hour: sorted[i].hour, 
-            points: pts, 
-            rank: rank, 
-            id: sorted[i].id 
-        });
+        playersWithPoints.push({ name: sorted[i].name, hour: sorted[i].hour, points: pts, rank: rank, id: sorted[i].id });
     }
 
     const currentMonthKey = getCurrentMonthKey(); 
@@ -359,27 +350,17 @@ window.stopSlot = async (id) => {
     for(const p of playersWithPoints) {
         if (p.points > 0) {
             const ref = doc(db, "ranking", p.name);
-            const updateData = {
-                points: increment(p.points),
-                [currentMonthKey]: increment(p.points) 
-            };
-            
+            const updateData = { points: increment(p.points), [currentMonthKey]: increment(p.points) };
             const snap = await getDoc(ref);
-            if(snap.exists()) {
-                await updateDoc(ref, updateData);
-            } else {
-                await setDoc(ref, { points: p.points, [currentMonthKey]: p.points });
-            }
+            if(snap.exists()) await updateDoc(ref, updateData);
+            else await setDoc(ref, { points: p.points, [currentMonthKey]: p.points });
         }
     }
     
     const targetNameForHistory = document.getElementById(`targetName${id}`).textContent;
     await addDoc(collection(db, "history"), { date: now.toLocaleString("pl-PL"), timestamp: now.getTime(), winners: playersWithPoints, target: targetNameForHistory });
 
-    await setDoc(appStateRef, { 
-        [`stop${id}`]: now.getTime(),
-        [`winners${id}`]: playersWithPoints 
-    }, { merge: true });
+    await setDoc(appStateRef, { [`stop${id}`]: now.getTime(), [`winners${id}`]: playersWithPoints }, { merge: true });
 };
 
 window.clearSlot = async (id) => {
@@ -397,25 +378,14 @@ window.clearSlot = async (id) => {
         btn.textContent = "STOP";
     }
 
-    await setDoc(appStateRef, { 
-        [`isLocked${id}`]: false, 
-        [`target${id}`]: "Brak",
-        [`stop${id}`]: null,        
-        [`winners${id}`]: null     
-    }, { merge: true });
+    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null }, { merge: true });
 };
 
 async function autoClearSlot(id) {
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
-    
-    await setDoc(appStateRef, { 
-        [`isLocked${id}`]: false, 
-        [`target${id}`]: "Brak",
-        [`stop${id}`]: null,        
-        [`winners${id}`]: null     
-    }, { merge: true });
+    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null }, { merge: true });
 }
 
 onSnapshot(appStateRef, (snap) => { 
@@ -432,32 +402,26 @@ onSnapshot(appStateRef, (snap) => {
     if (data.stop1) {
         if (!isStopped1) triggerStopEffect(1, data.stop1, data.winners1 || []);
     } else {
-        isStopped1 = false;
-        savedWinners1 = null;
+        isStopped1 = false; savedWinners1 = null;
         document.getElementById("panel1").classList.remove("frozen");
         document.getElementById("winner1").style.display = "none";
         document.getElementById("stoppedTime1").textContent = "";
         
         const btn = document.getElementById("stopBtn1");
-        if(btn && !btn.classList.contains("disabled-btn")) { 
-            btn.disabled = false; btn.textContent = "STOP"; 
-        }
+        if(btn && !btn.classList.contains("disabled-btn")) { btn.disabled = false; btn.textContent = "STOP"; }
         renderTable(1, 0); 
     }
 
     if (data.stop2) {
         if (!isStopped2) triggerStopEffect(2, data.stop2, data.winners2 || []);
     } else {
-        isStopped2 = false;
-        savedWinners2 = null;
+        isStopped2 = false; savedWinners2 = null;
         document.getElementById("panel2").classList.remove("frozen");
         document.getElementById("winner2").style.display = "none";
         document.getElementById("stoppedTime2").textContent = "";
         
         const btn = document.getElementById("stopBtn2");
-        if(btn && !btn.classList.contains("disabled-btn")) { 
-            btn.disabled = false; btn.textContent = "STOP"; 
-        }
+        if(btn && !btn.classList.contains("disabled-btn")) { btn.disabled = false; btn.textContent = "STOP"; }
         renderTable(2, 0);
     }
 });
@@ -519,29 +483,42 @@ setInterval(async () => {
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
 
-    // --- AUTOMATYCZNE "LENIWE" CZYSZCZENIE LISTY PO 16:07 ---
-    const clearTimeMins = 16 * 60 + 7; // 16:07
+    // --- AUTOMATYCZNE "LENIWE" CZYSZCZENIE LISTY (15:15) ---
+    const clearTimeMins = 15 * 60 + 15; // Zmiana z 16:07 na 15:15
     const todayStr = now.toDateString();
-
-    if (currentMinutes >= clearTimeMins) {
-        if (localLastClearCheck !== todayStr) {
+    
+    if (localLastClearCheck !== todayStr) {
+        if (currentMinutes >= clearTimeMins || !hasCheckedMissedClear) {
             try {
                 const stateSnap = await getDoc(appStateRef);
                 const stateData = stateSnap.data() || {};
-                if (stateData.lastAutoClearDate !== todayStr) {
-                    console.log("Wykryto brak czyszczenia po 16:07. Uruchamiam Auto-Clear...");
-                    await setDoc(appStateRef, { lastAutoClearDate: todayStr }, { merge: true });
-                    localLastClearCheck = todayStr;
+                const lastClear = stateData.lastAutoClearDate || "";
+                
+                const yesterday = new Date(now);
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayStr = yesterday.toDateString();
+
+                let shouldClear = false;
+                let dateToSet = "";
+
+                if (currentMinutes >= clearTimeMins) {
+                    if (lastClear !== todayStr) { shouldClear = true; dateToSet = todayStr; }
+                } else {
+                    hasCheckedMissedClear = true; // Flaga, żeby rano sprawdził tylko raz
+                    if (lastClear !== yesterdayStr && lastClear !== todayStr) { 
+                        shouldClear = true; dateToSet = yesterdayStr; 
+                    }
+                }
+
+                if (shouldClear) {
+                    console.log(`Uruchamiam Auto-Clear dla daty: ${dateToSet}`);
+                    await setDoc(appStateRef, { lastAutoClearDate: dateToSet }, { merge: true });
+                    if (dateToSet === todayStr) localLastClearCheck = todayStr;
                     await autoClearSlot(1);
                     await autoClearSlot(2);
-                } else {
-                    localLastClearCheck = todayStr; 
                 }
-            } catch(e) { console.error(e); }
+            } catch(e) { console.error("Błąd leniwego czyszczenia:", e); }
         }
-    } else if (localLastClearCheck !== todayStr && localLastClearCheck !== "") {
-        // Reset następnego dnia
-        localLastClearCheck = ""; 
     }
     // --------------------------------------------------------
 
