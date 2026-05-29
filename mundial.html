@@ -42,6 +42,9 @@
         .rules-details summary span::before { content: '▼ REGULAMIN TYPOWANIA'; }
         .rules-details[open] summary span::before { content: '▲ ZWIŃ REGULAMIN'; }
 
+        .schedule-details summary span::before { content: '▼ ROZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
+        .schedule-details[open] summary span::before { content: '▲ ZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
+
         /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
         .schedule-grid { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
         .schedule-card { 
@@ -171,7 +174,12 @@
     </div>
 
     <div class="section-title">📅 HARMONOGRAM MECZÓW</div>
-    <div class="schedule-grid" id="upcomingContainer"></div>
+    <div class="grid">
+        <details id="scheduleDetails" class="schedule-details" style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);" open>
+            <summary style="padding: 10px;"><span></span></summary>
+            <div class="schedule-grid" id="upcomingContainer" style="margin-top: 20px;"></div>
+        </details>
+    </div>
 
     <div class="section-title">FAZA GRUPOWA</div>
     <div class="grid" id="groupsContainer"></div>
@@ -194,7 +202,7 @@
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser') || "Gość";
 
-    const uiState = { groups: {}, knockout: false, history: false, rules: false };
+    const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: true };
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -220,10 +228,9 @@
     function getFlagUrl(teamName) {
         const code = FLAG_MAP[teamName];
         if (code) return `https://flagcdn.com/w80/${code}.png`;
-        return `https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Blue_question_mark_icon.svg/80px-Blue_question_mark_icon.svg.png`; // Fallback dla nieznanych/pucharowych "1A" itp
+        return `https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Blue_question_mark_icon.svg/80px-Blue_question_mark_icon.svg.png`;
     }
 
-    // Formatowanie daty na "12 cze"
     function formatPolishDate(isoDate) {
         const date = new Date(isoDate);
         const months = ["sty", "lut", "mar", "kwi", "maj", "cze", "lip", "sie", "wrz", "paź", "lis", "gru"];
@@ -239,10 +246,31 @@
         "K": ["Portugalia", "Kongo", "Uzbekistan", "Kolumbia"], "L": ["Anglia", "Chorwacja", "Ghana", "Panama"]
     };
 
+    // Precyzyjne Daty i Godziny (Czas Polski - z oficjalnych informacji i Google Sports)
+    const groupDates = {
+        "A": ["2026-06-11T21:00", "2026-06-12T04:00", "2026-06-18T18:00", "2026-06-19T03:00", "2026-06-25T03:00", "2026-06-25T03:00"],
+        "B": ["2026-06-12T21:00", "2026-06-13T21:00", "2026-06-18T21:00", "2026-06-19T00:00", "2026-06-24T21:00", "2026-06-24T21:00"],
+        "C": ["2026-06-14T00:00", "2026-06-14T03:00", "2026-06-20T00:00", "2026-06-20T02:30", "2026-06-25T00:00", "2026-06-25T00:00"],
+        "D": ["2026-06-13T03:00", "2026-06-14T06:00", "2026-06-19T21:00", "2026-06-20T05:00", "2026-06-26T04:00", "2026-06-26T04:00"],
+        "E": ["2026-06-14T19:00", "2026-06-15T01:00", "2026-06-20T22:00", "2026-06-21T02:00", "2026-06-25T22:00", "2026-06-25T22:00"],
+        "F": ["2026-06-14T22:00", "2026-06-15T04:00", "2026-06-20T19:00", "2026-06-21T06:00", "2026-06-26T01:00", "2026-06-26T01:00"],
+        "G": ["2026-06-15T21:00", "2026-06-16T03:00", "2026-06-21T21:00", "2026-06-22T03:00", "2026-06-27T05:00", "2026-06-27T05:00"],
+        "H": ["2026-06-15T18:00", "2026-06-16T00:00", "2026-06-21T18:00", "2026-06-22T00:00", "2026-06-27T02:00", "2026-06-27T02:00"],
+        "I": ["2026-06-16T21:00", "2026-06-17T00:00", "2026-06-22T23:00", "2026-06-23T02:00", "2026-06-26T21:00", "2026-06-26T21:00"],
+        "J": ["2026-06-17T03:00", "2026-06-17T06:00", "2026-06-22T19:00", "2026-06-23T05:00", "2026-06-28T04:00", "2026-06-28T04:00"],
+        "K": ["2026-06-17T19:00", "2026-06-18T04:00", "2026-06-23T19:00", "2026-06-24T04:00", "2026-06-28T01:30", "2026-06-28T01:30"],
+        "L": ["2026-06-17T22:00", "2026-06-18T01:00", "2026-06-23T22:00", "2026-06-24T01:00", "2026-06-27T23:00", "2026-06-27T23:00"]
+    };
+
     const MATCHES = []; let mId = 1;
-    const gDates = ["2026-06-11T21:00", "2026-06-12T18:00", "2026-06-16T21:00", "2026-06-17T18:00", "2026-06-21T21:00", "2026-06-21T21:00"];
     Object.entries(GROUPS).forEach(([g, t]) => {
-        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[1], date: gDates[0] }); MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[2], t2: t[3], date: gDates[1] }); MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[2], date: gDates[2] }); MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[1], date: gDates[3] }); MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[0], date: gDates[4] }); MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[1], t2: t[2], date: gDates[5] });
+        const d = groupDates[g];
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[1], date: d[0] }); 
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[2], t2: t[3], date: d[1] }); 
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[0], t2: t[2], date: d[2] }); 
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[1], date: d[3] }); 
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[3], t2: t[0], date: d[4] }); 
+        MATCHES.push({ id: `G_${mId++}`, group: g, t1: t[1], t2: t[2], date: d[5] });
     });
 
     const KNOCKOUTS = [
@@ -331,6 +359,7 @@
         uiState.knockout = document.getElementById('knockoutDetails')?.open;
         uiState.history = document.getElementById('historyDetails')?.open;
         uiState.rules = document.getElementById('rulesDetails')?.open;
+        uiState.schedule = document.getElementById('scheduleDetails')?.open;
 
         const dbData = {}; const userPoints = {}; const historyList = [];
         snap.forEach(d => {
@@ -500,8 +529,8 @@
         } else {
             upcomingList.forEach(m => {
                 const myBet = m.dbM.bets?.[currentUser];
-                const matchTime = m.date.split("T")[1].substring(0, 5); // Zwraca "21:00"
-                const matchDate = formatPolishDate(m.date); // Zwraca np. "12 cze"
+                const matchTime = m.date.split("T")[1].substring(0, 5);
+                const matchDate = formatPolishDate(m.date); 
                 
                 let html = `
                 <div class="schedule-card">
@@ -542,6 +571,7 @@
         const histD = document.getElementById('historyDetails'); if(histD && uiState.history) histD.open = true;
         const knockD = document.getElementById('knockoutDetails'); if(knockD && uiState.knockout) knockD.open = true;
         const rulesD = document.getElementById('rulesDetails'); if(rulesD && uiState.rules) rulesD.open = true;
+        const schedD = document.getElementById('scheduleDetails'); if(schedD && uiState.schedule !== undefined) schedD.open = uiState.schedule;
 
         // DRZEWKO PIONOWE
         const stages = ["1/16 Finału", "1/8 Finału", "Ćwierćfinał", "Półfinał", "FINAŁ"];
