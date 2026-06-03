@@ -484,7 +484,7 @@ setInterval(async () => {
     }
 
     // --- AUTOMATYCZNE "LENIWE" CZYSZCZENIE LISTY (15:15) ---
-    const clearTimeMins = 15 * 60 + 15; // Zmiana z 16:07 na 15:15
+    const clearTimeMins = 15 * 60 + 15; 
     const todayStr = now.toDateString();
     
     if (localLastClearCheck !== todayStr) {
@@ -504,7 +504,7 @@ setInterval(async () => {
                 if (currentMinutes >= clearTimeMins) {
                     if (lastClear !== todayStr) { shouldClear = true; dateToSet = todayStr; }
                 } else {
-                    hasCheckedMissedClear = true; // Flaga, żeby rano sprawdził tylko raz
+                    hasCheckedMissedClear = true;
                     if (lastClear !== yesterdayStr && lastClear !== todayStr) { 
                         shouldClear = true; dateToSet = yesterdayStr; 
                     }
@@ -548,7 +548,25 @@ function renderTable(id, sec) {
         sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
     } else {
         const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-        sortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
+        // Posortujmy wszystkich wstępnie po czasie
+        const timeSortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
+        
+        if (timeSortedData.length > 0) {
+            // Znajdź dokładny czas lidera
+            const leaderTimeDiff = Math.abs(toSec(timeSortedData[0].hour) - sec);
+            
+            // Wydziel lidera (lub liderów, jeśli mają ten sam najlepszy czas)
+            const leaders = timeSortedData.filter(u => Math.abs(toSec(u.hour) - sec) === leaderTimeDiff);
+            const others = timeSortedData.filter(u => Math.abs(toSec(u.hour) - sec) !== leaderTimeDiff);
+            
+            // Losowo wymieszaj "peleton" (innych)
+            const shuffledOthers = shuffleArray(others);
+            
+            // Połącz liderów na początku i wymieszaną resztę
+            sortedData = [...leaders, ...shuffledOthers];
+        } else {
+            sortedData = timeSortedData;
+        }
     }
 
     const now = new Date();
@@ -564,9 +582,26 @@ function renderTable(id, sec) {
         return;
     }
 
+    // Jeśli gra trwa (nie zatrzymano) i nie są ukryte wyniki, pozycja wyświetlana dla wszystkich to ich indeks.
+    // Lider(zy) będą na samej górze. Reszta z losowym miejscem w tabeli (choć wyświetlana jako 2, 3, 4...).
     sortedData.forEach((u, i) => {
-        const displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
-        const isLeader = displayRank === 1;
+        // Jeśli system jest zatrzymany, bierzemy przypisany rank (żeby poprawnie pokazać remisy). Jeśli działa, po prostu numerujemy.
+        let displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
+        
+        // Zabezpieczenie: "Liderem" (mrugającym) jest pierwsza osoba (lub osoby z miejscem 1).
+        let isLeader = false;
+        if (isStopped) {
+            isLeader = (displayRank === 1);
+        } else {
+            // W trakcie gry liderem jest ten na szczycie tabeli (najbliższy czasowo)
+            if (i === 0) isLeader = true;
+            else if (Math.abs(toSec(sortedData[0].hour)-sec) === Math.abs(toSec(u.hour)-sec)) {
+                // Jeśli kolejna osoba ma ten sam perfekcyjny czas co lider, też jest liderem
+                isLeader = true;
+                displayRank = 1; 
+            }
+        }
+
         let revealThisSlot = isLocked || isStopped;
 
         if (currentUser === targetName) {
