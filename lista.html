@@ -483,7 +483,6 @@ setInterval(async () => {
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
     }
 
-    // --- AUTOMATYCZNE "LENIWE" CZYSZCZENIE LISTY (15:15) ---
     const clearTimeMins = 15 * 60 + 15; 
     const todayStr = now.toDateString();
     
@@ -520,7 +519,6 @@ setInterval(async () => {
             } catch(e) { console.error("Błąd leniwego czyszczenia:", e); }
         }
     }
-    // --------------------------------------------------------
 
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
@@ -548,27 +546,20 @@ function renderTable(id, sec) {
         sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
     } else {
         const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
-        // Posortujmy wszystkich wstępnie po czasie
         const timeSortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
         
         if (timeSortedData.length > 0) {
-            // Znajdź dokładny czas lidera
             const leaderTimeDiff = Math.abs(toSec(timeSortedData[0].hour) - sec);
-            
-            // Wydziel lidera (lub liderów, jeśli mają ten sam najlepszy czas)
             const leaders = timeSortedData.filter(u => Math.abs(toSec(u.hour) - sec) === leaderTimeDiff);
             const others = timeSortedData.filter(u => Math.abs(toSec(u.hour) - sec) !== leaderTimeDiff);
             
-            // Posortujmy liderów po ID, żeby wybrany "fałszywy" pojedynczy lider nie migotał co sekundę
             leaders.sort((a, b) => a.id.localeCompare(b.id));
             const visualLeader = leaders[0];
             const hiddenLeaders = leaders.slice(1);
 
-            // Losowo wymieszaj "peleton" (innych + ukrytych liderów remisujących)
             const allOthers = [...hiddenLeaders, ...others];
             const shuffledOthers = shuffleArray(allOthers);
             
-            // Połącz jednego lidera na początku i wymieszaną resztę
             sortedData = [visualLeader, ...shuffledOthers];
         } else {
             sortedData = timeSortedData;
@@ -588,18 +579,13 @@ function renderTable(id, sec) {
         return;
     }
 
-    // Jeśli gra trwa (nie zatrzymano) i nie są ukryte wyniki, pozycja wyświetlana dla wszystkich to ich indeks.
-    // Lider(zy) będą na samej górze. Reszta z losowym miejscem w tabeli (choć wyświetlana jako 2, 3, 4...).
     sortedData.forEach((u, i) => {
-        // Jeśli system jest zatrzymany, bierzemy przypisany rank (żeby poprawnie pokazać remisy). Jeśli działa, po prostu numerujemy.
         let displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
         
-        // Zabezpieczenie: "Liderem" (mrugającym) jest pierwsza osoba (lub osoby z miejscem 1).
         let isLeader = false;
         if (isStopped) {
             isLeader = (displayRank === 1);
         } else {
-            // W trakcie gry liderem jest tylko pierwsza osoba (reszta ukryta w peletonie)
             if (i === 0) isLeader = true;
         }
 
