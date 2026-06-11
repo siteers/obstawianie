@@ -39,6 +39,9 @@
         .history-details summary span::before { content: '▼ HISTORIA PRZYZNAWANIA PUNKTÓW'; }
         .history-details[open] summary span::before { content: '▲ ZWIŃ HISTORIĘ PUNKTÓW'; }
 
+        .archive-details summary span::before { content: '▼ ARCHIWUM KOLEJEK'; }
+        .archive-details[open] summary span::before { content: '▲ ZWIŃ ARCHIWUM KOLEJEK'; }
+
         .rules-details summary span::before { content: '▼ REGULAMIN TYPOWANIA'; }
         .rules-details[open] summary span::before { content: '▲ ZWIŃ REGULAMIN'; }
 
@@ -138,9 +141,18 @@
     <div class="section-title">🏆 GRAND RANKING</div>
     <div class="ranking-container">
         <table class="ranking-table" id="rankingTable">
-            <tr><th>Gracz</th><th>PUNKTY SUMA</th></tr>
+            <tr><th>Gracz</th><th>BIEŻĄCA</th><th>SUMA</th></tr>
         </table>
         
+        <div id="closureContainer" style="margin-top: 15px; text-align: center;"></div>
+
+        <details class="archive-details" id="archiveDetails" style="margin-top:15px; background: var(--glass);">
+            <summary><span></span></summary>
+            <div id="archiveLog" style="padding: 15px; font-size: 0.85rem; color: #ccc;">
+                Brak archiwum.
+            </div>
+        </details>
+
         <details class="history-details" id="historyDetails" style="margin-top:15px; background: var(--glass);">
             <summary><span></span></summary>
             <table class="history-table">
@@ -222,14 +234,17 @@
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
     const currentUser = localStorage.getItem('cyberUser') || "Gość";
 
-    const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: true };
+    const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: true, archive: false };
+    
+    // Zmienne do przechowywania stanu rankingu i archiwum
+    let lastUserPoints = {};
+    let globalState = { archivedRounds: [], pendingClosure: null };
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
     function drawBg() { ctx.clearRect(0, 0, canvas.width, canvas.height); pts.forEach((p, i) => { p.x += p.vx; p.y += p.vy; if(p.x < 0 || p.x > canvas.width) p.vx *= -1; if(p.y < 0 || p.y > canvas.height) p.vy *= -1; ctx.fillStyle = 'rgba(212, 175, 55, 0.3)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill(); for (let j = i + 1; j < pts.length; j++) { const p2 = pts[j]; if (Math.hypot(p.x - p2.x, p.y - p2.y) < 150) { ctx.strokeStyle = `rgba(0, 212, 255, ${0.5 - Math.hypot(p.x - p2.x, p.y - p2.y)/300})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); } } }); requestAnimationFrame(drawBg); }
     window.onresize = initBg; initBg(); drawBg();
 
-    // Słownik flag do API (Format ISO 3166-1 alpha-2)
     const FLAG_MAP = {
         "Meksyk": "mx", "RPA": "za", "Korea Płd.": "kr", "Czechy": "cz",
         "Kanada": "ca", "Bośnia": "ba", "Katar": "qa", "Szwajcaria": "ch",
@@ -374,12 +389,131 @@
         await updateDoc(ref, { status: "finished", realScore1: data.tempReal1, realScore2: data.tempReal2, realPen1: data.tempPen1, realPen2: data.tempPen2, realVerifier: currentUser });
     };
 
+    // --- LOGIKA RANKINGU I ZAMYKANIA KOLEJEK ---
+    function renderRanking() {
+        if (!lastUserPoints) return;
+        const rt = document.getElementById('rankingTable');
+        rt.innerHTML = `<tr><th>Gracz</th><th style="color:var(--cyan);">BIEŻĄCA</th><th style="color:var(--gold);">SUMA</th></tr>`;
+
+        const currentPts = {};
+        Object.keys(lastUserPoints).forEach(u => {
+            let archived = 0;
+            if(globalState.archivedRounds) {
+                globalState.archivedRounds.forEach(ar => { if(ar.scores[u]) archived += ar.scores[u]; });
+            }
+            currentPts[u] = (lastUserPoints[u] || 0) - archived;
+        });
+
+        Object.entries(lastUserPoints).sort((a,b) => b[1] - a[1]).forEach(([user, totalPts]) => {
+            const cur = currentPts[user] || 0;
+            rt.innerHTML += `<tr>
+                <td><b>${user}</b></td>
+                <td style="color:var(--cyan); font-size:1.1rem; font-weight:bold;">${cur}</td>
+                <td style="color:var(--gold); font-size:1.3rem; font-weight:900;">${totalPts}</td>
+            </tr>`;
+        });
+
+        // Wypełnienie Archiwum
+        const archCont = document.getElementById('archiveLog');
+        if (globalState.archivedRounds && globalState.archivedRounds.length > 0) {
+            let archHtml = "";
+            globalState.archivedRounds.forEach(ar => {
+                archHtml += `<div style="margin-bottom:15px; background: rgba(0,0,0,0.4); padding:10px; border-radius:10px;">
+                    <h4 style="color:var(--cyan); margin:0 0 10px 0; border-bottom:1px dashed #333; padding-bottom:5px; text-transform:uppercase;">${ar.name}</h4>
+                    <ul style="list-style:none; padding:0; margin:0; display:flex; flex-wrap:wrap; gap:10px;">`;
+                Object.entries(ar.scores).sort((a,b)=>b[1]-a[1]).forEach(([u, p]) => {
+                    archHtml += `<li style="background:rgba(255,255,255,0.05); padding:5px 10px; border-radius:5px; border: 1px solid rgba(255,255,255,0.1);"><b>${u}</b>: <span style="color:var(--success); font-weight:900;">+${p}</span></li>`;
+                });
+                archHtml += `</ul></div>`;
+            });
+            archCont.innerHTML = archHtml;
+        } else {
+            archCont.innerHTML = "Brak zamkniętych kolejek.";
+        }
+
+        // Moduł Przycisków
+        const cCont = document.getElementById('closureContainer');
+        const isAllClosed = globalState.archivedRounds && globalState.archivedRounds.length >= 4;
+
+        if (isAllClosed) {
+            cCont.innerHTML = `<div style="color:var(--success); font-weight:bold; padding:10px; border:1px solid var(--success); border-radius:8px; background: rgba(16, 185, 129, 0.1);">✅ WSZYSTKIE KOLEJKI ZAMKNIĘTE</div>`;
+        } else if (globalState.pendingClosure) {
+            if (globalState.pendingClosure.proposer === currentUser) {
+                cCont.innerHTML = `
+                    <div style="background:rgba(255,165,0,0.1); border:1px dashed orange; padding:15px; border-radius:8px; color:orange; font-weight:bold; font-size:0.9rem;">
+                        ⏳ Czekasz na potwierdzenie zamknięcia (${globalState.pendingClosure.roundName}) przez innego gracza...<br>
+                        <button onclick="cancelClosure()" style="margin-top:10px; background:rgba(255,0,0,0.2); color:red; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">Anuluj zgłoszenie</button>
+                    </div>`;
+            } else {
+                cCont.innerHTML = `
+                    <div style="background:rgba(0,212,255,0.1); border:1px dashed var(--cyan); padding:15px; border-radius:8px;">
+                        <div style="color:var(--cyan); font-weight:bold; margin-bottom:10px;">⚠️ Gracz ${globalState.pendingClosure.proposer} zgłosił zamknięcie: ${globalState.pendingClosure.roundName}</div>
+                        <button onclick="handleCloseRound()" style="background:var(--success); color:#000; border:none; padding:12px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; text-transform:uppercase;">✅ POTWIERDŹ ZAMKNIĘCIE</button>
+                    </div>`;
+            }
+        } else {
+            const roundNames = ["Kolejka 1", "Kolejka 2", "Kolejka 3", "Faza Pucharowa"];
+            const rName = roundNames[globalState.archivedRounds ? globalState.archivedRounds.length : 0] || "Kolejka";
+            cCont.innerHTML = `<button onclick="handleCloseRound()" style="background:linear-gradient(135deg, #ea580c, #c2410c); color:#fff; border:none; padding:12px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; box-shadow:0 4px 15px rgba(234, 88, 12, 0.4); text-transform:uppercase;">🔒 ZAMKNIJ: ${rName}</button>`;
+        }
+    }
+
+    window.handleCloseRound = async () => {
+        const ref = doc(db, "mundial_state", "global");
+        const snap = await getDoc(ref);
+        let state = snap.exists() ? snap.data() : { archivedRounds: [], pendingClosure: null };
+        if(!state.archivedRounds) state.archivedRounds = [];
+
+        if (state.pendingClosure) {
+            if (state.pendingClosure.proposer === currentUser) {
+                alert("Czekasz na potwierdzenie przez kogoś innego!");
+            } else {
+                const roundNames = ["Kolejka 1", "Kolejka 2", "Kolejka 3", "Faza Pucharowa"];
+                const rName = state.pendingClosure.roundName || roundNames[state.archivedRounds.length] || `Kolejka ${state.archivedRounds.length + 1}`;
+
+                const currentPts = {};
+                Object.keys(lastUserPoints).forEach(u => {
+                    let archived = 0;
+                    state.archivedRounds.forEach(ar => { if(ar.scores[u]) archived += ar.scores[u]; });
+                    currentPts[u] = (lastUserPoints[u] || 0) - archived;
+                });
+
+                state.archivedRounds.push({ name: rName, scores: currentPts });
+                state.pendingClosure = null;
+
+                await setDoc(ref, state, { merge: true });
+                alert(`${rName} została zamknięta! Punkty bieżące zresetowane do 0.`);
+            }
+        } else {
+            const roundNames = ["Kolejka 1", "Kolejka 2", "Kolejka 3", "Faza Pucharowa"];
+            const rName = roundNames[state.archivedRounds.length] || `Kolejka ${state.archivedRounds.length + 1}`;
+            if(confirm(`Czy zgłosić zamknięcie etapu: ${rName}? Będzie to wymagać potwierdzenia drugiego gracza.`)) {
+                await setDoc(ref, { pendingClosure: { proposer: currentUser, roundName: rName } }, { merge: true });
+            }
+        }
+    };
+
+    window.cancelClosure = async () => {
+        await setDoc(doc(db, "mundial_state", "global"), { pendingClosure: null }, { merge: true });
+    };
+
+    onSnapshot(doc(db, "mundial_state", "global"), (snap) => {
+        if(snap.exists()) {
+            globalState = snap.data();
+            if(!globalState.archivedRounds) globalState.archivedRounds = [];
+        } else {
+            globalState = { archivedRounds: [], pendingClosure: null };
+        }
+        renderRanking();
+    });
+
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         document.querySelectorAll('details[data-group]').forEach(d => uiState.groups[d.dataset.group] = d.open);
         uiState.knockout = document.getElementById('knockoutDetails')?.open;
         uiState.history = document.getElementById('historyDetails')?.open;
         uiState.rules = document.getElementById('rulesDetails')?.open;
         uiState.schedule = document.getElementById('scheduleDetails')?.open;
+        uiState.archive = document.getElementById('archiveDetails')?.open;
 
         const dbData = {}; const userPoints = {}; const historyList = [];
         snap.forEach(d => {
@@ -418,11 +552,9 @@
             }
         });
 
-        const rt = document.getElementById('rankingTable');
-        rt.innerHTML = `<tr><th>Gracz</th><th>PUNKTY SUMA</th></tr>`;
-        Object.entries(userPoints).sort((a,b) => b[1] - a[1]).forEach(([user, pts]) => {
-            rt.innerHTML += `<tr><td>${user}</td><td style="color:var(--cyan); font-size:1.2rem;">${pts}</td></tr>`;
-        });
+        lastUserPoints = userPoints;
+        renderRanking();
+
         document.getElementById('historyLog').innerHTML = historyList.length ? historyList.join('') : `<tr><td colspan="5">Brak historii...</td></tr>`;
 
         const gCont = document.getElementById('groupsContainer');
@@ -597,6 +729,7 @@
         const knockD = document.getElementById('knockoutDetails'); if(knockD && uiState.knockout) knockD.open = true;
         const rulesD = document.getElementById('rulesDetails'); if(rulesD && uiState.rules) rulesD.open = true;
         const schedD = document.getElementById('scheduleDetails'); if(schedD && uiState.schedule !== undefined) schedD.open = uiState.schedule;
+        const archD = document.getElementById('archiveDetails'); if(archD && uiState.archive !== undefined) archD.open = uiState.archive;
 
         // DRZEWKO PIONOWE
         const stages = ["1/16 Finału", "1/8 Finału", "Ćwierćfinał", "Półfinał", "FINAŁ"];
