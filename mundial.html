@@ -48,7 +48,7 @@
         .schedule-details summary span::before { content: '▼ ROZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
         .schedule-details[open] summary span::before { content: '▲ ZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
 
-        /* NOWE: Podgląd Typów Innych Graczy */
+        /* Podgląd Typów Innych Graczy */
         .other-bets-details { margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; width: 100%; box-sizing: border-box; }
         .other-bets-details summary { font-size: 0.75rem; color: #aaa; text-transform: none; padding: 5px; }
         .other-bets-details summary span::before { content: '👁️ ZOBACZ TYPY INNYCH'; }
@@ -65,7 +65,6 @@
             position: relative; transition: all 0.3s ease;
         }
         
-        /* Efekt pulsowania dla najbliższego meczu */
         @keyframes pulseClosest {
             0% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); border-color: rgba(0, 212, 255, 0.3); transform: scale(1); }
             50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8), inset 0 0 20px rgba(0, 212, 255, 0.2); border-color: var(--cyan); transform: scale(1.03); background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1)); }
@@ -77,7 +76,6 @@
             margin-top: 10px; margin-bottom: 10px;
         }
 
-        /* WZMOCNIONY Efekt pulsowania dla meczu, który WŁAŚNIE TRWA */
         @keyframes pulseLive {
             0% { box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); border-color: rgba(255, 77, 77, 0.3); transform: scale(1); }
             50% { box-shadow: 0 0 40px rgba(255, 77, 77, 0.8), inset 0 0 20px rgba(255, 77, 77, 0.2); border-color: var(--error); transform: scale(1.03); background: linear-gradient(135deg, rgba(40, 0, 0, 1), rgba(15, 0, 0, 1)); }
@@ -258,10 +256,8 @@
         window.location.href = 'sg.html'; 
     }
 
-    // Zmiana: schedule ustawione domyślnie na false
     const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: false, archive: false };
     
-    // Zmienne do przechowywania stanu rankingu i archiwum
     let lastUserPoints = {};
     let globalState = { archivedRounds: [], pendingClosure: null };
 
@@ -414,7 +410,6 @@
         await updateDoc(ref, { status: "finished", realScore1: data.tempReal1, realScore2: data.tempReal2, realPen1: data.tempPen1, realPen2: data.tempPen2, realVerifier: currentUser });
     };
 
-    // --- LOGIKA RANKINGU I ZAMYKANIA KOLEJEK ---
     function renderRanking() {
         if (!lastUserPoints) return;
         const rt = document.getElementById('rankingTable');
@@ -438,7 +433,6 @@
             </tr>`;
         });
 
-        // Wypełnienie Archiwum
         const archCont = document.getElementById('archiveLog');
         if (globalState.archivedRounds && globalState.archivedRounds.length > 0) {
             let archHtml = "";
@@ -456,7 +450,6 @@
             archCont.innerHTML = "Brak zamkniętych kolejek.";
         }
 
-        // Moduł Przycisków
         const cCont = document.getElementById('closureContainer');
         const isAllClosed = globalState.archivedRounds && globalState.archivedRounds.length >= 4;
 
@@ -532,9 +525,9 @@
         renderRanking();
     });
 
-    const getOtherBetsHtml = (bets) => {
+    const getOtherBetsHtml = (bets, isOpen = false) => {
         if (!bets || Object.keys(bets).length === 0) return `<div style="font-size:0.8rem; color:#aaa; margin-top: 10px;">Brak typów.</div>`;
-        let bHtml = `<details class="other-bets-details"><summary><span></span></summary><div class="other-bets-list">`;
+        let bHtml = `<details class="other-bets-details" ${isOpen ? 'open' : ''}><summary><span></span></summary><div class="other-bets-list">`;
         Object.keys(bets).forEach(u => {
             let betStr = `${bets[u].s1}:${bets[u].s2}`;
             if (bets[u].p1 !== null && bets[u].p2 !== null) betStr += ` (K:${bets[u].p1}-${bets[u].p2})`;
@@ -639,12 +632,12 @@
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
-                    html += getOtherBetsHtml(dbM.bets);
+                    html += getOtherBetsHtml(dbM.bets, false);
                 } else {
                     html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
                     if(matchLocked) {
                         html += `<div class="locked-text" style="color:var(--error);">ZAMKNIĘTE</div>`;
-                        html += getOtherBetsHtml(dbM.bets);
+                        html += getOtherBetsHtml(dbM.bets, true);
                     } else {
                         html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                     }
@@ -698,12 +691,12 @@
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
-                html += getOtherBetsHtml(dbM.bets);
+                html += getOtherBetsHtml(dbM.bets, false);
             } else {
                 html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
                 if (matchLocked) {
                     html += `<div class="locked-text" style="color:var(--error);">ZABLOKOWANE</div>`;
-                    html += getOtherBetsHtml(dbM.bets);
+                    html += getOtherBetsHtml(dbM.bets, true);
                 } else {
                     html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
                 }
@@ -780,7 +773,7 @@
                 
                 if (m.matchLocked) {
                     html += `<div class="locked-text" style="color:var(--error); margin-bottom:10px;">ZAMKNIĘTE - BRAK MOŻLIWOŚCI ZMIAN</div>`;
-                    html += getOtherBetsHtml(m.dbM.bets);
+                    html += getOtherBetsHtml(m.dbM.bets, true);
                 } else {
                     html += `<div class="schedule-bet-info">Wprowadź swój typ</div>
                         <div class="bet-box">
