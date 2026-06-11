@@ -162,8 +162,6 @@
         <table class="ranking-table" id="rankingTable">
             <tr><th>Gracz</th><th>BIEŻĄCA</th><th>SUMA</th></tr>
         </table>
-        
-        <div id="closureContainer" style="margin-top: 15px; text-align: center;"></div>
 
         <details class="archive-details" id="archiveDetails" style="margin-top:15px; background: var(--glass);">
             <summary><span></span></summary>
@@ -410,6 +408,35 @@
         await updateDoc(ref, { status: "finished", realScore1: data.tempReal1, realScore2: data.tempReal2, realPen1: data.tempPen1, realPen2: data.tempPen2, realVerifier: currentUser });
     };
 
+    // --- FUNKCJA WSTRZYKIWANIA PRZYCISKU ZAMKNIĘCIA KOLEJKI ---
+    function renderClosureButton() {
+        const isAllClosed = globalState.archivedRounds && globalState.archivedRounds.length >= 4;
+        if (isAllClosed) {
+            return `<div style="color:var(--success); font-weight:bold; padding:10px; border:1px solid var(--success); border-radius:8px; background: rgba(16, 185, 129, 0.1); text-align:center; margin: 20px 0;">✅ WSZYSTKIE KOLEJKI ZAMKNIĘTE</div>`;
+        } 
+        
+        if (globalState.pendingClosure) {
+            if (globalState.pendingClosure.proposer === currentUser) {
+                return `
+                    <div style="background:rgba(255,165,0,0.1); border:1px dashed orange; padding:15px; border-radius:8px; color:orange; font-weight:bold; font-size:0.9rem; text-align:center; margin: 20px 0;">
+                        ⏳ Czekasz na potwierdzenie zamknięcia (${globalState.pendingClosure.roundName}) przez innego gracza...<br>
+                        <button onclick="cancelClosure()" style="margin-top:10px; background:rgba(255,0,0,0.2); color:red; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">Anuluj zgłoszenie</button>
+                    </div>`;
+            } else {
+                return `
+                    <div style="background:rgba(0,212,255,0.1); border:1px dashed var(--cyan); padding:15px; border-radius:8px; text-align:center; margin: 20px 0;">
+                        <div style="color:var(--cyan); font-weight:bold; margin-bottom:10px;">⚠️ Gracz ${globalState.pendingClosure.proposer} zgłosił zamknięcie: ${globalState.pendingClosure.roundName}</div>
+                        <button onclick="handleCloseRound()" style="background:var(--success); color:#000; border:none; padding:12px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; text-transform:uppercase;">✅ POTWIERDŹ ZAMKNIĘCIE</button>
+                    </div>`;
+            }
+        } 
+        
+        const roundNames = ["Kolejka 1", "Kolejka 2", "Kolejka 3", "Faza Pucharowa"];
+        const rName = roundNames[globalState.archivedRounds ? globalState.archivedRounds.length : 0] || "Kolejka";
+        return `<button onclick="handleCloseRound()" style="background:linear-gradient(135deg, #ea580c, #c2410c); color:#fff; border:none; padding:15px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; box-shadow:0 4px 15px rgba(234, 88, 12, 0.4); text-transform:uppercase; margin: 20px 0; font-size: 1.1rem;">🔒 ZAMKNIJ: ${rName}</button>`;
+    }
+
+
     function renderRanking() {
         if (!lastUserPoints) return;
         const rt = document.getElementById('rankingTable');
@@ -448,31 +475,6 @@
             archCont.innerHTML = archHtml;
         } else {
             archCont.innerHTML = "Brak zamkniętych kolejek.";
-        }
-
-        const cCont = document.getElementById('closureContainer');
-        const isAllClosed = globalState.archivedRounds && globalState.archivedRounds.length >= 4;
-
-        if (isAllClosed) {
-            cCont.innerHTML = `<div style="color:var(--success); font-weight:bold; padding:10px; border:1px solid var(--success); border-radius:8px; background: rgba(16, 185, 129, 0.1);">✅ WSZYSTKIE KOLEJKI ZAMKNIĘTE</div>`;
-        } else if (globalState.pendingClosure) {
-            if (globalState.pendingClosure.proposer === currentUser) {
-                cCont.innerHTML = `
-                    <div style="background:rgba(255,165,0,0.1); border:1px dashed orange; padding:15px; border-radius:8px; color:orange; font-weight:bold; font-size:0.9rem;">
-                        ⏳ Czekasz na potwierdzenie zamknięcia (${globalState.pendingClosure.roundName}) przez innego gracza...<br>
-                        <button onclick="cancelClosure()" style="margin-top:10px; background:rgba(255,0,0,0.2); color:red; border:1px solid red; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">Anuluj zgłoszenie</button>
-                    </div>`;
-            } else {
-                cCont.innerHTML = `
-                    <div style="background:rgba(0,212,255,0.1); border:1px dashed var(--cyan); padding:15px; border-radius:8px;">
-                        <div style="color:var(--cyan); font-weight:bold; margin-bottom:10px;">⚠️ Gracz ${globalState.pendingClosure.proposer} zgłosił zamknięcie: ${globalState.pendingClosure.roundName}</div>
-                        <button onclick="handleCloseRound()" style="background:var(--success); color:#000; border:none; padding:12px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; text-transform:uppercase;">✅ POTWIERDŹ ZAMKNIĘCIE</button>
-                    </div>`;
-            }
-        } else {
-            const roundNames = ["Kolejka 1", "Kolejka 2", "Kolejka 3", "Faza Pucharowa"];
-            const rName = roundNames[globalState.archivedRounds ? globalState.archivedRounds.length : 0] || "Kolejka";
-            cCont.innerHTML = `<button onclick="handleCloseRound()" style="background:linear-gradient(135deg, #ea580c, #c2410c); color:#fff; border:none; padding:12px 20px; font-weight:900; border-radius:8px; cursor:pointer; width:100%; box-shadow:0 4px 15px rgba(234, 88, 12, 0.4); text-transform:uppercase;">🔒 ZAMKNIJ: ${rName}</button>`;
         }
     }
 
@@ -725,6 +727,8 @@
         upcomingList.sort((a, b) => new Date(a.date) - new Date(b.date));
         if (upcomingList.length === 0) {
             upCont.innerHTML = `<div class="schedule-card" style="text-align:center;"><p style="color:#888; margin:0;">Brak zaplanowanych spotkań. Wszystkie mecze zostały już zakończone lub zablokowane.</p></div>`;
+            // Jeśli nie ma meczów (np. turniej się skończył) dodaj przycisk zamknięcia na końcu
+            upCont.innerHTML += renderClosureButton();
         } else {
             let closestIndex = -1;
             for(let i = 0; i < upcomingList.length; i++) {
@@ -788,6 +792,17 @@
                 }
                 html += `</div></div>`;
                 upCont.innerHTML += html;
+
+                // LOGIKA WSTRZYKIWANIA PRZYCISKU ZAMKNIĘCIA KOLEJKI
+                // Kolejka 1 kończy się po meczu G_22 (Uzbekistan - Kolumbia)
+                if (m.id === "G_22") upCont.innerHTML += renderClosureButton();
+                // Kolejka 2 kończy się po meczu G_44 (Kolumbia - Kongo)
+                else if (m.id === "G_44") upCont.innerHTML += renderClosureButton();
+                // Kolejka 3 kończy się po meczu G_72 (Algieria - Austria)
+                else if (m.id === "G_72") upCont.innerHTML += renderClosureButton();
+                // Faza Pucharowa kończy się po Finale (F_1)
+                else if (m.id === "F_1") upCont.innerHTML += renderClosureButton();
+
             });
         }
 
