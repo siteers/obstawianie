@@ -49,8 +49,8 @@
         .schedule-details[open] summary span::before { content: '▲ ZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
 
         /* NOWE: Podgląd Typów Innych Graczy */
-        .other-bets-details { margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; }
-        .other-bets-details summary { font-size: 0.75rem; color: #aaa; text-transform: none; }
+        .other-bets-details { margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; width: 100%; box-sizing: border-box; }
+        .other-bets-details summary { font-size: 0.75rem; color: #aaa; text-transform: none; padding: 5px; }
         .other-bets-details summary span::before { content: '👁️ ZOBACZ TYPY INNYCH'; }
         .other-bets-details[open] summary span::before { content: '👁️ UKRYJ TYPY INNYCH'; }
         .other-bets-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; padding-bottom: 5px; font-size: 0.8rem; }
@@ -65,6 +65,7 @@
             position: relative; transition: all 0.3s ease;
         }
         
+        /* Efekt pulsowania dla najbliższego meczu */
         @keyframes pulseClosest {
             0% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); border-color: rgba(0, 212, 255, 0.3); transform: scale(1); }
             50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8), inset 0 0 20px rgba(0, 212, 255, 0.2); border-color: var(--cyan); transform: scale(1.03); background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1)); }
@@ -75,6 +76,19 @@
             border: 2px solid var(--cyan) !important;
             margin-top: 10px; margin-bottom: 10px;
         }
+
+        /* WZMOCNIONY Efekt pulsowania dla meczu, który WŁAŚNIE TRWA */
+        @keyframes pulseLive {
+            0% { box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); border-color: rgba(255, 77, 77, 0.3); transform: scale(1); }
+            50% { box-shadow: 0 0 40px rgba(255, 77, 77, 0.8), inset 0 0 20px rgba(255, 77, 77, 0.2); border-color: var(--error); transform: scale(1.03); background: linear-gradient(135deg, rgba(40, 0, 0, 1), rgba(15, 0, 0, 1)); }
+            100% { box-shadow: 0 0 10px rgba(255, 77, 77, 0.2); border-color: rgba(255, 77, 77, 0.3); transform: scale(1); }
+        }
+        .live-match {
+            animation: pulseLive 1.5s infinite;
+            border: 2px solid var(--error) !important;
+            margin-top: 10px; margin-bottom: 10px;
+        }
+
         .closest-badge {
             position: absolute; top: -15px; left: 50%; transform: translateX(-50%);
             background: var(--cyan); color: #000; font-size: 0.8rem; font-weight: 900;
@@ -120,7 +134,7 @@
         .btn-admin { background: var(--gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; }
         .btn-confirm { background: var(--success); }
 
-        .locked-text { color: var(--error); font-size: 12px; font-weight: bold; margin-top: 5px; text-transform: uppercase; }
+        .locked-text { color: var(--error); font-size: 12px; font-weight: bold; margin-top: 5px; margin-bottom: 5px; text-transform: uppercase; text-align: center; width: 100%; }
         .real-score { font-size: 20px; font-weight: 900; color: var(--gold); margin: 10px 0; letter-spacing: 2px; }
 
         /* Tabela Rankingu i Historia */
@@ -214,7 +228,7 @@
 
     <div class="section-title">📅 HARMONOGRAM MECZÓW</div>
     <div class="grid">
-        <details id="scheduleDetails" class="schedule-details" style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);" open>
+        <details id="scheduleDetails" class="schedule-details" style="width: 100%; max-width: 900px; margin: 0 auto; background: var(--glass); border: 1px solid var(--cyan);">
             <summary style="padding: 10px;"><span></span></summary>
             <div class="schedule-grid" id="upcomingContainer"></div>
         </details>
@@ -239,9 +253,13 @@
     import { getFirestore, collection, doc, onSnapshot, updateDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
     const db = getFirestore(initializeApp({ apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" }));
-    const currentUser = localStorage.getItem('cyberUser') || "Gość";
+    const currentUser = localStorage.getItem('cyberUser');
+    if (!currentUser || currentUser.trim() === "") { 
+        window.location.href = 'sg.html'; 
+    }
 
-    const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: true, archive: false };
+    // Zmiana: schedule ustawione domyślnie na false
+    const uiState = { groups: {}, knockout: false, history: false, rules: false, schedule: false, archive: false };
     
     // Zmienne do przechowywania stanu rankingu i archiwum
     let lastUserPoints = {};
@@ -514,9 +532,8 @@
         renderRanking();
     });
 
-    // NOWE: Funkcja pomocnicza do generowania podglądu typów
     const getOtherBetsHtml = (bets) => {
-        if (!bets || Object.keys(bets).length === 0) return '';
+        if (!bets || Object.keys(bets).length === 0) return `<div style="font-size:0.8rem; color:#aaa; margin-top: 10px;">Brak typów.</div>`;
         let bHtml = `<details class="other-bets-details"><summary><span></span></summary><div class="other-bets-list">`;
         Object.keys(bets).forEach(u => {
             let betStr = `${bets[u].s1}:${bets[u].s2}`;
@@ -610,22 +627,24 @@
             html += `</table><details data-group="${g}" class="group-details" ${isOpen}><summary><span></span></summary>`;
 
             MATCHES.filter(m => m.group === g).forEach(m => {
-                const dbM = dbData[m.id] || {}; const myBet = dbM.bets?.[currentUser]; const matchLocked = new Date() > new Date(m.date) || isLocked;
+                const dbM = dbData[m.id] || {}; 
+                const myBet = dbM.bets?.[currentUser]; 
+                const matchLocked = new Date() > new Date(m.date) || isLocked;
                 
-                if (!matchLocked && dbM.status !== "finished") {
-                    upcomingList.push({ ...m, displayGroup: `Grupa ${g}`, isKnockout: false, dbM });
+                if (dbM.status !== "finished") {
+                    upcomingList.push({ ...m, displayGroup: `Grupa ${g}`, isKnockout: false, dbM, matchLocked });
                 }
 
                 html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams">${m.t1} - ${m.t2}</div>`;
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
-                    html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych po meczu
+                    html += getOtherBetsHtml(dbM.bets);
                 } else {
                     html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
                     if(matchLocked) {
-                        html += `<div class="locked-text">ZAMKNIĘTE</div>`;
-                        html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych gdy zablokowane
+                        html += `<div class="locked-text" style="color:var(--error);">ZAMKNIĘTE</div>`;
+                        html += getOtherBetsHtml(dbM.bets);
                     } else {
                         html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                     }
@@ -664,24 +683,27 @@
         };
 
         KNOCKOUTS.forEach(k => {
-            const dbM = dbData[k.id] || {}; const matchLocked = new Date() > new Date(k.date); const myBet = dbM.bets?.[currentUser];
-            const t1 = dbM.override_t1 || resolveKnockoutTeam(k.ref1); const t2 = dbM.override_t2 || resolveKnockoutTeam(k.ref2);
+            const dbM = dbData[k.id] || {}; 
+            const matchLocked = new Date() > new Date(k.date); 
+            const myBet = dbM.bets?.[currentUser];
+            const t1 = dbM.override_t1 || resolveKnockoutTeam(k.ref1); 
+            const t2 = dbM.override_t2 || resolveKnockoutTeam(k.ref2);
 
             const readyToBet = !t1.includes("m. Gr.") && !t1.includes("Zw. ") && !t1.includes("Prz. ") && !t2.includes("m. Gr.") && !t2.includes("Zw. ") && !t2.includes("Prz. ");
-            if (!matchLocked && dbM.status !== "finished" && readyToBet) {
-                upcomingList.push({ id: k.id, group: k.stage, t1, t2, date: k.date, isKnockout: true, dbM });
+            if (dbM.status !== "finished" && readyToBet) {
+                upcomingList.push({ id: k.id, group: k.stage, t1, t2, date: k.date, isKnockout: true, dbM, matchLocked });
             }
 
             let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
-                html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych po meczu
+                html += getOtherBetsHtml(dbM.bets);
             } else {
                 html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
                 if (matchLocked) {
-                    html += `<div class="locked-text">ZABLOKOWANE</div>`;
-                    html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych gdy zablokowane
+                    html += `<div class="locked-text" style="color:var(--error);">ZABLOKOWANE</div>`;
+                    html += getOtherBetsHtml(dbM.bets);
                 } else {
                     html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
                 }
@@ -711,18 +733,32 @@
         if (upcomingList.length === 0) {
             upCont.innerHTML = `<div class="schedule-card" style="text-align:center;"><p style="color:#888; margin:0;">Brak zaplanowanych spotkań. Wszystkie mecze zostały już zakończone lub zablokowane.</p></div>`;
         } else {
+            let closestIndex = -1;
+            for(let i = 0; i < upcomingList.length; i++) {
+                if(!upcomingList[i].matchLocked) {
+                    closestIndex = i;
+                    break;
+                }
+            }
+
             upcomingList.forEach((m, index) => {
                 const myBet = m.dbM.bets?.[currentUser];
                 const matchTime = m.date.split("T")[1].substring(0, 5);
                 const matchDate = formatPolishDate(m.date); 
                 
-                const isClosest = (index === 0);
-                const closestClass = isClosest ? "closest-match" : "";
-                const closestBadge = isClosest ? `<div class="closest-badge">🔥 Najbliższy mecz</div>` : "";
+                let badgeHtml = "";
+                let borderClass = "";
+                if (m.matchLocked) {
+                    borderClass = "live-match";
+                    badgeHtml = `<div class="closest-badge" style="background:var(--error); box-shadow:0 0 15px var(--error); color:#fff;">🔴 TRWA MECZ</div>`;
+                } else if (index === closestIndex) {
+                    borderClass = "closest-match";
+                    badgeHtml = `<div class="closest-badge">🔥 Najbliższy mecz</div>`;
+                }
 
                 let html = `
-                <div class="schedule-card ${closestClass}">
-                    ${closestBadge}
+                <div class="schedule-card ${borderClass}">
+                    ${badgeHtml}
                     <div class="schedule-header">
                         <span class="schedule-group-name">${m.displayGroup || m.group}</span>
                     </div>
@@ -740,19 +776,24 @@
                             <span class="schedule-team-name">${m.t2}</span>
                         </div>
                     </div>
-                    <div class="schedule-bet-area">
-                        <div class="schedule-bet-info">Wprowadź swój typ</div>
+                    <div class="schedule-bet-area">`;
+                
+                if (m.matchLocked) {
+                    html += `<div class="locked-text" style="color:var(--error); margin-bottom:10px;">ZAMKNIĘTE - BRAK MOŻLIWOŚCI ZMIAN</div>`;
+                    html += getOtherBetsHtml(m.dbM.bets);
+                } else {
+                    html += `<div class="schedule-bet-info">Wprowadź swój typ</div>
                         <div class="bet-box">
                             <input type="number" id="b1_up_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}">
                             <span style="font-size:18px; font-weight:bold; color:#fff;">:</span>
                             <input type="number" id="b2_up_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}">`;
-                if (m.isKnockout) {
-                    html += `<span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}">-<input type="number" id="bp2_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}"> )</span>`;
+                    if (m.isKnockout) {
+                        html += `<span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}">-<input type="number" id="bp2_up_${m.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}"> )</span>`;
+                    }
+                    html += `</div>
+                        <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
                 }
-                html += `</div>
-                        <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>
-                    </div>
-                </div>`;
+                html += `</div></div>`;
                 upCont.innerHTML += html;
             });
         }
