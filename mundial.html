@@ -48,6 +48,14 @@
         .schedule-details summary span::before { content: '▼ ROZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
         .schedule-details[open] summary span::before { content: '▲ ZWIŃ HARMONOGRAM'; font-size: 1.2rem; }
 
+        /* NOWE: Podgląd Typów Innych Graczy */
+        .other-bets-details { margin-top: 10px; background: rgba(0,0,0,0.2); border: 1px dashed rgba(255,255,255,0.1); padding: 5px; border-radius: 8px; }
+        .other-bets-details summary { font-size: 0.75rem; color: #aaa; text-transform: none; }
+        .other-bets-details summary span::before { content: '👁️ ZOBACZ TYPY INNYCH'; }
+        .other-bets-details[open] summary span::before { content: '👁️ UKRYJ TYPY INNYCH'; }
+        .other-bets-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; padding-bottom: 5px; font-size: 0.8rem; }
+        .other-bets-list span { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); padding: 4px 8px; border-radius: 5px; color: #fff; }
+
         /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
         .schedule-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; padding-top: 15px; padding-bottom: 15px; }
         .schedule-card { 
@@ -57,7 +65,6 @@
             position: relative; transition: all 0.3s ease;
         }
         
-        /* WZMOCNIONY Efekt pulsowania dla najbliższego meczu */
         @keyframes pulseClosest {
             0% { box-shadow: 0 0 10px rgba(0, 212, 255, 0.2); border-color: rgba(0, 212, 255, 0.3); transform: scale(1); }
             50% { box-shadow: 0 0 40px rgba(0, 212, 255, 0.8), inset 0 0 20px rgba(0, 212, 255, 0.2); border-color: var(--cyan); transform: scale(1.03); background: linear-gradient(135deg, rgba(30, 41, 59, 1), rgba(15, 23, 42, 1)); }
@@ -507,6 +514,19 @@
         renderRanking();
     });
 
+    // NOWE: Funkcja pomocnicza do generowania podglądu typów
+    const getOtherBetsHtml = (bets) => {
+        if (!bets || Object.keys(bets).length === 0) return '';
+        let bHtml = `<details class="other-bets-details"><summary><span></span></summary><div class="other-bets-list">`;
+        Object.keys(bets).forEach(u => {
+            let betStr = `${bets[u].s1}:${bets[u].s2}`;
+            if (bets[u].p1 !== null && bets[u].p2 !== null) betStr += ` (K:${bets[u].p1}-${bets[u].p2})`;
+            bHtml += `<span><b style="color:var(--cyan)">${u}:</b> ${betStr}</span>`;
+        });
+        bHtml += `</div></details>`;
+        return bHtml;
+    };
+
     onSnapshot(collection(db, "mundial_matches"), (snap) => {
         document.querySelectorAll('details[data-group]').forEach(d => uiState.groups[d.dataset.group] = d.open);
         uiState.knockout = document.getElementById('knockoutDetails')?.open;
@@ -600,9 +620,15 @@
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
+                    html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych po meczu
                 } else {
                     html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
-                    if(matchLocked) html += `<div class="locked-text">ZAMKNIĘTE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
+                    if(matchLocked) {
+                        html += `<div class="locked-text">ZAMKNIĘTE</div>`;
+                        html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych gdy zablokowane
+                    } else {
+                        html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
+                    }
                 }
                 if(dbM.status === 'pending_real') {
                     if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
@@ -650,9 +676,15 @@
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
+                html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych po meczu
             } else {
                 html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
-                if (matchLocked) html += `<div class="locked-text">ZABLOKOWANE</div>`; else html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
+                if (matchLocked) {
+                    html += `<div class="locked-text">ZABLOKOWANE</div>`;
+                    html += getOtherBetsHtml(dbM.bets); // Pokaż typy innych gdy zablokowane
+                } else {
+                    html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
+                }
             }
             if(dbM.status === 'pending_real') {
                 if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
