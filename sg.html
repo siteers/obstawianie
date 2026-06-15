@@ -52,7 +52,6 @@
       background: var(--glass); border: 1px solid var(--border); border-radius: 25px;
       color: #fff; font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer;
       box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-shadow: 0 2px 10px rgba(0,0,0,0.5); box-sizing: border-box;
-      /* 0.02s to ekstremalnie krótki czas. Kafelki będą się wręcz teleportować */
       transition: transform 0.02s linear, background 0.3s;
     }
     .btn-cyber:hover { transform: translateY(-3px); }
@@ -65,6 +64,7 @@
     .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; }
     
     .btn-push-activate { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid #2a5298; font-size: 14px; padding: 15px; margin-top: 25px; }
+    .btn-poll-btn { background: linear-gradient(135deg, #0f766e, #047857); border: 1px solid #059669; font-size: 14px; padding: 15px; margin-top: 10px; }
 
     #sub-menu { display: none; }
     #sub-menu.active { display: block; animation: slideUp 0.5s forwards; }
@@ -82,6 +82,23 @@
 
     #delete-user-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 5000; display: none; align-items: center; justify-content: center; }
     .modal-content { background: #151b26; border: 1px solid #ff4757; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
+
+    /* --- ANKIETA MODAL --- */
+    #poll-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 6000; display: none; align-items: center; justify-content: center; }
+    .poll-content { background: #111; border: 1px solid var(--cyan); padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; position: relative; box-shadow: 0 0 40px rgba(0, 212, 255, 0.2); }
+    .poll-close { position: absolute; top: 10px; right: 15px; color: #888; font-size: 24px; cursor: pointer; transition: 0.2s; }
+    .poll-close:hover { color: #fff; }
+    .poll-title { color: var(--gold); font-size: 18px; margin-bottom: 20px; text-transform: uppercase; font-weight: 900; }
+    .poll-question { font-size: 16px; margin-bottom: 25px; line-height: 1.5; }
+    .poll-btn { background: var(--glass); border: 1px solid var(--cyan); color: #fff; padding: 15px 30px; margin: 10px 5px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 40%; display: inline-block; transition: 0.2s; }
+    .poll-btn.btn-yes:hover { background: var(--success); color: #000; border-color: var(--success); }
+    .poll-btn.btn-no:hover { background: var(--error); color: #fff; border-color: var(--error); }
+    .poll-results { display: none; margin-top: 20px; text-align: left; }
+    .poll-bar-container { background: rgba(255,255,255,0.1); border-radius: 8px; margin: 10px 0 20px; overflow: hidden; height: 25px; position: relative; }
+    .poll-bar { height: 100%; transition: width 0.8s ease-out; }
+    .poll-bar.yes-bar { background: linear-gradient(90deg, #10b981, #059669); }
+    .poll-bar.no-bar { background: linear-gradient(90deg, #ef4444, #b91c1c); }
+    .poll-bar-text { position: absolute; top: 4px; left: 10px; font-size: 12px; font-weight: bold; color: #fff; text-shadow: 0 0 5px #000; }
 
     /* --- ZEMSTA 2.0 (BAN & QUIZ) --- */
     #revenge-overlay { 
@@ -246,6 +263,33 @@
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
+  <div id="poll-modal">
+      <div class="poll-content">
+          <span class="poll-close" onclick="closePoll()">✖</span>
+          <div class="poll-title">📊 Ankieta Systemowa</div>
+          <div class="poll-question">Czy jesteś za utrzymaniem sekund w obstawianiu?</div>
+          
+          <div id="poll-vote-area">
+              <button class="poll-btn btn-yes" onclick="votePoll('Tak')">TAK</button>
+              <button class="poll-btn btn-no" onclick="votePoll('Nie')">NIE</button>
+          </div>
+
+          <div id="poll-results-area" class="poll-results">
+              <div style="color: #aaa; font-size: 11px; text-transform: uppercase; margin-bottom: 10px; text-align: center;">Aktualne wyniki</div>
+              
+              <div class="poll-bar-container">
+                  <div class="poll-bar yes-bar" id="poll-bar-yes"></div>
+                  <div class="poll-bar-text" id="poll-text-yes">TAK: 0%</div>
+              </div>
+              
+              <div class="poll-bar-container">
+                  <div class="poll-bar no-bar" id="poll-bar-no"></div>
+                  <div class="poll-bar-text" id="poll-text-no">NIE: 0%</div>
+              </div>
+          </div>
+      </div>
+  </div>
+
   <div id="rickroll-overlay">
       <div id="rickroll-content">
           <div id="rr-title">⚠️ KRYTYCZNY BŁĄD SYSTEMU ⚠️</div>
@@ -322,9 +366,11 @@
           <button class="btn-cyber btn-others extra-feature" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
           
           <button class="btn-cyber btn-push-activate" onclick="enablePushNotifications()">🔔 Aktywuj Powiadomienia</button>
+          <button class="btn-cyber btn-poll-btn" onclick="showPoll()">📊 Ankieta: Sekundy</button>
       </div>
       <div id="admin-buttons" style="display:none;">
           <button class="btn-cyber btn-push-activate" onclick="enablePushNotifications()">🔔 Aktywuj Powiadomienia</button>
+          <button class="btn-cyber btn-poll-btn" onclick="showPoll()">📊 Ankieta: Sekundy</button>
           <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
           <button class="btn-cyber btn-main" onclick="adminAddUser()">➕ Dodaj Gracza</button>
           <button class="btn-cyber btn-main" onclick="adminEditUserFlow()">✏️ Edytuj Nazwę</button>
@@ -411,10 +457,8 @@
       }
   }
 
-  // --- ODPALAMY GLÓWNY TEST PRZY WEJŚCIU ---
   checkPrimaAprilis();
 
-  // FUNKCJA WYWOŁYWANA PO KLIKNIĘCIU "NAPRAW SYSTEM"
   window.startRickRoll = () => {
       const iframe = document.getElementById('rickroll-video');
       const countdownEl = document.getElementById('rickroll-countdown');
@@ -795,7 +839,6 @@
                       globalAnger++;
 
                       // Skok musi być daleki i GWAŁTOWNY. 
-                      // Wymuszamy przesunięcie co najmniej o 200px do 500px od środka w losową stronę.
                       let signX = Math.random() > 0.5 ? 1 : -1;
                       let signY = Math.random() > 0.5 ? 1 : -1;
                       const x = signX * (Math.random() * 300 + 200); 
@@ -838,6 +881,70 @@
   }
 
 
+  // --- LOGIKA ANKIETY (SEKUNDY) ---
+  let pollData = { votes: {} };
+  onSnapshot(doc(db, "appState", "poll_seconds"), (snap) => {
+      if(snap.exists()) {
+          pollData = snap.data();
+      } else {
+          pollData = { votes: {} };
+      }
+      updatePollUI();
+  });
+
+  window.showPoll = () => {
+      document.getElementById('poll-modal').style.display = 'flex';
+      updatePollUI();
+  };
+
+  window.closePoll = () => {
+      document.getElementById('poll-modal').style.display = 'none';
+      localStorage.setItem('pollSeen_seconds', 'true');
+  };
+
+  window.votePoll = async (choice) => {
+      const currentUser = localStorage.getItem('cyberUser');
+      if(!currentUser) return;
+      
+      const ref = doc(db, "appState", "poll_seconds");
+      await setDoc(ref, { votes: { [currentUser]: choice } }, { merge: true });
+      localStorage.setItem('pollSeen_seconds', 'true');
+  };
+
+  function updatePollUI() {
+      const currentUser = localStorage.getItem('cyberUser');
+      const hasVoted = pollData.votes && pollData.votes[currentUser];
+      
+      const btnArea = document.getElementById('poll-vote-area');
+      const resArea = document.getElementById('poll-results-area');
+      
+      if(hasVoted) {
+          btnArea.style.display = 'none';
+          resArea.style.display = 'block';
+          
+          let yes = 0, no = 0;
+          if (pollData.votes) {
+              Object.values(pollData.votes).forEach(v => {
+                  if(v === 'Tak') yes++;
+                  if(v === 'Nie') no++;
+              });
+          }
+          const total = yes + no;
+          const yesPct = total === 0 ? 0 : Math.round((yes/total)*100);
+          const noPct = total === 0 ? 0 : Math.round((no/total)*100);
+          
+          document.getElementById('poll-bar-yes').style.width = yesPct + '%';
+          document.getElementById('poll-text-yes').innerText = `TAK: ${yesPct}% (${yes} głosów)`;
+          
+          document.getElementById('poll-bar-no').style.width = noPct + '%';
+          document.getElementById('poll-text-no').innerText = `NIE: ${noPct}% (${no} głosów)`;
+      } else {
+          btnArea.style.display = 'block';
+          resArea.style.display = 'none';
+      }
+  }
+
+
   function renderHubData(user) {
       document.getElementById('login-container').style.display = 'none'; 
       document.getElementById('hub-view').style.display = 'block'; 
@@ -857,8 +964,12 @@
       if (user === "Admin") { userBtns.style.display = 'none'; adminBtns.style.display = 'block'; } else { userBtns.style.display = 'block'; adminBtns.style.display = 'none'; }
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
       
-      // Inicjalizacja uciekających przycisków 
       initRunningButtons();
+
+      // Automatyczne pokazywanie ankiety, jeśli jeszcze nie widziano
+      if (!localStorage.getItem('pollSeen_seconds')) {
+          setTimeout(() => { showPoll(); }, 800); 
+      }
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
