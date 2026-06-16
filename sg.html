@@ -221,6 +221,30 @@
         text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
     }
 
+    /* --- EVENT WYNIKI ANKIETY (12334.mp4) --- */
+    #poll-results-overlay {
+        position: fixed; inset: 0; background: black; z-index: 9999998;
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    #poll-results-video { width: 100%; height: 100%; object-fit: contain; position: absolute; inset: 0; }
+    #poll-results-start-btn {
+        position: absolute; z-index: 100; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: var(--gold); color: black; border: none; font-weight: bold;
+        padding: 20px 40px; border-radius: 20px; cursor: pointer; font-size: 18px;
+        display: none; box-shadow: 0 0 30px rgba(212,175,55,0.5); text-transform: uppercase;
+        animation: pulseRed 1s infinite;
+    }
+    #poll-results-message-container {
+        z-index: 10; text-align: center; padding: 40px;
+        background: rgba(10, 15, 30, 0.95); border: 2px solid var(--cyan);
+        border-radius: 20px; width: 90%; max-width: 600px;
+        box-shadow: 0 0 40px rgba(0, 212, 255, 0.4); display: none;
+    }
+    .poll-results-message {
+        color: var(--gold); font-size: 22px; line-height: 1.6;
+        text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; text-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+    }
+
     /* --- PRIMA APRILIS RICKROLL OVERLAY --- */
     #rickroll-overlay {
         position: fixed; inset: 0; background: black; z-index: 999999;
@@ -311,6 +335,17 @@
       </div>
   </div>
 
+  <div id="poll-results-overlay">
+      <video id="poll-results-video" playsinline>
+          <source src="12334.mp4" type="video/mp4">
+      </video>
+      <button id="poll-results-start-btn">▶️ ODTWÓRZ WYNIKI ANKIETY</button>
+      <div id="poll-results-message-container">
+          <h1 class="poll-results-message">DECYZJA ZOSTAŁA PODJĘTA.<br>SEKUNDY ZOSTAJĄ W GRZE.</h1>
+          <button id="poll-results-exit-btn" class="btn-cyber btn-enter" style="width: 200px; margin: 0 auto;">WYJDŹ</button>
+      </div>
+  </div>
+
   <div id="global-intro-overlay">
       <video id="global-intro-video" playsinline>
           <source src="Tworzenie_Wideo_Tanecznego_Do_Piosenki.mp4" type="video/mp4">
@@ -335,6 +370,7 @@
         </div>
         <button class="btn-cyber btn-enter" onclick="login()">ZALOGUJ</button>
         <div class="changelog">
+            <div>Update (11.06.2026) - Decyzja ludu. Wyniki ankiety dotyczące sekund w obstawianiu zostały ogłoszone!</div>
             <div>Update (10.06.2026) - Interwały 10-sekundowe i wizualne poprawki Mundialu</div>
             <div>Update (01.04.2026) - Rick Astley pozdrawia</div>
             <div>Update (31.03.2026) - Wprowadzono limity 20 typowań i podział na Grand Ranking (SD.34.AŻ.2026)</div>
@@ -342,9 +378,6 @@
             <div>Update (12.02.2026) V.489 - Wprowadzono zmiany w service desk (filtracja i numery spraw)</div>
             <div>Update (11.02.2026) V.454 - Lista zamykana jest automatycznie o godz. 13:15</div>
             <div>Update (05.02.2026) V.442 - Dodano konto SCIANA (tylko podgląd) oraz zabezpieczono system przed self-votingiem</div>
-            <div>Update (05.02.2026) V.441 - Historia rekordów przedstawia również obstawiane godziny oraz miejsca poza podium</div>
-            <div>Update (05.02.2026) V.435 - dodano przyciski wróć w dodaj.html, lista.html, ranking.html oraz regulamin.html</div>
-            <div>Update (04.02.2026) V.423 - Zarządzanie graczami (dodawanie/edycja) tylko dla Admina</div>
         </div>
     </div>
   </div>
@@ -442,12 +475,9 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // --- PRIMA APRILIS CHECK ---
   function checkPrimaAprilis() {
       const today = new Date();
       const savedDate = localStorage.getItem("rickRolled");
-      
-      // Sprawdzamy czy to 1 kwietnia. Do testów dzisiaj zmień "3" na "2" i "1" na "31"
       if (today.getMonth() === 3 && today.getDate() === 1 && savedDate !== "true") {
           document.getElementById('login-container').style.display = 'none';
           document.getElementById('logoutBtn').style.display = 'none';
@@ -660,9 +690,49 @@
   
   function saveSession(user) { localStorage.setItem('cyberUser', user); triggerHubWithIntro(user); }
 
+  function checkPollResultsEvent(user, callback) {
+      const eventKey = `seenPollResultsMp4_${user}`;
+
+      if (!localStorage.getItem(eventKey)) {
+          document.getElementById('login-container').style.display = 'none';
+          const overlay = document.getElementById('poll-results-overlay');
+          const vid = document.getElementById('poll-results-video');
+          const startBtn = document.getElementById('poll-results-start-btn');
+          const msgContainer = document.getElementById('poll-results-message-container');
+          const exitBtn = document.getElementById('poll-results-exit-btn');
+
+          overlay.style.display = 'flex';
+          vid.style.display = 'block';
+          msgContainer.style.display = 'none';
+
+          vid.play().catch(e => {
+              startBtn.style.display = 'block';
+          });
+
+          startBtn.onclick = () => {
+              startBtn.style.display = 'none';
+              vid.play();
+          };
+
+          vid.onended = () => {
+              vid.style.display = 'none';
+              msgContainer.style.display = 'block';
+          };
+
+          exitBtn.onclick = () => {
+              localStorage.setItem(eventKey, 'true');
+              overlay.style.display = 'none';
+              callback();
+          };
+      } else {
+          callback();
+      }
+  }
+
+
   function checkGamesEvent(user, callback) {
       const now = new Date();
-      // Ustawiony przedział czasowy: od dzisiaj 21:40 do jutra 22:00 (10.06 - 11.06)
+      // Ustawiony przedział czasowy: od 10.06 21:40 do 11.06 22:00
       const startEvent = new Date("2026-06-10T21:40:00");
       const endEvent = new Date("2026-06-11T22:00:00");
       const eventKey = `seenGamesMp4_${user}`;
@@ -706,38 +776,42 @@
   function triggerHubWithIntro(user) {
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       
-      // Sprawdzenie nowego eventu najpierw
-      checkGamesEvent(user, () => {
-          const introKey = `videoSeen_${user}`;
-          if (localStorage.getItem(introKey)) {
-              renderHubData(user);
-              return;
-          }
+      // 1. Sprawdzamy event z wynikami ankiety
+      checkPollResultsEvent(user, () => {
+          // 2. Jeśli obejrzano, sprawdzamy starszy event games.mp4
+          checkGamesEvent(user, () => {
+              // 3. Klasyczne wideo powitalne
+              const introKey = `videoSeen_${user}`;
+              if (localStorage.getItem(introKey)) {
+                  renderHubData(user);
+                  return;
+              }
 
-          document.getElementById('login-container').style.display = 'none';
-          const overlay = document.getElementById('global-intro-overlay');
-          const vid = document.getElementById('global-intro-video');
-          const startBtn = document.getElementById('start-video-btn');
-          
-          overlay.style.display = 'flex';
+              document.getElementById('login-container').style.display = 'none';
+              const overlay = document.getElementById('global-intro-overlay');
+              const vid = document.getElementById('global-intro-video');
+              const startBtn = document.getElementById('start-video-btn');
+              
+              overlay.style.display = 'flex';
 
-          vid.play().catch(e => {
-              console.log("Autoplay zablokowane", e);
-              startBtn.style.display = 'block'; 
+              vid.play().catch(e => {
+                  console.log("Autoplay zablokowane", e);
+                  startBtn.style.display = 'block'; 
+              });
+
+              startBtn.onclick = () => {
+                  startBtn.style.display = 'none';
+                  vid.play();
+              };
+
+              vid.onended = () => {
+                  finishIntro(user, introKey);
+              };
+
+              document.getElementById('skip-intro-btn').onclick = () => {
+                  finishIntro(user, introKey);
+              };
           });
-
-          startBtn.onclick = () => {
-              startBtn.style.display = 'none';
-              vid.play();
-          };
-
-          vid.onended = () => {
-              finishIntro(user, introKey);
-          };
-
-          document.getElementById('skip-intro-btn').onclick = () => {
-              finishIntro(user, introKey);
-          };
       });
   }
 
@@ -838,7 +912,6 @@
                       btn.dataset.escapes = escapes;
                       globalAnger++;
 
-                      // Skok musi być daleki i GWAŁTOWNY. 
                       let signX = Math.random() > 0.5 ? 1 : -1;
                       let signY = Math.random() > 0.5 ? 1 : -1;
                       const x = signX * (Math.random() * 300 + 200); 
@@ -846,14 +919,11 @@
 
                       btn.style.transform = `translate(${x}px, ${y}px)`;
 
-                      // Ekran robi się coraz bardziej czerwony
                       angerOverlay.style.opacity = Math.min(globalAnger / 25, 0.85);
 
-                      // Lekkie trzęsienie ekranu
                       document.body.classList.add('nightmare-shake');
                       setTimeout(() => document.body.classList.remove('nightmare-shake'), 150);
 
-                      // Sprawdzamy czy wszystkie uciekły po 5 razy
                       let allDone = true;
                       document.querySelectorAll('#initial-view .btn-cyber').forEach(b => {
                           if (parseInt(b.dataset.escapes) < maxEscapes) allDone = false;
@@ -869,7 +939,6 @@
                           }, 1000);
                       }
                   } else {
-                      // Przycisk się poddał - wraca i działa normalnie
                       btn.style.transform = "translate(0, 0)";
                   }
               };
@@ -879,7 +948,6 @@
           });
       }
   }
-
 
   // --- LOGIKA ANKIETY (SEKUNDY) ---
   let pollData = { votes: {} };
@@ -966,10 +1034,11 @@
       
       initRunningButtons();
 
-      // Automatyczne pokazywanie ankiety, jeśli jeszcze nie widziano
-      if (!localStorage.getItem('pollSeen_seconds')) {
-          setTimeout(() => { showPoll(); }, 800); 
-      }
+      // Automatyczne pokazywanie ankiety usunięte - teraz odtwarzamy wideo z wynikami
+      // Jeśli chcesz powrócić do pokazywania ankiety, odkomentuj poniższe
+      // if (!localStorage.getItem('pollSeen_seconds')) {
+      //     setTimeout(() => { showPoll(); }, 800); 
+      // }
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
