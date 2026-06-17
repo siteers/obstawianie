@@ -277,6 +277,35 @@
         color: #888; font-size: 14px; margin-top: 20px; font-weight: bold; 
         text-transform: uppercase; letter-spacing: 2px; display: none;
     }
+
+    /* --- AREK PUNISHMENT OVERLAY --- */
+    #arek-punishment-overlay {
+        position: fixed; inset: 0; background: black; z-index: 9999999;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+    }
+    #arek-punishment-content {
+        position: relative; z-index: 20; text-align: center; width: 90%; max-width: 600px;
+        background: rgba(10, 15, 30, 0.95); border: 2px solid var(--error);
+        border-radius: 20px; padding: 40px; box-shadow: 0 0 40px rgba(255, 77, 77, 0.4);
+    }
+    #arek-punishment-title {
+        color: var(--error); font-size: 28px; font-weight: 900; margin-bottom: 20px;
+        text-shadow: 0 0 20px var(--error); text-transform: uppercase;
+    }
+    #arek-punishment-text {
+        color: white; font-size: 16px; line-height: 1.6; margin-bottom: 30px;
+        border-top: 1px solid var(--error); border-bottom: 1px solid var(--error);
+        padding: 20px 0;
+    }
+    #arek-punishment-countdown {
+        font-size: 60px; font-weight: 900; color: var(--gold);
+        text-shadow: 0 0 30px var(--gold), 0 0 10px var(--gold);
+        font-family: monospace;
+    }
+    #arek-punishment-video {
+        width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; z-index: 10;
+        opacity: 0.3; pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -322,6 +351,21 @@
           <div id="rr-subtitle">Nigdzie nie uciekniesz.</div>
       </div>
       <iframe id="rickroll-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+  <div id="arek-punishment-overlay">
+      <iframe id="arek-punishment-video" src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&controls=0&disablekb=1&modestbranding=1&rel=0&loop=1&playlist=dQw4w9WgXcQ" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+      <div id="arek-punishment-content">
+          <div id="arek-punishment-title">KARA WSTĘPNA</div>
+          <div id="arek-punishment-text">
+              ZGODNIE Z OBOWIĄZUJĄCYM REGULAMINEM W MOMENCIE ZAGŁOSOWANIA GRACZA AREK NA TĄ OSOBĘ 2 RAZY - 
+              <br><br>
+              <i style="color: #ccc;">"Celem gry jest wytypowanie godziny, która będzie jak najbliższa momentowi zatrzymania zegara przez administratora (przycisk STOP). W celu uniknięcia dysproporcji na zmianach o różnej długości, każdy gracz posiada <strong>limit 20 głosów w skali miesiąca</strong>, do wykorzystania w dowolne dni. Należy przyjąć, że głosowanie na jedną osobę to 1 głos, czyli standardowo w ciągu dnia oddawane są 2 głosy."</i>
+              <br><br>
+              <span style="color: var(--error); font-weight: bold;">NAKŁADAM KARĘ.</span>
+          </div>
+          <div id="arek-punishment-countdown">15:00</div>
+      </div>
   </div>
 
   <div id="games-event-overlay">
@@ -773,44 +817,98 @@
       }
   }
 
+  // --- AREK PUNISHMENT PROTOCOL ---
+  function checkArekPunishment(user, callback) {
+      if (user !== "Arek") {
+          callback();
+          return;
+      }
+
+      const punishmentKey = `arek_punished_timestamp`;
+      const savedTimestamp = localStorage.getItem(punishmentKey);
+      const punishmentDuration = 15 * 60 * 1000; // 15 minut w milisekundach
+      const now = Date.now();
+
+      if (!savedTimestamp) {
+          // Arek loguje się po raz pierwszy od nałożenia kary
+          localStorage.setItem(punishmentKey, now.toString());
+          runArekPunishment(now, punishmentDuration, callback);
+      } else {
+          const timeElapsed = now - parseInt(savedTimestamp);
+          if (timeElapsed < punishmentDuration) {
+              // Kara wciąż trwa
+              runArekPunishment(parseInt(savedTimestamp), punishmentDuration, callback);
+          } else {
+              // Kara minęła
+              callback();
+          }
+      }
+  }
+
+  function runArekPunishment(startTimestamp, duration, callback) {
+      document.getElementById('login-container').style.display = 'none';
+      const overlay = document.getElementById('arek-punishment-overlay');
+      const countdownEl = document.getElementById('arek-punishment-countdown');
+      overlay.style.display = 'flex';
+
+      const timerInterval = setInterval(() => {
+          const now = Date.now();
+          const timeElapsed = now - startTimestamp;
+          const timeLeft = duration - timeElapsed;
+
+          if (timeLeft <= 0) {
+              clearInterval(timerInterval);
+              overlay.style.display = 'none';
+              callback();
+          } else {
+              const m = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+              const s = Math.floor((timeLeft % (1000 * 60)) / 1000);
+              countdownEl.innerHTML = `${m<10?'0'+m:m}:${s<10?'0'+s:s}`;
+          }
+      }, 1000);
+  }
+
   function triggerHubWithIntro(user) {
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
       
-      // 1. Sprawdzamy event z wynikami ankiety
-      checkPollResultsEvent(user, () => {
-          // 2. Jeśli obejrzano, sprawdzamy starszy event games.mp4
-          checkGamesEvent(user, () => {
-              // 3. Klasyczne wideo powitalne
-              const introKey = `videoSeen_${user}`;
-              if (localStorage.getItem(introKey)) {
-                  renderHubData(user);
-                  return;
-              }
+      // 1. Sprawdzamy karę Arka
+      checkArekPunishment(user, () => {
+          // 2. Sprawdzamy event z wynikami ankiety
+          checkPollResultsEvent(user, () => {
+              // 3. Jeśli obejrzano, sprawdzamy starszy event games.mp4
+              checkGamesEvent(user, () => {
+                  // 4. Klasyczne wideo powitalne
+                  const introKey = `videoSeen_${user}`;
+                  if (localStorage.getItem(introKey)) {
+                      renderHubData(user);
+                      return;
+                  }
 
-              document.getElementById('login-container').style.display = 'none';
-              const overlay = document.getElementById('global-intro-overlay');
-              const vid = document.getElementById('global-intro-video');
-              const startBtn = document.getElementById('start-video-btn');
-              
-              overlay.style.display = 'flex';
+                  document.getElementById('login-container').style.display = 'none';
+                  const overlay = document.getElementById('global-intro-overlay');
+                  const vid = document.getElementById('global-intro-video');
+                  const startBtn = document.getElementById('start-video-btn');
+                  
+                  overlay.style.display = 'flex';
 
-              vid.play().catch(e => {
-                  console.log("Autoplay zablokowane", e);
-                  startBtn.style.display = 'block'; 
+                  vid.play().catch(e => {
+                          console.log("Autoplay zablokowane", e);
+                          startBtn.style.display = 'block'; 
+                  });
+
+                  startBtn.onclick = () => {
+                          startBtn.style.display = 'none';
+                          vid.play();
+                  };
+
+                  vid.onended = () => {
+                          finishIntro(user, introKey);
+                  };
+
+                  document.getElementById('skip-intro-btn').onclick = () => {
+                          finishIntro(user, introKey);
+                  };
               });
-
-              startBtn.onclick = () => {
-                  startBtn.style.display = 'none';
-                  vid.play();
-              };
-
-              vid.onended = () => {
-                  finishIntro(user, introKey);
-              };
-
-              document.getElementById('skip-intro-btn').onclick = () => {
-                  finishIntro(user, introKey);
-              };
           });
       });
   }
@@ -1033,12 +1131,6 @@
       if (user === "SCIANA") { document.querySelectorAll('.extra-feature').forEach(b => b.style.display = 'none'); document.getElementById('add-hour-btn').style.display = 'none'; }
       
       initRunningButtons();
-
-      // Automatyczne pokazywanie ankiety usunięte - teraz odtwarzamy wideo z wynikami
-      // Jeśli chcesz powrócić do pokazywania ankiety, odkomentuj poniższe
-      // if (!localStorage.getItem('pollSeen_seconds')) {
-      //     setTimeout(() => { showPoll(); }, 800); 
-      // }
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
