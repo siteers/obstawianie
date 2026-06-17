@@ -324,7 +324,31 @@ window.stopSlot = async (id) => {
         return;
     }
 
-    const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+    // Filtracja: Usunięcie duplikatów przed wyliczeniem wyników!
+    const allSlotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+    const uniqueUserMap = {};
+    
+    // Zbieramy wpisy dla każdego usera
+    allSlotData.forEach(u => {
+        if(!uniqueUserMap[u.name]) uniqueUserMap[u.name] = [];
+        uniqueUserMap[u.name].push(u);
+    });
+
+    const slotData = [];
+    // Dla każdego usera losujemy JEDEN jego wpis (jeśli ma kilka) i dodajemy do ostatecznej listy
+    for(const name in uniqueUserMap) {
+        const userEntries = uniqueUserMap[name];
+        if(userEntries.length > 1) {
+            const shuffledEntries = shuffleArray(userEntries);
+            slotData.push(shuffledEntries[0]); // Zostaje tylko ten jeden wylosowany
+            
+            // Opcjonalnie: można tutaj dorzucić logikę automatycznego usuwania pozostałych wpisów z bazy,
+            // ale jeśli to ma tylko nie wpływać na ranking, to ten krok (filtrowanie tablicy lokalnej) jest w 100% skuteczny.
+        } else {
+            slotData.push(userEntries[0]);
+        }
+    }
+
     if(!slotData.length) return;
 
     const now = new Date(); 
@@ -541,11 +565,30 @@ function renderTable(id, sec) {
     const targetElement = document.getElementById(`targetName${id}`);
     const targetName = targetElement ? targetElement.textContent : "";
     
+    // POBIERANIE DANYCH Z UWZGLĘDNIENIEM FILTROWANIA DUPLIKATÓW
+    const allSlotData = usersData.filter(u => u.targetSlot === `slot${id}`);
+    const uniqueUserMap = {};
+    allSlotData.forEach(u => {
+        if(!uniqueUserMap[u.name]) uniqueUserMap[u.name] = [];
+        uniqueUserMap[u.name].push(u);
+    });
+
+    const slotData = [];
+    for(const name in uniqueUserMap) {
+        const userEntries = uniqueUserMap[name];
+        if(userEntries.length > 1) {
+            // Jeśli ktoś ma kilka wpisów (spamował przed aktualizacją bazy), losujemy mu jeden
+            const shuffledEntries = shuffleArray(userEntries);
+            slotData.push(shuffledEntries[0]);
+        } else {
+            slotData.push(userEntries[0]);
+        }
+    }
+    
     let sortedData = [];
     if (isStopped) {
         sortedData = id === 1 ? (savedWinners1 || []) : (savedWinners2 || []);
     } else {
-        const slotData = usersData.filter(u => u.targetSlot === `slot${id}`);
         const timeSortedData = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-sec) - Math.abs(toSec(b.hour)-sec));
         
         if (timeSortedData.length > 0) {
