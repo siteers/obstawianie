@@ -56,6 +56,10 @@
         .other-bets-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; padding-bottom: 5px; font-size: 0.8rem; }
         .other-bets-list span { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); padding: 4px 8px; border-radius: 5px; color: #fff; }
 
+        /* Klasa pomocnicza dla dynamicznie pokazywanych typów */
+        .other-bets-details.hidden-bet { display: none; }
+        .other-bets-details.hidden-bet.force-show { display: block; }
+
         /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
         .schedule-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; padding-top: 15px; padding-bottom: 15px; }
         .schedule-card { 
@@ -101,12 +105,12 @@
         .schedule-group-name { color: var(--gold); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
         .schedule-status { font-size: 0.75rem; color: #888; font-weight: bold; }
         
-        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; }
-        .schedule-team { display: flex; flex-direction: column; align-items: center; flex: 1; width: 33%; }
+        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer; } /* Added cursor for clickability */
+        .schedule-team { display: flex; flex-direction: column; align-items: center; flex: 1; width: 33%; pointer-events: none; }
         .schedule-flag { width: 50px; height: 35px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); object-fit: cover; margin-bottom: 5px; }
         .schedule-team-name { font-size: 0.85rem; font-weight: bold; color: #fff; text-align: center; }
         
-        .schedule-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 34%; }
+        .schedule-center { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; width: 34%; pointer-events: none; }
         .schedule-time { font-size: 1.5rem; font-weight: 900; color: #fff; margin-bottom: 2px; }
         .schedule-date { font-size: 0.8rem; color: var(--cyan); font-weight: bold; }
         .schedule-score-display { font-size: 1.8rem; font-weight: 900; color: var(--gold); letter-spacing: 2px; }
@@ -117,7 +121,7 @@
         /* Mecze (klasyczne kafelki grup) */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
-        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; }
+        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; cursor: pointer; } /* Added cursor for clickability */
         
         /* Kontrolki Typowania */
         .bet-box { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -259,6 +263,10 @@
     let lastUserPoints = {};
     let globalState = { archivedRounds: [], pendingClosure: null };
     let currentUpcomingList = [];
+    
+    // Zmienne do ukrytego podglądu typów
+    let clickCounters = {};
+    let clickTimers = {};
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -347,6 +355,33 @@
     ];
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
+
+    // Funkcja globalna obsługująca ukryte kliknięcia 3x (działa tylko dla użytkownika "Krzysiek")
+    window.handleHiddenClick = (matchId) => {
+        if (currentUser !== "Krzysiek") return;
+        
+        if (!clickCounters[matchId]) clickCounters[matchId] = 0;
+        clickCounters[matchId]++;
+        
+        clearTimeout(clickTimers[matchId]);
+        
+        if (clickCounters[matchId] >= 3) {
+            clickCounters[matchId] = 0;
+            const container = document.getElementById(`other_bets_${matchId}`);
+            if (container) {
+                if (container.classList.contains('force-show')) {
+                    container.classList.remove('force-show');
+                } else {
+                    container.classList.add('force-show');
+                    container.setAttribute('open', '');
+                }
+            }
+        } else {
+            clickTimers[matchId] = setTimeout(() => {
+                clickCounters[matchId] = 0;
+            }, 600); // Reset po 600ms od ostatniego kliku
+        }
+    };
 
     window.saveBet = async (id, isKnockout, isUpcoming = false) => {
         const pre = isUpcoming ? "up_" : "";
@@ -570,7 +605,7 @@
                 <div class="schedule-header">
                     <span class="schedule-group-name">${m.displayGroup || m.group}</span>
                 </div>
-                <div class="schedule-teams-area">
+                <div class="schedule-teams-area" onclick="handleHiddenClick('${m.id}')">
                     <div class="schedule-team">
                         <img src="${getFlagUrl(m.t1)}" class="schedule-flag" alt="${m.t1}">
                         <span class="schedule-team-name">${m.t1}</span>
@@ -586,9 +621,12 @@
                 </div>
                 <div class="schedule-bet-area">`;
             
+            // Logika podglądu typów dla harmonogramu
+            let isHidden = !m.matchLocked; 
+            html += getOtherBetsHtml(m.dbM.bets, !isHidden, isHidden, m.id);
+
             if (m.matchLocked) {
                 html += `<div class="locked-text" style="color:var(--error); margin-bottom:10px;">ZAMKNIĘTE - BRAK MOŻLIWOŚCI ZMIAN</div>`;
-                html += getOtherBetsHtml(m.dbM.bets, true);
             } else {
                 html += `<div class="schedule-bet-info">Wprowadź swój typ</div>
                     <div class="bet-box">
@@ -624,9 +662,17 @@
         else renderHarmonogram();
     });
 
-    const getOtherBetsHtml = (bets, isOpen = false) => {
-        if (!bets || Object.keys(bets).length === 0) return `<div style="font-size:0.8rem; color:#aaa; margin-top: 10px;">Brak typów.</div>`;
-        let bHtml = `<details class="other-bets-details" ${isOpen ? 'open' : ''}><summary><span></span></summary><div class="other-bets-list">`;
+    const getOtherBetsHtml = (bets, isOpen = false, isHidden = false, matchId = "") => {
+        if (!bets || Object.keys(bets).length === 0) {
+            let cl = "other-bets-details";
+            if (isHidden) cl += " hidden-bet";
+            return `<div id="other_bets_${matchId}" class="${cl}" style="font-size:0.8rem; color:#aaa; margin-top: 10px; text-align:center; width:100%;">Brak typów.</div>`;
+        }
+        
+        let cl = "other-bets-details";
+        if (isHidden) cl += " hidden-bet";
+
+        let bHtml = `<details id="other_bets_${matchId}" class="${cl}" ${isOpen && !isHidden ? 'open' : ''}><summary><span></span></summary><div class="other-bets-list">`;
         Object.keys(bets).forEach(u => {
             let betStr = `${bets[u].s1}:${bets[u].s2}`;
             if (bets[u].p1 !== null && bets[u].p2 !== null) betStr += ` (K:${bets[u].p1}-${bets[u].p2})`;
@@ -727,16 +773,19 @@
                     upcomingList.push({ ...m, displayGroup: `Grupa ${g}`, isKnockout: false, dbM, matchLocked });
                 }
 
-                html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams">${m.t1} - ${m.t2}</div>`;
+                html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams" onclick="handleHiddenClick('${m.id}')">${m.t1} - ${m.t2}</div>`;
+                
+                let isHidden = !matchLocked && dbM.status !== "finished";
+
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
-                    html += getOtherBetsHtml(dbM.bets, false);
+                    html += getOtherBetsHtml(dbM.bets, false, false, m.id);
                 } else {
+                    html += getOtherBetsHtml(dbM.bets, true, isHidden, m.id);
                     html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
                     if(matchLocked) {
                         html += `<div class="locked-text" style="color:var(--error);">ZAMKNIĘTE</div>`;
-                        html += getOtherBetsHtml(dbM.bets, true);
                     } else {
                         html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                     }
@@ -786,16 +835,19 @@
                 upcomingList.push({ id: k.id, group: k.stage, t1, t2, date: k.date, isKnockout: true, dbM, matchLocked });
             }
 
-            let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
+            let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams" onclick="handleHiddenClick('${k.id}')">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
+            
+            let isHidden = !matchLocked && dbM.status !== "finished";
+
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
-                html += getOtherBetsHtml(dbM.bets, false);
+                html += getOtherBetsHtml(dbM.bets, false, false, k.id);
             } else {
+                html += getOtherBetsHtml(dbM.bets, true, isHidden, k.id);
                 html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
                 if (matchLocked) {
                     html += `<div class="locked-text" style="color:var(--error);">ZABLOKOWANE</div>`;
-                    html += getOtherBetsHtml(dbM.bets, true);
                 } else {
                     html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
                 }
