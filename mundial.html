@@ -105,7 +105,7 @@
         .schedule-group-name { color: var(--gold); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
         .schedule-status { font-size: 0.75rem; color: #888; font-weight: bold; }
         
-        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer; } /* Added cursor for clickability */
+        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer; } 
         .schedule-team { display: flex; flex-direction: column; align-items: center; flex: 1; width: 33%; pointer-events: none; }
         .schedule-flag { width: 50px; height: 35px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); object-fit: cover; margin-bottom: 5px; }
         .schedule-team-name { font-size: 0.85rem; font-weight: bold; color: #fff; text-align: center; }
@@ -121,7 +121,7 @@
         /* Mecze (klasyczne kafelki grup) */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
-        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; cursor: pointer; } /* Added cursor for clickability */
+        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; cursor: pointer; } 
         
         /* Kontrolki Typowania */
         .bet-box { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -264,7 +264,6 @@
     let globalState = { archivedRounds: [], pendingClosure: null };
     let currentUpcomingList = [];
     
-    // Zmienne do ukrytego podglądu typów
     let clickCounters = {};
     let clickTimers = {};
 
@@ -310,15 +309,15 @@
     };
 
     const groupDates = {
-        "A": ["2026-06-11T21:00", "2026-06-12T04:00", "2026-06-18T18:00", "2026-06-19T03:00", "2026-06-25T03:00", "2026-06-25T03:00"],
-        "B": ["2026-06-12T21:00", "2026-06-13T21:00", "2026-06-18T21:00", "2026-06-19T00:00", "2026-06-24T21:00", "2026-06-24T21:00"],
-        "C": ["2026-06-14T00:00", "2026-06-14T03:00", "2026-06-20T00:00", "2026-06-20T02:30", "2026-06-25T00:00", "2026-06-25T00:00"],
+        "A": ["2026-06-11T21:00", "2026-06-12T04:00", "2026-06-19T03:00", "2026-06-18T18:00", "2026-06-25T03:00", "2026-06-25T03:00"],
+        "B": ["2026-06-12T21:00", "2026-06-13T21:00", "2026-06-19T00:00", "2026-06-18T21:00", "2026-06-24T21:00", "2026-06-24T21:00"],
+        "C": ["2026-06-14T00:00", "2026-06-14T03:00", "2026-06-20T02:30", "2026-06-20T00:00", "2026-06-25T00:00", "2026-06-25T00:00"],
         "D": ["2026-06-13T03:00", "2026-06-14T06:00", "2026-06-19T21:00", "2026-06-20T05:00", "2026-06-26T04:00", "2026-06-26T04:00"],
         "E": ["2026-06-14T19:00", "2026-06-15T01:00", "2026-06-20T22:00", "2026-06-21T02:00", "2026-06-25T22:00", "2026-06-25T22:00"],
         "F": ["2026-06-14T22:00", "2026-06-15T04:00", "2026-06-20T19:00", "2026-06-21T06:00", "2026-06-26T01:00", "2026-06-26T01:00"],
         "G": ["2026-06-15T21:00", "2026-06-16T03:00", "2026-06-21T21:00", "2026-06-22T03:00", "2026-06-27T05:00", "2026-06-27T05:00"],
         "H": ["2026-06-15T18:00", "2026-06-16T00:00", "2026-06-21T18:00", "2026-06-22T00:00", "2026-06-27T02:00", "2026-06-27T02:00"],
-        "I": ["2026-06-16T21:00", "2026-06-17T00:00", "2026-06-22T23:00", "2026-06-23T02:00", "2026-06-26T21:00", "2026-06-26T21:00"],
+        "I": ["2026-06-16T21:00", "2026-06-17T00:00", "2026-06-23T02:00", "2026-06-22T23:00", "2026-06-26T21:00", "2026-06-26T21:00"],
         "J": ["2026-06-17T03:00", "2026-06-17T06:00", "2026-06-22T19:00", "2026-06-23T05:00", "2026-06-28T04:00", "2026-06-28T04:00"],
         "K": ["2026-06-17T19:00", "2026-06-18T04:00", "2026-06-23T19:00", "2026-06-24T04:00", "2026-06-28T01:30", "2026-06-28T01:30"],
         "L": ["2026-06-17T22:00", "2026-06-18T01:00", "2026-06-23T22:00", "2026-06-24T01:00", "2026-06-27T23:00", "2026-06-27T23:00"]
@@ -356,7 +355,6 @@
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
 
-    // Funkcja globalna obsługująca ukryte kliknięcia 3x (działa tylko dla użytkownika "Krzysiek")
     window.handleHiddenClick = (matchId) => {
         if (currentUser !== "Krzysiek") return;
         
@@ -379,7 +377,7 @@
         } else {
             clickTimers[matchId] = setTimeout(() => {
                 clickCounters[matchId] = 0;
-            }, 600); // Reset po 600ms od ostatniego kliku
+            }, 600);
         }
     };
 
@@ -621,7 +619,6 @@
                 </div>
                 <div class="schedule-bet-area">`;
             
-            // Logika podglądu typów dla harmonogramu
             let isHidden = !m.matchLocked; 
             html += getOtherBetsHtml(m.dbM.bets, !isHidden, isHidden, m.id);
 
@@ -872,7 +869,6 @@
             html += `</div></div>`; kCont.innerHTML += html;
         });
 
-        // WIDOK ZBIORCZY HARMONOGRAMU (KARTY Z FLAGAMI)
         upcomingList.sort((a, b) => new Date(a.date) - new Date(b.date));
         
         upcomingList.forEach(m => {
@@ -896,7 +892,6 @@
         const schedD = document.getElementById('scheduleDetails'); if(schedD && uiState.schedule !== undefined) schedD.open = uiState.schedule;
         const archD = document.getElementById('archiveDetails'); if(archD && uiState.archive !== undefined) archD.open = uiState.archive;
 
-        // DRZEWKO PIONOWE
         const stages = ["1/16 Finału", "1/8 Finału", "Ćwierćfinał", "Półfinał", "FINAŁ"];
         const tree = document.getElementById('bracketTree'); tree.innerHTML = "";
         stages.forEach(st => {
