@@ -484,7 +484,15 @@
             currentPts[u] = (lastUserPoints[u] || 0) - archived;
         });
 
-        Object.entries(lastUserPoints).sort((a,b) => b[1] - a[1]).forEach(([user, totalPts]) => {
+        // POPRAWIONE SORTOWANIE: Priorytet to BIEŻĄCA, a potem SUMA
+        Object.entries(lastUserPoints).sort((a,b) => {
+            const curA = currentPts[a[0]] || 0;
+            const curB = currentPts[b[0]] || 0;
+            if (curA !== curB) {
+                return curB - curA;
+            }
+            return b[1] - a[1];
+        }).forEach(([user, totalPts]) => {
             const cur = currentPts[user] || 0;
             rt.innerHTML += `<tr>
                 <td><b>${user}</b></td>
