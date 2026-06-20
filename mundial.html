@@ -142,7 +142,7 @@
         /* Tabela Rankingu i Historia */
         .ranking-container { max-width: 600px; margin: 0 auto; position: relative; z-index: 10; }
         .ranking-table { width: 100%; background: var(--glass); border-radius: 15px; border: 1px solid var(--border); border-collapse: collapse; overflow: hidden; }
-        .ranking-table th { background: rgba(0,0,0,0.5); color: var(--gold); padding: 15px; text-align: center; }
+        .ranking-table th { background: rgba(0,0,0,0.5); padding: 15px; text-align: center; }
         .ranking-table td { padding: 15px; text-align: center; border-top: 1px solid #333; font-weight: bold; }
         
         .history-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
@@ -164,7 +164,11 @@
     <div class="section-title">🏆 GRAND RANKING</div>
     <div class="ranking-container">
         <table class="ranking-table" id="rankingTable">
-            <tr><th>Gracz</th><th>BIEŻĄCA</th><th>SUMA</th></tr>
+            <tr>
+                <th>Gracz</th>
+                <th onclick="setSortMode('BIEZACA')" style="color:var(--cyan); cursor:pointer; user-select:none;" title="Sortuj po Bieżącej">BIEŻĄCA ▼</th>
+                <th onclick="setSortMode('SUMA')" style="color:var(--gold); cursor:pointer; user-select:none;" title="Sortuj po Sumie">SUMA</th>
+            </tr>
         </table>
 
         <details class="archive-details" id="archiveDetails" style="margin-top:15px; background: var(--glass);">
@@ -266,6 +270,9 @@
     
     let clickCounters = {};
     let clickTimers = {};
+    
+    // Dodajemy globalną zmienną do obsługi trybu sortowania
+    let currentSortMode = 'BIEZACA'; // Możliwe wartości: 'BIEZACA' lub 'SUMA'
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -354,6 +361,12 @@
     ];
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
+
+    // Funkcja zmieniająca tryb sortowania
+    window.setSortMode = (mode) => {
+        currentSortMode = mode;
+        renderRanking();
+    };
 
     window.handleHiddenClick = (matchId) => {
         if (currentUser !== "Krzysiek") return;
@@ -473,7 +486,13 @@
     function renderRanking() {
         if (!lastUserPoints) return;
         const rt = document.getElementById('rankingTable');
-        rt.innerHTML = `<tr><th>Gracz</th><th style="color:var(--cyan);">BIEŻĄCA</th><th style="color:var(--gold);">SUMA</th></tr>`;
+        
+        // Dynamiczne nagłówki z obsługą kliknięcia
+        rt.innerHTML = `<tr>
+            <th>Gracz</th>
+            <th onclick="setSortMode('BIEZACA')" style="color:var(--cyan); cursor:pointer; user-select:none;" title="Sortuj po Bieżącej">BIEŻĄCA ${currentSortMode === 'BIEZACA' ? '▼' : ''}</th>
+            <th onclick="setSortMode('SUMA')" style="color:var(--gold); cursor:pointer; user-select:none;" title="Sortuj po Sumie">SUMA ${currentSortMode === 'SUMA' ? '▼' : ''}</th>
+        </tr>`;
 
         const currentPts = {};
         Object.keys(lastUserPoints).forEach(u => {
@@ -484,14 +503,20 @@
             currentPts[u] = (lastUserPoints[u] || 0) - archived;
         });
 
-        // POPRAWIONE SORTOWANIE: Priorytet to BIEŻĄCA, a potem SUMA
+        // POPRAWIONE SORTOWANIE
         Object.entries(lastUserPoints).sort((a,b) => {
             const curA = currentPts[a[0]] || 0;
             const curB = currentPts[b[0]] || 0;
-            if (curA !== curB) {
+            const sumA = a[1] || 0;
+            const sumB = b[1] || 0;
+
+            if (currentSortMode === 'SUMA') {
+                if (sumA !== sumB) return sumB - sumA;
                 return curB - curA;
+            } else {
+                if (curA !== curB) return curB - curA;
+                return sumB - sumA;
             }
-            return b[1] - a[1];
         }).forEach(([user, totalPts]) => {
             const cur = currentPts[user] || 0;
             rt.innerHTML += `<tr>
