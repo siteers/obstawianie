@@ -130,7 +130,7 @@
         .btn-bet { background: linear-gradient(135deg, #00d4ff, #0096c7); border: none; padding: 8px 15px; border-radius: 5px; font-weight: 900; cursor: pointer; color: #000; width: 100%; text-transform: uppercase; }
         
         /* Panel Admina */
-        .admin-panel { background: rgba(255,0,0,0.05); border: 1px dashed var(--error); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; }
+        .admin-panel { background: rgba(255,0,0,0.05); border: 1px dashed var(--error); padding: 10px; border-radius: 8px; margin-top: 10px; font-size: 0.8rem; width: 100%; box-sizing: border-box; }
         .admin-input { width: 35px; height: 30px; text-align: center; background: #000; color: #fff; border: 1px solid var(--gold); border-radius: 4px; }
         .admin-text { width: 40%; height: 25px; text-align: center; background: #111; color: #fff; border: 1px solid #333; border-radius: 4px; margin: 2px; }
         .btn-admin { background: var(--gold); color: #000; border: none; padding: 6px 12px; border-radius: 4px; font-weight: bold; cursor: pointer; margin-top: 5px; width: 100%; }
@@ -160,8 +160,6 @@
     <canvas id="bg-canvas"></canvas>
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
     <h1>⚽ MUNDIAL 2026</h1>
-
-    <div id="pendingConfirmationsContainer" style="width: 100%; max-width: 800px; margin: 0 auto; padding: 0 10px; box-sizing: border-box;"></div>
 
     <div class="section-title">🏆 GRAND RANKING</div>
     <div class="ranking-container">
@@ -273,8 +271,7 @@
     let clickCounters = {};
     let clickTimers = {};
     
-    // Dodajemy globalną zmienną do obsługi trybu sortowania
-    let currentSortMode = 'BIEZACA'; // Możliwe wartości: 'BIEZACA' lub 'SUMA'
+    let currentSortMode = 'BIEZACA'; 
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -364,7 +361,6 @@
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
 
-    // Funkcja zmieniająca tryb sortowania
     window.setSortMode = (mode) => {
         currentSortMode = mode;
         renderRanking();
@@ -489,7 +485,6 @@
         if (!lastUserPoints) return;
         const rt = document.getElementById('rankingTable');
         
-        // Dynamiczne nagłówki z obsługą kliknięcia
         rt.innerHTML = `<tr>
             <th>Gracz</th>
             <th onclick="setSortMode('BIEZACA')" style="color:var(--cyan); cursor:pointer; user-select:none;" title="Sortuj po Bieżącej">BIEŻĄCA ${currentSortMode === 'BIEZACA' ? '▼' : ''}</th>
@@ -505,7 +500,6 @@
             currentPts[u] = (lastUserPoints[u] || 0) - archived;
         });
 
-        // POPRAWIONE SORTOWANIE
         Object.entries(lastUserPoints).sort((a,b) => {
             const curA = currentPts[a[0]] || 0;
             const curB = currentPts[b[0]] || 0;
@@ -671,6 +665,22 @@
                 html += `</div>
                     <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
             }
+            
+            // WSTAWIANIE FORMULARZA DO WPISYWANIA OFICJALNEGO WYNIKU
+            if(m.dbM.status !== "finished" && m.dbM.status !== "pending_real") {
+                html += `<details class="admin-panel" style="width: 100%; margin-top: 15px;"><summary>Wprowadź oficjalny wynik</summary>
+                         <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-top:10px;">
+                             <input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15"> : 
+                             <input type="number" id="a2_${m.id}" class="admin-input" min="0" max="15">
+                         </div>`;
+                if (m.isKnockout) {
+                     html += `<div style="text-align:center; font-size:10px; margin-top:5px; color:#ccc;">
+                                Karne: <input type="number" id="ap1_${m.id}" class="admin-input" min="0" max="15" style="width:30px; height:20px;"> : 
+                                <input type="number" id="ap2_${m.id}" class="admin-input" min="0" max="15" style="width:30px; height:20px;">
+                              </div>`;
+                }
+                html += `<button class="btn-admin" onclick="proposeRealScore('${m.id}', ${m.isKnockout})" style="margin-top:10px;">ZGŁOŚ WYNIK</button></details>`;
+            }
             html += `</div></div>`;
             upCont.innerHTML += html;
         });
@@ -788,7 +798,7 @@
             }
         });
 
-        // Wstawianie oczekujących meczów
+        // Wstawianie oczekujących meczów nad tabelą rankingu
         const pendingCont = document.getElementById('pendingConfirmationsContainer');
         if (pendingCont) {
             pendingCont.innerHTML = pendingHtmlList.length > 0 ? pendingHtmlList.join('') : '';
@@ -858,10 +868,8 @@
                     }
                 }
                 
-                // USUNIĘTO STARE PRZYCISKI DO POTWIERDZANIA Z TEGO MIEJSCA, zostawiamy tylko wprowadzanie nowego:
-                if(dbM.status !== "finished" && dbM.status !== "pending_real") {
-                    html += `<details class="admin-panel"><summary>Wprowadź oficjalny wynik</summary><input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${m.id}" class="admin-input" min="0" max="15"><button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZGŁOŚ WYNIK</button></details>`;
-                }
+                // Formularz wprowadzania wyniku został usunięty stąd.
+                
                 html += `</div>`;
             });
             html += `</details></div>`; gCont.innerHTML += html;
@@ -919,18 +927,13 @@
                 }
             }
             
-            // USUNIĘTO STARE PRZYCISKI DO POTWIERDZANIA Z TEGO MIEJSCA, zostawiamy tylko wprowadzanie nowego:
+            // WSTAWIANIE FORMULARZA DO RĘCZNEGO NADPISYWANIA DRUŻYN
             if(dbM.status !== "finished" && dbM.status !== "pending_real") {
-                html += `<details class="admin-panel"><summary>Wpisz wynik / Drużyny</summary>
-                         <div style="margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
+                html += `<details class="admin-panel"><summary>Ręczne ustawienie drużyn</summary>
+                         <div style="margin-bottom: 10px; padding-bottom: 10px;">
                              <input type="text" id="override_t1_${k.id}" class="admin-text" placeholder="D1 (Ręcznie)" value="${dbM.override_t1 || ''}">
                              <input type="text" id="override_t2_${k.id}" class="admin-text" placeholder="D2 (Ręcznie)" value="${dbM.override_t2 || ''}">
                              <button class="btn-admin" onclick="setOverrideTeams('${k.id}')">USTAW DRUŻYNY</button>
-                         </div>
-                         <div>
-                             <input type="number" id="a1_${k.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${k.id}" class="admin-input" min="0" max="15">
-                             (K: <input type="number" id="ap1_${k.id}" class="admin-input" min="0" max="15" style="width:25px;height:20px;">:<input type="number" id="ap2_${k.id}" class="admin-input" min="0" max="15" style="width:25px;height:20px;">)
-                             <button class="btn-admin" onclick="proposeRealScore('${k.id}', true)">ZGŁOŚ WYNIK</button>
                          </div>
                          </details>`;
             }
