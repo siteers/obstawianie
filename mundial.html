@@ -161,6 +161,8 @@
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
     <h1>⚽ MUNDIAL 2026</h1>
 
+    <div id="pendingConfirmationsContainer" style="width: 100%; max-width: 800px; margin: 0 auto; padding: 0 10px; box-sizing: border-box;"></div>
+
     <div class="section-title">🏆 GRAND RANKING</div>
     <div class="ranking-container">
         <table class="ranking-table" id="rankingTable">
@@ -271,7 +273,8 @@
     let clickCounters = {};
     let clickTimers = {};
     
-    let currentSortMode = 'BIEZACA'; 
+    // Dodajemy globalną zmienną do obsługi trybu sortowania
+    let currentSortMode = 'BIEZACA'; // Możliwe wartości: 'BIEZACA' lub 'SUMA'
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -666,8 +669,15 @@
                     <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
             }
             
-            // WSTAWIANIE FORMULARZA DO WPISYWANIA OFICJALNEGO WYNIKU
-            if(m.dbM.status !== "finished" && m.dbM.status !== "pending_real") {
+            // WSTAWIANIE FORMULARZA DO WPISYWANIA/POTWIERDZANIA OFICJALNEGO WYNIKU
+            if(m.dbM.status === 'pending_real') {
+                let penText = (m.dbM.tempPen1 !== null && m.dbM.tempPen2 !== null) ? ` (K: ${m.dbM.tempPen1}-${m.dbM.tempPen2})` : '';
+                if(m.dbM.realProposer === currentUser) {
+                    html += `<div class="locked-text" style="color:var(--cyan); margin-top: 15px; padding: 10px; background: rgba(0,212,255,0.1); border-radius: 8px;">Czeka na potw.: ${m.dbM.tempReal1}:${m.dbM.tempReal2}${penText}</div>`;
+                } else {
+                    html += `<button class="btn-admin btn-confirm" style="margin-top: 15px; padding: 12px; font-size: 14px;" onclick="confirmRealScore('${m.id}')">✅ POTWIERDŹ WYNIK (${m.dbM.tempReal1}:${m.dbM.tempReal2}${penText})</button>`;
+                }
+            } else if(m.dbM.status !== "finished") {
                 html += `<details class="admin-panel" style="width: 100%; margin-top: 15px;"><summary>Wprowadź oficjalny wynik</summary>
                          <div style="display:flex; justify-content:center; align-items:center; gap:5px; margin-top:10px;">
                              <input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15"> : 
