@@ -161,6 +161,8 @@
     <div class="nav"><a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a></div>
     <h1>⚽ MUNDIAL 2026</h1>
 
+    <div id="pendingConfirmationsContainer" style="width: 100%; max-width: 800px; margin: 0 auto; padding: 0 10px; box-sizing: border-box;"></div>
+
     <div class="section-title">🏆 GRAND RANKING</div>
     <div class="ranking-container">
         <table class="ranking-table" id="rankingTable">
@@ -721,8 +723,37 @@
         uiState.archive = document.getElementById('archiveDetails')?.open;
 
         const dbData = {}; const userPoints = {}; const historyList = [];
+        const pendingHtmlList = [];
+        
         snap.forEach(d => {
             const m = d.data(); dbData[d.id] = m;
+            
+            // Obsługa meczy oczekujących na potwierdzenie - PANEL ADMINISTRATORA
+            if(m.status === 'pending_real') {
+                let matchName = d.id;
+                const gMatch = MATCHES.find(ma => ma.id === d.id);
+                if(gMatch) matchName = `${gMatch.t1} - ${gMatch.t2}`;
+                else {
+                    const kMatch = KNOCKOUTS.find(k => k.id === d.id);
+                    if(kMatch) matchName = `${m.override_t1 || kMatch.ref1} - ${m.override_t2 || kMatch.ref2}`;
+                }
+
+                const isMine = m.realProposer === currentUser;
+                let penText = (m.tempPen1 !== null && m.tempPen2 !== null) ? ` (K: ${m.tempPen1}-${m.tempPen2})` : '';
+
+                pendingHtmlList.push(`
+                    <div style="background: rgba(255, 165, 0, 0.1); border: 2px dashed orange; border-radius: 10px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                        <div style="color: orange; font-weight: bold; margin-bottom: 10px; text-transform: uppercase;">⚠️ WYMAGA ZATWIERDZENIA: ${matchName}</div>
+                        <div style="font-size: 24px; font-weight: 900; color: #fff; margin-bottom: 10px;">${m.tempReal1} : ${m.tempReal2}${penText}</div>
+                        <div style="font-size: 12px; color: #aaa; margin-bottom: 15px;">Zgłoszone przez: ${m.realProposer}</div>
+                        ${isMine 
+                            ? `<div style="color: var(--cyan); font-weight: bold;">Czekasz na potwierdzenie przez innego gracza...</div>`
+                            : `<button class="btn-admin btn-confirm" style="font-size: 16px; padding: 10px; max-width: 300px; margin: 0 auto;" onclick="confirmRealScore('${d.id}')">✅ POTWIERDŹ WYNIK</button>`
+                        }
+                    </div>
+                `);
+            }
+
             if(m.status === 'finished' && m.bets) {
                 Object.keys(m.bets).forEach(u => {
                     if(!userPoints[u]) userPoints[u] = 0;
@@ -756,6 +787,12 @@
                 });
             }
         });
+
+        // Wstawianie oczekujących meczów
+        const pendingCont = document.getElementById('pendingConfirmationsContainer');
+        if (pendingCont) {
+            pendingCont.innerHTML = pendingHtmlList.length > 0 ? pendingHtmlList.join('') : '';
+        }
 
         lastUserPoints = userPoints;
         renderRanking();
@@ -820,10 +857,9 @@
                         html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                     }
                 }
-                if(dbM.status === 'pending_real') {
-                    if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
-                    else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${m.id}')">POTWIERDŹ WYNIK (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
-                } else if(dbM.status !== "finished") {
+                
+                // USUNIĘTO STARE PRZYCISKI DO POTWIERDZANIA Z TEGO MIEJSCA, zostawiamy tylko wprowadzanie nowego:
+                if(dbM.status !== "finished" && dbM.status !== "pending_real") {
                     html += `<details class="admin-panel"><summary>Wprowadź oficjalny wynik</summary><input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${m.id}" class="admin-input" min="0" max="15"><button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZGŁOŚ WYNIK</button></details>`;
                 }
                 html += `</div>`;
@@ -882,10 +918,9 @@
                     html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
                 }
             }
-            if(dbM.status === 'pending_real') {
-                if(dbM.realProposer === currentUser) html += `<div class="locked-text" style="color:var(--cyan)">Czeka na potw.: ${dbM.tempReal1}:${dbM.tempReal2}</div>`;
-                else html += `<button class="btn-admin btn-confirm" onclick="confirmRealScore('${k.id}')">POTWIERDŹ WYNIK (${dbM.tempReal1}:${dbM.tempReal2})</button>`;
-            } else if(dbM.status !== "finished") {
+            
+            // USUNIĘTO STARE PRZYCISKI DO POTWIERDZANIA Z TEGO MIEJSCA, zostawiamy tylko wprowadzanie nowego:
+            if(dbM.status !== "finished" && dbM.status !== "pending_real") {
                 html += `<details class="admin-panel"><summary>Wpisz wynik / Drużyny</summary>
                          <div style="margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 10px;">
                              <input type="text" id="override_t1_${k.id}" class="admin-text" placeholder="D1 (Ręcznie)" value="${dbM.override_t1 || ''}">
