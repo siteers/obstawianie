@@ -344,22 +344,42 @@
     });
 
     const KNOCKOUTS = [
-        { id: "R32_1", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T15:00" }, { id: "R32_2", stage: "1/16 Finału", ref1: "1A", ref2: "3CDEFHI", date: "2026-06-28T18:00" },
-        { id: "R32_3", stage: "1/16 Finału", ref1: "1B", ref2: "3EFGIJ", date: "2026-06-28T21:00" }, { id: "R32_4", stage: "1/16 Finału", ref1: "1C", ref2: "3ABDEF", date: "2026-06-29T18:00" },
-        { id: "R32_5", stage: "1/16 Finału", ref1: "1D", ref2: "3BEFIJ", date: "2026-06-29T21:00" }, { id: "R32_6", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T15:00" },
-        { id: "R32_7", stage: "1/16 Finału", ref1: "1E", ref2: "3ABCDF", date: "2026-06-30T18:00" }, { id: "R32_8", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T21:00" },
-        { id: "R32_9", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T15:00" }, { id: "R32_10", stage: "1/16 Finału", ref1: "1G", ref2: "3AEHIJ", date: "2026-07-01T18:00" },
-        { id: "R32_11", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-01T21:00" }, { id: "R32_12", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T15:00" },
-        { id: "R32_13", stage: "1/16 Finału", ref1: "1I", ref2: "3CDFGH", date: "2026-07-02T18:00" }, { id: "R32_14", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T21:00" },
-        { id: "R32_15", stage: "1/16 Finału", ref1: "1K", ref2: "3DEIJL", date: "2026-07-03T18:00" }, { id: "R32_16", stage: "1/16 Finału", ref1: "1L", ref2: "3EHIJK", date: "2026-07-03T21:00" },
-        { id: "R16_1", stage: "1/8 Finału", ref1: "W_R32_1", ref2: "W_R32_2", date: "2026-07-04T18:00" }, { id: "R16_2", stage: "1/8 Finału", ref1: "W_R32_3", ref2: "W_R32_4", date: "2026-07-04T21:00" },
-        { id: "R16_3", stage: "1/8 Finału", ref1: "W_R32_5", ref2: "W_R32_6", date: "2026-07-05T18:00" }, { id: "R16_4", stage: "1/8 Finału", ref1: "W_R32_7", ref2: "W_R32_8", date: "2026-07-05T21:00" },
-        { id: "R16_5", stage: "1/8 Finału", ref1: "W_R32_9", ref2: "W_R32_10", date: "2026-07-06T18:00" }, { id: "R16_6", stage: "1/8 Finału", ref1: "W_R32_11", ref2: "W_R32_12", date: "2026-07-06T21:00" },
-        { id: "R16_7", stage: "1/8 Finału", ref1: "W_R32_13", ref2: "W_R32_14", date: "2026-07-07T18:00" }, { id: "R16_8", stage: "1/8 Finału", ref1: "W_R32_15", ref2: "W_R32_16", date: "2026-07-07T21:00" },
-        { id: "QF_1", stage: "Ćwierćfinał", ref1: "W_R16_1", ref2: "W_R16_2", date: "2026-07-09T18:00" }, { id: "QF_2", stage: "Ćwierćfinał", ref1: "W_R16_3", ref2: "W_R16_4", date: "2026-07-10T18:00" },
-        { id: "QF_3", stage: "Ćwierćfinał", ref1: "W_R16_5", ref2: "W_R16_6", date: "2026-07-11T18:00" }, { id: "QF_4", stage: "Ćwierćfinał", ref1: "W_R16_7", ref2: "W_R16_8", date: "2026-07-11T21:00" },
-        { id: "SF_1", stage: "Półfinał", ref1: "W_QF_1", ref2: "W_QF_2", date: "2026-07-14T20:00" }, { id: "SF_2", stage: "Półfinał", ref1: "W_QF_3", ref2: "W_QF_4", date: "2026-07-15T20:00" },
-        { id: "TP_1", stage: "Mecz o 3. miejsce", ref1: "L_SF_1", ref2: "L_SF_2", date: "2026-07-18T20:00" }, { id: "F_1", stage: "FINAŁ", ref1: "W_SF_1", ref2: "W_SF_2", date: "2026-07-19T20:00" }
+        { id: "M_73", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T19:00" }, 
+        { id: "M_74", stage: "1/16 Finału", ref1: "1A", ref2: "3C/D/E/F/H/I", date: "2026-06-29T03:00" },
+        { id: "M_75", stage: "1/16 Finału", ref1: "1E", ref2: "3A/B/C/D/F", date: "2026-06-29T03:00" }, 
+        { id: "M_76", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-29T23:00" },
+        { id: "M_77", stage: "1/16 Finału", ref1: "1C", ref2: "3A/B/D/E/F", date: "2026-06-30T03:00" }, 
+        { id: "M_78", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T03:00" },
+        { id: "M_79", stage: "1/16 Finału", ref1: "1I", ref2: "3C/D/F/G/H", date: "2026-06-30T19:00" }, 
+        { id: "M_80", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T03:00" },
+        { id: "M_81", stage: "1/16 Finału", ref1: "1B", ref2: "3E/F/G/I/J", date: "2026-07-01T03:00" }, 
+        { id: "M_82", stage: "1/16 Finału", ref1: "1G", ref2: "3A/E/H/I/J", date: "2026-07-01T23:00" },
+        { id: "M_83", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-02T03:00" }, 
+        { id: "M_84", stage: "1/16 Finału", ref1: "1D", ref2: "3B/E/F/I/J", date: "2026-07-02T03:00" },
+        { id: "M_85", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T19:00" }, 
+        { id: "M_86", stage: "1/16 Finału", ref1: "1K", ref2: "3D/E/I/J/L", date: "2026-07-03T03:00" },
+        { id: "M_87", stage: "1/16 Finału", ref1: "1L", ref2: "3E/H/I/J/K", date: "2026-07-03T03:00" }, 
+        { id: "M_88", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-03T23:00" },
+        
+        { id: "M_89", stage: "1/8 Finału", ref1: "W_73", ref2: "W_75", date: "2026-07-04T19:00" }, 
+        { id: "M_90", stage: "1/8 Finału", ref1: "W_74", ref2: "W_76", date: "2026-07-05T03:00" },
+        { id: "M_91", stage: "1/8 Finału", ref1: "W_77", ref2: "W_79", date: "2026-07-05T19:00" }, 
+        { id: "M_92", stage: "1/8 Finału", ref1: "W_78", ref2: "W_80", date: "2026-07-06T03:00" },
+        { id: "M_93", stage: "1/8 Finału", ref1: "W_81", ref2: "W_83", date: "2026-07-06T19:00" }, 
+        { id: "M_94", stage: "1/8 Finału", ref1: "W_82", ref2: "W_84", date: "2026-07-07T03:00" },
+        { id: "M_95", stage: "1/8 Finału", ref1: "W_85", ref2: "W_87", date: "2026-07-07T19:00" }, 
+        { id: "M_96", stage: "1/8 Finału", ref1: "W_86", ref2: "W_88", date: "2026-07-08T03:00" },
+        
+        { id: "M_97", stage: "Ćwierćfinał", ref1: "W_89", ref2: "W_90", date: "2026-07-09T22:00" }, 
+        { id: "M_98", stage: "Ćwierćfinał", ref1: "W_91", ref2: "W_92", date: "2026-07-10T03:00" },
+        { id: "M_99", stage: "Ćwierćfinał", ref1: "W_93", ref2: "W_94", date: "2026-07-10T22:00" }, 
+        { id: "M_100", stage: "Ćwierćfinał", ref1: "W_95", ref2: "W_96", date: "2026-07-11T03:00" },
+        
+        { id: "M_101", stage: "Półfinał", ref1: "W_97", ref2: "W_98", date: "2026-07-14T03:00" }, 
+        { id: "M_102", stage: "Półfinał", ref1: "W_99", ref2: "W_100", date: "2026-07-15T03:00" },
+        
+        { id: "M_103", stage: "Mecz o 3. miejsce", ref1: "L_101", ref2: "L_102", date: "2026-07-18T22:00" }, 
+        { id: "M_104", stage: "FINAŁ", ref1: "W_101", ref2: "W_102", date: "2026-07-19T21:00" }
     ];
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
@@ -669,7 +689,6 @@
                     <button class="btn-act btn-bet" style="width:80%; max-width:200px; margin-top:5px;" onclick="saveBet('${m.id}', ${m.isKnockout}, true)">${myBet ? 'ZAKTUALIZUJ TYP' : 'ZAPISZ TYP'}</button>`;
             }
             
-            // WSTAWIANIE FORMULARZA DO WPISYWANIA/POTWIERDZANIA OFICJALNEGO WYNIKU
             if(m.dbM.status === 'pending_real') {
                 let penText = (m.dbM.tempPen1 !== null && m.dbM.tempPen2 !== null) ? ` (K: ${m.dbM.tempPen1}-${m.dbM.tempPen2})` : '';
                 if(m.dbM.realProposer === currentUser) {
@@ -748,7 +767,6 @@
         snap.forEach(d => {
             const m = d.data(); dbData[d.id] = m;
             
-            // Obsługa meczy oczekujących na potwierdzenie - PANEL ADMINISTRATORA
             if(m.status === 'pending_real') {
                 let matchName = d.id;
                 const gMatch = MATCHES.find(ma => ma.id === d.id);
@@ -808,7 +826,6 @@
             }
         });
 
-        // Wstawianie oczekujących meczów nad tabelą rankingu
         const pendingCont = document.getElementById('pendingConfirmationsContainer');
         if (pendingCont) {
             pendingCont.innerHTML = pendingHtmlList.length > 0 ? pendingHtmlList.join('') : '';
@@ -878,8 +895,6 @@
                     }
                 }
                 
-                // Formularz wprowadzania wyniku został usunięty stąd.
-                
                 html += `</div>`;
             });
             html += `</details></div>`; gCont.innerHTML += html;
@@ -937,7 +952,6 @@
                 }
             }
             
-            // WSTAWIANIE FORMULARZA DO RĘCZNEGO NADPISYWANIA DRUŻYN
             if(dbM.status !== "finished" && dbM.status !== "pending_real") {
                 html += `<details class="admin-panel"><summary>Ręczne ustawienie drużyn</summary>
                          <div style="margin-bottom: 10px; padding-bottom: 10px;">
