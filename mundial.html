@@ -56,10 +56,6 @@
         .other-bets-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 10px; padding-bottom: 5px; font-size: 0.8rem; }
         .other-bets-list span { background: rgba(0, 212, 255, 0.05); border: 1px solid rgba(0, 212, 255, 0.2); padding: 4px 8px; border-radius: 5px; color: #fff; }
 
-        /* Klasa pomocnicza dla dynamicznie pokazywanych typów */
-        .other-bets-details.hidden-bet { display: none; }
-        .other-bets-details.hidden-bet.force-show { display: block; }
-
         /* WIDOK ZBIORCZY MECZÓW (HARMONOGRAM) */
         .schedule-grid { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 600px; margin: 0 auto; position: relative; z-index: 10; padding-top: 15px; padding-bottom: 15px; }
         .schedule-card { 
@@ -105,7 +101,7 @@
         .schedule-group-name { color: var(--gold); font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
         .schedule-status { font-size: 0.75rem; color: #888; font-weight: bold; }
         
-        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; cursor: pointer; } 
+        .schedule-teams-area { display: flex; justify-content: space-between; align-items: center; width: 100%; } 
         .schedule-team { display: flex; flex-direction: column; align-items: center; flex: 1; width: 33%; pointer-events: none; }
         .schedule-flag { width: 50px; height: 35px; border-radius: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5); object-fit: cover; margin-bottom: 5px; }
         .schedule-team-name { font-size: 0.85rem; font-weight: bold; color: #fff; text-align: center; }
@@ -121,7 +117,7 @@
         /* Mecze (klasyczne kafelki grup) */
         .match-row { background: rgba(0,0,0,0.5); padding: 15px; border-radius: 10px; margin-top: 10px; text-align: center; border: 1px solid var(--border); }
         .match-date { font-size: 0.7rem; color: #888; margin-bottom: 8px; font-weight: bold; letter-spacing: 1px; }
-        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; cursor: pointer; } 
+        .match-teams { font-size: 1rem; font-weight: bold; margin-bottom: 15px; color: #fff; } 
         
         /* Kontrolki Typowania */
         .bet-box { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
@@ -270,11 +266,7 @@
     let globalState = { archivedRounds: [], pendingClosure: null };
     let currentUpcomingList = [];
     
-    let clickCounters = {};
-    let clickTimers = {};
-    
-    // Dodajemy globalną zmienną do obsługi trybu sortowania
-    let currentSortMode = 'BIEZACA'; // Możliwe wartości: 'BIEZACA' lub 'SUMA'
+    let currentSortMode = 'BIEZACA'; 
 
     const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
     let pts = []; function initBg() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; pts = []; for (let i = 0; i < 70; i++) { pts.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, vx: (Math.random() - 0.5) * 0.5, vy: (Math.random() - 0.5) * 0.5 }); } }
@@ -344,42 +336,42 @@
     });
 
     const KNOCKOUTS = [
-        { id: "M_73", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T19:00" }, 
-        { id: "M_74", stage: "1/16 Finału", ref1: "1A", ref2: "3C/D/E/F/H/I", date: "2026-06-29T03:00" },
-        { id: "M_75", stage: "1/16 Finału", ref1: "1E", ref2: "3A/B/C/D/F", date: "2026-06-29T03:00" }, 
-        { id: "M_76", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-29T23:00" },
-        { id: "M_77", stage: "1/16 Finału", ref1: "1C", ref2: "3A/B/D/E/F", date: "2026-06-30T03:00" }, 
-        { id: "M_78", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-06-30T03:00" },
-        { id: "M_79", stage: "1/16 Finału", ref1: "1I", ref2: "3C/D/F/G/H", date: "2026-06-30T19:00" }, 
-        { id: "M_80", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-01T03:00" },
-        { id: "M_81", stage: "1/16 Finału", ref1: "1B", ref2: "3E/F/G/I/J", date: "2026-07-01T03:00" }, 
-        { id: "M_82", stage: "1/16 Finału", ref1: "1G", ref2: "3A/E/H/I/J", date: "2026-07-01T23:00" },
-        { id: "M_83", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-02T03:00" }, 
-        { id: "M_84", stage: "1/16 Finału", ref1: "1D", ref2: "3B/E/F/I/J", date: "2026-07-02T03:00" },
-        { id: "M_85", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-02T19:00" }, 
-        { id: "M_86", stage: "1/16 Finału", ref1: "1K", ref2: "3D/E/I/J/L", date: "2026-07-03T03:00" },
-        { id: "M_87", stage: "1/16 Finału", ref1: "1L", ref2: "3E/H/I/J/K", date: "2026-07-03T03:00" }, 
-        { id: "M_88", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-03T23:00" },
+        { id: "M_73", stage: "1/16 Finału", ref1: "2A", ref2: "2B", date: "2026-06-28T21:00" }, 
+        { id: "M_74", stage: "1/16 Finału", ref1: "1E", ref2: "3A/B/C/D/F", date: "2026-06-29T22:30" },
+        { id: "M_75", stage: "1/16 Finału", ref1: "1F", ref2: "2C", date: "2026-06-30T03:00" }, 
+        { id: "M_76", stage: "1/16 Finału", ref1: "1C", ref2: "2F", date: "2026-06-29T19:00" },
+        { id: "M_77", stage: "1/16 Finału", ref1: "1I", ref2: "3C/D/F/G/H", date: "2026-06-30T23:00" }, 
+        { id: "M_78", stage: "1/16 Finału", ref1: "2E", ref2: "2I", date: "2026-07-01T02:00" },
+        { id: "M_79", stage: "1/16 Finału", ref1: "1A", ref2: "3C/E/F/H/I", date: "2026-07-01T03:00" }, 
+        { id: "M_80", stage: "1/16 Finału", ref1: "1L", ref2: "3E/H/I/J/K", date: "2026-07-01T18:00" },
+        { id: "M_81", stage: "1/16 Finału", ref1: "1D", ref2: "3B/E/F/I/J", date: "2026-07-02T02:00" }, 
+        { id: "M_82", stage: "1/16 Finału", ref1: "1G", ref2: "3A/E/H/I/J", date: "2026-07-01T22:00" },
+        { id: "M_83", stage: "1/16 Finału", ref1: "2K", ref2: "2L", date: "2026-07-02T01:00" }, 
+        { id: "M_84", stage: "1/16 Finału", ref1: "1H", ref2: "2J", date: "2026-07-03T04:00" },
+        { id: "M_85", stage: "1/16 Finału", ref1: "1B", ref2: "3E/F/G/I/J", date: "2026-07-03T05:00" }, 
+        { id: "M_86", stage: "1/16 Finału", ref1: "1J", ref2: "2H", date: "2026-07-04T00:00" },
+        { id: "M_87", stage: "1/16 Finału", ref1: "1K", ref2: "3D/E/I/J/L", date: "2026-07-04T02:30" }, 
+        { id: "M_88", stage: "1/16 Finału", ref1: "2D", ref2: "2G", date: "2026-07-03T20:00" },
         
-        { id: "M_89", stage: "1/8 Finału", ref1: "W_73", ref2: "W_75", date: "2026-07-04T19:00" }, 
-        { id: "M_90", stage: "1/8 Finału", ref1: "W_74", ref2: "W_76", date: "2026-07-05T03:00" },
-        { id: "M_91", stage: "1/8 Finału", ref1: "W_77", ref2: "W_79", date: "2026-07-05T19:00" }, 
-        { id: "M_92", stage: "1/8 Finału", ref1: "W_78", ref2: "W_80", date: "2026-07-06T03:00" },
-        { id: "M_93", stage: "1/8 Finału", ref1: "W_81", ref2: "W_83", date: "2026-07-06T19:00" }, 
-        { id: "M_94", stage: "1/8 Finału", ref1: "W_82", ref2: "W_84", date: "2026-07-07T03:00" },
-        { id: "M_95", stage: "1/8 Finału", ref1: "W_85", ref2: "W_87", date: "2026-07-07T19:00" }, 
-        { id: "M_96", stage: "1/8 Finału", ref1: "W_86", ref2: "W_88", date: "2026-07-08T03:00" },
+        { id: "M_89", stage: "1/8 Finału", ref1: "W_M_74", ref2: "W_M_77", date: "2026-07-04T22:00" }, 
+        { id: "M_90", stage: "1/8 Finału", ref1: "W_M_73", ref2: "W_M_75", date: "2026-07-05T02:00" },
+        { id: "M_91", stage: "1/8 Finału", ref1: "W_M_76", ref2: "W_M_78", date: "2026-07-05T21:00" }, 
+        { id: "M_92", stage: "1/8 Finału", ref1: "W_M_79", ref2: "W_M_80", date: "2026-07-06T03:00" },
+        { id: "M_93", stage: "1/8 Finału", ref1: "W_M_83", ref2: "W_M_84", date: "2026-07-06T22:00" }, 
+        { id: "M_94", stage: "1/8 Finału", ref1: "W_M_81", ref2: "W_M_82", date: "2026-07-07T03:30" },
+        { id: "M_95", stage: "1/8 Finału", ref1: "W_M_86", ref2: "W_M_88", date: "2026-07-07T20:00" }, 
+        { id: "M_96", stage: "1/8 Finału", ref1: "W_M_85", ref2: "W_M_87", date: "2026-07-08T04:00" },
         
-        { id: "M_97", stage: "Ćwierćfinał", ref1: "W_89", ref2: "W_90", date: "2026-07-09T22:00" }, 
-        { id: "M_98", stage: "Ćwierćfinał", ref1: "W_91", ref2: "W_92", date: "2026-07-10T03:00" },
-        { id: "M_99", stage: "Ćwierćfinał", ref1: "W_93", ref2: "W_94", date: "2026-07-10T22:00" }, 
-        { id: "M_100", stage: "Ćwierćfinał", ref1: "W_95", ref2: "W_96", date: "2026-07-11T03:00" },
+        { id: "M_97", stage: "Ćwierćfinał", ref1: "W_M_89", ref2: "W_M_90", date: "2026-07-09T22:30" }, 
+        { id: "M_98", stage: "Ćwierćfinał", ref1: "W_M_93", ref2: "W_M_94", date: "2026-07-10T03:00" },
+        { id: "M_99", stage: "Ćwierćfinał", ref1: "W_M_91", ref2: "W_M_92", date: "2026-07-10T22:00" }, 
+        { id: "M_100", stage: "Ćwierćfinał", ref1: "W_M_95", ref2: "W_M_96", date: "2026-07-11T03:00" },
         
-        { id: "M_101", stage: "Półfinał", ref1: "W_97", ref2: "W_98", date: "2026-07-14T03:00" }, 
-        { id: "M_102", stage: "Półfinał", ref1: "W_99", ref2: "W_100", date: "2026-07-15T03:00" },
+        { id: "M_101", stage: "Półfinał", ref1: "W_M_97", ref2: "W_M_98", date: "2026-07-14T03:00" }, 
+        { id: "M_102", stage: "Półfinał", ref1: "W_M_99", ref2: "W_M_100", date: "2026-07-15T03:00" },
         
-        { id: "M_103", stage: "Mecz o 3. miejsce", ref1: "L_101", ref2: "L_102", date: "2026-07-18T22:00" }, 
-        { id: "M_104", stage: "FINAŁ", ref1: "W_101", ref2: "W_102", date: "2026-07-19T21:00" }
+        { id: "M_103", stage: "Mecz o 3. miejsce", ref1: "L_M_101", ref2: "L_M_102", date: "2026-07-18T22:00" }, 
+        { id: "M_104", stage: "FINAŁ", ref1: "W_M_101", ref2: "W_M_102", date: "2026-07-19T21:00" }
     ];
 
     const isValValid = (v) => v !== "" && v !== null && !isNaN(v) && parseInt(v) >= 0 && parseInt(v) <= 15;
@@ -387,32 +379,6 @@
     window.setSortMode = (mode) => {
         currentSortMode = mode;
         renderRanking();
-    };
-
-    window.handleHiddenClick = (matchId) => {
-        if (currentUser !== "Krzysiek") return;
-        
-        if (!clickCounters[matchId]) clickCounters[matchId] = 0;
-        clickCounters[matchId]++;
-        
-        clearTimeout(clickTimers[matchId]);
-        
-        if (clickCounters[matchId] >= 3) {
-            clickCounters[matchId] = 0;
-            const container = document.getElementById(`other_bets_${matchId}`);
-            if (container) {
-                if (container.classList.contains('force-show')) {
-                    container.classList.remove('force-show');
-                } else {
-                    container.classList.add('force-show');
-                    container.setAttribute('open', '');
-                }
-            }
-        } else {
-            clickTimers[matchId] = setTimeout(() => {
-                clickCounters[matchId] = 0;
-            }, 600);
-        }
     };
 
     window.saveBet = async (id, isKnockout, isUpcoming = false) => {
@@ -655,7 +621,7 @@
                 <div class="schedule-header">
                     <span class="schedule-group-name">${m.displayGroup || m.group}</span>
                 </div>
-                <div class="schedule-teams-area" onclick="handleHiddenClick('${m.id}')">
+                <div class="schedule-teams-area">
                     <div class="schedule-team">
                         <img src="${getFlagUrl(m.t1)}" class="schedule-flag" alt="${m.t1}">
                         <span class="schedule-team-name">${m.t1}</span>
@@ -671,10 +637,12 @@
                 </div>
                 <div class="schedule-bet-area">`;
             
-            let isHidden = !m.matchLocked; 
-            html += getOtherBetsHtml(m.dbM.bets, !isHidden, isHidden, m.id);
-
-            if (m.matchLocked) {
+            if (m.dbM.status === 'finished') {
+                html += `<div class="real-score">${m.dbM.realScore1} : ${m.dbM.realScore2}</div>`;
+                if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
+                html += getOtherBetsHtml(m.dbM.bets, false);
+            } else if (m.matchLocked) {
+                html += getOtherBetsHtml(m.dbM.bets, true);
                 html += `<div class="locked-text" style="color:var(--error); margin-bottom:10px;">ZAMKNIĘTE - BRAK MOŻLIWOŚCI ZMIAN</div>`;
             } else {
                 html += `<div class="schedule-bet-info">Wprowadź swój typ</div>
@@ -733,17 +701,12 @@
         else renderHarmonogram();
     });
 
-    const getOtherBetsHtml = (bets, isOpen = false, isHidden = false, matchId = "") => {
+    const getOtherBetsHtml = (bets, isOpen = false) => {
         if (!bets || Object.keys(bets).length === 0) {
-            let cl = "other-bets-details";
-            if (isHidden) cl += " hidden-bet";
-            return `<div id="other_bets_${matchId}" class="${cl}" style="font-size:0.8rem; color:#aaa; margin-top: 10px; text-align:center; width:100%;">Brak typów.</div>`;
+            return `<div class="other-bets-details" style="font-size:0.8rem; color:#aaa; margin-top: 10px; text-align:center; width:100%;">Brak typów.</div>`;
         }
         
-        let cl = "other-bets-details";
-        if (isHidden) cl += " hidden-bet";
-
-        let bHtml = `<details id="other_bets_${matchId}" class="${cl}" ${isOpen && !isHidden ? 'open' : ''}><summary><span></span></summary><div class="other-bets-list">`;
+        let bHtml = `<details class="other-bets-details" ${isOpen ? 'open' : ''}><summary><span></span></summary><div class="other-bets-list">`;
         Object.keys(bets).forEach(u => {
             let betStr = `${bets[u].s1}:${bets[u].s2}`;
             if (bets[u].p1 !== null && bets[u].p2 !== null) betStr += ` (K:${bets[u].p1}-${bets[u].p2})`;
@@ -877,24 +840,24 @@
                     upcomingList.push({ ...m, displayGroup: `Grupa ${g}`, isKnockout: false, dbM, matchLocked });
                 }
 
-                html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams" onclick="handleHiddenClick('${m.id}')">${m.t1} - ${m.t2}</div>`;
+                html += `<div class="match-row"><div class="match-date">${m.date.replace('T', ' ')}</div><div class="match-teams">${m.t1} - ${m.t2}</div>`;
                 
-                let isHidden = !matchLocked && dbM.status !== "finished";
-
                 if (dbM.status === "finished") {
                     html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2}</div>`;
                     if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2}</div>`;
-                    html += getOtherBetsHtml(dbM.bets, false, false, m.id);
+                    html += getOtherBetsHtml(dbM.bets, false);
+                } else if (matchLocked) {
+                    html += getOtherBetsHtml(dbM.bets, true);
+                    html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" disabled> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" disabled></div>`;
+                    html += `<div class="locked-text" style="color:var(--error);">ZAMKNIĘTE</div>`;
                 } else {
-                    html += getOtherBetsHtml(dbM.bets, true, isHidden, m.id);
-                    html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}></div>`;
-                    if(matchLocked) {
-                        html += `<div class="locked-text" style="color:var(--error);">ZAMKNIĘTE</div>`;
-                    } else {
-                        html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
-                    }
+                    html += `<div class="bet-box"><input type="number" id="b1_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}"> : <input type="number" id="b2_${m.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}"></div>`;
+                    html += `<button class="btn-act btn-bet" onclick="saveBet('${m.id}', false, false)">ZAPISZ TYP</button>`;
                 }
                 
+                if(dbM.status !== "finished" && dbM.status !== "pending_real") {
+                    html += `<details class="admin-panel"><summary>Wprowadź oficjalny wynik</summary><input type="number" id="a1_${m.id}" class="admin-input" min="0" max="15">:<input type="number" id="a2_${m.id}" class="admin-input" min="0" max="15"><button class="btn-admin" onclick="proposeRealScore('${m.id}', false)">ZGŁOŚ WYNIK</button></details>`;
+                }
                 html += `</div>`;
             });
             html += `</details></div>`; gCont.innerHTML += html;
@@ -934,22 +897,19 @@
                 upcomingList.push({ id: k.id, group: k.stage, t1, t2, date: k.date, isKnockout: true, dbM, matchLocked });
             }
 
-            let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams" onclick="handleHiddenClick('${k.id}')">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
+            let html = `<div class="card"><div class="title" style="color:var(--cyan)">${k.stage}</div><div class="match-row" style="margin:0;"><div class="match-date">${k.date.replace('T', ' ')}</div><div class="match-teams">${t1}<br><span style="font-size:12px; color:#666;">vs</span><br>${t2}</div>`;
             
-            let isHidden = !matchLocked && dbM.status !== "finished";
-
             if (dbM.status === "finished") {
                 html += `<div class="real-score">${dbM.realScore1} : ${dbM.realScore2} ${dbM.realPen1 !== null ? `(K: ${dbM.realPen1}-${dbM.realPen2})` : ''}</div>`;
                 if(myBet) html += `<div style="font-size:11px; color:#aaa;">Twój typ: ${myBet.s1}:${myBet.s2} ${myBet.p1 !== null ? `(K: ${myBet.p1}-${myBet.p2})` : ''}</div>`;
-                html += getOtherBetsHtml(dbM.bets, false, false, k.id);
+                html += getOtherBetsHtml(dbM.bets, false);
+            } else if (matchLocked) {
+                html += getOtherBetsHtml(dbM.bets, true);
+                html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" disabled>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" disabled><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" disabled>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" disabled> )</span></div>`;
+                html += `<div class="locked-text" style="color:var(--error);">ZABLOKOWANE</div>`;
             } else {
-                html += getOtherBetsHtml(dbM.bets, true, isHidden, k.id);
-                html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}" ${matchLocked ? 'disabled' : ''}>:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}" ${matchLocked ? 'disabled' : ''}><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}" ${matchLocked ? 'disabled' : ''}>-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}" ${matchLocked ? 'disabled' : ''}> )</span></div>`;
-                if (matchLocked) {
-                    html += `<div class="locked-text" style="color:var(--error);">ZABLOKOWANE</div>`;
-                } else {
-                    html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
-                }
+                html += `<div class="bet-box"><input type="number" id="b1_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s1??''}">:<input type="number" id="b2_${k.id}" class="bet-input" min="0" max="15" value="${myBet?.s2??''}"><span style="font-size:12px; color:#666;"> (K: <input type="number" id="bp1_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p1??''}">-<input type="number" id="bp2_${k.id}" class="bet-input pen-input" min="0" max="15" value="${myBet?.p2??''}"> )</span></div>`;
+                html += `<button class="btn-act btn-bet" onclick="saveBet('${k.id}', true, false)">ZAPISZ TYP</button>`;
             }
             
             if(dbM.status !== "finished" && dbM.status !== "pending_real") {
@@ -1003,3 +963,4 @@
 </script>
 </body>
 </html>
+
