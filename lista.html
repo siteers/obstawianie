@@ -53,13 +53,13 @@
         }
 
         .freeze-overlay {
-            position: absolute; in: 0; pointer-events: none; z-index: 50;
+            position: absolute; inset: 0; pointer-events: none; z-index: 50;
             background-image: url('image_822d4c.png');
             background-size: 100% 100%; background-repeat: no-repeat;
             opacity: 0; transform: scale(1.1); transition: 1s ease-out;
         }
         .frost-shimmer {
-            position: absolute; in: 0; pointer-events: none; z-index: 45;
+            position: absolute; inset: 0; pointer-events: none; z-index: 45;
             background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
             background-size: 200% 200%; opacity: 0; transition: 1s;
         }
@@ -72,7 +72,7 @@
         .qr-frame { padding: 10px; background: #fff; border-radius: 15px; display: inline-block; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
 
         .slot-locked { border: 2px solid var(--error) !important; animation: alarmPulse 1.5s infinite; }
-        @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 in; } 50% { box-shadow: 0 0 50px var(--error) in; } }
+        @keyframes alarmPulse { 0%, 100% { box-shadow: 0 0 0 inset; } 50% { box-shadow: 0 0 50px var(--error) inset; } }
         @keyframes leaderPulse { 0%, 100% { color: var(--text); } 50% { color: var(--leader); text-shadow: 0 0 15px var(--leader); } }
         .leader-row td { animation: leaderPulse 1.5s infinite; font-weight: 900 !important; }
         h2 { text-align: center; margin: 0; color: var(--gold); text-transform: uppercase; font-size: 11px; letter-spacing: 1px; }
@@ -511,43 +511,6 @@ setInterval(async () => {
     if (now.getHours() === 14 && now.getMinutes() === 15 && now.getSeconds() < 2) {
         if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
-    }
-
-    const clearTimeMins = 15 * 60 + 15; 
-    const todayStr = now.toDateString();
-    
-    if (localLastClearCheck !== todayStr) {
-        if (currentMinutes >= clearTimeMins || !hasCheckedMissedClear) {
-            try {
-                const stateSnap = await getDoc(appStateRef);
-                const stateData = stateSnap.data() || {};
-                const lastClear = stateData.lastAutoClearDate || "";
-                
-                const yesterday = new Date(now);
-                yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayStr = yesterday.toDateString();
-
-                let shouldClear = false;
-                let dateToSet = "";
-
-                if (currentMinutes >= clearTimeMins) {
-                    if (lastClear !== todayStr) { shouldClear = true; dateToSet = todayStr; }
-                } else {
-                    hasCheckedMissedClear = true;
-                    if (lastClear !== yesterdayStr && lastClear !== todayStr) { 
-                        shouldClear = true; dateToSet = yesterdayStr; 
-                    }
-                }
-
-                if (shouldClear) {
-                    console.log(`Uruchamiam Auto-Clear dla daty: ${dateToSet}`);
-                    await setDoc(appStateRef, { lastAutoClearDate: dateToSet }, { merge: true });
-                    if (dateToSet === todayStr) localLastClearCheck = todayStr;
-                    await autoClearSlot(1);
-                    await autoClearSlot(2);
-                }
-            } catch(e) { console.error("Błąd leniwego czyszczenia:", e); }
-        }
     }
 
     if (!isStopped1) renderTable(1, s); 
