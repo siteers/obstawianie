@@ -181,7 +181,7 @@
         <details class="history-details" id="historyDetails" style="margin-top:15px; background: var(--glass);">
             <summary><span></span></summary>
             <table class="history-table">
-                <thead><tr><th>Gracz</th><th>Mecz</th><th>Typ</th><th>Wynik</th><th>Pkt</th></tr></thead>
+                <thead><tr><th>Data</th><th>Gracz</th><th>Mecz</th><th>Typ</th><th>Wynik</th><th>Pkt</th></tr></thead>
                 <tbody id="historyLog"></tbody>
             </table>
         </details>
@@ -778,17 +778,30 @@
                     if(gained > 0) {
                         let matchName = d.id;
                         let matchDateForSort = 0;
+                        let displayDate = "";
+                        
                         const gMatch = MATCHES.find(ma => ma.id === d.id);
+                        const kMatch = KNOCKOUTS.find(k => k.id === d.id);
+
                         if(gMatch) {
                             matchName = `${gMatch.t1} - ${gMatch.t2}`;
                             matchDateForSort = new Date(gMatch.date).getTime();
-                        } else {
-                            const kMatch = KNOCKOUTS.find(k => k.id === d.id);
-                            if(kMatch) {
-                                matchName = `${m.override_t1 || kMatch.ref1} - ${m.override_t2 || kMatch.ref2}`;
-                                matchDateForSort = new Date(kMatch.date).getTime();
-                            }
+                            displayDate = formatPolishDate(gMatch.date) + " " + gMatch.date.split("T")[1].substring(0,5);
+                        } else if (kMatch) {
+                            const t1 = m.override_t1 || resolveKnockoutTeam(kMatch.ref1);
+                            const t2 = m.override_t2 || resolveKnockoutTeam(kMatch.ref2);
+                            matchName = `${t1} - ${t2}`;
+                            matchDateForSort = new Date(kMatch.date).getTime();
+                            displayDate = formatPolishDate(kMatch.date) + " " + kMatch.date.split("T")[1].substring(0,5);
+                        } else if (d.id.includes(' - ')) {
+                            const parts = d.id.split(' - ');
+                            const t1 = m.override_t1 || parts[0].trim().replace(/W_M_/g, 'Zw. M_').replace(/L_M_/g, 'Prz. M_');
+                            const t2 = m.override_t2 || parts[1].trim().replace(/W_M_/g, 'Zw. M_').replace(/L_M_/g, 'Prz. M_');
+                            matchName = `${t1} - ${t2}`;
+                            matchDateForSort = new Date("2026-07-06T12:00:00").getTime(); 
+                            displayDate = "1/8 Fin.";
                         }
+                        
                         let betStr = `${b.s1}:${b.s2}`;
                         if (b.p1 !== null && b.p2 !== null) betStr += ` (K:${b.p1}-${b.p2})`;
                         let realStr = `${r1}:${r2}`;
@@ -796,7 +809,7 @@
 
                         historyList.push({
                             time: matchDateForSort,
-                            html: `<tr><td><b style="color:var(--cyan)">${u}</b></td><td>${matchName}</td><td>${betStr}</td><td>${realStr}</td><td style="color:var(--success)"><b>+${gained}</b></td></tr>`
+                            html: `<tr><td style="color:#aaa; font-size:10px;">${displayDate}</td><td><b style="color:var(--cyan)">${u}</b></td><td>${matchName}</td><td>${betStr}</td><td>${realStr}</td><td style="color:var(--success)"><b>+${gained}</b></td></tr>`
                         });
                     }
                 });
@@ -812,7 +825,7 @@
         renderRanking();
 
         historyList.sort((a, b) => b.time - a.time);
-        document.getElementById('historyLog').innerHTML = historyList.length ? historyList.map(item => item.html).join('') : `<tr><td colspan="5">Brak historii...</td></tr>`;
+        document.getElementById('historyLog').innerHTML = historyList.length ? historyList.map(item => item.html).join('') : `<tr><td colspan="6">Brak historii...</td></tr>`;
 
         const gCont = document.getElementById('groupsContainer');
         const kCont = document.getElementById('knockoutContainer');
