@@ -267,7 +267,7 @@ function updateSlotUI(id, name, isLocked) {
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
     
     if (hasAlreadyVoted) {
-        statusDisplay.innerText = "OBCZAJONE";
+        statusDisplay.innerText = "V O T E D";
         statusDisplay.style.color = "#888";
     } else if (!isEmpty) {
         statusDisplay.innerText = targetAverages[name] ? `ŚR: ${targetAverages[name]}` : `ŚR: BRAK DANYCH`;
