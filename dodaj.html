@@ -132,7 +132,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, collection, addDoc, doc, onSnapshot, getDoc, setDoc, increment, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, collection, doc, onSnapshot, getDoc, setDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig); const db = getFirestore(app);
@@ -148,7 +148,7 @@ document.getElementById('mainContainer').style.display = 'block';
 
 let currentTargets = { t1: null, t2: null };
 let slotLocks = { l1: false, l2: false };
-let myVotedTargets = []; // Zmienna do trzymania informacji, na kogo już zagłosowałem
+let myVotedSlots = { slot1: false, slot2: false }; // Śledzi, w którym slocie użytkownik wysłał już głos
 let votesLeft = 20; 
 let targetAverages = {}; 
 
@@ -172,39 +172,31 @@ async function fetchUserStats() {
     } else {
         limitDisplay.style.color = "var(--cyan)";
     }
-    
-    // Sprawdzenie historii głosów użytkownika
-    const q = query(collection(db, "users"), where("name", "==", currentUser));
-    const querySnapshot = await getDocs(q);
-    myVotedTargets = [];
-    querySnapshot.forEach((doc) => {
-        // Ponieważ wpisy z "users" mają tylko nazwę slotu ('slot1' lub 'slot2'), 
-        // a nie bezpośrednio nazwę celu (która jest w history i appState),
-        // potrzebujemy sprytnego sposobu połączenia tego.
-        // Najprościej pobrać listę z tabeli "history", na kogo użytkownik postawił w aktywnych ticketach.
-    });
-    
-    // Pobieramy historię aktywnych (lub wszystkich) głosów usera, by wiedzieć, na kogo postawił.
-    const hQuery = query(collection(db, "history"), where("player", "==", currentUser));
-    const hSnap = await getDocs(hQuery);
-    hSnap.forEach(d => {
-        const hData = d.data();
-        // Jeśli jest to aktywny cel i gracz oddał na niego głos, blokujemy.
-        if(hData.target && hData.timestamp) {
-            myVotedTargets.push(hData.target);
-        }
-    });
-
     validateForm();
 }
 fetchUserStats();
 
+// AKTYWNE SŁUCHANIE BIEŻĄCYCH GŁOSÓW (ZAMIAST HISTORII)
+onSnapshot(collection(db, "users"), (snap) => {
+    myVotedSlots = { slot1: false, slot2: false };
+    
+    snap.forEach((d) => {
+        const data = d.data();
+        // Jeśli dany wpis należy do zalogowanego użytkownika, oznaczamy slot jako użyty
+        if (data.name === currentUser) {
+            if (data.targetSlot === 'slot1') myVotedSlots.slot1 = true;
+            if (data.targetSlot === 'slot2') myVotedSlots.slot2 = true;
+        }
+    });
+
+    updateSlotUI(1, currentTargets.t1, slotLocks.l1);
+    updateSlotUI(2, currentTargets.t2, slotLocks.l2);
+    validateForm();
+});
+
+// Nasłuchiwanie historii tylko po to, żeby wyliczać średnią dla wyświetlanych celów (opcjonalne)
 onSnapshot(collection(db, "history"), (snap) => {
     const targetTimes = {};
-    
-    // Aktualizacja tablicy zagłosowanych celów
-    myVotedTargets = [];
-    
     snap.forEach(d => {
         const data = d.data();
         if (data.target && data.timestamp) {
@@ -212,10 +204,6 @@ onSnapshot(collection(db, "history"), (snap) => {
             const date = new Date(data.timestamp);
             const secs = date.getHours() * 3600 + date.getMinutes() * 60 + date.getSeconds();
             targetTimes[data.target].push(secs);
-            
-            if (data.player === currentUser) {
-                myVotedTargets.push(data.target);
-            }
         }
     });
 
@@ -232,6 +220,7 @@ onSnapshot(collection(db, "history"), (snap) => {
     updateSlotUI(1, currentTargets.t1, slotLocks.l1);
     updateSlotUI(2, currentTargets.t2, slotLocks.l2);
 });
+
 
 window.formatTime = (input) => {
     let v = input.value.replace(/\D/g, '');
@@ -271,7 +260,9 @@ function updateSlotUI(id, name, isLocked) {
     
     const isEmpty = (!name || name === "Brak");
     const isSelfBet = (currentUser === name && !isEmpty);
-    const hasAlreadyVoted = myVotedTargets.includes(name) && !isEmpty;
+    
+    // Używamy naszej nowej, poprawionej weryfikacji w czasie rzeczywistym
+    const hasAlreadyVoted = (id === 1 ? myVotedSlots.slot1 : myVotedSlots.slot2) && !isEmpty;
     
     nameDisplay.innerText = isEmpty ? "BRAK CELU" : name;
     
@@ -331,8 +322,15 @@ window.saveData = async function() {
     let votesToCast = (h1V ? 1 : 0) + (h2V ? 1 : 0);
 
     try {
-        if (h1V) await addDoc(collection(db, "users"), { name: currentUser, hour: h1, targetSlot: 'slot1', timestamp: Date.now() });
-        if (h2V) await addDoc(collection(db, "users"), { name: currentUser, hour: h2, targetSlot: 'slot2', timestamp: Date.now() });
+        // TWORZENIE WPISÓW ZA POMOCĄ SETDOC, ABY UNIKNĄĆ DUPLIKATÓW
+        if (h1V) {
+            const docId1 = `${currentUser}_slot1`; 
+            await setDoc(doc(db, "users", docId1), { name: currentUser, hour: h1, targetSlot: 'slot1', timestamp: Date.now() });
+        }
+        if (h2V) {
+            const docId2 = `${currentUser}_slot2`;
+            await setDoc(doc(db, "users", docId2), { name: currentUser, hour: h2, targetSlot: 'slot2', timestamp: Date.now() });
+        }
         
         const userRef = doc(db, "ranking", currentUser);
         await setDoc(userRef, { votesThisMonth: increment(votesToCast) }, { merge: true });
