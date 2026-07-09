@@ -103,7 +103,7 @@
             user-select: none; background: rgba(0,0,0,0.3); display: inline-block;
             border-radius: 10px; padding: 5px 25px; border: 1px dashed var(--gold);
         }
-        .my-bet-blurred:hover { filter: blur(4px); border-color: var(--cyan); }
+        .my-bet-blurred:hover { border-color: var(--cyan); }
         .my-bet-blurred.revealed { filter: blur(0); cursor: default; }
         
         .captcha-overlay {
@@ -246,6 +246,9 @@ let stopTimer2 = null;
 let isMuted = localStorage.getItem('appMuted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
 
+// FLAGA DLA CAPTCHA
+let revealedSlots = { 1: false, 2: false };
+
 function applyMuteState() {
     fanfareAudio.muted = isMuted;
     lockSound.muted = isMuted;
@@ -307,7 +310,7 @@ window.generateCaptcha = () => {
 };
 
 window.triggerCaptcha = (slotId) => {
-    if(document.getElementById(`myBetValue${slotId}`).classList.contains('revealed')) return;
+    if(revealedSlots[slotId]) return;
     pendingRevealSlot = slotId;
     document.getElementById('captchaInput').value = '';
     document.getElementById('captchaError').textContent = '';
@@ -336,6 +339,8 @@ window.verifyCaptcha = () => {
 };
 
 window.revealMyBet = (slotId) => {
+    revealedSlots[slotId] = true; // Zabezpieczenie przed nadpisywaniem przez interwał renderowania
+    
     const valBox = document.getElementById(`myBetValue${slotId}`);
     const rowBox = document.getElementById(`myTableRowBet${slotId}`);
     
@@ -350,19 +355,24 @@ window.revealMyBet = (slotId) => {
         rowBox.style.color = '#00d4ff';
     }
     
-    // Po 5 sekundach schowaj z powrotem (jeśli slot nie został w międzyczasie zatrzymany)
+    // Po 5 sekundach schowaj z powrotem
     setTimeout(() => {
-        if(valBox) {
-            valBox.classList.remove('revealed');
-            valBox.style.color = 'var(--gold)';
-            valBox.style.borderColor = 'var(--gold)';
+        revealedSlots[slotId] = false;
+        
+        const currentValBox = document.getElementById(`myBetValue${slotId}`);
+        const currentRowBox = document.getElementById(`myTableRowBet${slotId}`);
+        
+        if(currentValBox) {
+            currentValBox.classList.remove('revealed');
+            currentValBox.style.color = 'var(--gold)';
+            currentValBox.style.borderColor = 'var(--gold)';
         }
-        if(rowBox) {
+        if(currentRowBox) {
             const isStopped = (slotId === 1) ? isStopped1 : isStopped2;
             if(!isStopped) {
-                rowBox.style.filter = 'blur(10px)';
-                rowBox.style.opacity = '0.2';
-                rowBox.style.color = 'inherit';
+                currentRowBox.style.filter = 'blur(10px)';
+                currentRowBox.style.opacity = '0.2';
+                currentRowBox.style.color = 'inherit';
             }
         }
     }, 5000);
@@ -725,10 +735,11 @@ function renderTable(id, sec) {
     const bv = document.getElementById(`myBetValue${id}`);
     if (myBet && !isStopped) { 
         bc.style.display = 'block'; 
-        if(!bv.classList.contains('revealed')) bv.textContent = myBet; 
+        if(!revealedSlots[id]) bv.textContent = myBet; 
     } else { 
         bc.style.display = 'none'; 
         bv.classList.remove('revealed'); 
+        revealedSlots[id] = false;
     }
 
 
@@ -754,7 +765,10 @@ function renderTable(id, sec) {
         const avatarColor = getAvatarColor(nameDisp);
         const userId = u.id || ""; 
         
-        let isBlurred = !isStopped;
+        let isBlurred = true;
+        if (isStopped) isBlurred = false;
+        if (u.name === currentUser && revealedSlots[id]) isBlurred = false;
+
         let cellIdAttr = (u.name === currentUser) ? `id="myTableRowBet${id}"` : "";
 
         table.innerHTML += `
@@ -768,7 +782,7 @@ function renderTable(id, sec) {
                         ${nameDisp}
                     </div>
                 </td>
-                <td ${cellIdAttr} style="color: ${isStopped ? '#b0e2ff' : 'inherit'}; font-weight: bold; filter: blur(${isBlurred ? '10px' : '0px'}); opacity: ${isBlurred ? '0.2' : '1'}; transition: 0.5s;">
+                <td ${cellIdAttr} style="color: ${isStopped ? '#b0e2ff' : (isBlurred ? 'inherit' : '#00d4ff')}; font-weight: bold; filter: blur(${isBlurred ? '10px' : '0px'}); opacity: ${isBlurred ? '0.2' : '1'}; transition: 0.5s;">
                     ${u.hour}
                 </td>
                 <td>
