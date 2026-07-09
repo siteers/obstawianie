@@ -243,6 +243,10 @@ let ignoreAutoLock = false;
 let stopTimer1 = null;
 let stopTimer2 = null;
 
+// Leniwe czyszczenie - flagi lokalne
+let localLastClearCheck = "";
+let hasCheckedMissedClear = false;
+
 let isMuted = localStorage.getItem('appMuted') === 'true';
 const muteBtn = document.getElementById('muteBtn');
 
@@ -327,8 +331,9 @@ window.closeCaptcha = () => {
 window.verifyCaptcha = () => {
     const input = document.getElementById('captchaInput').value.trim();
     if(input.toLowerCase() === captchaCode.toLowerCase()) {
+        const slotToReveal = pendingRevealSlot; // Zapisujemy slot przed zamknięciem (poprawka!)
         closeCaptcha();
-        revealMyBet(pendingRevealSlot);
+        revealMyBet(slotToReveal);
     } else {
         const err = document.getElementById('captchaError');
         err.textContent = "Błędny kod! Spróbuj ponownie.";
@@ -339,7 +344,8 @@ window.verifyCaptcha = () => {
 };
 
 window.revealMyBet = (slotId) => {
-    revealedSlots[slotId] = true; // Zabezpieczenie przed nadpisywaniem przez interwał renderowania
+    if(!slotId) return; // Zabezpieczenie przed błędem z null
+    revealedSlots[slotId] = true; 
     
     const valBox = document.getElementById(`myBetValue${slotId}`);
     const rowBox = document.getElementById(`myTableRowBet${slotId}`);
@@ -657,7 +663,29 @@ setInterval(async () => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
-    // Tu usunąłem logikę Auto-Clear, bo w dostarczonym przez Ciebie w tym poleceniu pliku jej nie było, opieram się w 100% o to, co wkleiłeś
+    const currentMinutes = now.getHours() * 60 + now.getMinutes();
+    const startBlock = 13 * 60 + 15; 
+    const endBlock = 14 * 60 + 15;
+    const clearTimeMins = 15 * 60 + 15; // 15:15
+    const todayStr = now.toDateString();
+    
+    if (currentMinutes === clearTimeMins && localLastClearCheck !== todayStr) {
+        localLastClearCheck = todayStr;
+        await autoClearSlot(1);
+        await autoClearSlot(2);
+    }
+    
+    if (currentMinutes >= startBlock && currentMinutes < endBlock) {
+        if (!ignoreAutoLock) {
+            if (!isLocked1) setDoc(appStateRef, { isLocked1: true }, { merge: true });
+            if (!isLocked2) setDoc(appStateRef, { isLocked2: true }, { merge: true });
+        }
+    }
+
+    if (now.getHours() === 14 && now.getMinutes() === 15 && now.getSeconds() < 2) {
+        if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
+        if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
+    }
 
     if (!isStopped1) renderTable(1, s); 
     if (!isStopped2) renderTable(2, s); 
@@ -742,9 +770,18 @@ function renderTable(id, sec) {
         revealedSlots[id] = false;
     }
 
+    // UKRYWANIE LISTY MIĘDZY 10:00 A 13:15 DLA ZWYKŁYCH GRACZY
+    if (currentMins >= 600 && currentMins < 795 && !isStopped && !isLocked && currentUser !== "Admin") {
+        sortedData = sortedData.filter(u => u.name === currentUser);
+    }
 
     table.innerHTML = "<tr><th>#</th><th>Gracz</th><th>Czas</th><th>X</th></tr>";
     
+    if (sortedData.length === 0 && currentMins >= 600 && currentMins < 795 && !isStopped && !isLocked && currentUser !== "Admin") {
+        table.innerHTML += `<tr><td colspan="4" style="padding: 15px; color: var(--gold); text-align: center; font-size: 13px;">🤫 Lista ukryta do 13:15</td></tr>`;
+        return;
+    }
+
     sortedData.forEach((u, i) => {
         let displayRank = isStopped ? (u.rank || i + 1) : (i + 1);
         
