@@ -101,10 +101,6 @@
         .limit-ok { color: var(--up); font-weight: bold; }
         .limit-warn { color: orange; font-weight: bold; }
         .limit-bad { color: var(--down); font-weight: bold; }
-        
-        /* NOWY STYL DLA PRZYCISKU UKRYWANIA LIMITÓW */
-        .toggle-limits-btn { background: rgba(255, 255, 255, 0.1); border: 1px dashed var(--border); color: #aaa; padding: 5px 15px; border-radius: 20px; font-size: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; margin-top: 5px; }
-        .toggle-limits-btn:hover { background: rgba(255, 255, 255, 0.2); color: #fff; }
     </style>
 </head>
 <body class="dark">
@@ -165,11 +161,8 @@
 
         <div id="month-tab" class="tab-content">
             <div class="glass-panel" id="currentMonthPanel">
-                <h4 style="color:var(--cyan); text-align:center; font-size:16px; margin-bottom: 5px;">BIEŻĄCY MIESIĄC</h4>
-                <p style="text-align:center; font-size:11px; color:#888; margin-top:0;">Limit 20 typowań / Wyniki zerowane co miesiąc</p>
-                <div style="text-align: center; margin-bottom: 15px;">
-                    <button id="toggleLimitsBtn" class="toggle-limits-btn" onclick="toggleVisibility()">Ukryj limity innych graczy</button>
-                </div>
+                <h4 style="color:var(--cyan); text-align:center; font-size:16px;">BIEŻĄCY MIESIĄC</h4>
+                <p style="text-align:center; font-size:11px; color:#888; margin-top:-10px;">Limit 20 typowań / Wyniki zerowane co miesiąc</p>
                 <div style="overflow-x: auto;">
                     <table id="monthTable">
                         <thead><tr><th>#</th><th>Trend / Imię</th><th>Punkty w M-C</th><th>Wykorzystane Typowania</th><th>Podium w M-C</th></tr></thead>
@@ -269,22 +262,11 @@
         let grandStats = []; 
         let currentMonthStats = []; 
 
-        // FLAGA DO UKRYWANIA LIMITÓW
+        // --- LOGIKA UKRYWANIA OSOBISTEGO LIMITU ---
         let areLimitsHidden = false;
-        
-        window.toggleVisibility = () => {
+        window.toggleMyLimits = () => {
             areLimitsHidden = !areLimitsHidden;
-            const btn = document.getElementById("toggleLimitsBtn");
-            if (areLimitsHidden) {
-                btn.textContent = "Pokaż limity innych graczy";
-                btn.style.borderColor = "var(--cyan)";
-                btn.style.color = "var(--cyan)";
-            } else {
-                btn.textContent = "Ukryj limity innych graczy";
-                btn.style.borderColor = "var(--border)";
-                btn.style.color = "#aaa";
-            }
-            refreshStats(); // Odśwież widok z nową flagą
+            refreshStats();
         };
 
         // --- NOWA ASYNCHRONICZNA LOGIKA KPN ---
@@ -564,18 +546,16 @@
                 let limitClass = "limit-ok";
                 let votesDisplay = `${p.votesUsed} / 20`;
                 
-                // Modyfikacja wyswietlania limitów na podstawie nowej flagi (areLimitsHidden)
-                if (p.name !== currentUser && currentUser !== "Admin") {
-                    if (areLimitsHidden) {
-                        votesDisplay = `<span style="color:#666; font-size: 11px;">🤫 Ukryte</span>`;
-                        limitClass = "";
-                    } else {
-                        if (p.votesUsed >= 20) limitClass = "limit-bad";
-                        else if (p.votesUsed >= 15) limitClass = "limit-warn";
-                    }
+                if (areLimitsHidden && (p.name === currentUser || currentUser === "Admin")) {
+                    votesDisplay = `<span style="color:#666; font-size: 11px;">🤫 Ukryte</span> <button onclick="toggleMyLimits()" style="background:none; border:none; cursor:pointer; font-size:14px; margin-left:5px; vertical-align:middle;" title="Pokaż">👁️</button>`;
+                    limitClass = "";
+                } else if (p.name !== currentUser && currentUser !== "Admin") {
+                    votesDisplay = `<span style="color:#666; font-size: 11px;">🤫 Ukryte</span>`;
+                    limitClass = "";
                 } else {
                     if (p.votesUsed >= 20) limitClass = "limit-bad";
                     else if (p.votesUsed >= 15) limitClass = "limit-warn";
+                    votesDisplay = `${p.votesUsed} / 20 <button onclick="toggleMyLimits()" style="background:none; border:none; cursor:pointer; font-size:14px; margin-left:5px; vertical-align:middle;" title="Zasłoń">🙈</button>`;
                 }
 
                 tbodyMonth.innerHTML += `<tr><td>${curR}</td><td>${trend}<span class="player-name" onclick="showPlayerCard('${p.name}')">${p.name}</span>${tieBtn}</td><td style="color:var(--cyan); font-weight:bold;">${p.points} <small>(${p.g}🥇)</small></td><td class="${limitClass}">${votesDisplay}</td><td>${p.pods}</td></tr>`;
