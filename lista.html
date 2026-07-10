@@ -331,7 +331,7 @@ window.closeCaptcha = () => {
 window.verifyCaptcha = () => {
     const input = document.getElementById('captchaInput').value.trim();
     if(input.toLowerCase() === captchaCode.toLowerCase()) {
-        const slotToReveal = pendingRevealSlot; // Zapisujemy slot przed zamknięciem (poprawka!)
+        const slotToReveal = pendingRevealSlot; 
         closeCaptcha();
         revealMyBet(slotToReveal);
     } else {
@@ -344,7 +344,7 @@ window.verifyCaptcha = () => {
 };
 
 window.revealMyBet = (slotId) => {
-    if(!slotId) return; // Zabezpieczenie przed błędem z null
+    if(!slotId) return; 
     revealedSlots[slotId] = true; 
     
     const valBox = document.getElementById(`myBetValue${slotId}`);
@@ -663,18 +663,42 @@ setInterval(async () => {
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds(); 
     
+    // Logika Auto-Clear powraca na swoje miejsce
     const currentMinutes = now.getHours() * 60 + now.getMinutes();
     const startBlock = 13 * 60 + 15; 
     const endBlock = 14 * 60 + 15;
     const clearTimeMins = 15 * 60 + 15; // 15:15
     const todayStr = now.toDateString();
     
+    // Gwarantowane czyszczenie dokładnie o 15:15
     if (currentMinutes === clearTimeMins && localLastClearCheck !== todayStr) {
         localLastClearCheck = todayStr;
         await autoClearSlot(1);
         await autoClearSlot(2);
     }
     
+    // Leniwe czyszczenie przy uruchomieniu (np. rano), jeśli Firebase pamięta, że sloty nie zostały wyzerowane
+    if (localLastClearCheck !== todayStr) {
+        try {
+            const stateSnap = await getDoc(appStateRef);
+            const stateData = stateSnap.data() || {};
+            const lastClear = stateData.lastAutoClearDate || "";
+            const yesterday = new Date(now);
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toDateString();
+
+            if (!hasCheckedMissedClear) {
+                hasCheckedMissedClear = true;
+                if (lastClear !== yesterdayStr && lastClear !== todayStr && currentMinutes < clearTimeMins) { 
+                    console.log(`Leniwe uruchamianie Auto-Clear dla wczoraj`);
+                    await setDoc(appStateRef, { lastAutoClearDate: yesterdayStr }, { merge: true });
+                    await autoClearSlot(1);
+                    await autoClearSlot(2);
+                }
+            }
+        } catch(e) { console.error("Błąd leniwego czyszczenia:", e); }
+    }
+
     if (currentMinutes >= startBlock && currentMinutes < endBlock) {
         if (!ignoreAutoLock) {
             if (!isLocked1) setDoc(appStateRef, { isLocked1: true }, { merge: true });
