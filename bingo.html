@@ -1,762 +1,1531 @@
 <!DOCTYPE html>
+
 <html lang="pl">
+
 <head>
+
     <meta charset="UTF-8">
+
     <title>Cyber-Bingo | Live Game</title>
+
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+
     <meta name="mobile-web-app-capable" content="yes">
+
     <meta name="apple-mobile-web-app-capable" content="yes">
+
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
     <meta name="apple-mobile-web-app-title" content="Cyber-Bingo">
+
     
+
     <link rel="manifest" href="./manifest.json">
+
     <link rel="apple-touch-icon" href="logo.png">
+
     <style>
+
         :root {
+
             --gold: #d4af37;
+
             --cyan: #00d4ff;
+
             --bg: #f2f2f2;
+
             --text: #111;
+
             --glass: rgba(255, 255, 255, 0.9);
+
             --border: rgba(0, 0, 0, 0.1);
+
             --error: #ff4d4d;
+
             --success: #00ff66;
+
         }
+
         body.dark {
+
             --bg: #020408;
+
             --text: #fff;
+
             --glass: rgba(15, 23, 42, 0.85);
+
             --border: rgba(255, 255, 255, 0.12);
+
         }
+
         body {
+
             font-family: 'Inter', sans-serif;
+
             background: var(--bg);
+
             color: var(--text);
+
             margin: 0;
+
             padding: 15px;
+
             display: flex;
+
             flex-direction: column;
+
             align-items: center;
+
             min-height: 100vh;
+
             transition: 0.3s;
+
             overflow-x: hidden;
+
             box-sizing: border-box;
+
             user-select: none;
+
         }
+
         #bg-canvas {
+
             position: fixed;
+
             inset: 0;
+
             z-index: 1;
+
             pointer-events: none;
+
         }
+
         
+
         .top-nav {
+
             width: 100%;
+
             max-width: 1000px;
+
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
             margin-bottom: 20px;
+
             z-index: 100;
+
             flex-wrap: wrap;
+
             gap: 10px;
+
         }
+
         .nav-left, .nav-right {
+
             display: flex;
+
             gap: 10px;
+
             align-items: center;
+
         }
+
         #darkModeBtn, .btn-back, .btn-secondary {
+
             padding: 10px 18px;
+
             border-radius: 30px;
+
             border: 1px solid var(--border);
+
             cursor: pointer;
+
             background: rgba(255, 255, 255, 0.1);
+
             color: var(--text);
+
             font-weight: bold;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
             text-decoration: none;
+
             font-size: 13px;
+
             transition: 0.2s;
+
             backdrop-filter: blur(10px);
+
         }
+
         body.dark #darkModeBtn, body.dark .btn-back, body.dark .btn-secondary {
+
             background: rgba(15, 23, 42, 0.8);
+
             color: #fff;
+
         }
+
         .btn-back {
+
             background: var(--cyan) !important;
+
             color: #000 !important;
+
             border: none !important;
+
         }
+
+
 
         .main-container {
+
             width: 100%;
+
             max-width: 1000px;
+
             background: var(--glass);
+
             backdrop-filter: blur(25px);
+
             border-radius: 30px;
+
             border: 1px solid var(--border);
+
             padding: 25px;
+
             box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+
             z-index: 10;
+
             box-sizing: border-box;
+
             display: flex;
+
             flex-direction: column;
+
             align-items: center;
+
         }
+
+
 
         h1 {
+
             margin: 0 0 5px 0;
+
             color: var(--gold);
+
             text-transform: uppercase;
+
             letter-spacing: 2px;
+
             font-size: clamp(20px, 4vw, 28px);
+
             text-align: center;
+
             font-weight: 900;
+
         }
+
         .subtitle {
+
             font-size: 11px;
+
             color: #888;
+
             margin-bottom: 20px;
+
             text-transform: uppercase;
+
             letter-spacing: 1px;
+
             text-align: center;
+
         }
+
+
 
         /* SIATKA BINGO DYNAMICZNA */
+
         .bingo-grid {
+
             display: grid;
+
             gap: 10px;
+
             width: 100%;
+
             max-width: 800px;
+
             margin-bottom: 25px;
+
         }
+
+
 
         .bingo-cell {
+
             position: relative;
+
             aspect-ratio: 1 / 1;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
             background: rgba(0, 0, 0, 0.3);
+
             border: 1px solid var(--border);
+
             border-radius: 16px;
+
             padding: 10px;
+
             box-sizing: border-box;
+
             cursor: pointer;
+
             text-align: center;
+
             font-size: clamp(10px, 1.4vw, 13px);
+
             font-weight: 800;
+
             line-height: 1.3;
+
             color: var(--text);
+
             transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+
             overflow: hidden;
+
         }
+
         body:not(.dark) .bingo-cell {
+
             background: rgba(255, 255, 255, 0.7);
+
         }
+
         .bingo-cell:hover {
+
             border-color: var(--cyan);
+
             transform: translateY(-2px);
+
         }
+
+
 
         /* SYMBOL WYKREŚLENIA "X" */
+
         .bingo-cell.marked::after {
+
             content: "✕";
+
             position: absolute;
+
             inset: 0;
+
             display: flex;
+
             align-items: center;
+
             justify-content: center;
+
             font-size: clamp(30px, 8vw, 75px);
+
             font-weight: 900;
+
             color: var(--error);
+
             text-shadow: 0 0 20px var(--error), 0 0 40px var(--error);
+
             background: rgba(255, 0, 0, 0.15);
+
             backdrop-filter: blur(2px);
+
             animation: xPop 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
         }
+
         @keyframes xPop {
+
             0% { transform: scale(2); opacity: 0; }
+
             100% { transform: scale(1); opacity: 1; }
+
         }
+
+
 
         /* ŚRODKOWE POLE FREE */
+
         .bingo-cell.center-cell {
+
             background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(0, 212, 255, 0.25));
+
             border: 2px solid var(--gold);
+
             box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+
         }
+
         .center-label {
+
             font-size: clamp(14px, 2.5vw, 18px);
+
             font-weight: 900;
+
             color: var(--gold);
+
             text-shadow: 0 0 10px rgba(212, 175, 55, 0.6);
+
         }
+
+
 
         /* PANEL PRZYCISKÓW I DODAWANIA HASŁA */
+
         .controls-panel {
+
             width: 100%;
+
             max-width: 800px;
+
             display: flex;
+
             flex-direction: column;
+
             gap: 15px;
+
         }
+
+
 
         .add-prompt-box {
+
             display: flex;
+
             gap: 10px;
+
         }
+
         .prompt-input {
+
             flex: 1;
+
             padding: 14px 20px;
+
             border-radius: 15px;
+
             border: 1px solid var(--border);
+
             background: rgba(0, 0, 0, 0.4);
+
             color: #fff;
+
             font-size: 14px;
+
             font-weight: bold;
+
             outline: none;
+
         }
+
         .prompt-input:focus {
+
             border-color: var(--cyan);
+
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.3);
+
         }
+
         
+
         .btn-cyber {
+
             padding: 14px 25px;
+
             background: var(--gold);
+
             color: #000;
+
             border: none;
+
             border-radius: 15px;
+
             font-size: 13px;
+
             font-weight: 900;
+
             cursor: pointer;
+
             text-transform: uppercase;
+
             transition: 0.2s;
+
             white-space: nowrap;
+
         }
+
         .btn-cyber:active { transform: scale(0.96); }
 
+
+
         .btn-action-row {
+
             display: flex;
+
             gap: 10px;
+
             justify-content: center;
+
             flex-wrap: wrap;
+
         }
+
         .btn-sub, .size-select {
+
             padding: 12px 20px;
+
             background: rgba(255, 255, 255, 0.08);
+
             border: 1px solid var(--border);
+
             color: var(--text);
+
             border-radius: 15px;
+
             font-size: 11px;
+
             font-weight: 800;
+
             cursor: pointer;
+
             text-transform: uppercase;
+
             transition: 0.2s;
+
             outline: none;
+
         }
+
         .btn-sub:hover, .size-select:hover, .size-select:focus {
+
             border-color: var(--cyan);
+
             color: var(--cyan);
+
         }
+
         .size-select {
+
             background: rgba(0, 0, 0, 0.5);
+
             font-size: 12px;
+
             color: var(--gold);
+
         }
+
         .size-select option {
+
             background: #111;
+
             color: #fff;
+
         }
+
+
 
         /* LISTA WSZYSTKICH HASEŁ W BAZIE */
+
         .pool-drawer {
+
             width: 100%;
+
             margin-top: 15px;
+
             background: rgba(0,0,0,0.2);
+
             border: 1px solid var(--border);
+
             border-radius: 20px;
+
             padding: 15px;
+
             box-sizing: border-box;
+
         }
+
         .pool-title-row {
+
             display: flex;
+
             justify-content: space-between;
+
             align-items: center;
+
             margin-bottom: 10px;
+
             flex-wrap: wrap;
+
             gap: 10px;
+
         }
+
         .pool-title {
+
             font-size: 11px;
+
             font-weight: 900;
+
             color: var(--cyan);
+
             text-transform: uppercase;
+
             letter-spacing: 1px;
+
             display: flex;
+
             align-items: center;
+
         }
+
         .btn-clear-pool {
+
             background: rgba(255, 77, 77, 0.15);
+
             border: 1px solid var(--error);
+
             color: var(--error);
+
             padding: 6px 12px;
+
             border-radius: 10px;
+
             font-size: 10px;
+
             font-weight: bold;
+
             cursor: pointer;
+
             transition: 0.2s;
+
             text-transform: uppercase;
+
         }
+
         .btn-clear-pool:hover {
+
             background: var(--error);
+
             color: #000;
+
         }
+
+
 
         .pool-tags {
+
             display: flex;
+
             flex-wrap: wrap;
+
             gap: 6px;
+
             max-height: 150px;
+
             overflow-y: auto;
+
         }
+
         .tag-item {
+
             display: flex;
+
             align-items: center;
+
             gap: 6px;
+
             background: rgba(255,255,255,0.08);
+
             padding: 6px 12px;
+
             border-radius: 10px;
+
             font-size: 11px;
+
             font-weight: bold;
+
             border: 1px solid var(--border);
+
             transition: background 0.2s;
+
         }
+
         .tag-item:hover {
+
             background: rgba(255,255,255,0.15);
+
         }
+
         .tag-delete {
+
             color: #ff4d4d;
+
             cursor: pointer;
+
             font-size: 16px;
+
             font-weight: 900;
+
             line-height: 1;
+
             transition: 0.2s;
+
             opacity: 0.6;
+
         }
+
         .tag-delete:hover {
+
             color: #ff0000;
+
             opacity: 1;
+
             transform: scale(1.2);
+
         }
+
+
 
         #fireworksCanvas {
+
             position: fixed; inset: 0; pointer-events: none; z-index: 9999; display: none;
+
         }
+
         #msg {
+
             text-align: center; font-weight: 900; font-size: 12px; min-height: 16px; margin-top: 10px; text-transform: uppercase;
+
         }
+
     </style>
+
 </head>
+
 <body class="dark">
 
+
+
 <canvas id="bg-canvas"></canvas>
+
 <canvas id="fireworksCanvas"></canvas>
 
+
+
 <div class="top-nav">
+
     <div class="nav-left">
+
         <a href="sg.html" class="btn-back">← WRÓĆ DO HUB</a>
+
         <button id="darkModeBtn">☀️ Light mode</button>
+
     </div>
+
     <div class="nav-right">
+
         <a href="lista.html" class="btn-secondary">📋 Tablica Typów</a>
+
         <a href="ranking.html" class="btn-secondary">🏆 Ranking</a>
+
     </div>
+
 </div>
+
+
 
 <div class="main-container">
+
     <h1>🎯 CYBER-BINGO</h1>
+
     <div class="subtitle">Kliknij w pole, aby postawić wielki X, gdy wydarzenie nastąpi!</div>
 
+
+
     <div class="bingo-grid" id="bingoGrid">
+
         </div>
+
+
 
     <div class="controls-panel">
+
         <div class="add-prompt-box">
+
             <input type="text" id="newPromptInput" class="prompt-input" placeholder="Wpisz nowe hasło do ogólnej bazy..." maxlength="60" onkeydown="if(event.key==='Enter') addNewPrompt()">
+
             <button class="btn-cyber" onclick="addNewPrompt()">➕ Dodaj Hasło</button>
+
         </div>
+
+
 
         <div class="btn-action-row">
+
             <select id="boardSizeSelect" class="size-select" onchange="changeBoardSize()">
+
                 <option value="3">Plansza 3x3</option>
-                <option value="4" selected>Plansza 4x4</option>
-                <option value="5">Plansza 5x5</option>
+
+                <option value="4">Plansza 4x4</option>
+
+                <option value="5" selected>Plansza 5x5</option>
+
             </select>
+
             <button class="btn-sub" onclick="reshuffleMyBoard()">🎲 Losuj Nową Planszę</button>
+
             <button class="btn-sub" onclick="resetMyMarks()">🧹 Wyczyść Wszystkie "X"</button>
+
         </div>
+
     </div>
+
+
 
     <div class="pool-drawer">
+
         <div class="pool-title-row">
+
             <div class="pool-title">🌐 Ogólna Baza Hasłowa (<span id="promptCount">0</span>):</div>
+
             <button class="btn-clear-pool" onclick="clearAllGlobalPrompts()">🗑️ Wyczyść całą bazę</button>
+
         </div>
+
         <div class="pool-tags" id="poolTags"></div>
+
     </div>
 
+
+
     <div id="msg"></div>
+
 </div>
 
+
+
 <script type="module">
+
 const currentUser = localStorage.getItem('cyberUser');
+
 if (!currentUser) { window.location.href = 'sg.html'; }
 
+
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
 import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+
+
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+
 const app = initializeApp(firebaseConfig); 
+
 const db = getFirestore(app);
 
+
+
 let globalPrompts = [];
+
 let myBoardPrompts = []; 
+
 let myMarkedIndices = []; 
 
-let currentSize = 4; // Zmiana domyślnego rozmiaru z 5 na 4
-let totalCells = 16; // Zmiana domyślnej liczby komórek
-let centerIdx = -1; // Plansza 4x4 nie ma środka
+
+
+let currentSize = 5;
+
+let totalCells = 25;
+
+let centerIdx = 12;
+
+
 
 const gridContainer = document.getElementById('bingoGrid');
+
 const msgEl = document.getElementById('msg');
 
+
+
 // Pomocnicza funkcja mieszająca tablicę
+
 function shuffle(array) {
+
     let arr = [...array];
+
     for (let i = arr.length - 1; i > 0; i--) {
+
         const j = Math.floor(Math.random() * (i + 1));
+
         [arr[i], arr[j]] = [arr[j], arr[i]];
+
     }
+
     return arr;
+
 }
+
+
 
 // 1. NASŁUCHIWANIE GLOBALNEJ BAZY HASEŁ
+
 onSnapshot(doc(db, "appState", "bingo"), async (snap) => {
+
     if (snap.exists()) {
+
         globalPrompts = snap.data().allPrompts || [];
+
     } else {
+
         globalPrompts = [
+
             "Afera w biurze", "Spóźnienie > 15 min", "Kawa się rozlała", "Ktoś narzeka na zimno",
+
             "Zapomniane hasło", "Kawałek pizzy zostaje", "Awaria systemu", "Pytanie 'co dzisiaj jemy?'",
+
             "Telefon od szefa", "Ktoś gubi klucze", "Błąd w Excelu", "Zapomniana karta",
+
             "Ktoś śpiewa w tle", "Problemy z drukarką", "Plotki o premii",
+
             "Ktoś znowu ćwiczy", "Brak wolnych miejsc", "Ktoś pyta o weekend", "Kebab na obiad",
+
             "Dziwne powiadomienie", "Padł internet", "Ktoś przysypia", "Śmieszny mem na czacie", "Ktoś szuka ładowarki"
+
         ];
+
         await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+
     }
+
+
 
     document.getElementById('promptCount').innerText = globalPrompts.length;
+
     renderPoolTags();
+
     
+
     // Tylko za pierwszym razem po wejściu ładujemy planszę
+
     if (myBoardPrompts.length === 0) {
+
         loadUserBoard();
+
     }
+
 });
 
+
+
 // 2. WYSŚWIETLANIE LISTY HASEŁ W SZYFLADZIE Z OPCJĄ USUWANIA
+
 function renderPoolTags() {
+
     const container = document.getElementById('poolTags');
+
     container.innerHTML = globalPrompts.map((p, index) => `
+
         <div class="tag-item">
+
             ${p}
+
             <span class="tag-delete" title="Usuń hasło" onclick="deleteGlobalPrompt(${index})">&times;</span>
+
         </div>
+
     `).join('');
+
 }
+
+
 
 // 3. ŁADOWANIE SPERSONALIZOWANEJ PLANSZY GRACZA
+
 async function loadUserBoard() {
+
     const userBoardRef = doc(db, "bingo_boards", currentUser);
+
     const userSnap = await getDoc(userBoardRef);
 
+
+
     if (userSnap.exists()) {
+
         const data = userSnap.data();
-        currentSize = data.boardSize || 4; // Domyślnie 4
+
+        currentSize = data.boardSize || 5;
+
         totalCells = currentSize * currentSize;
+
         centerIdx = currentSize % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
+
         document.getElementById('boardSizeSelect').value = currentSize;
+
+
 
         myBoardPrompts = data.board || [];
+
         myMarkedIndices = data.marked || (centerIdx !== -1 ? [centerIdx] : []); 
+
     } else {
+
         generateNewBoardLayout();
+
         await saveUserBoardState();
+
     }
+
     renderGrid();
+
 }
+
+
 
 // 4. ZMIANA ROZMIARU PLANSZY
+
 window.changeBoardSize = async function() {
+
     const newSize = parseInt(document.getElementById('boardSizeSelect').value);
+
     if (newSize === currentSize) return;
+
     
+
     if (!confirm(`Zmiana wymiaru zresetuje Twoją obecną planszę. Chcesz utworzyć nową planszę ${newSize}x${newSize}?`)) {
+
         document.getElementById('boardSizeSelect').value = currentSize;
+
         return;
+
     }
+
     
+
     currentSize = newSize;
+
     totalCells = currentSize * currentSize;
+
     centerIdx = currentSize % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
+
     
+
     generateNewBoardLayout();
+
     renderGrid();
+
     await saveUserBoardState();
+
 };
+
+
 
 // Generowanie nowego ułożenia dla gracza z ogólnej puli
+
 function generateNewBoardLayout() {
+
     let pool = shuffle(globalPrompts);
+
     
+
     // Duplikujemy hasła jeśli baza jest mniejsza niż wymagana ilość (np. dla planszy 5x5 bez środka potrzebujemy 24, z 4x4: 16)
+
     while (pool.length < totalCells) {
+
         pool = pool.concat(globalPrompts.length ? globalPrompts : ["Uzupełnij bazę hasłami!"]);
+
     }
+
     
+
     myBoardPrompts = [];
+
     let poolIdx = 0;
+
     for (let i = 0; i < totalCells; i++) {
+
         if (i === centerIdx) {
+
             myBoardPrompts.push("FREE");
+
         } else {
+
             myBoardPrompts.push(pool[poolIdx]);
+
             poolIdx++;
+
         }
+
     }
+
     myMarkedIndices = centerIdx !== -1 ? [centerIdx] : []; // Środek od razu zaznaczony dla plansz nieparzystych
+
 }
+
+
 
 // 5. RENDEROWANIE SIATKI DLA KLIENTA
+
 function renderGrid() {
+
     gridContainer.innerHTML = '';
+
     // Ustawiamy odpowiednią liczbę kolumn w siatce
+
     gridContainer.style.gridTemplateColumns = `repeat(${currentSize}, 1fr)`;
+
     
+
     for (let i = 0; i < totalCells; i++) {
+
         const cell = document.createElement('div');
+
         const isCenter = (i === centerIdx);
+
         const isMarked = myMarkedIndices.includes(i);
 
+
+
         cell.className = `bingo-cell ${isCenter ? 'center-cell' : ''} ${isMarked ? 'marked' : ''}`;
+
         
+
         if (isCenter) {
+
             cell.innerHTML = `<div class="center-label">FREE</div>`;
+
         } else {
+
             cell.innerText = myBoardPrompts[i] || `Hasło #${i+1}`;
+
         }
 
+
+
         cell.onclick = () => toggleCellMark(i);
+
         gridContainer.appendChild(cell);
+
     }
+
 }
+
+
 
 // 6. OBSŁUGA KLIKNIĘCIA W POLE (STAWIANIE / USUWANIE X)
+
 async function toggleCellMark(idx) {
+
     if (idx === centerIdx) return; // Środka nie odznaczamy
 
+
+
     if (myMarkedIndices.includes(idx)) {
+
         myMarkedIndices = myMarkedIndices.filter(item => item !== idx);
+
     } else {
+
         myMarkedIndices.push(idx);
+
     }
 
+
+
     renderGrid();
+
     await saveUserBoardState();
+
     checkBingoWin();
+
 }
+
+
 
 // Zapis aktualnego stanu wykreśleń w Firestore
+
 async function saveUserBoardState() {
+
     try {
+
         await setDoc(doc(db, "bingo_boards", currentUser), {
+
             boardSize: currentSize,
+
             board: myBoardPrompts,
+
             marked: myMarkedIndices,
+
             updatedAt: Date.now()
+
         });
+
     } catch(e) {
+
         console.error("Błąd zapisu stanu planszy:", e);
+
     }
+
 }
 
+
+
 // 7. DODAWANIE NOWEGO HASŁA DO OGÓLNEJ BAZY
+
 window.addNewPrompt = async function() {
+
     const input = document.getElementById('newPromptInput');
+
     const val = input.value.trim();
+
     if (!val) return;
 
+
+
     if (globalPrompts.includes(val)) {
+
         msgEl.style.color = "var(--error)";
+
         msgEl.innerText = "TO HASŁO JUŻ ISTNIEJE W BAZIE!";
+
         setTimeout(() => msgEl.innerText = "", 2500);
+
         return;
+
     }
+
+
 
     globalPrompts.push(val);
+
     input.value = '';
 
+
+
     try {
+
         await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+
         msgEl.style.color = "var(--success)";
+
         msgEl.innerText = "DODANO HASŁO DO OGÓLNEJ BAZY!";
+
         setTimeout(() => msgEl.innerText = "", 2500);
+
     } catch(e) {
+
         alert("Błąd dodawania: " + e.message);
+
     }
+
 };
+
+
 
 // USUWANIE POJEDYNCZEGO HASŁA
+
 window.deleteGlobalPrompt = async function(index) {
+
     const promptText = globalPrompts[index];
+
     if (!confirm(`Czy na pewno usunąć hasło: "${promptText}" z bazy?`)) return;
+
     
+
     globalPrompts.splice(index, 1);
+
     
+
     try {
+
         await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+
         msgEl.style.color = "var(--gold)";
+
         msgEl.innerText = "HASŁO USUNIĘTE Z BAZY!";
+
         setTimeout(() => msgEl.innerText = "", 2500);
+
     } catch(e) {
+
         alert("Błąd: " + e.message);
+
     }
+
 };
+
+
 
 // CZYSZCZENIE CAŁEJ BAZY HASEŁ
+
 window.clearAllGlobalPrompts = async function() {
+
     if (!confirm("⚠️ UWAGA! Czy na pewno chcesz całkowicie usunąć WSZYSTKIE hasła z globalnej bazy? Ta opcja jest nieodwracalna!")) return;
+
     
+
     globalPrompts = [];
+
     
+
     try {
+
         await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+
         msgEl.style.color = "var(--error)";
+
         msgEl.innerText = "BAZA HASEŁ ZOSTAŁA WYCZYSZCZONA!";
+
         setTimeout(() => msgEl.innerText = "", 2500);
+
     } catch(e) {
+
         alert("Błąd: " + e.message);
+
     }
+
 };
+
+
 
 // 8. PRZETASOWANIE PLANSZY GRACZA
+
 window.reshuffleMyBoard = async function() {
+
     if (!confirm("Czy na pewno chcesz przetasować swoją planszę? Twoje obecne wykreślenia (X) zostaną zresetowane!")) return;
+
     generateNewBoardLayout();
+
     renderGrid();
+
     await saveUserBoardState();
+
     msgEl.style.color = "var(--cyan)";
+
     msgEl.innerText = "PLANSZA PRZETASOWANA!";
+
     setTimeout(() => msgEl.innerText = "", 2500);
+
 };
+
+
 
 // 9. WYCZYSZCZENIE WYKREŚLEŃ X
+
 window.resetMyMarks = async function() {
+
     if (!confirm("Wyczyścić wszystkie postawione X?")) return;
+
     myMarkedIndices = centerIdx !== -1 ? [centerIdx] : [];
+
     renderGrid();
+
     await saveUserBoardState();
+
 };
 
+
+
 // 10. SPRAWDZANIE WYGRANEJ
+
 function checkBingoWin() {
+
     const winningCombinations = [];
+
     
+
     // Poziome
+
     for(let r = 0; r < currentSize; r++) {
+
         let row = [];
+
         for(let c = 0; c < currentSize; c++) row.push(r * currentSize + c);
+
         winningCombinations.push(row);
+
     }
+
     
+
     // Pionowe
+
     for(let c = 0; c < currentSize; c++) {
+
         let col = [];
+
         for(let r = 0; r < currentSize; r++) col.push(r * currentSize + c);
+
         winningCombinations.push(col);
+
     }
+
     
+
     // Przekątne
+
     let diag1 = [], diag2 = [];
+
     for(let i = 0; i < currentSize; i++) {
+
         diag1.push(i * currentSize + i);
+
         diag2.push(i * currentSize + (currentSize - 1 - i));
+
     }
+
     winningCombinations.push(diag1, diag2);
+
+
 
     const hasWon = winningCombinations.some(combo => combo.every(idx => myMarkedIndices.includes(idx)));
 
+
+
     if (hasWon) {
+
         triggerCelebration();
+
     }
+
 }
+
+
 
 // EFEKTY FAJERWERKÓW DLA BINGO
+
 const canvasFw = document.getElementById("fireworksCanvas");
+
 const ctxFw = canvasFw.getContext("2d");
+
 let fwParticles = [], fwActive = false;
 
+
+
 function triggerCelebration() {
+
     if (fwActive) return;
+
     canvasFw.width = window.innerWidth; 
+
     canvasFw.height = window.innerHeight;
+
     canvasFw.style.display = "block"; 
+
     fwActive = true; 
+
     fwParticles = []; 
+
     
+
     msgEl.style.color = "var(--gold)";
+
     msgEl.innerText = "🎉 BINGO! 🎉";
 
+
+
     const interval = setInterval(() => {
+
         const x = Math.random()*canvasFw.width, y = Math.random()*canvasFw.height*0.5;
+
         for(let i=0; i<40; i++) {
+
             fwParticles.push({
+
                 x,y, a:Math.random()*Math.PI*2, s:Math.random()*4+1, al:1,
+
                 c:["#d4af37","#00d4ff","#ff4d4d","#00ff66"][Math.floor(Math.random()*4)]
+
             });
+
         }
+
     }, 300);
 
+
+
     setTimeout(() => { 
+
         clearInterval(interval); 
+
         fwActive = false; 
+
         canvasFw.style.display = "none"; 
+
     }, 4500);
+
     
+
     updateFW();
+
 }
+
+
 
 function updateFW() {
+
     if(!fwActive) return;
+
     ctxFw.clearRect(0,0,canvasFw.width,canvasFw.height);
+
     fwParticles.forEach((p,i) => {
+
         p.x += Math.cos(p.a)*p.s; p.y += Math.sin(p.a)*p.s; p.al -= 0.015;
+
         if(p.al <= 0) fwParticles.splice(i,1);
+
         ctxFw.globalAlpha = p.al; ctxFw.fillStyle = p.c; ctxFw.beginPath(); ctxFw.arc(p.x, p.y, 3, 0, Math.PI*2); ctxFw.fill();
+
     });
+
     if(fwActive) requestAnimationFrame(updateFW);
+
 }
 
+
+
 // CANVAS BACKGROUND
+
 const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.getContext('2d');
+
 let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
+
 class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
+
 for(let i=0; i<60; i++) particles.push(new Particle());
-function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); const isDark = document.body.classList.contains('dark'); particles.forEach((p,i) => { p.update(); bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,
+
+function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); const isDark = document.body.classList.contains('dark'); particles.forEach((p,i) => { p.update(); bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,0,${(1 - dist/120)*0.15})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); requestAnimationFrame(drawBg); } drawBg();
+
+document.getElementById("darkModeBtn").onclick = () => { document.body.classList.toggle("dark"); document.getElementById("darkModeBtn").textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
+
+</script>
+
+</body>
+
+</html>
