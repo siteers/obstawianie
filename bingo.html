@@ -274,28 +274,75 @@
             padding: 15px;
             box-sizing: border-box;
         }
+        .pool-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
         .pool-title {
             font-size: 11px;
             font-weight: 900;
             color: var(--cyan);
             text-transform: uppercase;
-            margin-bottom: 10px;
             letter-spacing: 1px;
+            display: flex;
+            align-items: center;
         }
+        .btn-clear-pool {
+            background: rgba(255, 77, 77, 0.15);
+            border: 1px solid var(--error);
+            color: var(--error);
+            padding: 6px 12px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+            text-transform: uppercase;
+        }
+        .btn-clear-pool:hover {
+            background: var(--error);
+            color: #000;
+        }
+
         .pool-tags {
             display: flex;
             flex-wrap: wrap;
             gap: 6px;
-            max-height: 120px;
+            max-height: 150px;
             overflow-y: auto;
         }
         .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             background: rgba(255,255,255,0.08);
-            padding: 5px 10px;
+            padding: 6px 12px;
             border-radius: 10px;
             font-size: 11px;
             font-weight: bold;
             border: 1px solid var(--border);
+            transition: background 0.2s;
+        }
+        .tag-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+        .tag-delete {
+            color: #ff4d4d;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1;
+            transition: 0.2s;
+            opacity: 0.6;
+        }
+        .tag-delete:hover {
+            color: #ff0000;
+            opacity: 1;
+            transform: scale(1.2);
         }
 
         #fireworksCanvas {
@@ -342,7 +389,10 @@
     </div>
 
     <div class="pool-drawer">
-        <div class="pool-title">🌐 Ogólna Baza Hasłowa (<span id="promptCount">0</span>/24+):</div>
+        <div class="pool-title-row">
+            <div class="pool-title">🌐 Ogólna Baza Hasłowa (<span id="promptCount">0</span>/24+):</div>
+            <button class="btn-clear-pool" onclick="clearAllGlobalPrompts()">🗑️ Wyczyść całą bazę</button>
+        </div>
         <div class="pool-tags" id="poolTags"></div>
     </div>
 
@@ -401,10 +451,15 @@ onSnapshot(doc(db, "appState", "bingo"), async (snap) => {
     loadUserBoard();
 });
 
-// 2. WYSŚWIETLANIE LISTY HASEŁ W SZYFLADZIE
+// 2. WYSŚWIETLANIE LISTY HASEŁ W SZYFLADZIE Z OPCJĄ USUWANIA
 function renderPoolTags() {
     const container = document.getElementById('poolTags');
-    container.innerHTML = globalPrompts.map(p => `<div class="tag-item">${p}</div>`).join('');
+    container.innerHTML = globalPrompts.map((p, index) => `
+        <div class="tag-item">
+            ${p}
+            <span class="tag-delete" title="Usuń hasło" onclick="deleteGlobalPrompt(${index})">&times;</span>
+        </div>
+    `).join('');
 }
 
 // 3. ŁADOWANIE SPERSONALIZOWANEJ PLANSZY GRACZA
@@ -417,7 +472,6 @@ async function loadUserBoard() {
         myBoardPrompts = data.board || [];
         myMarkedIndices = data.marked || [12]; // Indeks 12 (FREE) domyślnie zaznaczony
     } else {
-        // Jeśli gracz jeszcze nie ma planszy, wylosuj dla niego!
         generateNewBoardLayout();
         await saveUserBoardState();
     }
@@ -427,9 +481,9 @@ async function loadUserBoard() {
 // Generowanie nowego ułożenia dla gracza z ogólnej puli
 function generateNewBoardLayout() {
     let pool = shuffle(globalPrompts);
-    // Potrzebujemy 24 unikalnych haseł
+    // Potrzebujemy 24 unikalnych haseł - jeśli baza jest za mała, duplikujemy by wypełnić siatkę
     while (pool.length < 24) {
-        pool = pool.concat(globalPrompts);
+        pool = pool.concat(globalPrompts.length ? globalPrompts : ["Uzupełnij bazę hasłami!"]);
     }
     
     myBoardPrompts = [];
@@ -518,6 +572,39 @@ window.addNewPrompt = async function() {
         setTimeout(() => msgEl.innerText = "", 2500);
     } catch(e) {
         alert("Błąd dodawania: " + e.message);
+    }
+};
+
+// USUWANIE POJEDYNCZEGO HASŁA
+window.deleteGlobalPrompt = async function(index) {
+    const promptText = globalPrompts[index];
+    if (!confirm(`Czy na pewno usunąć hasło: "${promptText}" z bazy?`)) return;
+    
+    globalPrompts.splice(index, 1);
+    
+    try {
+        await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+        msgEl.style.color = "var(--gold)";
+        msgEl.innerText = "HASŁO USUNIĘTE Z BAZY!";
+        setTimeout(() => msgEl.innerText = "", 2500);
+    } catch(e) {
+        alert("Błąd: " + e.message);
+    }
+};
+
+// CZYSZCZENIE CAŁEJ BAZY HASEŁ
+window.clearAllGlobalPrompts = async function() {
+    if (!confirm("⚠️ UWAGA! Czy na pewno chcesz całkowicie usunąć WSZYSTKIE hasła z globalnej bazy? Ta opcja jest nieodwracalna!")) return;
+    
+    globalPrompts = [];
+    
+    try {
+        await setDoc(doc(db, "appState", "bingo"), { allPrompts: globalPrompts }, { merge: true });
+        msgEl.style.color = "var(--error)";
+        msgEl.innerText = "BAZA HASEŁ ZOSTAŁA WYCZYSZCZONA!";
+        setTimeout(() => msgEl.innerText = "", 2500);
+    } catch(e) {
+        alert("Błąd: " + e.message);
     }
 };
 
