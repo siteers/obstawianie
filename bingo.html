@@ -395,8 +395,8 @@
         <div class="btn-action-row">
             <select id="boardSizeSelect" class="size-select" onchange="changeBoardSize()">
                 <option value="3">Plansza 3x3</option>
-                <option value="4">Plansza 4x4</option>
-                <option value="5" selected>Plansza 5x5</option>
+                <option value="4" selected>Plansza 4x4</option>
+                <option value="5">Plansza 5x5</option>
             </select>
             <button class="btn-sub" onclick="reshuffleMyBoard()">🎲 Losuj Nową Planszę</button>
             <button class="btn-sub" onclick="resetMyMarks()">🧹 Wyczyść Wszystkie "X"</button>
@@ -429,9 +429,9 @@ let globalPrompts = [];
 let myBoardPrompts = []; 
 let myMarkedIndices = []; 
 
-let currentSize = 5;
-let totalCells = 25;
-let centerIdx = 12;
+let currentSize = 4; // Zmiana domyślnego rozmiaru z 5 na 4
+let totalCells = 16; // Zmiana domyślnej liczby komórek
+let centerIdx = -1; // Plansza 4x4 nie ma środka
 
 const gridContainer = document.getElementById('bingoGrid');
 const msgEl = document.getElementById('msg');
@@ -489,7 +489,7 @@ async function loadUserBoard() {
 
     if (userSnap.exists()) {
         const data = userSnap.data();
-        currentSize = data.boardSize || 5;
+        currentSize = data.boardSize || 4; // Domyślnie 4
         totalCells = currentSize * currentSize;
         centerIdx = currentSize % 2 !== 0 ? Math.floor(totalCells / 2) : -1;
         document.getElementById('boardSizeSelect').value = currentSize;
@@ -759,8 +759,4 @@ const bgCanvas = document.getElementById('bg-canvas'); const bgCtx = bgCanvas.ge
 let particles = []; function resize() { bgCanvas.width = window.innerWidth; bgCanvas.height = window.innerHeight; } window.onresize = resize; resize();
 class Particle { constructor() { this.x = Math.random()*bgCanvas.width; this.y = Math.random()*bgCanvas.height; this.vx = (Math.random()-0.5)*0.4; this.vy = (Math.random()-0.5)*0.4; } update() { this.x += this.vx; this.y += this.vy; if(this.x<0||this.x>bgCanvas.width) this.vx*=-1; if(this.y<0||this.y>bgCanvas.height) this.vy*=-1; } }
 for(let i=0; i<60; i++) particles.push(new Particle());
-function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); const isDark = document.body.classList.contains('dark'); particles.forEach((p,i) => { p.update(); bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,0,${(1 - dist/120)*0.15})`; bgCtx.lineWidth = 0.5; bgCtx.beginPath(); bgCtx.moveTo(p.x,p.y); bgCtx.lineTo(p2.x,p2.y); bgCtx.stroke(); } } }); requestAnimationFrame(drawBg); } drawBg();
-document.getElementById("darkModeBtn").onclick = () => { document.body.classList.toggle("dark"); document.getElementById("darkModeBtn").textContent = document.body.classList.contains("dark") ? "☀️ Light mode" : "🌙 Dark mode"; };
-</script>
-</body>
-</html>
+function drawBg() { bgCtx.clearRect(0,0,bgCanvas.width,bgCanvas.height); const isDark = document.body.classList.contains('dark'); particles.forEach((p,i) => { p.update(); bgCtx.fillStyle = isDark ? 'rgba(212,175,55,0.3)' : 'rgba(0,0,0,0.1)'; bgCtx.beginPath(); bgCtx.arc(p.x,p.y,1.5,0,Math.PI*2); bgCtx.fill(); for (let j = i + 1; j < particles.length; j++) { const p2 = particles[j]; const dist = Math.hypot(p.x - p2.x, p.y - p2.y); if (dist < 120) { bgCtx.strokeStyle = isDark ? `rgba(0,212,255,${1 - dist/120})` : `rgba(0,0,
