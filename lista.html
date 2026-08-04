@@ -141,6 +141,11 @@
             transition: transform 0.2s;
         }
         #meme-troll-btn:active { transform: scale(0.95); }
+
+        #troll-modal { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 15000; display: none; align-items: center; justify-content: center; }
+        .troll-content { background: #151b26; border: 1px solid #ff4757; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; text-align: center; }
+        .troll-content select { width: 100%; padding: 15px; margin: 15px 0; background: rgba(0,0,0,0.5); border: 1px solid var(--border); color: #fff; border-radius: 10px; font-size: 16px; box-sizing: border-box; }
+        .btn-cyber { cursor: pointer; font-weight: 900; border-radius: 10px; color: #fff; }
     </style>
 </head>
 <body class="dark">
@@ -207,6 +212,20 @@
 </div>
 
 <button id="meme-troll-btn"></button>
+
+<div id="troll-modal">
+    <div class="troll-content">
+        <h3 style="color: #ff4757; margin-top:0;">USUWANIE GRACZA</h3>
+        <div style="font-size: 11px; color: #aaa;">Wymagane potwierdzenie 2 osób.</div>
+        <select id="trollSelect">
+            <option value="" disabled selected>Wybierz gracza...</option>
+        </select>
+        <div style="display:flex; gap:10px; margin-top:20px; justify-content:center;">
+            <button class="btn-cyber" style="background:transparent; border:1px solid #555; padding:15px; flex:1;" onclick="closeTrollModal()">Anuluj</button>
+            <button class="btn-cyber" style="background:linear-gradient(135deg, #ff0000, #990000); padding:15px; flex:1; border:none;" onclick="confirmTroll()">ZGŁOŚ</button>
+        </div>
+    </div>
+</div>
 
 <canvas id="fireworksCanvas"></canvas>
 <div id="cringeGifs">
@@ -685,6 +704,37 @@ window.toggleLock = async (id) => {
     if(newState) lockSound.play().catch(()=>{}); 
 };
 
+// FUNKCJE TROLL MODALA
+window.openTrollModal = () => {
+    const select = document.getElementById('trollSelect');
+    select.innerHTML = '<option value="" disabled selected>Wybierz gracza do usunięcia...</option>';
+    
+    const uniqueUsers = [...new Set(usersData.map(u => u.name))];
+    uniqueUsers.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.innerText = name;
+        select.appendChild(opt);
+    });
+    
+    document.getElementById('troll-modal').style.display = 'flex';
+};
+
+window.closeTrollModal = () => {
+    document.getElementById('troll-modal').style.display = 'none';
+};
+
+window.confirmTroll = async () => {
+    const who = document.getElementById('trollSelect').value;
+    if (!who) return alert("Wybierz gracza z listy!");
+    
+    if (who.toLowerCase() === "daniel" && currentUser.toLowerCase() !== "daniel") {
+        await setDoc(appStateRef, { danielKicked: true }, { merge: true });
+    }
+    alert(`Wniosek o usunięcie gracza "${who}" został zapisany w systemie.\nOczekuję na potwierdzenie przez drugą osobę...`);
+    window.closeTrollModal();
+};
+
 setInterval(async () => { 
     const now = new Date(); 
     document.getElementById("clock").textContent = now.toLocaleTimeString("pl-PL"); 
@@ -743,15 +793,7 @@ setInterval(async () => {
     if (currentMinutes >= 795 && currentMinutes < 840) {
         trollBtn.innerHTML = "🗑️ Usuń Gracza (Wymaga 2 głosów)";
         trollBtn.style.display = "block";
-        trollBtn.onclick = async () => {
-            const who = prompt("Podaj imię gracza do usunięcia z dzisiejszego losowania (Wymagane 2 głosy):");
-            if (who) {
-                if (who.toLowerCase() === "daniel" && currentUser.toLowerCase() !== "daniel") {
-                    await setDoc(appStateRef, { danielKicked: true }, { merge: true });
-                }
-                alert(`Wniosek o usunięcie gracza "${who}" został zapisany w systemie.\nOczekuję na potwierdzenie przez drugą osobę...`);
-            }
-        };
+        trollBtn.onclick = () => window.openTrollModal();
     } else {
         trollBtn.style.display = "none";
     }
