@@ -130,6 +130,17 @@
         .c-btn-cancel { background: rgba(255,0,0,0.1); color: var(--error); border: 1px solid var(--error); }
         .c-btn-verify { background: var(--cyan); color: #000; }
         #captchaError { color: var(--error); font-size: 12px; font-weight: bold; min-height: 15px; }
+
+        /* MEME BUTTON TROLL DANIELA */
+        #meme-troll-btn {
+            position: fixed; bottom: 20px; right: 20px; z-index: 10001;
+            background: linear-gradient(135deg, #475569, #1e293b); color: white;
+            padding: 15px 25px; border-radius: 30px; font-weight: 900;
+            border: 1px solid #94a3b8; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: none; text-transform: uppercase; font-size: 13px; letter-spacing: 1px;
+            transition: transform 0.2s;
+        }
+        #meme-troll-btn:active { transform: scale(0.95); }
     </style>
 </head>
 <body class="dark">
@@ -194,6 +205,8 @@
     <div class="qr-frame"><div id="qrcode"></div></div>
     <div style="margin-top:10px; font-size:11px; color:var(--gold); font-weight:bold; text-transform:uppercase;">Skanuj Regulamin</div>
 </div>
+
+<button id="meme-troll-btn"></button>
 
 <canvas id="fireworksCanvas"></canvas>
 <div id="cringeGifs">
@@ -442,7 +455,12 @@ function triggerStopEffect(id, timestamp, winners) {
     
     const winnersList = winners.filter(p => p.rank <= 3);
     document.getElementById(`winner${id}`).style.display = "block";
-    document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => `${p.rank}. ${p.name} (+${p.points} pkt)`).join("<br>");
+    document.getElementById(`winner${id}`).innerHTML = "<b>🏆 WYNIKI:</b><br>" + winnersList.map(p => {
+        if (p.originalName && p.originalName.toLowerCase() === "daniel" && p.name.includes("wywalony")) {
+            return `${p.rank}. <span style="color:var(--error); font-weight:900;">${p.name} (+0 pkt)</span>`;
+        }
+        return `${p.rank}. ${p.name} (+${p.points} pkt)`;
+    }).join("<br>");
     
     document.getElementById(`stoppedTime${id}`).textContent = "ZATRZYMANO: " + date.toLocaleTimeString("pl-PL");
     
@@ -526,6 +544,9 @@ window.stopSlot = async (id) => {
     const now = new Date(); 
     const s = now.getHours()*3600 + now.getMinutes()*60 + now.getSeconds();
     
+    const appSnap = await getDoc(appStateRef);
+    const isDanielKicked = appSnap.exists() ? (appSnap.data().danielKicked || false) : false;
+
     const sorted = [...slotData].sort((a,b) => Math.abs(toSec(a.hour)-s) - Math.abs(toSec(b.hour)-s));
     
     let playersWithPoints = [], rank = 1;
@@ -538,14 +559,20 @@ window.stopSlot = async (id) => {
             if (now <= promoEnd) { pts = pts * 2; }
         }
 
-        playersWithPoints.push({ name: sorted[i].name, hour: sorted[i].hour, points: pts, rank: rank, id: sorted[i].id });
+        let pName = sorted[i].name;
+        if (pName.toLowerCase() === "daniel" && isDanielKicked) {
+            pts = 0;
+            pName = "Daniel (Został wywalony xD)";
+        }
+
+        playersWithPoints.push({ name: pName, originalName: sorted[i].name, hour: sorted[i].hour, points: pts, rank: rank, id: sorted[i].id });
     }
 
     const currentMonthKey = getCurrentMonthKey(); 
 
     for(const p of playersWithPoints) {
         if (p.points > 0) {
-            const ref = doc(db, "ranking", p.name);
+            const ref = doc(db, "ranking", p.originalName || p.name);
             const updateData = { points: increment(p.points), [currentMonthKey]: increment(p.points) };
             const snap = await getDoc(ref);
             if(snap.exists()) await updateDoc(ref, updateData);
@@ -574,14 +601,14 @@ window.clearSlot = async (id) => {
         btn.textContent = "STOP";
     }
 
-    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null }, { merge: true });
+    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null, danielKicked: false }, { merge: true });
 };
 
 async function autoClearSlot(id) {
     const q = query(collection(db, "users"), where("targetSlot", "==", `slot${id}`));
     const snap = await getDocs(q);
     for(const d of snap.docs) await deleteDoc(doc(db, "users", d.id));
-    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null }, { merge: true });
+    await setDoc(appStateRef, { [`isLocked${id}`]: false, [`target${id}`]: "Brak", [`stop${id}`]: null, [`winners${id}`]: null, danielKicked: false }, { merge: true });
 }
 
 onSnapshot(appStateRef, (snap) => { 
@@ -709,6 +736,24 @@ setInterval(async () => {
     if (now.getHours() === 14 && now.getMinutes() === 15 && now.getSeconds() < 2) {
         if (isLocked1) setDoc(appStateRef, { isLocked1: false }, { merge: true });
         if (isLocked2) setDoc(appStateRef, { isLocked2: false }, { merge: true });
+    }
+
+    // MEME BUTTON TROLL (DOSTĘPNY MIĘDZY 13:15 A 13:59)
+    const trollBtn = document.getElementById('meme-troll-btn');
+    if (currentMinutes >= 795 && currentMinutes < 840) {
+        trollBtn.innerHTML = "🗑️ Usuń Gracza (Wymaga 2 głosów)";
+        trollBtn.style.display = "block";
+        trollBtn.onclick = async () => {
+            const who = prompt("Podaj imię gracza do usunięcia z dzisiejszego losowania (Wymagane 2 głosy):");
+            if (who) {
+                if (who.toLowerCase() === "daniel" && currentUser.toLowerCase() !== "daniel") {
+                    await setDoc(appStateRef, { danielKicked: true }, { merge: true });
+                }
+                alert(`Wniosek o usunięcie gracza "${who}" został zapisany w systemie.\nOczekuję na potwierdzenie przez drugą osobę...`);
+            }
+        };
+    } else {
+        trollBtn.style.display = "none";
     }
 
     if (!isStopped1) renderTable(1, s); 
