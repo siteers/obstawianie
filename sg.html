@@ -61,14 +61,15 @@
     .btn-mundial { background: linear-gradient(135deg, #3b82f6, #1d4ed8); border: 1px solid rgba(59, 130, 246, 0.3); }
     .btn-others { background: linear-gradient(135deg, #a855f7, #7e22ce); border: 1px solid rgba(168, 85, 247, 0.3); }
     .btn-bingo { background: linear-gradient(135deg, #e11d48, #9f1239); border: 1px solid rgba(225, 29, 72, 0.3); }
+    .btn-links { background: linear-gradient(135deg, #0ea5e9, #0369a1); border: 1px solid rgba(14, 165, 233, 0.3); }
     .btn-delete-user { background: linear-gradient(135deg, #ff0000, #800000); border: 1px solid #ff4757; }
     .btn-enter { background: linear-gradient(90deg, var(--cyan), #2e86de); color: white; box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3); margin-top: 20px; }
     
     .btn-push-activate { background: linear-gradient(135deg, #1e3c72, #2a5298); border: 1px solid #2a5298; font-size: 14px; padding: 15px; margin-top: 25px; }
     .btn-poll-btn { background: linear-gradient(135deg, #0f766e, #047857); border: 1px solid #059669; font-size: 14px; padding: 15px; margin-top: 10px; }
 
-    #sub-menu { display: none; }
-    #sub-menu.active { display: block; animation: slideUp 0.5s forwards; }
+    #sub-menu, #links-menu { display: none; }
+    #sub-menu.active, #links-menu.active { display: block; animation: slideUp 0.5s forwards; }
     @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
     
     #logoutBtn { 
@@ -358,6 +359,7 @@
           <button class="btn-cyber btn-mundial extra-feature" onclick="window.open('mundial.html', '_blank')">Mundial 2026</button>
           <button class="btn-cyber btn-others extra-feature" onclick="window.open('inne_zaklady.html', '_blank')">Inne zakłady</button>
           <button class="btn-cyber btn-bingo extra-feature" onclick="window.open('bingo.html', '_blank')">🎯 Cyber-Bingo</button>
+          <button class="btn-cyber btn-links extra-feature" onclick="revealLinksMenu()">🔗 Ciekawe linki</button>
           
           <button class="btn-cyber btn-push-activate" onclick="enablePushNotifications()">🔔 Aktywuj Powiadomienia</button>
           <button class="btn-cyber btn-poll-btn" onclick="showPoll()">📊 Ankieta: Sekundy</button>
@@ -367,17 +369,24 @@
           <button class="btn-cyber btn-poll-btn" onclick="showPoll()">📊 Ankieta: Sekundy</button>
           <button class="btn-cyber btn-others" onclick="window.open('inne_zaklady.html', '_blank')">🎲 Inne Zakłady (Pełny Dostęp)</button>
           <button class="btn-cyber btn-bingo" onclick="window.open('bingo.html', '_blank')">🎯 Cyber-Bingo</button>
+          <button class="btn-cyber btn-links" onclick="revealLinksMenu()">🔗 Ciekawe linki</button>
           <button class="btn-cyber btn-main" onclick="adminAddUser()">➕ Dodaj Gracza</button>
           <button class="btn-cyber btn-main" onclick="adminEditUserFlow()">✏️ Edytuj Nazwę</button>
           <button class="btn-cyber btn-delete-user" onclick="deleteUserFlow()">❌ Usuń Gracza</button>
       </div>
     </div>
+    
     <div id="sub-menu">
       <button id="add-hour-btn" class="btn-cyber btn-sub" onclick="window.open('dodaj.html', '_blank')">➕ Dodaj godzinę</button>
       <button class="btn-cyber btn-sub" onclick="window.open('ranking.html', '_blank')">🏆 Ranking</button>
       <button class="btn-cyber btn-sub" onclick="window.open('lista.html', '_blank')">📋 Lista</button>
       <button class="btn-cyber btn-sub" onclick="window.open('regulamin.html', '_blank')">📜 Regulamin</button>
       <button onclick="hideMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć</button>
+    </div>
+    
+    <div id="links-menu">
+      <button class="btn-cyber btn-sub" onclick="window.open('https://www.google.com/maps/contrib/110909317050252974646/reviews/@52.1052859,14.7330108,7z/data=!3m1!4b1!4m3!8m2!3m1!1e1!5m1!1e4?hl=pl&entry=ttu&g_ep=EgoyMDI2MDcyOS4wIKXMDSoASAFQAw%3D%3D', '_blank')">🌍 Mapy Google - Recenzje</button>
+      <button onclick="hideLinksMenu()" style="background:none; border:none; color:rgba(255,255,255,0.3); cursor:pointer; margin-top:20px; font-weight:bold; text-transform:uppercase; letter-spacing:1px;">← Wróć</button>
     </div>
   </div>
 
@@ -857,8 +866,13 @@
   }
 
   window.logout = () => { localStorage.removeItem('cyberUser'); location.reload(); };
+  
+  // NAVIGACJA PODMENU I LINKÓW
   window.revealMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('sub-menu').classList.add('active'); };
   window.hideMenu = () => { document.getElementById('sub-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
+
+  window.revealLinksMenu = () => { document.getElementById('initial-view').style.display = 'none'; document.getElementById('links-menu').classList.add('active'); };
+  window.hideLinksMenu = () => { document.getElementById('links-menu').classList.remove('active'); setTimeout(() => { document.getElementById('initial-view').style.display = 'block'; }, 100); };
   
   const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
   let pts = [];
