@@ -107,6 +107,7 @@
             font-size: 12px; transition: 0.2s; 
         }
         .user-chip.selected { background: rgba(168, 85, 247, 0.3); border-color: var(--purple); color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(168, 85, 247, 0.2); }
+        .user-chip.selected-hidden { background: rgba(231, 76, 60, 0.2); border-color: var(--error); color: #fff; font-weight: bold; box-shadow: 0 0 10px rgba(231, 76, 60, 0.2); }
 
         /* DYNAMICZNE POLA */
         .dynamic-inputs { margin-top: 20px; border-top: 1px solid var(--border); padding-top: 10px; }
@@ -164,6 +165,9 @@
 
             <label style="font-size:12px; color:#888; margin-top:10px; display:block;">Termin (Opcjonalnie)</label>
             <input type="date" id="betDate">
+            
+            <label style="font-size:12px; color:#ff4d4d; margin-top:10px; display:block; border-top: 1px dashed rgba(255, 77, 77, 0.3); padding-top: 10px;">🤫 Ukryj zakład przed (Opcjonalnie)</label>
+            <div id="hiddenUsersGrid" class="users-grid"></div>
 
             <button class="btn-full" onclick="saveBet()">UTWÓRZ ZAKŁAD</button>
         </div>
@@ -201,6 +205,7 @@
         // --- ZMIENNE GLOBALNE ---
         let allUsers = [];
         let selectedUsers = [];
+        let hiddenUsers = [];
         let currentResolveId = null;
 
         // --- BACKGROUND ---
@@ -242,13 +247,25 @@
 
         function renderUserChips() {
             const grid = document.getElementById('usersGrid');
+            const hiddenGrid = document.getElementById('hiddenUsersGrid');
+            
             grid.innerHTML = "";
+            hiddenGrid.innerHTML = "";
+            
             allUsers.forEach(user => {
+                // Kafelki uczestników
                 const chip = document.createElement('div');
                 chip.className = 'user-chip';
                 chip.innerText = user;
                 chip.onclick = () => toggleUser(user, chip);
                 grid.appendChild(chip);
+
+                // Kafelki ukrywania
+                const hChip = document.createElement('div');
+                hChip.className = 'user-chip';
+                hChip.innerText = user;
+                hChip.onclick = () => toggleHiddenUser(user, hChip);
+                hiddenGrid.appendChild(hChip);
             });
         }
 
@@ -261,6 +278,16 @@
                 element.classList.add('selected');
             }
             renderDynamicInputs();
+        }
+
+        function toggleHiddenUser(user, element) {
+            if(hiddenUsers.includes(user)) {
+                hiddenUsers = hiddenUsers.filter(u => u !== user);
+                element.classList.remove('selected-hidden');
+            } else {
+                hiddenUsers.push(user);
+                element.classList.add('selected-hidden');
+            }
         }
 
         function renderDynamicInputs() {
@@ -292,13 +319,14 @@
             const participants = selectedUsers.map(user => ({
                 name: user,
                 prediction: document.getElementById(`bet-val-${user}`).value || "Brak opisu",
-                history: [] // Nowe pole na historię edycji
+                history: []
             }));
 
             await addDoc(collection(db, "custom_bets"), {
                 topic,
                 expireDate: date || null,
                 participants,
+                hiddenFrom: hiddenUsers,
                 status: 'active',
                 winner: null,
                 timestamp: serverTimestamp()
@@ -309,10 +337,18 @@
 
         window.openCreateModal = () => {
             document.getElementById('modal-overlay').style.display = 'flex';
+            
             selectedUsers = [];
-            document.querySelectorAll('.user-chip').forEach(c => c.classList.remove('selected'));
+            hiddenUsers = [];
+            
+            document.querySelectorAll('.user-chip').forEach(c => {
+                c.classList.remove('selected');
+                c.classList.remove('selected-hidden');
+            });
+            
             document.getElementById('dynamicInputs').innerHTML = "";
             document.getElementById('betTopic').value = "";
+            
             const today = new Date().toISOString().split('T')[0];
             const dateInput = document.getElementById('betDate');
             dateInput.value = "";
@@ -326,15 +362,19 @@
             const container = document.getElementById('bets-container');
             container.innerHTML = "";
 
-            if(snap.empty) {
-                container.innerHTML = "<p style='text-align:center; color:#666; margin-top:50px;'>Brak zakładów. Dodaj pierwszy!</p>";
-                return;
-            }
-
+            let visibleBetsCount = 0;
             const todayStr = new Date().toISOString().split('T')[0];
 
             snap.forEach(docSnap => {
                 const bet = docSnap.data();
+                
+                // --- LOGIKA UKRYWANIA ZAKŁADU ---
+                // Jeżeli zakład jest ukryty przed aktualnym graczem, pomijamy go całkowicie (chyba że jest Adminem)
+                if (bet.hiddenFrom && bet.hiddenFrom.includes(currentUser) && !isAdmin) {
+                    return; 
+                }
+
+                visibleBetsCount++;
                 const isFinished = bet.status === 'finished';
                 
                 let isExpired = false;
@@ -366,12 +406,12 @@
                     let icons = "";
                     const hasHistory = p.history && p.history.length > 0;
                     
-                    // Historia widoczna dla wszystkich
+                    // Historia widoczna dla wszystkich (którzy mogą widzieć zakład)
                     if(hasHistory) {
                         icons += `<button class="icon-btn icon-history" onclick="viewHistory('${docSnap.id}', '${p.name}')">🕒</button>`;
                     }
 
-                    // Edycja tylko dla właściciela slotu lub Admina, jeśli zakład nie jest zakończony
+                    // Edycja tylko dla właściciela wpisu lub Admina, jeśli zakład nie jest zakończony
                     if(!isFinished && (p.name === currentUser || isAdmin)) {
                         icons += `<button class="icon-btn icon-edit" onclick="editBet('${docSnap.id}', '${p.name}')">✏️</button>`;
                     }
@@ -392,6 +432,12 @@
                 actionsHtml += `<button class="btn-action btn-delete" onclick="deleteBet('${docSnap.id}')">USUŃ</button>`;
 
                 const dateDisplay = bet.expireDate ? `Termin: ${bet.expireDate}` : '';
+                
+                // Dodanie czerwonego badga informującego o ukryciu zakładu przed kimś
+                let hiddenBadgeHtml = "";
+                if (bet.hiddenFrom && bet.hiddenFrom.length > 0) {
+                    hiddenBadgeHtml = `<div style="font-size: 10px; color: var(--error); margin-top: 5px; font-weight: bold; border: 1px solid var(--error); padding: 3px 8px; border-radius: 5px; display: inline-block;">🤫 Ukryte przed: ${bet.hiddenFrom.join(', ')}</div>`;
+                }
 
                 const html = `
                     <div class="bet-card ${cardClass}">
@@ -400,6 +446,7 @@
                                 <span class="status-badge ${statusClass}">${statusLabel}</span>
                                 <h3 class="bet-topic">${bet.topic}</h3>
                                 <div class="bet-date">${dateDisplay} ${isExpired ? '❗️' : ''}</div>
+                                ${hiddenBadgeHtml}
                             </div>
                         </div>
                         <div class="participants-list">${participantsHtml}</div>
@@ -408,6 +455,10 @@
                 `;
                 container.innerHTML += html;
             });
+            
+            if (visibleBetsCount === 0) {
+                container.innerHTML = "<p style='text-align:center; color:#666; margin-top:50px;'>Brak zakładów. Dodaj pierwszy!</p>";
+            }
         });
 
         // --- EDYCJA ZAKŁADU ---
