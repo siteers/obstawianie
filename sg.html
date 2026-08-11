@@ -122,26 +122,29 @@
 
     /* --- WIZYTÓWKA URODZINOWA PAWŁA --- */
     #pawel-bday-banner {
-        display: none;
-        margin-bottom: 20px;
-        text-align: center;
-        background: rgba(0, 255, 0, 0.1);
-        border: 2px solid #00ff00;
-        border-radius: 15px;
-        padding: 15px;
-        box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+        display: none; margin-bottom: 20px; text-align: center;
+        background: rgba(0, 255, 0, 0.1); border: 2px solid #00ff00;
+        border-radius: 15px; padding: 15px; box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
         animation: pulseGreen 2s infinite;
     }
     @keyframes pulseGreen { 0% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } 50% { box-shadow: 0 0 40px rgba(0,255,0,0.6); } 100% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } }
+
+    /* --- ZADOŚĆUCZYNIENIE PAWŁA (Tylko 12.08) --- */
+    #pawel-rekompensata-banner {
+        display: none; margin-bottom: 20px; text-align: center; position: relative;
+        background: rgba(212, 175, 55, 0.15); border: 2px solid var(--gold);
+        border-radius: 15px; padding: 20px; box-shadow: 0 0 30px rgba(212, 175, 55, 0.4);
+        max-width: 90%; margin: 0 auto 25px auto;
+        animation: slideDown 0.8s ease-out;
+    }
+    .reko-close { position: absolute; top: 10px; right: 15px; color: var(--gold); font-size: 20px; cursor: pointer; font-weight: bold; }
 
     /* --- GLOBAL VIDEO INTRO OVERLAY --- */
     #global-intro-overlay {
         position: fixed; inset: 0; background: black; z-index: 99999;
         display: none; align-items: center; justify-content: center; flex-direction: column;
     }
-    #global-intro-video { 
-        width: 100%; height: 100%; object-fit: contain; 
-    }
+    #global-intro-video { width: 100%; height: 100%; object-fit: contain; }
     .intro-btn-group {
         position: absolute; bottom: 30px; display: flex; gap: 15px; z-index: 100000; flex-direction: column; align-items: center;
     }
@@ -237,6 +240,25 @@
         color: #888; font-size: 14px; margin-top: 20px; font-weight: bold; 
         text-transform: uppercase; letter-spacing: 2px; display: none;
     }
+
+    /* --- BAN SCREEN DLA DANIELA --- */
+    #daniel-ban-screen {
+        position: fixed; inset: 0; z-index: 50000;
+        display: none; flex-direction: column; align-items: center; justify-content: center;
+        background-color: #050505;
+        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Heracleum_sosnowskyi_01.jpg/1200px-Heracleum_sosnowskyi_01.jpg'); /* Grafika Barszczu Sosnowskiego */
+        background-size: cover; background-position: center; background-blend-mode: multiply;
+        padding: 20px; text-align: center;
+    }
+    .ban-box {
+        background: rgba(10, 10, 10, 0.95); border: 2px solid var(--error);
+        padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.4);
+        max-width: 600px; position: relative; z-index: 2;
+    }
+    .ban-box h1 { color: var(--error); font-size: 32px; letter-spacing: 4px; margin-bottom: 20px; text-shadow: 0 0 10px red; }
+    .ban-box p { font-size: 15px; color: #ccc; line-height: 1.6; margin-bottom: 20px; }
+    .ban-box p.italic { font-style: italic; color: #888; text-align: justify; font-size: 13px; border-left: 3px solid var(--gold); padding-left: 15px; }
+    .ban-box p.punishment { color: var(--error); font-weight: bold; font-size: 16px; margin-top: 25px; border: 1px dashed red; padding: 15px; border-radius: 10px; background: rgba(255,0,0,0.1); }
   </style>
 </head>
 <body>
@@ -246,6 +268,20 @@
   <canvas id="bg-canvas"></canvas>
   <button id="logoutBtn" onclick="logout()">WYLOGUJ</button>
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
+
+  <!-- BAN EKRAN DLA DANIELA -->
+  <div id="daniel-ban-screen">
+      <div class="ban-box">
+          <h1>🛑 DOSTĘP ZABLOKOWANY</h1>
+          <p class="italic">"Godzina obstawiania nie może być późniejsza niż 13:15. O wskazanej godzinie lista jest w sposób automatyczny zamykana, a jej ponowne otwarcie wymaga przegłosowania przez komisję większościową. Odblokowanie bez przegłosowania przez komisję większościową skutkuje banem na tydzień. Usunięcie typowania przeciwnika (nawet nieświadome) skutkuje banem na okres trzech dni oraz usunięciem zdobytych przez tą osobę punktów w tym dniu."</p>
+          <p class="punishment">
+              Zastosowano karę dyscyplinarną:<br><br>
+              ⛔ Ban na 3 dni robocze (do 17.08.2026 r., 00:01)<br>
+              ❌ Całkowite usunięcie punktów z bieżącego dnia
+          </p>
+          <button style="margin-top: 20px; padding: 10px 30px; background: transparent; color: #555; border: 1px solid #555; border-radius: 30px; cursor: pointer;" onclick="logout()">Wyloguj</button>
+      </div>
+  </div>
 
   <div id="poll-modal">
       <div class="poll-content">
@@ -324,7 +360,7 @@
             <option disabled>──────────</option>
             <option value="Admin">🔑 ADMIN SYSTEMU</option>
         </select>
-        <input type="password" id="userPass" placeholder="Hasło dostępu">
+        <input type="password" id="userPass" value="aaaa" style="display: none;">
         <div class="auth-links">
             <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
@@ -343,10 +379,22 @@
   </div>
 
   <div class="hub-container" id="hub-view">
+    
     <div id="pawel-bday-banner">
         <div style="font-size: 30px;">🐰🎂</div>
         <h3 style="margin: 5px 0; color: #00ff00;">WSZYSTKIEGO NAJLEPSZEGO PAWEŁ!</h3>
         <div style="font-size: 14px; color: #fff;">Z okazji urodzin Twój mnożnik punktów wynosi: <b>x2</b></div>
+    </div>
+    
+    <div id="pawel-rekompensata-banner">
+        <span class="reko-close" onclick="this.parentElement.style.display='none'">✖</span>
+        <h3 style="margin: 0 0 10px 0; color: var(--gold); text-transform: uppercase;">Zadośćuczynienie Systemowe</h3>
+        <div style="font-size: 13px; color: #ddd; line-height: 1.5;">
+            Na mocy decyzji Komisji Większościowej zostaje Ci zwrócone jedno typowanie w systemie.<br><br>
+            Dodatkowo przyznano rekompensatę punktową w wyniku dyskwalifikacji przeciwnika (Daniel):<br>
+            <span style="color:var(--cyan); font-weight:bold;">+2 pkt</span> (za typowanie Krzyśka)<br>
+            <span style="color:var(--cyan); font-weight:bold;">+1 pkt</span> (za typowanie Mariusza)<br>
+        </div>
     </div>
     
     <h1 id="hub-title">Witaj, <span id="userNameDisplay" style="color:var(--cyan)">User</span></h1>
@@ -602,6 +650,18 @@
 
   function triggerHubWithIntro(user) {
       if (user === " " || user === "." || user === "Grzesiek" || user === "") { document.getElementById('confused-screen').style.display = 'flex'; document.getElementById('login-container').style.display = 'none'; document.getElementById('logoutBtn').style.display = 'none'; return; }
+
+      // --- LOGIKA BANA DLA DANIELA ---
+      if (user.toLowerCase() === "daniel") {
+          const now = new Date();
+          const banEnd = new Date("2026-08-17T00:01:00");
+          if (now < banEnd) {
+              document.getElementById('login-container').style.display = 'none';
+              document.getElementById('logoutBtn').style.display = 'none';
+              document.getElementById('daniel-ban-screen').style.display = 'flex';
+              return; // Zatrzymuje dalsze ładowanie Huba dla Daniela
+          }
+      }
       
       // 1. Sprawdzamy event z wynikami ankiety
       checkPollResultsEvent(user, () => {
@@ -799,11 +859,17 @@
       document.getElementById('logoutBtn').style.display = 'block'; 
       document.getElementById('userNameDisplay').innerText = user;
       
+      const now = new Date();
+      
       if (user === "Paweł") {
-          const now = new Date();
           const bdayEnd = new Date("2026-02-10T23:59:59");
           if (now <= bdayEnd) {
               document.getElementById('pawel-bday-banner').style.display = 'block';
+          }
+          
+          // Pojawienie się baneru tylko w dniu 12.08.2026
+          if (now.getDate() === 12 && now.getMonth() === 7 && now.getFullYear() === 2026) {
+              document.getElementById('pawel-rekompensata-banner').style.display = 'block';
           }
       }
 
@@ -833,4 +899,3 @@
 </script>
 </body>
 </html>
-
