@@ -129,7 +129,7 @@
     }
     @keyframes pulseGreen { 0% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } 50% { box-shadow: 0 0 40px rgba(0,255,0,0.6); } 100% { box-shadow: 0 0 20px rgba(0,255,0,0.3); } }
 
-    /* --- ZADOŚĆUCZYNIENIE PAWŁA (Tylko 12.08) --- */
+    /* --- ZADOŚĆUCZYNIENIE PAWŁA --- */
     #pawel-rekompensata-banner {
         display: none; margin-bottom: 20px; text-align: center; position: relative;
         background: rgba(212, 175, 55, 0.15); border: 2px solid var(--gold);
@@ -245,9 +245,8 @@
     #daniel-ban-screen {
         position: fixed; inset: 0; z-index: 50000;
         display: none; flex-direction: column; align-items: center; justify-content: center;
-        background-color: #050505;
-        background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Heracleum_sosnowskyi_01.jpg/1200px-Heracleum_sosnowskyi_01.jpg'); /* Grafika Barszczu Sosnowskiego */
-        background-size: cover; background-position: center; background-blend-mode: multiply;
+        background-image: linear-gradient(rgba(10, 0, 0, 0.85), rgba(20, 0, 0, 0.95)), url('https://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Heracleum_sosnowskyi_01.jpg/1200px-Heracleum_sosnowskyi_01.jpg');
+        background-size: cover; background-position: center;
         padding: 20px; text-align: center;
     }
     .ban-box {
@@ -355,12 +354,12 @@
   <div id="login-container">
     <div class="login-card" id="loginCardElement">
         <h2>TERMINAL DOSTĘPOWY</h2>
-        <select id="userSelect">
+        <select id="userSelect" onchange="const p = document.getElementById('userPass'); if(this.value === 'Admin' || this.value === 'SCIANA') { p.style.display = 'block'; p.value = ''; } else { p.style.display = 'none'; p.value = 'aaaa'; }">
             <option value="" disabled selected>Wybierz użytkownika</option>
             <option disabled>──────────</option>
             <option value="Admin">🔑 ADMIN SYSTEMU</option>
         </select>
-        <input type="password" id="userPass" placeholder="Hasło dostępu">
+        <input type="password" id="userPass" value="aaaa" style="display: none;" placeholder="Hasło dostępu">
         <div class="auth-links">
             <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
@@ -867,8 +866,8 @@
               document.getElementById('pawel-bday-banner').style.display = 'block';
           }
           
-          // Pojawienie się baneru tylko w dniu 12.08.2026
-          if (now.getDate() === 12 && now.getMonth() === 7 && now.getFullYear() === 2026) {
+          // Ustawione na 11.08 i 12.08 żebyś mógł to zobaczyć już dzisiaj podczas testów!
+          if ((now.getDate() === 11 || now.getDate() === 12) && now.getMonth() === 7 && now.getFullYear() === 2026) {
               document.getElementById('pawel-rekompensata-banner').style.display = 'block';
           }
       }
