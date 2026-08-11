@@ -242,22 +242,27 @@
     }
 
     /* --- BAN SCREEN DLA DANIELA --- */
-    #daniel-ban-bg {
-        position: fixed; inset: 0; z-index: 49999;
-        background-image: url('997.png');
-        background-size: cover; background-position: center;
-        filter: blur(4px) brightness(0.4);
-        display: none;
-    }
     #daniel-ban-screen {
         position: fixed; inset: 0; z-index: 50000;
         display: none; flex-direction: column; align-items: center; justify-content: center;
+        background-color: #000;
         padding: 20px; text-align: center;
+    }
+    #daniel-ban-screen::before {
+        content: "";
+        position: absolute;
+        inset: -20px; /* Lekki margines żeby blur nie zostawiał jasnych krawędzi */
+        z-index: 0;
+        background-image: url('997.png');
+        background-size: cover;
+        background-position: center;
+        filter: blur(5px) brightness(0.35); /* Tło zblurowane i wyciemnione */
     }
     .ban-box {
         background: rgba(10, 10, 10, 0.85); border: 2px solid var(--error);
-        padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
-        max-width: 600px; position: relative; z-index: 2; backdrop-filter: blur(10px);
+        padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
+        max-width: 600px; position: relative; z-index: 10;
+        backdrop-filter: blur(10px);
     }
     .ban-box h1 { color: var(--error); font-size: 32px; letter-spacing: 4px; margin-bottom: 20px; text-shadow: 0 0 10px red; }
     .ban-box p { font-size: 15px; color: #ccc; line-height: 1.6; margin-bottom: 20px; }
@@ -274,7 +279,6 @@
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
   <!-- BAN EKRAN DLA DANIELA -->
-  <div id="daniel-ban-bg"></div>
   <div id="daniel-ban-screen">
       <div class="ban-box">
           <h1>🛑 DOSTĘP ZABLOKOWANY</h1>
@@ -663,8 +667,7 @@
           if (now < banEnd) {
               document.getElementById('login-container').style.display = 'none';
               document.getElementById('logoutBtn').style.display = 'none';
-              
-              document.getElementById('daniel-ban-bg').style.display = 'block';
+              document.getElementById('bg-canvas').style.display = 'none'; // Wyłącza animację konstelacji
               document.getElementById('daniel-ban-screen').style.display = 'flex';
               return; // Zatrzymuje dalsze ładowanie Huba dla Daniela
           }
