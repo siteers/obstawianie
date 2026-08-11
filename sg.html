@@ -354,12 +354,12 @@
   <div id="login-container">
     <div class="login-card" id="loginCardElement">
         <h2>TERMINAL DOSTĘPOWY</h2>
-        <select id="userSelect" onchange="const p = document.getElementById('userPass'); if(this.value === 'Admin' || this.value === 'SCIANA') { p.style.display = 'block'; p.value = ''; } else { p.style.display = 'none'; p.value = 'aaaa'; }">
+        <select id="userSelect">
             <option value="" disabled selected>Wybierz użytkownika</option>
             <option disabled>──────────</option>
             <option value="Admin">🔑 ADMIN SYSTEMU</option>
         </select>
-        <input type="password" id="userPass" value="aaaa" style="display: none;" placeholder="Hasło dostępu">
+        <input type="password" id="userPass" placeholder="Hasło dostępu">
         <div class="auth-links">
             <a class="auth-link" onclick="forgotPassword()">Zapomniałem hasła</a>
         </div>
