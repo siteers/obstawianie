@@ -242,32 +242,34 @@
     }
 
     /* --- BAN SCREEN DLA DANIELA --- */
+    #daniel-ban-bg {
+        position: fixed; inset: 0; z-index: 49999;
+        background-image: url('997.png');
+        background-size: cover; background-position: center;
+        filter: blur(4px) brightness(0.4);
+        display: none; /* Ukryte domyślnie, włączane w JS */
+    }
     #daniel-ban-screen {
         position: fixed; inset: 0; z-index: 50000;
         display: none; flex-direction: column; align-items: center; justify-content: center;
-        background-color: #000;
         padding: 20px; text-align: center;
-    }
-    #daniel-ban-screen::before {
-        content: "";
-        position: absolute;
-        inset: -20px; /* Lekki margines żeby blur nie zostawiał jasnych krawędzi */
-        z-index: 0;
-        background-image: url('997.png');
-        background-size: cover;
-        background-position: center;
-        filter: blur(5px) brightness(0.35); /* Tło zblurowane i wyciemnione */
     }
     .ban-box {
         background: rgba(10, 10, 10, 0.85); border: 2px solid var(--error);
-        padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.5);
-        max-width: 600px; position: relative; z-index: 10;
-        backdrop-filter: blur(10px);
+        padding: 40px 30px; border-radius: 20px; box-shadow: 0 0 50px rgba(255, 0, 0, 0.6);
+        max-width: 600px; position: relative; z-index: 10; backdrop-filter: blur(10px);
     }
     .ban-box h1 { color: var(--error); font-size: 32px; letter-spacing: 4px; margin-bottom: 20px; text-shadow: 0 0 10px red; }
     .ban-box p { font-size: 15px; color: #ccc; line-height: 1.6; margin-bottom: 20px; }
     .ban-box p.italic { font-style: italic; color: #888; text-align: justify; font-size: 13px; border-left: 3px solid var(--gold); padding-left: 15px; }
     .ban-box p.punishment { color: var(--error); font-weight: bold; font-size: 16px; margin-top: 25px; border: 1px dashed red; padding: 15px; border-radius: 10px; background: rgba(255,0,0,0.1); }
+
+    /* --- EVENT ADAM.JPG --- */
+    #adam-event-overlay {
+        position: fixed; inset: 0; background: black; z-index: 9999999;
+        display: none; align-items: center; justify-content: center; flex-direction: column;
+    }
+    #adam-image { max-width: 90%; max-height: 75vh; object-fit: contain; border-radius: 15px; box-shadow: 0 0 40px rgba(0, 212, 255, 0.3); margin-bottom: 30px; }
   </style>
 </head>
 <body>
@@ -279,6 +281,7 @@
   <audio id="horrorSound" src="https://assets.mixkit.co/active_storage/sfx/2541/2541-preview.mp3"></audio>
 
   <!-- BAN EKRAN DLA DANIELA -->
+  <div id="daniel-ban-bg"></div>
   <div id="daniel-ban-screen">
       <div class="ban-box">
           <h1>🛑 DOSTĘP ZABLOKOWANY</h1>
@@ -327,6 +330,12 @@
           <div id="rr-subtitle">Nigdzie nie uciekniesz.</div>
       </div>
       <iframe id="rickroll-video" src="" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+  </div>
+
+  <!-- EVENT ADAM.JPG -->
+  <div id="adam-event-overlay">
+      <img id="adam-image" src="adam.jpg" alt="Adam">
+      <button id="adam-exit-btn" class="btn-cyber btn-enter" style="width: auto; padding: 15px 40px; margin: 0; text-transform: uppercase;">stop ukranizacji polski</button>
   </div>
 
   <div id="games-event-overlay">
@@ -574,6 +583,28 @@
   
   function saveSession(user) { localStorage.setItem('cyberUser', user); triggerHubWithIntro(user); }
 
+  function checkAdamEvent(user, callback) {
+      const now = new Date();
+      const isTargetDate = (now.getDate() === 14 || now.getDate() === 15) && now.getMonth() === 8 && now.getFullYear() === 2026;
+      const eventKey = `seenAdamEvent_${user}`;
+
+      if (isTargetDate && !localStorage.getItem(eventKey)) {
+          document.getElementById('login-container').style.display = 'none';
+          const overlay = document.getElementById('adam-event-overlay');
+          const exitBtn = document.getElementById('adam-exit-btn');
+
+          overlay.style.display = 'flex';
+
+          exitBtn.onclick = () => {
+              localStorage.setItem(eventKey, 'true');
+              overlay.style.display = 'none';
+              callback();
+          };
+      } else {
+          callback();
+      }
+  }
+
   function checkPollResultsEvent(user, callback) {
       const eventKey = `seenPollResultsMp4_${user}`;
 
@@ -668,46 +699,50 @@
               document.getElementById('login-container').style.display = 'none';
               document.getElementById('logoutBtn').style.display = 'none';
               document.getElementById('bg-canvas').style.display = 'none'; // Wyłącza animację konstelacji
+              document.getElementById('daniel-ban-bg').style.display = 'block';
               document.getElementById('daniel-ban-screen').style.display = 'flex';
               return; // Zatrzymuje dalsze ładowanie Huba dla Daniela
           }
       }
       
-      // 1. Sprawdzamy event z wynikami ankiety
-      checkPollResultsEvent(user, () => {
-          // 2. Jeśli obejrzano, sprawdzamy starszy event games.mp4
-          checkGamesEvent(user, () => {
-              // 3. Klasyczne wideo powitalne
-              const introKey = `videoSeen_${user}`;
-              if (localStorage.getItem(introKey)) {
-                  renderHubData(user);
-                  return;
-              }
+      // --- NOWY EVENT: ADAM.JPG (14-15.09.2026) ---
+      checkAdamEvent(user, () => {
+          // 1. Sprawdzamy event z wynikami ankiety
+          checkPollResultsEvent(user, () => {
+              // 2. Jeśli obejrzano, sprawdzamy starszy event games.mp4
+              checkGamesEvent(user, () => {
+                  // 3. Klasyczne wideo powitalne
+                  const introKey = `videoSeen_${user}`;
+                  if (localStorage.getItem(introKey)) {
+                      renderHubData(user);
+                      return;
+                  }
 
-              document.getElementById('login-container').style.display = 'none';
-              const overlay = document.getElementById('global-intro-overlay');
-              const vid = document.getElementById('global-intro-video');
-              const startBtn = document.getElementById('start-video-btn');
-              
-              overlay.style.display = 'flex';
+                  document.getElementById('login-container').style.display = 'none';
+                  const overlay = document.getElementById('global-intro-overlay');
+                  const vid = document.getElementById('global-intro-video');
+                  const startBtn = document.getElementById('start-video-btn');
+                  
+                  overlay.style.display = 'flex';
 
-              vid.play().catch(e => {
-                      console.log("Autoplay zablokowane", e);
-                      startBtn.style.display = 'block'; 
+                  vid.play().catch(e => {
+                          console.log("Autoplay zablokowane", e);
+                          startBtn.style.display = 'block'; 
+                  });
+
+                  startBtn.onclick = () => {
+                          startBtn.style.display = 'none';
+                          vid.play();
+                  };
+
+                  vid.onended = () => {
+                          finishIntro(user, introKey);
+                  };
+
+                  document.getElementById('skip-intro-btn').onclick = () => {
+                          finishIntro(user, introKey);
+                  };
               });
-
-              startBtn.onclick = () => {
-                      startBtn.style.display = 'none';
-                      vid.play();
-              };
-
-              vid.onended = () => {
-                      finishIntro(user, introKey);
-              };
-
-              document.getElementById('skip-intro-btn').onclick = () => {
-                      finishIntro(user, introKey);
-              };
           });
       });
   }
