@@ -9,7 +9,7 @@
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; overflow: hidden; }
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
     
-    .container { z-index: 10; background: var(--glass); backdrop-filter: blur(25px); padding: 30px; border-radius: 30px; width: 95vw; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); text-align: center; }
+    .container { z-index: 10; background: var(--glass); backdrop-filter: blur(25px); padding: 30px; border-radius: 30px; width: 95vw; max-width: 400px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6); text-align: center; position: relative; max-height: 95vh; overflow-y: auto; }
     h2 { margin: 0 0 10px 0; font-size: 16px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; }
     .agent-name { font-size: 22px; color: var(--cyan); font-weight: 900; margin-bottom: 25px; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
     
@@ -23,16 +23,17 @@
     .btn-cyber { width: 100%; padding: 16px; background: var(--cyan); color: #000; border: none; border-radius: 15px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-bottom: 10px; transition: 0.2s; }
     .btn-cyber:active { transform: scale(0.95); }
     .btn-board { background: transparent; border: 2px solid var(--gold); color: var(--gold); }
+    .btn-logout { background: transparent; border: 1px solid var(--error); color: var(--error); font-size: 10px; padding: 10px; margin-top: 25px; letter-spacing: 1px; }
     
     #msg { font-size: 12px; font-weight: bold; min-height: 15px; text-transform: uppercase; margin-bottom: 10px; }
     
-    /* MODAL TABLICY */
+    /* MODALE (Tablica i Gratulacje) */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
     .board-container { padding: 20px; text-align: center; width: 100%; max-width: 600px; }
     .phrase { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 40px; }
-    .word { display: flex; gap: 5px; }
+    .word { display: flex; gap: 5px; justify-content: center; flex-wrap: wrap; }
     
-    .letter-box { width: 40px; height: 50px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #fff; text-transform: uppercase; }
+    .letter-box { width: 35px; height: 45px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: #fff; text-transform: uppercase; }
     .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
     .close-btn { padding: 15px 40px; background: #222; color: #fff; border: 1px solid #444; border-radius: 15px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
     
@@ -52,20 +53,32 @@
       <div class="task-text" id="taskQuestion">...</div>
     </div>
     
-    <div class="finished-text" id="finishedMsg">ROZWIĄZAŁEŚ WSZYSTKIE SWOJE ZADANIA! POMÓŻ INNYM.</div>
+    <div class="finished-text" id="finishedMsg">ROZWIĄZAŁEŚ WSZYSTKIE SWOJE ZADANIA! POMÓŻ INNYM CZYTAĆ HASŁO.</div>
     
     <input type="text" id="answerInput" placeholder="Wpisz odpowiedź">
     <p id="msg"></p>
     
     <button class="btn-cyber" id="submitBtn" onclick="checkAnswer()">Zatwierdź Odpowiedź</button>
-    <button class="btn-cyber btn-board" onclick="openBoard()">Tablica Hasła</button>
+    <button class="btn-cyber btn-board" onclick="openBoard()">Pokaż Tablicę Hasła</button>
+    <button class="btn-cyber btn-logout" onclick="logout()">WYLOGUJ Z TERMINALA</button>
   </div>
 
+  <!-- Modal Tablicy Hasła -->
   <div class="modal" id="boardModal">
     <div class="board-container">
       <h2 style="margin-bottom: 30px; color: var(--cyan); font-size: 24px;">WSPÓLNE HASŁO</h2>
       <div class="phrase" id="boardWords"></div>
       <button class="close-btn" onclick="closeBoard()">ZAMKNIJ TABLICĘ</button>
+    </div>
+  </div>
+
+  <!-- Modal Gratulacji -->
+  <div class="modal" id="successModal" style="z-index: 200;">
+    <div class="board-container" style="background: var(--glass); border: 2px solid #00ff00; border-radius: 30px; box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);">
+      <h2 style="color: #00ff00; font-size: 24px; margin-top: 20px;">GRATULACJE!</h2>
+      <p style="font-size: 14px; margin-bottom: 25px; color: #ccc; letter-spacing: 1px;">ZNALAZŁEŚ LITERĘ W HAŚLE:</p>
+      <div class="letter-box revealed" id="foundLetterDisplay" style="margin: 0 auto 35px auto; width: 70px; height: 80px; font-size: 45px;">X</div>
+      <button class="btn-cyber" style="background: #00ff00; color: #000; box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);" onclick="nextTask()">PRZEJDŹ DALEJ ➔</button>
     </div>
   </div>
 
@@ -81,7 +94,6 @@ const activeAgent = localStorage.getItem('activeAgent');
 if (!activeAgent) window.location.href = 'index.html';
 document.getElementById('agentDisplay').innerText = activeAgent;
 
-// Baza Zadań Zróżnicowanych
 const tasksData = {
     "Lila": [ 
         { q: "(50 + 50) : 2 =", a: ["50"] }, 
@@ -115,15 +127,15 @@ const tasksData = {
 
 let currentTaskIndex = 0;
 let globalSolved = 0;
+let isProcessing = false;
 
-// Logika hasła
-const phraseWords = ["SZUKAJ", "MAPY", "W", "MOIM", "BUCIE"];
-const fullPhrase = phraseWords.join(""); // SZUKAJMAPYWMOIMBUCIE (20 znaków)
+// NOWE HASŁO (20 znaków)
+const phraseWords = ["SZUKAJCIE", "DALEJ", "W", "BUCIE"];
+const fullPhrase = phraseWords.join(""); // SZUKAJCIEDALEJWBUCIE
 
-// Odsłaniamy losowe litery z przedziału 0-14, a na końcu (15-19) całe słowo BUCIE
+// Odsłaniamy 15 pierwszych liter losowo (indeksy 0-14), potem 5 ostatnich "BUCIE" (indeksy 15-19)
 const unlockOrder = [4, 1, 8, 12, 0, 7, 2, 10, 5, 14, 3, 9, 13, 6, 11, 15, 16, 17, 18, 19];
 
-// Pobieranie postępu
 onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     if (docSnap.exists()) {
         currentTaskIndex = docSnap.data().task || 0;
@@ -142,10 +154,9 @@ function updateUI() {
     const container = document.getElementById('taskContainer');
     const input = document.getElementById('answerInput');
     const btn = document.getElementById('submitBtn');
-    const msg = document.getElementById('msg');
     const finishedMsg = document.getElementById('finishedMsg');
     
-    msg.innerText = "";
+    document.getElementById('msg').innerText = "";
     input.value = "";
     
     if (currentTaskIndex >= 5) {
@@ -159,12 +170,12 @@ function updateUI() {
     }
 }
 
-// Funkcja usuwająca polskie znaki do weryfikacji odpowiedzi
 function normalizeString(str) {
     return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").trim();
 }
 
 window.checkAnswer = async function() {
+    if (isProcessing) return;
     const input = document.getElementById('answerInput');
     const msg = document.getElementById('msg');
     
@@ -174,7 +185,6 @@ window.checkAnswer = async function() {
     const correctAnswers = tasksData[activeAgent][currentTaskIndex].a;
     let isCorrect = false;
     
-    // Sprawdzamy czy odpowiedź pasuje do jednej z dopuszczalnych
     for (let ca of correctAnswers) {
         if (userAnswer === normalizeString(ca)) {
             isCorrect = true;
@@ -183,10 +193,15 @@ window.checkAnswer = async function() {
     }
     
     if (isCorrect) {
-        msg.style.color = "#00ff00";
-        const unlockedLetter = fullPhrase[unlockOrder[globalSolved]];
-        msg.innerText = `BRAWO! ZDOBYTO LITERĘ: ${unlockedLetter}`;
+        isProcessing = true;
+        msg.innerText = "";
         
+        // Pokazujemy Modal Gratulacji przed wczytaniem kolejnego zadania
+        const unlockedLetter = fullPhrase[unlockOrder[globalSolved]];
+        document.getElementById('foundLetterDisplay').innerText = unlockedLetter;
+        document.getElementById('successModal').style.display = "flex";
+        
+        // Zapis w tle (UI zaktualizuje się automatycznie pod spodem dzięki onSnapshot)
         await updateDoc(doc(db, "gracze", activeAgent), { task: increment(1) });
         await updateDoc(doc(db, "appState2", "global"), { totalSolved: increment(1) });
     } else {
@@ -194,6 +209,16 @@ window.checkAnswer = async function() {
         msg.innerText = "BŁĘDNA ODPOWIEDŹ! SPRÓBUJ PONOWNIE.";
         input.value = "";
     }
+}
+
+window.nextTask = function() {
+    document.getElementById('successModal').style.display = "none";
+    isProcessing = false;
+}
+
+window.logout = function() {
+    localStorage.removeItem('activeAgent');
+    window.location.href = 'index.html';
 }
 
 window.openBoard = () => document.getElementById('boardModal').style.display = "flex";
@@ -206,7 +231,6 @@ function renderBoard() {
     const unlockedIndices = unlockOrder.slice(0, globalSolved);
     let letterCounter = 0;
     
-    // Tworzymy osobny kontener (DIV) dla każdego słowa
     phraseWords.forEach(word => {
         const wordDiv = document.createElement('div');
         wordDiv.className = "word";
@@ -222,16 +246,13 @@ function renderBoard() {
                 letterDiv.className = "letter-box";
                 letterDiv.innerText = "?";
             }
-            
             wordDiv.appendChild(letterDiv);
             letterCounter++;
         }
-        
         container.appendChild(wordDiv);
     });
 }
 
-// Efekt tła
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 30; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
