@@ -94,7 +94,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
 const activeAgent = localStorage.getItem('activeAgent');
-if (!activeAgent) window.location.href = 'index.html';
+if (!activeAgent) window.location.href = 'dziecilog.html';
 document.getElementById('agentDisplay').innerText = activeAgent;
 
 let gameConfig = null;
@@ -102,7 +102,6 @@ let currentTaskIndex = 0;
 let globalSolved = 0;
 let isProcessing = false;
 
-// KROK 1: Pobranie konfiguracji zrobionej przez Admina
 onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
     if (docSnap.exists()) {
         gameConfig = docSnap.data();
@@ -115,7 +114,6 @@ onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
     }
 });
 
-// KROK 2: Pobieranie postępu gracza
 onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     if (docSnap.exists()) {
         currentTaskIndex = docSnap.data().task || 0;
@@ -123,7 +121,6 @@ onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     }
 });
 
-// KROK 3: Pobieranie postępu globalnego
 onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
     if (docSnap.exists()) {
         globalSolved = docSnap.data().totalSolved || 0;
@@ -134,7 +131,6 @@ onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
 function updateUI() {
     if (!gameConfig) return;
     
-    // Klucz w Firebase dla Jaś musi być bez polskich znaków (ze względu na zdefiniowaną konfigurację admina)
     let dbKey = activeAgent === "Jaś" ? "Jas" : activeAgent;
     let myTasks = gameConfig.tasksData[dbKey];
     
@@ -187,7 +183,6 @@ window.checkAnswer = async function() {
         isProcessing = true;
         msg.innerText = "";
         
-        // Zabezpieczenie, jeśli rozwiązali więcej zadań niż jest liter w haśle
         let fullPhrase = gameConfig.phrase.join("");
         let unlockedLetter = "!";
         if(globalSolved < gameConfig.unlockOrder.length) {
@@ -213,7 +208,7 @@ window.nextTask = function() {
 
 window.logout = function() {
     localStorage.removeItem('activeAgent');
-    window.location.href = 'index.html';
+    window.location.href = 'dziecilog.html';
 }
 
 window.openBoard = () => document.getElementById('boardModal').style.display = "flex";
@@ -251,7 +246,6 @@ function renderBoard() {
     });
 }
 
-// Efekt tła
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 30; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
