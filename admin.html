@@ -31,33 +31,45 @@
     
     /* PEŁNY EKRAN TABLICY */
     #fullscreenBoard { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999; flex-direction: column; align-items: center; justify-content: center; }
-    #closeFsBtn { position: absolute; top: 20px; right: 20px; background: rgba(255,0,0,0.5); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; z-index: 1000; }
+    #closeFsBtn { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.5); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; z-index: 1000; }
     
-    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 90vw; }
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; max-width: 80vw; }
     .word { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
     .letter-box { width: 60px; height: 80px; background: #111; border: 3px solid #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; }
     .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
+
+    /* NAROŻNE WIDŻETY AGENTÓW */
+    .tv-corner { position: absolute; width: 260px; background: rgba(0, 0, 0, 0.85); border: 2px solid var(--cyan); border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.15); transition: all 0.3s; z-index: 900; }
+    .tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); transform: scale(1.05); }
+    .tv-top-left { top: 20px; left: 20px; }
+    .tv-top-right { top: 20px; right: 20px; }
+    .tv-bottom-left { bottom: 20px; left: 20px; }
+    .tv-bottom-right { bottom: 20px; right: 20px; }
+    
+    .tv-agent-name { font-size: 18px; color: var(--gold); font-weight: 900; text-align: center; letter-spacing: 2px; }
+    .tv-task-num { font-size: 10px; color: #888; letter-spacing: 1px; text-align: center; font-weight: bold; }
+    .tv-task-q { font-size: 14px; font-weight: bold; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center; }
+    .tv-input-box { background: #111; border: 1px dashed #555; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace; font-size: 16px; color: #aaa; min-height: 20px; word-break: break-all; }
+    .tv-input-box.active { color: #fff; border-style: solid; border-color: var(--cyan); }
+    .tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: bold; font-size: 20px; }
   </style>
 </head>
 <body>
 
-  <!-- EKRAN ADMINA -->
   <div class="admin-container" id="adminUI">
     <h2>PANEL DOWODZENIA (ADMIN)</h2>
     
     <div class="header-controls">
-      <button class="btn-tv" onclick="openFullscreenBoard()">📺 TABLICA HASŁA (PEŁNY EKRAN)</button>
+      <button class="btn-tv" onclick="openFullscreenBoard()">📺 TABLICA HASŁA I KAMERY (PEŁNY EKRAN)</button>
       <button onclick="window.location.href='dziecilog.html'">WYLOGUJ</button>
     </div>
 
-    <!-- SZYBKI RESET -->
     <div class="panel-section">
       <h3>SZYBKI RESET GRY</h3>
       <p class="help-text">Ta opcja tylko zeruje postępy zadań i ukrywa odgadnięte litery. Nie zmienia ustawionych pytań.</p>
       <button class="btn-danger" onclick="resetProgressOnly()">ZRESETUJ BIEŻĄCE POSTĘPY DO ZERA</button>
     </div>
 
-    <!-- KONFIGURACJA ZADAŃ I HASŁA -->
     <div class="panel-section">
       <h3>KONFIGURACJA HASŁA I ZADAŃ</h3>
       <p class="help-text">Format: <b>Pytanie | odpowiedź1, odpowiedź2</b> (możesz wpisać jedną lub kilka akceptowanych odpowiedzi, wielkość liter nie ma znaczenia).</p>
@@ -67,22 +79,10 @@
       <p class="help-text">Skrypt automatycznie wymiesza litery, ale <b>ostatnie słowo</b> zawsze odkryje się na samym końcu po kolei!</p>
 
       <div class="grid-2">
-        <div>
-          <label style="color:var(--cyan); font-weight:bold;">Zadania - LILA (5. klasa)</label>
-          <textarea id="configLila"></textarea>
-        </div>
-        <div>
-          <label style="color:var(--cyan); font-weight:bold;">Zadania - KAJA (4. klasa)</label>
-          <textarea id="configKaja"></textarea>
-        </div>
-        <div>
-          <label style="color:var(--cyan); font-weight:bold;">Zadania - DAREK (4. klasa)</label>
-          <textarea id="configDarek"></textarea>
-        </div>
-        <div>
-          <label style="color:var(--cyan); font-weight:bold;">Zadania - JAŚ (2. klasa)</label>
-          <textarea id="configJas"></textarea>
-        </div>
+        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - LILA (5. klasa)</label><textarea id="configLila"></textarea></div>
+        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - KAJA (4. klasa)</label><textarea id="configKaja"></textarea></div>
+        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - DAREK (4. klasa)</label><textarea id="configDarek"></textarea></div>
+        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - JAŚ (2. klasa)</label><textarea id="configJas"></textarea></div>
       </div>
       
       <button class="btn-save" onclick="saveConfigAndReset()">💾 ZAPISZ NOWE USTAWIENIA I ZRESETUJ GRĘ</button>
@@ -90,10 +90,37 @@
     </div>
   </div>
 
-  <!-- PEŁNY EKRAN TABLICY (TV) -->
   <div id="fullscreenBoard">
     <button id="closeFsBtn" onclick="closeFullscreenBoard()">ZAMKNIJ TV (X)</button>
     <div class="board" id="boardWords"></div>
+
+    <div class="tv-corner tv-top-left" id="tv-Lila">
+      <div class="tv-agent-name">LILA</div>
+      <div class="tv-task-num" id="tv-num-Lila">...</div>
+      <div class="tv-task-q" id="tv-q-Lila">...</div>
+      <div class="tv-input-box" id="tv-in-Lila">_</div>
+    </div>
+    
+    <div class="tv-corner tv-top-right" id="tv-Kaja">
+      <div class="tv-agent-name">KAJA</div>
+      <div class="tv-task-num" id="tv-num-Kaja">...</div>
+      <div class="tv-task-q" id="tv-q-Kaja">...</div>
+      <div class="tv-input-box" id="tv-in-Kaja">_</div>
+    </div>
+    
+    <div class="tv-corner tv-bottom-left" id="tv-Darek">
+      <div class="tv-agent-name">DAREK</div>
+      <div class="tv-task-num" id="tv-num-Darek">...</div>
+      <div class="tv-task-q" id="tv-q-Darek">...</div>
+      <div class="tv-input-box" id="tv-in-Darek">_</div>
+    </div>
+    
+    <div class="tv-corner tv-bottom-right" id="tv-Jaś">
+      <div class="tv-agent-name">JAŚ</div>
+      <div class="tv-task-num" id="tv-num-Jaś">...</div>
+      <div class="tv-task-q" id="tv-q-Jaś">...</div>
+      <div class="tv-input-box" id="tv-in-Jaś">_</div>
+    </div>
   </div>
 
 <script type="module">
@@ -104,16 +131,18 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig); 
 const db = getFirestore(app);
 
-// DOMYŚLNE ZADANIA (Jeśli baza jest pusta)
+// TWOJE SPERSONALIZOWANE ZADANIA (JAK NA SCREENIE)
 const defaultTasks = {
-    "Lila": "(50 + 50) : 2 = | 50\nJak jest 'ptak' po angielsku? | bird\nJakie miasto jest stolicą Hiszpanii? | madryt, madrid\nKtóra planeta znajduje się najbliżej słońca? | merkury\nJak jest 'okno' po angielsku? | window",
-    "Kaja": "8 x 7 = | 56\nJak jest 'pies' po angielsku? | dog\nW jakim państwie leży miasto Paryż? | francja, we francji\nIle sztuk to jest jeden tuzin? | 12, dwanascie\n100 - 45 = | 55",
-    "Darek": "9 x 6 = | 54\nJak jest 'jabłko' po angielsku? | apple\nJakie państwo graniczy z Polską od zachodu? | niemcy\nKtóry miesiąc w roku ma najmniej dni? | luty\nZ połączenia żółtego i niebieskiego powstaje... | zielony",
-    "Jaś": "15 + 15 = | 30\nJak jest 'czerwony' po angielsku? | red\nIle kół ma samochód osobowy? | 4, cztery\n20 - 5 = | 15\nZwierzę, które daje mleko to... | krowa"
+    "Lila": "((66 + 134) : 2) - 100 = | 0\nJak jest 'ananas' po angielsku? | pineapple\nJakie miasto jest stolicą Cypru? | Nikozja\nKtóra planeta znajduje się najbliżej słońca? | merkury\nW jakim mieście urodziła się twoja Mama? | Chorzów, w Chorzowie",
+    "Kaja": "((8 x 7) + 44) - 100 = | 0\nJak jest 'książka' po angielsku? | book\nW jakim państwie leży miasto Paphos? | Cypr, na Cyprze\nIle sztuk to jest jeden tuzin? | 12, dwanascie\nJak ma na drugie imię ciocia Ania? | Maria",
+    "Darek": "(9 x 6) + (36:6) + 7 = | 67\nJak jest 'cytryna' po angielsku? | lemon\nJakie państwo graniczy z Polską od zachodu? | niemcy\nCo ile lat jest rok przestępny? | 4\nW jakim miesiącu ma urodziny dziadek Janusz? | Luty",
+    "Jaś": "15 + 117 = | 132\nJak jest 'szary' po angielsku? | grey\nZ połączenia żółtego i niebieskiego powstaje... | zielony\nJak ma na nazwisko panieńskie Babcia Ela? | wilk\n(19 - 15) x 4 = | 16"
 };
 
 let gameConfig = null;
 let globalSolved = 0;
+let agentLocalState = { "Lila": { task: -1, t: null }, "Kaja": { task: -1, t: null }, "Darek": { task: -1, t: null }, "Jaś": { task: -1, t: null } };
+const agentsList = [ { id: "Lila", dbKey: "Lila" }, { id: "Kaja", dbKey: "Kaja" }, { id: "Darek", dbKey: "Darek" }, { id: "Jaś", dbKey: "Jas" } ];
 
 async function initAdmin() {
     const snap = await getDoc(doc(db, "appState2", "config"));
@@ -133,20 +162,12 @@ async function initAdmin() {
 }
 initAdmin();
 
-function arrayToText(arr) {
-    return arr.map(item => `${item.q} | ${item.a.join(", ")}`).join("\n");
-}
-function textToArray(text) {
-    return text.split('\n').filter(l => l.includes('|')).map(line => {
-        let [q, a] = line.split('|');
-        return { q: q.trim(), a: a.split(',').map(x => x.trim()) };
-    });
-}
+function arrayToText(arr) { return arr.map(item => `${item.q} | ${item.a.join(", ")}`).join("\n"); }
+function textToArray(text) { return text.split('\n').filter(l => l.includes('|')).map(line => { let [q, a] = line.split('|'); return { q: q.trim(), a: a.split(',').map(x => x.trim()) }; }); }
 
 window.saveConfigAndReset = async function() {
     const msg = document.getElementById('msg');
-    msg.style.color = "var(--cyan)";
-    msg.innerText = "Przetwarzanie i zapisywanie konfiguracji...";
+    msg.style.color = "var(--cyan)"; msg.innerText = "Przetwarzanie i zapisywanie konfiguracji...";
     
     let phraseStr = document.getElementById('configPhrase').value.trim().toUpperCase();
     let phraseWords = phraseStr.split(/\s+/);
@@ -154,105 +175,115 @@ window.saveConfigAndReset = async function() {
     
     let totalLen = fullPhrase.length;
     let lastWordLen = phraseWords[phraseWords.length - 1].length;
-    
-    let randomPart = [];
-    for(let i = 0; i < totalLen - lastWordLen; i++) randomPart.push(i);
+    let randomPart = []; for(let i = 0; i < totalLen - lastWordLen; i++) randomPart.push(i);
     randomPart.sort(() => Math.random() - 0.5); 
-    
-    let endPart = [];
-    for(let i = totalLen - lastWordLen; i < totalLen; i++) endPart.push(i); 
+    let endPart = []; for(let i = totalLen - lastWordLen; i < totalLen; i++) endPart.push(i); 
     
     let newUnlockOrder = [...randomPart, ...endPart];
-
-    let newTasks = {
-        "Lila": textToArray(document.getElementById('configLila').value),
-        "Kaja": textToArray(document.getElementById('configKaja').value),
-        "Darek": textToArray(document.getElementById('configDarek').value),
-        "Jas": textToArray(document.getElementById('configJas').value) 
-    };
+    let newTasks = { "Lila": textToArray(document.getElementById('configLila').value), "Kaja": textToArray(document.getElementById('configKaja').value), "Darek": textToArray(document.getElementById('configDarek').value), "Jas": textToArray(document.getElementById('configJas').value) };
 
     try {
-        await setDoc(doc(db, "appState2", "config"), {
-            phrase: phraseWords,
-            unlockOrder: newUnlockOrder,
-            tasksData: newTasks
-        });
-        
+        await setDoc(doc(db, "appState2", "config"), { phrase: phraseWords, unlockOrder: newUnlockOrder, tasksData: newTasks });
         await resetProgressOnly(false);
-        
-        msg.style.color = "#00ff00";
-        msg.innerText = "GRA ZOSTAŁA ZAAKTUALIZOWANA I ZRESETOWANA!";
-    } catch (e) {
-        msg.style.color = "red"; msg.innerText = "Błąd: " + e.message;
-    }
+        msg.style.color = "#00ff00"; msg.innerText = "GRA ZOSTAŁA ZAAKTUALIZOWANA I ZRESETOWANA!";
+    } catch (e) { msg.style.color = "red"; msg.innerText = "Błąd: " + e.message; }
 }
 
 window.resetProgressOnly = async function(showAlert = true) {
     const msg = document.getElementById('msg');
     if (showAlert) { msg.style.color = "var(--cyan)"; msg.innerText = "Resetowanie postępów..."; }
-    
     try {
         await updateDoc(doc(db, "appState2", "global"), { totalSolved: 0 });
-        const agents = ["Lila", "Kaja", "Darek", "Jaś"];
-        for (let a of agents) {
-            await updateDoc(doc(db, "gracze", a), { task: 0 });
+        for (let a of agentsList) {
+            await updateDoc(doc(db, "gracze", a.id), { task: 0, liveInput: "" });
+            agentLocalState[a.id].task = -1; // Wymusza przeładowanie UI w panelach bocznych
         }
         if (showAlert) { msg.style.color = "#00ff00"; msg.innerText = "POSTĘPY ZRESETOWANE DO ZERA!"; }
-    } catch (e) {
-        msg.style.color = "red"; msg.innerText = "Błąd: " + e.message;
-    }
+    } catch (e) { msg.style.color = "red"; msg.innerText = "Błąd: " + e.message; }
 }
 
-window.openFullscreenBoard = () => {
-    document.getElementById('adminUI').style.display = 'none';
-    document.getElementById('fullscreenBoard').style.display = 'flex';
-}
-window.closeFullscreenBoard = () => {
-    document.getElementById('fullscreenBoard').style.display = 'none';
-    document.getElementById('adminUI').style.display = 'block';
-}
+window.openFullscreenBoard = () => { document.getElementById('adminUI').style.display = 'none'; document.getElementById('fullscreenBoard').style.display = 'flex'; }
+window.closeFullscreenBoard = () => { document.getElementById('fullscreenBoard').style.display = 'none'; document.getElementById('adminUI').style.display = 'block'; }
 
-onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
-    if (docSnap.exists()) { gameConfig = docSnap.data(); renderTVBoard(); }
-});
-onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
-    if (docSnap.exists()) { globalSolved = docSnap.data().totalSolved || 0; renderTVBoard(); }
-});
+onSnapshot(doc(db, "appState2", "config"), (docSnap) => { if (docSnap.exists()) { gameConfig = docSnap.data(); renderTVBoard(); setupAgentListeners(); } });
+onSnapshot(doc(db, "appState2", "global"), (docSnap) => { if (docSnap.exists()) { globalSolved = docSnap.data().totalSolved || 0; renderTVBoard(); } });
 
 function renderTVBoard() {
     if (!gameConfig) return;
     const container = document.getElementById('boardWords');
     container.innerHTML = "";
-    
     const phraseWords = gameConfig.phrase;
     const unlockOrder = gameConfig.unlockOrder;
     const unlockedIndices = unlockOrder.slice(0, globalSolved);
     let letterCounter = 0;
     
     phraseWords.forEach(word => {
-        const wordDiv = document.createElement('div');
-        wordDiv.className = "word";
-        
+        const wordDiv = document.createElement('div'); wordDiv.className = "word";
         for (let i = 0; i < word.length; i++) {
-            const char = word[i];
             const letterDiv = document.createElement('div');
-            
-            if (unlockedIndices.includes(letterCounter)) {
-                letterDiv.className = "letter-box revealed";
-                letterDiv.innerText = char;
-            } else {
-                letterDiv.className = "letter-box";
-                letterDiv.innerText = "?";
-            }
-            wordDiv.appendChild(letterDiv);
-            letterCounter++;
+            if (unlockedIndices.includes(letterCounter)) { letterDiv.className = "letter-box revealed"; letterDiv.innerText = word[i]; } 
+            else { letterDiv.className = "letter-box"; letterDiv.innerText = "?"; }
+            wordDiv.appendChild(letterDiv); letterCounter++;
         }
         container.appendChild(wordDiv);
     });
 }
-window.logout = function() {
-    localStorage.removeItem('activeAgent');
-    window.location.href = 'dziecilog.html';
+
+function setupAgentListeners() {
+    agentsList.forEach(agent => {
+        onSnapshot(doc(db, "gracze", agent.id), (docSnap) => {
+            if (!docSnap.exists() || !gameConfig) return;
+            let data = docSnap.data();
+            let currentTask = data.task || 0;
+            let liveInput = data.liveInput || "";
+            let state = agentLocalState[agent.id];
+            
+            let widget = document.getElementById(`tv-${agent.id}`);
+            let inEl = document.getElementById(`tv-in-${agent.id}`);
+            let myTasks = gameConfig.tasksData[agent.dbKey];
+            let totalTasks = myTasks ? myTasks.length : 0;
+
+            if (state.task === -1) {
+                state.task = currentTask;
+                updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+            } else if (currentTask > state.task) {
+                state.task = currentTask;
+                widget.classList.add("flash-success");
+                inEl.classList.add("success");
+                inEl.innerText = "DOBRZE!";
+                
+                clearTimeout(state.t);
+                state.t = setTimeout(() => {
+                    widget.classList.remove("flash-success");
+                    inEl.classList.remove("success");
+                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+                }, 3000);
+            } else {
+                if (!widget.classList.contains("flash-success")) {
+                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+                }
+            }
+        });
+    });
+}
+
+function updateWidgetContent(agentId, currentTask, liveInput, myTasks, totalTasks) {
+    let numEl = document.getElementById(`tv-num-${agentId}`);
+    let qEl = document.getElementById(`tv-q-${agentId}`);
+    let inEl = document.getElementById(`tv-in-${agentId}`);
+
+    if (currentTask >= totalTasks) {
+        numEl.innerText = "ZAKOŃCZONO WSZYSTKO!";
+        qEl.innerText = "Czeka na resztę drużyny...";
+        inEl.innerText = "✔️";
+        inEl.classList.remove("active");
+        return;
+    }
+    numEl.innerText = `ROZWIĄZUJE ZADANIE ${currentTask + 1} / ${totalTasks}`;
+    qEl.innerText = myTasks[currentTask].q;
+    
+    if (liveInput) { inEl.innerText = liveInput; inEl.classList.add("active"); } 
+    else { inEl.innerText = "_"; inEl.classList.remove("active"); }
 }
 </script>
 </body>
