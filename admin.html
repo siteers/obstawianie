@@ -29,33 +29,35 @@
     
     #msg { font-size: 14px; font-weight: bold; min-height: 20px; text-align: center; margin-top: 15px; }
     
-    /* PEŁNY EKRAN TABLICY */
+    /* PEŁNY EKRAN TABLICY (SKALOWANIE DO TV) */
     #fullscreenBoard { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999; flex-direction: column; align-items: center; justify-content: center; }
-    #closeFsBtn { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.5); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; z-index: 1000; }
+    #closeFsBtn { position: absolute; top: 2vw; left: 50%; transform: translateX(-50%); background: rgba(255,0,0,0.5); color: #fff; border: none; padding: 0.8vw 1.5vw; border-radius: 0.8vw; cursor: pointer; z-index: 1000; font-size: 1vw; font-weight: bold; }
     
-    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; max-width: 80vw; }
-    .word { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
-    .letter-box { width: 60px; height: 80px; background: #111; border: 3px solid #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; }
-    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 3vw; max-width: 90vw; }
+    .word { display: flex; gap: 0.6vw; justify-content: center; flex-wrap: wrap; }
+    .letter-box { width: 4.5vw; height: 6vw; background: #111; border: 0.2vw solid #333; border-radius: 0.8vw; display: flex; justify-content: center; align-items: center; font-size: 3.5vw; font-weight: bold; color: #fff; text-transform: uppercase; }
+    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.8); }
 
-    /* NAROŻNE WIDŻETY AGENTÓW */
-    .tv-corner { position: absolute; width: 260px; background: rgba(0, 0, 0, 0.85); border: 2px solid var(--cyan); border-radius: 15px; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 0 15px rgba(0, 212, 255, 0.15); transition: all 0.3s; z-index: 900; }
-    .tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 30px rgba(0, 255, 0, 0.6); transform: scale(1.05); }
-    .tv-top-left { top: 20px; left: 20px; }
-    .tv-top-right { top: 20px; right: 20px; }
-    .tv-bottom-left { bottom: 20px; left: 20px; }
-    .tv-bottom-right { bottom: 20px; right: 20px; }
+    /* NAROŻNE WIDŻETY AGENTÓW (TV) */
+    .tv-corner { position: absolute; width: 18vw; background: rgba(0, 0, 0, 0.85); border: 0.15vw solid var(--cyan); border-radius: 1vw; padding: 1vw; display: flex; flex-direction: column; gap: 0.8vw; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.15); transition: all 0.3s; z-index: 900; }
+    .tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 2vw rgba(0, 255, 0, 0.6); transform: scale(1.05); }
     
-    .tv-agent-name { font-size: 18px; color: var(--gold); font-weight: 900; text-align: center; letter-spacing: 2px; }
-    .tv-task-num { font-size: 10px; color: #888; letter-spacing: 1px; text-align: center; font-weight: bold; }
-    .tv-task-q { font-size: 14px; font-weight: bold; text-align: center; min-height: 40px; display: flex; align-items: center; justify-content: center; }
-    .tv-input-box { background: #111; border: 1px dashed #555; border-radius: 8px; padding: 10px; text-align: center; font-family: monospace; font-size: 16px; color: #aaa; min-height: 20px; word-break: break-all; }
+    .tv-top-left { top: 1.5vw; left: 1.5vw; }
+    .tv-top-right { top: 1.5vw; right: 1.5vw; }
+    .tv-bottom-left { bottom: 1.5vw; left: 1.5vw; }
+    .tv-bottom-right { bottom: 1.5vw; right: 1.5vw; }
+    
+    .tv-agent-name { font-size: 1.4vw; color: var(--gold); font-weight: 900; text-align: center; letter-spacing: 0.2vw; }
+    .tv-task-num { font-size: 0.8vw; color: #888; letter-spacing: 0.1vw; text-align: center; font-weight: bold; }
+    .tv-task-q { font-size: 1.1vw; font-weight: bold; text-align: center; min-height: 3vw; display: flex; align-items: center; justify-content: center; }
+    .tv-input-box { background: #111; border: 0.1vw dashed #555; border-radius: 0.5vw; padding: 0.8vw; text-align: center; font-family: monospace; font-size: 1.2vw; color: #aaa; min-height: 1.5vw; word-break: break-all; text-transform: uppercase; }
     .tv-input-box.active { color: #fff; border-style: solid; border-color: var(--cyan); }
-    .tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: bold; font-size: 20px; }
+    .tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: bold; font-size: 1.5vw; }
   </style>
 </head>
 <body>
 
+  <!-- EKRAN ADMINA -->
   <div class="admin-container" id="adminUI">
     <h2>PANEL DOWODZENIA (ADMIN)</h2>
     
@@ -64,12 +66,14 @@
       <button onclick="window.location.href='dziecilog.html'">WYLOGUJ</button>
     </div>
 
+    <!-- SZYBKI RESET -->
     <div class="panel-section">
       <h3>SZYBKI RESET GRY</h3>
       <p class="help-text">Ta opcja tylko zeruje postępy zadań i ukrywa odgadnięte litery. Nie zmienia ustawionych pytań.</p>
       <button class="btn-danger" onclick="resetProgressOnly()">ZRESETUJ BIEŻĄCE POSTĘPY DO ZERA</button>
     </div>
 
+    <!-- KONFIGURACJA ZADAŃ I HASŁA -->
     <div class="panel-section">
       <h3>KONFIGURACJA HASŁA I ZADAŃ</h3>
       <p class="help-text">Format: <b>Pytanie | odpowiedź1, odpowiedź2</b> (możesz wpisać jedną lub kilka akceptowanych odpowiedzi, wielkość liter nie ma znaczenia).</p>
@@ -79,10 +83,22 @@
       <p class="help-text">Skrypt automatycznie wymiesza litery, ale <b>ostatnie słowo</b> zawsze odkryje się na samym końcu po kolei!</p>
 
       <div class="grid-2">
-        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - LILA (5. klasa)</label><textarea id="configLila"></textarea></div>
-        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - KAJA (4. klasa)</label><textarea id="configKaja"></textarea></div>
-        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - DAREK (4. klasa)</label><textarea id="configDarek"></textarea></div>
-        <div><label style="color:var(--cyan); font-weight:bold;">Zadania - JAŚ (2. klasa)</label><textarea id="configJas"></textarea></div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - LILA (5. klasa)</label>
+          <textarea id="configLila"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - KAJA (4. klasa)</label>
+          <textarea id="configKaja"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - DAREK (4. klasa)</label>
+          <textarea id="configDarek"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - JAŚ (2. klasa)</label>
+          <textarea id="configJas"></textarea>
+        </div>
       </div>
       
       <button class="btn-save" onclick="saveConfigAndReset()">💾 ZAPISZ NOWE USTAWIENIA I ZRESETUJ GRĘ</button>
@@ -90,6 +106,7 @@
     </div>
   </div>
 
+  <!-- PEŁNY EKRAN TABLICY (TV) -->
   <div id="fullscreenBoard">
     <button id="closeFsBtn" onclick="closeFullscreenBoard()">ZAMKNIJ TV (X)</button>
     <div class="board" id="boardWords"></div>
@@ -131,7 +148,7 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const app = initializeApp(firebaseConfig); 
 const db = getFirestore(app);
 
-// TWOJE SPERSONALIZOWANE ZADANIA (JAK NA SCREENIE)
+// TWOJE SPERSONALIZOWANE ZADANIA
 const defaultTasks = {
     "Lila": "((66 + 134) : 2) - 100 = | 0\nJak jest 'ananas' po angielsku? | pineapple\nJakie miasto jest stolicą Cypru? | Nikozja\nKtóra planeta znajduje się najbliżej słońca? | merkury\nW jakim mieście urodziła się twoja Mama? | Chorzów, w Chorzowie",
     "Kaja": "((8 x 7) + 44) - 100 = | 0\nJak jest 'książka' po angielsku? | book\nW jakim państwie leży miasto Paphos? | Cypr, na Cyprze\nIle sztuk to jest jeden tuzin? | 12, dwanascie\nJak ma na drugie imię ciocia Ania? | Maria",
@@ -196,7 +213,7 @@ window.resetProgressOnly = async function(showAlert = true) {
         await updateDoc(doc(db, "appState2", "global"), { totalSolved: 0 });
         for (let a of agentsList) {
             await updateDoc(doc(db, "gracze", a.id), { task: 0, liveInput: "" });
-            agentLocalState[a.id].task = -1; // Wymusza przeładowanie UI w panelach bocznych
+            agentLocalState[a.id].task = -1; 
         }
         if (showAlert) { msg.style.color = "#00ff00"; msg.innerText = "POSTĘPY ZRESETOWANE DO ZERA!"; }
     } catch (e) { msg.style.color = "red"; msg.innerText = "Błąd: " + e.message; }
