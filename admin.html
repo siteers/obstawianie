@@ -47,7 +47,7 @@
     
     <div class="header-controls">
       <button class="btn-tv" onclick="openFullscreenBoard()">📺 TABLICA HASŁA (PEŁNY EKRAN)</button>
-      <button onclick="window.location.href='index.html'">WYLOGUJ</button>
+      <button onclick="window.location.href='dziecilog.html'">WYLOGUJ</button>
     </div>
 
     <!-- SZYBKI RESET -->
@@ -115,7 +115,6 @@ const defaultTasks = {
 let gameConfig = null;
 let globalSolved = 0;
 
-// Inicjalizacja pól tekstowych (odczyt z Firebase lub domyślne)
 async function initAdmin() {
     const snap = await getDoc(doc(db, "appState2", "config"));
     if (snap.exists()) {
@@ -144,7 +143,6 @@ function textToArray(text) {
     });
 }
 
-// ZAPIS KONFIGURACJI DO BAZY
 window.saveConfigAndReset = async function() {
     const msg = document.getElementById('msg');
     msg.style.color = "var(--cyan)";
@@ -154,16 +152,15 @@ window.saveConfigAndReset = async function() {
     let phraseWords = phraseStr.split(/\s+/);
     let fullPhrase = phraseWords.join("");
     
-    // Obliczanie inteligentnej kolejności odkrywania (ostatnie słowo na końcu)
     let totalLen = fullPhrase.length;
     let lastWordLen = phraseWords[phraseWords.length - 1].length;
     
     let randomPart = [];
     for(let i = 0; i < totalLen - lastWordLen; i++) randomPart.push(i);
-    randomPart.sort(() => Math.random() - 0.5); // Tasowanie
+    randomPart.sort(() => Math.random() - 0.5); 
     
     let endPart = [];
-    for(let i = totalLen - lastWordLen; i < totalLen; i++) endPart.push(i); // Kolejność zachowana
+    for(let i = totalLen - lastWordLen; i < totalLen; i++) endPart.push(i); 
     
     let newUnlockOrder = [...randomPart, ...endPart];
 
@@ -171,7 +168,7 @@ window.saveConfigAndReset = async function() {
         "Lila": textToArray(document.getElementById('configLila').value),
         "Kaja": textToArray(document.getElementById('configKaja').value),
         "Darek": textToArray(document.getElementById('configDarek').value),
-        "Jas": textToArray(document.getElementById('configJas').value) // Firebase bez polskich znaków w kluczu
+        "Jas": textToArray(document.getElementById('configJas').value) 
     };
 
     try {
@@ -181,7 +178,6 @@ window.saveConfigAndReset = async function() {
             tasksData: newTasks
         });
         
-        // Wykonaj także reset wyników
         await resetProgressOnly(false);
         
         msg.style.color = "#00ff00";
@@ -191,7 +187,6 @@ window.saveConfigAndReset = async function() {
     }
 }
 
-// TYLKO RESET (Bez nadpisywania configu)
 window.resetProgressOnly = async function(showAlert = true) {
     const msg = document.getElementById('msg');
     if (showAlert) { msg.style.color = "var(--cyan)"; msg.innerText = "Resetowanie postępów..."; }
@@ -208,7 +203,6 @@ window.resetProgressOnly = async function(showAlert = true) {
     }
 }
 
-// PEŁNY EKRAN TABLICY (DO TELEWIZORA)
 window.openFullscreenBoard = () => {
     document.getElementById('adminUI').style.display = 'none';
     document.getElementById('fullscreenBoard').style.display = 'flex';
@@ -218,7 +212,6 @@ window.closeFullscreenBoard = () => {
     document.getElementById('adminUI').style.display = 'block';
 }
 
-// Słuchacze dla Tablicy TV
 onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
     if (docSnap.exists()) { gameConfig = docSnap.data(); renderTVBoard(); }
 });
@@ -256,6 +249,10 @@ function renderTVBoard() {
         }
         container.appendChild(wordDiv);
     });
+}
+window.logout = function() {
+    localStorage.removeItem('activeAgent');
+    window.location.href = 'dziecilog.html';
 }
 </script>
 </body>
