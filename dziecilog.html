@@ -11,9 +11,9 @@
     }
     body {
       font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
-      margin: 0; overflow: hidden; display: flex; justify-content: center;
+      margin: 0; overflow-x: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; perspective: 1000px;
-      touch-action: manipulation;
+      touch-action: manipulation; padding: 20px 0; box-sizing: border-box;
     }
     
     #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
@@ -47,20 +47,32 @@
     .btn-cyber:active { transform: scale(0.96); }
     .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; cursor: not-allowed; }
     
+    .btn-tv-link {
+      background: linear-gradient(135deg, var(--gold), #b4912f);
+      color: #000; box-shadow: 0 10px 25px rgba(212,175,55,0.3);
+    }
+    
     #msg { margin-top: 20px; font-size: 13px; font-weight: 900; min-height: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* --- QR KOD SEKCYJKA --- */
-    .qr-container {
+    /* --- SEKCJE KODÓW QR --- */
+    .qr-grid {
+      display: flex;
+      gap: 15px;
       margin-top: 25px;
       padding-top: 20px;
       border-top: 1px dashed rgba(255, 255, 255, 0.15);
+      justify-content: space-between;
     }
-    .qr-container p {
-      font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 15px; margin-top: 0;
+    .qr-box {
+      flex: 1;
+      text-align: center;
     }
-    .qr-container img {
-      width: 130px; height: 130px; background: #fff; padding: 5px; border-radius: 10px; border: 2px solid var(--cyan);
-      box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+    .qr-box p {
+      font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 0; min-height: 24px;
+    }
+    .qr-box img {
+      width: 110px; height: 110px; background: #fff; padding: 4px; border-radius: 8px; border: 2px solid var(--cyan);
+      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
     }
 
     /* --- SCARY ERROR MOTYW --- */
@@ -115,11 +127,19 @@
       
       <p id="msg"></p>
 
-      <!-- SEKTYCJA Z KODEM QR -->
-      <div class="qr-container">
-        <p>Skanuj, aby wejść z telefonu:</p>
-        <img id="dynamicQRCode" src="" alt="Ładowanie QR...">
+      <!-- SEKCJA DWÓCH KODÓW QR -->
+      <div class="qr-grid">
+        <div class="qr-box">
+          <p>Wejście z telefonu:</p>
+          <img id="qrLogin" src="" alt="QR Logowanie">
+        </div>
+        <div class="qr-box">
+          <p>Widok na TV:</p>
+          <img id="qrTv" src="" alt="QR TV">
+        </div>
       </div>
+
+      <button class="btn-cyber btn-tv-link" onclick="window.open('tv.html', '_blank')">📺 Otwórz Widok TV</button>
 
     </div>
   </div>
@@ -136,13 +156,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig); 
 const db = getFirestore(app);
 
-// GENEROWANIE KODU QR NA BAZIE AKTUALNEGO ADRESU STRONY
+// GENEROWANIE KODÓW QR
 window.onload = () => {
-    const qrImg = document.getElementById('dynamicQRCode');
-    // Pobiera aktualny link do strony i koduje go w formacie bezpiecznym dla URL
+    // 1. Kod QR dla bieżącej strony logowania
     const currentUrl = encodeURIComponent(window.location.href);
-    // Używa darmowego API do wygenerowania obrazka QR
-    qrImg.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${currentUrl}&color=000000&bgcolor=ffffff`;
+    document.getElementById('qrLogin').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${currentUrl}&color=000000&bgcolor=ffffff`;
+
+    // 2. Kod QR prowadzący automatycznie do pliku tv.html (biorąc pod uwagę aktualny adres serwera)
+    const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const tvUrl = encodeURIComponent(baseHref + 'tv.html');
+    document.getElementById('qrTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${tvUrl}&color=000000&bgcolor=ffffff`;
 };
 
 window.authorizeAgent = async function() {
@@ -154,7 +177,6 @@ window.authorizeAgent = async function() {
     const container = document.getElementById('mainContainer');
     const title = document.getElementById('mainTitle');
     
-    // Sprawdzanie czy wybrano agenta
     if (!agentName) {
         msg.style.color = "var(--error)";
         msg.innerText = "WYBIERZ AGENTA Z LISTY!";
@@ -182,7 +204,6 @@ window.authorizeAgent = async function() {
                 msg.innerText = "DOSTĘP PRZYZNANY!";
                 
                 setTimeout(() => { 
-                    // Przekierowanie w zależności od tego, kto się loguje
                     if (agentName === "Wujek (admin)") {
                         window.location.href = 'admin.html';
                     } else {
@@ -239,7 +260,6 @@ function draw() {
     }); requestAnimationFrame(draw);
 } draw();
 
-// Efekt 3D
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 500, y = (window.innerHeight / 2 - e.pageY) / 500;
     document.getElementById('tiltCard').style.transform = `rotateY(${-x}deg) rotateX(${y}deg)`;
