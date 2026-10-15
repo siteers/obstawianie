@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber-Agent | ADMIN</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --cyan: #00d4ff; --bg: #020408; --gold: #d4af37; --error: #ff0000; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 20px; overflow-x: hidden; }
+    
+    .admin-container { max-width: 900px; margin: 0 auto; background: rgba(15, 23, 42, 0.85); padding: 30px; border-radius: 20px; border: 1px solid #333; }
+    h2, h3 { color: var(--cyan); text-transform: uppercase; margin-top: 0; }
+    
+    .panel-section { background: rgba(0,0,0,0.5); padding: 20px; border-radius: 15px; border: 1px solid #444; margin-bottom: 25px; }
+    .header-controls { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+    
+    button { padding: 15px 25px; background: #333; color: #fff; border: 1px solid #555; border-radius: 10px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+    button:active { transform: scale(0.95); }
+    button.btn-tv { background: var(--gold); color: #000; border-color: var(--gold); }
+    button.btn-danger { background: var(--error); border-color: var(--error); width: 100%; font-size: 18px; padding: 20px; margin-top: 10px; }
+    button.btn-save { background: var(--cyan); color: #000; border-color: var(--cyan); width: 100%; font-size: 18px; padding: 20px; margin-top: 10px; }
+    
+    input[type="text"] { width: 100%; padding: 12px; font-size: 18px; border-radius: 10px; border: 1px solid #555; background: #111; color: #fff; margin-bottom: 15px; box-sizing: border-box; text-transform: uppercase; font-weight: bold; }
+    textarea { width: 100%; height: 120px; padding: 10px; border-radius: 10px; border: 1px solid #555; background: #111; color: #fff; font-family: monospace; box-sizing: border-box; margin-bottom: 15px; resize: vertical; }
+    
+    .help-text { font-size: 11px; color: #aaa; margin-bottom: 10px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    @media(max-width: 768px) { .grid-2 { grid-template-columns: 1fr; } }
+    
+    #msg { font-size: 14px; font-weight: bold; min-height: 20px; text-align: center; margin-top: 15px; }
+    
+    /* PEŁNY EKRAN TABLICY */
+    #fullscreenBoard { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 999; flex-direction: column; align-items: center; justify-content: center; }
+    #closeFsBtn { position: absolute; top: 20px; right: 20px; background: rgba(255,0,0,0.5); color: #fff; border: none; padding: 10px 20px; border-radius: 10px; cursor: pointer; z-index: 1000; }
+    
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 90vw; }
+    .word { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+    .letter-box { width: 60px; height: 80px; background: #111; border: 3px solid #333; border-radius: 10px; display: flex; justify-content: center; align-items: center; font-size: 45px; font-weight: bold; color: #fff; }
+    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 20px rgba(212, 175, 55, 0.8); }
+  </style>
+</head>
+<body>
+
+  <!-- EKRAN ADMINA -->
+  <div class="admin-container" id="adminUI">
+    <h2>PANEL DOWODZENIA (ADMIN)</h2>
+    
+    <div class="header-controls">
+      <button class="btn-tv" onclick="openFullscreenBoard()">📺 TABLICA HASŁA (PEŁNY EKRAN)</button>
+      <button onclick="window.location.href='index.html'">WYLOGUJ</button>
+    </div>
+
+    <!-- SZYBKI RESET -->
+    <div class="panel-section">
+      <h3>SZYBKI RESET GRY</h3>
+      <p class="help-text">Ta opcja tylko zeruje postępy zadań i ukrywa odgadnięte litery. Nie zmienia ustawionych pytań.</p>
+      <button class="btn-danger" onclick="resetProgressOnly()">ZRESETUJ BIEŻĄCE POSTĘPY DO ZERA</button>
+    </div>
+
+    <!-- KONFIGURACJA ZADAŃ I HASŁA -->
+    <div class="panel-section">
+      <h3>KONFIGURACJA HASŁA I ZADAŃ</h3>
+      <p class="help-text">Format: <b>Pytanie | odpowiedź1, odpowiedź2</b> (możesz wpisać jedną lub kilka akceptowanych odpowiedzi, wielkość liter nie ma znaczenia).</p>
+      
+      <label style="font-size: 12px; color: var(--gold); font-weight: bold;">GŁÓWNE HASŁO DO ZGADYWANIA:</label>
+      <input type="text" id="configPhrase" value="SZUKAJCIE DALEJ W BUCIE">
+      <p class="help-text">Skrypt automatycznie wymiesza litery, ale <b>ostatnie słowo</b> zawsze odkryje się na samym końcu po kolei!</p>
+
+      <div class="grid-2">
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - LILA (5. klasa)</label>
+          <textarea id="configLila"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - KAJA (4. klasa)</label>
+          <textarea id="configKaja"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - DAREK (4. klasa)</label>
+          <textarea id="configDarek"></textarea>
+        </div>
+        <div>
+          <label style="color:var(--cyan); font-weight:bold;">Zadania - JAŚ (2. klasa)</label>
+          <textarea id="configJas"></textarea>
+        </div>
+      </div>
+      
+      <button class="btn-save" onclick="saveConfigAndReset()">💾 ZAPISZ NOWE USTAWIENIA I ZRESETUJ GRĘ</button>
+      <p id="msg"></p>
+    </div>
+  </div>
+
+  <!-- PEŁNY EKRAN TABLICY (TV) -->
+  <div id="fullscreenBoard">
+    <button id="closeFsBtn" onclick="closeFullscreenBoard()">ZAMKNIJ TV (X)</button>
+    <div class="board" id="boardWords"></div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, updateDoc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const app = initializeApp(firebaseConfig); 
+const db = getFirestore(app);
+
+// DOMYŚLNE ZADANIA (Jeśli baza jest pusta)
+const defaultTasks = {
+    "Lila": "(50 + 50) : 2 = | 50\nJak jest 'ptak' po angielsku? | bird\nJakie miasto jest stolicą Hiszpanii? | madryt, madrid\nKtóra planeta znajduje się najbliżej słońca? | merkury\nJak jest 'okno' po angielsku? | window",
+    "Kaja": "8 x 7 = | 56\nJak jest 'pies' po angielsku? | dog\nW jakim państwie leży miasto Paryż? | francja, we francji\nIle sztuk to jest jeden tuzin? | 12, dwanascie\n100 - 45 = | 55",
+    "Darek": "9 x 6 = | 54\nJak jest 'jabłko' po angielsku? | apple\nJakie państwo graniczy z Polską od zachodu? | niemcy\nKtóry miesiąc w roku ma najmniej dni? | luty\nZ połączenia żółtego i niebieskiego powstaje... | zielony",
+    "Jaś": "15 + 15 = | 30\nJak jest 'czerwony' po angielsku? | red\nIle kół ma samochód osobowy? | 4, cztery\n20 - 5 = | 15\nZwierzę, które daje mleko to... | krowa"
+};
+
+let gameConfig = null;
+let globalSolved = 0;
+
+// Inicjalizacja pól tekstowych (odczyt z Firebase lub domyślne)
+async function initAdmin() {
+    const snap = await getDoc(doc(db, "appState2", "config"));
+    if (snap.exists()) {
+        const data = snap.data();
+        document.getElementById('configPhrase').value = data.phrase.join(" ");
+        document.getElementById('configLila').value = arrayToText(data.tasksData.Lila);
+        document.getElementById('configKaja').value = arrayToText(data.tasksData.Kaja);
+        document.getElementById('configDarek').value = arrayToText(data.tasksData.Darek);
+        document.getElementById('configJas').value = arrayToText(data.tasksData.Jas);
+    } else {
+        document.getElementById('configLila').value = defaultTasks.Lila;
+        document.getElementById('configKaja').value = defaultTasks.Kaja;
+        document.getElementById('configDarek').value = defaultTasks.Darek;
+        document.getElementById('configJas').value = defaultTasks.Jaś;
+    }
+}
+initAdmin();
+
+function arrayToText(arr) {
+    return arr.map(item => `${item.q} | ${item.a.join(", ")}`).join("\n");
+}
+function textToArray(text) {
+    return text.split('\n').filter(l => l.includes('|')).map(line => {
+        let [q, a] = line.split('|');
+        return { q: q.trim(), a: a.split(',').map(x => x.trim()) };
+    });
+}
+
+// ZAPIS KONFIGURACJI DO BAZY
+window.saveConfigAndReset = async function() {
+    const msg = document.getElementById('msg');
+    msg.style.color = "var(--cyan)";
+    msg.innerText = "Przetwarzanie i zapisywanie konfiguracji...";
+    
+    let phraseStr = document.getElementById('configPhrase').value.trim().toUpperCase();
+    let phraseWords = phraseStr.split(/\s+/);
+    let fullPhrase = phraseWords.join("");
+    
+    // Obliczanie inteligentnej kolejności odkrywania (ostatnie słowo na końcu)
+    let totalLen = fullPhrase.length;
+    let lastWordLen = phraseWords[phraseWords.length - 1].length;
+    
+    let randomPart = [];
+    for(let i = 0; i < totalLen - lastWordLen; i++) randomPart.push(i);
+    randomPart.sort(() => Math.random() - 0.5); // Tasowanie
+    
+    let endPart = [];
+    for(let i = totalLen - lastWordLen; i < totalLen; i++) endPart.push(i); // Kolejność zachowana
+    
+    let newUnlockOrder = [...randomPart, ...endPart];
+
+    let newTasks = {
+        "Lila": textToArray(document.getElementById('configLila').value),
+        "Kaja": textToArray(document.getElementById('configKaja').value),
+        "Darek": textToArray(document.getElementById('configDarek').value),
+        "Jas": textToArray(document.getElementById('configJas').value) // Firebase bez polskich znaków w kluczu
+    };
+
+    try {
+        await setDoc(doc(db, "appState2", "config"), {
+            phrase: phraseWords,
+            unlockOrder: newUnlockOrder,
+            tasksData: newTasks
+        });
+        
+        // Wykonaj także reset wyników
+        await resetProgressOnly(false);
+        
+        msg.style.color = "#00ff00";
+        msg.innerText = "GRA ZOSTAŁA ZAAKTUALIZOWANA I ZRESETOWANA!";
+    } catch (e) {
+        msg.style.color = "red"; msg.innerText = "Błąd: " + e.message;
+    }
+}
+
+// TYLKO RESET (Bez nadpisywania configu)
+window.resetProgressOnly = async function(showAlert = true) {
+    const msg = document.getElementById('msg');
+    if (showAlert) { msg.style.color = "var(--cyan)"; msg.innerText = "Resetowanie postępów..."; }
+    
+    try {
+        await updateDoc(doc(db, "appState2", "global"), { totalSolved: 0 });
+        const agents = ["Lila", "Kaja", "Darek", "Jaś"];
+        for (let a of agents) {
+            await updateDoc(doc(db, "gracze", a), { task: 0 });
+        }
+        if (showAlert) { msg.style.color = "#00ff00"; msg.innerText = "POSTĘPY ZRESETOWANE DO ZERA!"; }
+    } catch (e) {
+        msg.style.color = "red"; msg.innerText = "Błąd: " + e.message;
+    }
+}
+
+// PEŁNY EKRAN TABLICY (DO TELEWIZORA)
+window.openFullscreenBoard = () => {
+    document.getElementById('adminUI').style.display = 'none';
+    document.getElementById('fullscreenBoard').style.display = 'flex';
+}
+window.closeFullscreenBoard = () => {
+    document.getElementById('fullscreenBoard').style.display = 'none';
+    document.getElementById('adminUI').style.display = 'block';
+}
+
+// Słuchacze dla Tablicy TV
+onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
+    if (docSnap.exists()) { gameConfig = docSnap.data(); renderTVBoard(); }
+});
+onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
+    if (docSnap.exists()) { globalSolved = docSnap.data().totalSolved || 0; renderTVBoard(); }
+});
+
+function renderTVBoard() {
+    if (!gameConfig) return;
+    const container = document.getElementById('boardWords');
+    container.innerHTML = "";
+    
+    const phraseWords = gameConfig.phrase;
+    const unlockOrder = gameConfig.unlockOrder;
+    const unlockedIndices = unlockOrder.slice(0, globalSolved);
+    let letterCounter = 0;
+    
+    phraseWords.forEach(word => {
+        const wordDiv = document.createElement('div');
+        wordDiv.className = "word";
+        
+        for (let i = 0; i < word.length; i++) {
+            const char = word[i];
+            const letterDiv = document.createElement('div');
+            
+            if (unlockedIndices.includes(letterCounter)) {
+                letterDiv.className = "letter-box revealed";
+                letterDiv.innerText = char;
+            } else {
+                letterDiv.className = "letter-box";
+                letterDiv.innerText = "?";
+            }
+            wordDiv.appendChild(letterDiv);
+            letterCounter++;
+        }
+        container.appendChild(wordDiv);
+    });
+}
+</script>
+</body>
+</html>
