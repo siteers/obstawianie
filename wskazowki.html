@@ -14,8 +14,8 @@
     .agent-name { font-size: 22px; color: var(--cyan); font-weight: 900; margin-bottom: 25px; text-shadow: 0 0 10px rgba(0, 212, 255, 0.5); }
     
     .task-box { background: rgba(0,0,0,0.5); border: 1px solid var(--cyan); border-radius: 15px; padding: 20px; margin-bottom: 20px; }
-    .task-number { font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom: 10px; }
-    .task-text { font-size: 24px; font-weight: bold; font-family: monospace; letter-spacing: 2px; }
+    .task-number { font-size: 10px; color: #888; letter-spacing: 2px; margin-bottom: 10px; font-weight: bold; }
+    .task-text { font-size: 18px; font-weight: bold; letter-spacing: 1px; min-height: 50px; display: flex; align-items: center; justify-content: center; line-height: 1.4; }
     
     input { width: 100%; padding: 15px; font-size: 20px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.8); color: #fff; text-align: center; box-sizing: border-box; margin-bottom: 15px; outline: none; transition: 0.3s; }
     input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
@@ -27,12 +27,14 @@
     #msg { font-size: 12px; font-weight: bold; min-height: 15px; text-transform: uppercase; margin-bottom: 10px; }
     
     /* MODAL TABLICY */
-    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
-    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 350px; margin-bottom: 30px; }
-    .letter-box { width: 35px; height: 45px; background: #111; border: 1px solid #444; border-radius: 5px; display: flex; justify-content: center; align-items: center; font-size: 24px; font-weight: bold; color: #fff; }
-    .letter-box.empty { background: transparent; border: none; width: 15px; }
-    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.5); }
-    .close-btn { padding: 12px 30px; background: #333; color: #fff; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; }
+    .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
+    .board-container { padding: 20px; text-align: center; width: 100%; max-width: 600px; }
+    .phrase { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; margin-bottom: 40px; }
+    .word { display: flex; gap: 5px; }
+    
+    .letter-box { width: 40px; height: 50px; background: #111; border: 2px solid #333; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 28px; font-weight: bold; color: #fff; text-transform: uppercase; }
+    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 15px rgba(212, 175, 55, 0.6); }
+    .close-btn { padding: 15px 40px; background: #222; color: #fff; border: 1px solid #444; border-radius: 15px; font-weight: bold; cursor: pointer; letter-spacing: 1px; }
     
     .finished-text { font-size: 18px; color: #00ff00; font-weight: bold; margin-top: 20px; display: none; }
   </style>
@@ -47,12 +49,12 @@
     
     <div class="task-box" id="taskContainer">
       <div class="task-number" id="taskLabel">ZADANIE 1 / 5</div>
-      <div class="task-text" id="taskEquation">...</div>
+      <div class="task-text" id="taskQuestion">...</div>
     </div>
     
     <div class="finished-text" id="finishedMsg">ROZWIĄZAŁEŚ WSZYSTKIE SWOJE ZADANIA! POMÓŻ INNYM.</div>
     
-    <input type="number" id="answerInput" placeholder="Wynik" inputmode="numeric">
+    <input type="text" id="answerInput" placeholder="Wpisz odpowiedź">
     <p id="msg"></p>
     
     <button class="btn-cyber" id="submitBtn" onclick="checkAnswer()">Zatwierdź Odpowiedź</button>
@@ -60,9 +62,11 @@
   </div>
 
   <div class="modal" id="boardModal">
-    <h2 style="margin-bottom: 20px; color: var(--cyan);">WSPÓLNE HASŁO</h2>
-    <div class="board" id="boardContainer"></div>
-    <button class="close-btn" onclick="closeBoard()">ZAMKNIJ</button>
+    <div class="board-container">
+      <h2 style="margin-bottom: 30px; color: var(--cyan); font-size: 24px;">WSPÓLNE HASŁO</h2>
+      <div class="phrase" id="boardWords"></div>
+      <button class="close-btn" onclick="closeBoard()">ZAMKNIJ TABLICĘ</button>
+    </div>
   </div>
 
 <script type="module">
@@ -77,20 +81,49 @@ const activeAgent = localStorage.getItem('activeAgent');
 if (!activeAgent) window.location.href = 'index.html';
 document.getElementById('agentDisplay').innerText = activeAgent;
 
+// Baza Zadań Zróżnicowanych
 const tasksData = {
-    "Lila": [ { q: "5 x 5 x 2 - 20", a: 30 }, { q: "100 - (4 x 8)", a: 68 }, { q: "(15 + 25) : 8", a: 5 }, { q: "7 x 6 - 2", a: 40 }, { q: "120 : 3 + 15", a: 55 } ],
-    "Kaja": [ { q: "8 x 7", a: 56 }, { q: "100 - 45", a: 55 }, { q: "9 x 6", a: 54 }, { q: "12 + 18 + 5", a: 35 }, { q: "72 : 8", a: 9 } ],
-    "Darek": [ { q: "7 x 7", a: 49 }, { q: "80 - 25", a: 55 }, { q: "6 x 8", a: 48 }, { q: "20 + 35 + 5", a: 60 }, { q: "64 : 8", a: 8 } ],
-    "Jaś": [ { q: "15 + 15", a: 30 }, { q: "40 - 10", a: 30 }, { q: "8 + 7", a: 15 }, { q: "20 - 6", a: 14 }, { q: "12 + 8", a: 20 } ]
+    "Lila": [ 
+        { q: "(50 + 50) : 2 =", a: ["50"] }, 
+        { q: "Jak jest 'ptak' po angielsku?", a: ["bird"] }, 
+        { q: "Jakie miasto jest stolicą Hiszpanii?", a: ["madryt", "madrid"] }, 
+        { q: "Która planeta znajduje się najbliżej słońca?", a: ["merkury"] }, 
+        { q: "Jak jest 'okno' po angielsku?", a: ["window"] } 
+    ],
+    "Kaja": [ 
+        { q: "8 x 7 =", a: ["56"] }, 
+        { q: "Jak jest 'pies' po angielsku?", a: ["dog"] }, 
+        { q: "W jakim państwie leży miasto Paryż?", a: ["francja", "we francji"] }, 
+        { q: "Ile sztuk to jest jeden tuzin?", a: ["12", "dwanascie"] }, 
+        { q: "100 - 45 =", a: ["55"] } 
+    ],
+    "Darek": [ 
+        { q: "9 x 6 =", a: ["54"] }, 
+        { q: "Jak jest 'jabłko' po angielsku?", a: ["apple"] }, 
+        { q: "Jakie państwo graniczy z Polską od zachodu?", a: ["niemcy"] }, 
+        { q: "Który miesiąc w roku ma najmniej dni?", a: ["luty"] }, 
+        { q: "Z połączenia koloru żółtego i niebieskiego powstaje...", a: ["zielony"] } 
+    ],
+    "Jaś": [ 
+        { q: "15 + 15 =", a: ["30"] }, 
+        { q: "Jak jest 'czerwony' po angielsku?", a: ["red"] }, 
+        { q: "Ile kół ma samochód osobowy?", a: ["4", "cztery"] }, 
+        { q: "20 - 5 =", a: ["15"] }, 
+        { q: "Zwierzę, które daje mleko to...", a: ["krowa"] } 
+    ]
 };
 
 let currentTaskIndex = 0;
 let globalSolved = 0;
 
-const phrase = "SZUKAJ MAPY W MOIM BUCIE";
-const unlockOrder = [4, 1, 8, 12, 0, 7, 2, 10, 5, 14, 3, 9, 13, 6, 11, 15, 16, 17, 18, 19];
-const phraseLettersOnly = phrase.replace(/ /g, "");
+// Logika hasła
+const phraseWords = ["SZUKAJ", "MAPY", "W", "MOIM", "BUCIE"];
+const fullPhrase = phraseWords.join(""); // SZUKAJMAPYWMOIMBUCIE (20 znaków)
 
+// Odsłaniamy losowe litery z przedziału 0-14, a na końcu (15-19) całe słowo BUCIE
+const unlockOrder = [4, 1, 8, 12, 0, 7, 2, 10, 5, 14, 3, 9, 13, 6, 11, 15, 16, 17, 18, 19];
+
+// Pobieranie postępu
 onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     if (docSnap.exists()) {
         currentTaskIndex = docSnap.data().task || 0;
@@ -122,28 +155,43 @@ function updateUI() {
         finishedMsg.style.display = "block";
     } else {
         document.getElementById('taskLabel').innerText = `ZADANIE ${currentTaskIndex + 1} / 5`;
-        document.getElementById('taskEquation').innerText = tasksData[activeAgent][currentTaskIndex].q + " = ?";
+        document.getElementById('taskQuestion').innerText = tasksData[activeAgent][currentTaskIndex].q;
     }
+}
+
+// Funkcja usuwająca polskie znaki do weryfikacji odpowiedzi
+function normalizeString(str) {
+    return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").trim();
 }
 
 window.checkAnswer = async function() {
     const input = document.getElementById('answerInput');
     const msg = document.getElementById('msg');
-    const userAnswer = parseInt(input.value);
-    const correctAnswer = tasksData[activeAgent][currentTaskIndex].a;
     
-    if (isNaN(userAnswer)) return;
+    const userAnswer = normalizeString(input.value);
+    if (userAnswer === "") return;
     
-    if (userAnswer === correctAnswer) {
+    const correctAnswers = tasksData[activeAgent][currentTaskIndex].a;
+    let isCorrect = false;
+    
+    // Sprawdzamy czy odpowiedź pasuje do jednej z dopuszczalnych
+    for (let ca of correctAnswers) {
+        if (userAnswer === normalizeString(ca)) {
+            isCorrect = true;
+            break;
+        }
+    }
+    
+    if (isCorrect) {
         msg.style.color = "#00ff00";
-        const unlockedLetter = phraseLettersOnly[unlockOrder[globalSolved]];
+        const unlockedLetter = fullPhrase[unlockOrder[globalSolved]];
         msg.innerText = `BRAWO! ZDOBYTO LITERĘ: ${unlockedLetter}`;
         
         await updateDoc(doc(db, "gracze", activeAgent), { task: increment(1) });
         await updateDoc(doc(db, "appState2", "global"), { totalSolved: increment(1) });
     } else {
         msg.style.color = "var(--error)";
-        msg.innerText = "BŁĘDNY WYNIK! LICZ JESZCZE RAZ.";
+        msg.innerText = "BŁĘDNA ODPOWIEDŹ! SPRÓBUJ PONOWNIE.";
         input.value = "";
     }
 }
@@ -152,32 +200,38 @@ window.openBoard = () => document.getElementById('boardModal').style.display = "
 window.closeBoard = () => document.getElementById('boardModal').style.display = "none";
 
 function renderBoard() {
-    const container = document.getElementById('boardContainer');
+    const container = document.getElementById('boardWords');
     container.innerHTML = "";
     
     const unlockedIndices = unlockOrder.slice(0, globalSolved);
     let letterCounter = 0;
     
-    for (let i = 0; i < phrase.length; i++) {
-        const char = phrase[i];
-        const div = document.createElement('div');
+    // Tworzymy osobny kontener (DIV) dla każdego słowa
+    phraseWords.forEach(word => {
+        const wordDiv = document.createElement('div');
+        wordDiv.className = "word";
         
-        if (char === " ") {
-            div.className = "letter-box empty";
-        } else {
+        for (let i = 0; i < word.length; i++) {
+            const char = word[i];
+            const letterDiv = document.createElement('div');
+            
             if (unlockedIndices.includes(letterCounter)) {
-                div.className = "letter-box revealed";
-                div.innerText = char;
+                letterDiv.className = "letter-box revealed";
+                letterDiv.innerText = char;
             } else {
-                div.className = "letter-box";
-                div.innerText = "_";
+                letterDiv.className = "letter-box";
+                letterDiv.innerText = "?";
             }
+            
+            wordDiv.appendChild(letterDiv);
             letterCounter++;
         }
-        container.appendChild(div);
-    }
+        
+        container.appendChild(wordDiv);
+    });
 }
 
+// Efekt tła
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 30; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
