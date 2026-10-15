@@ -26,6 +26,7 @@
     .btn-logout { background: transparent; border: 1px solid var(--error); color: var(--error); font-size: 10px; padding: 10px; margin-top: 25px; letter-spacing: 1px; }
     
     #msg { font-size: 12px; font-weight: bold; min-height: 15px; text-transform: uppercase; margin-bottom: 10px; }
+    #loader { color: var(--cyan); margin-bottom: 20px; font-weight: bold; letter-spacing: 1px; }
     
     /* MODALE (Tablica i Gratulacje) */
     .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; justify-content: center; align-items: center; flex-direction: column; }
@@ -44,16 +45,16 @@
 
   <canvas id="bg-canvas"></canvas>
 
-  <div class="container">
+  <div class="container" id="mainUI" style="display:none;">
     <h2>Zalogowano jako:</h2>
     <div class="agent-name" id="agentDisplay">---</div>
     
     <div class="task-box" id="taskContainer">
-      <div class="task-number" id="taskLabel">ZADANIE 1 / 5</div>
+      <div class="task-number" id="taskLabel">ZADANIE</div>
       <div class="task-text" id="taskQuestion">...</div>
     </div>
     
-    <div class="finished-text" id="finishedMsg">ROZWIĄZAŁEŚ WSZYSTKIE SWOJE ZADANIA! POMÓŻ INNYM CZYTAĆ HASŁO.</div>
+    <div class="finished-text" id="finishedMsg">ROZWIĄZAŁEŚ WSZYSTKIE SWOJE ZADANIA! POMÓŻ INNYM ODCZYTAĆ HASŁO.</div>
     
     <input type="text" id="answerInput" placeholder="Wpisz odpowiedź">
     <p id="msg"></p>
@@ -62,6 +63,8 @@
     <button class="btn-cyber btn-board" onclick="openBoard()">Pokaż Tablicę Hasła</button>
     <button class="btn-cyber btn-logout" onclick="logout()">WYLOGUJ Z TERMINALA</button>
   </div>
+  
+  <div id="loader">ŁĄCZENIE Z BAZĄ DANYCH...</div>
 
   <!-- Modal Tablicy Hasła -->
   <div class="modal" id="boardModal">
@@ -94,48 +97,25 @@ const activeAgent = localStorage.getItem('activeAgent');
 if (!activeAgent) window.location.href = 'index.html';
 document.getElementById('agentDisplay').innerText = activeAgent;
 
-const tasksData = {
-    "Lila": [ 
-        { q: "(50 + 50) : 2 =", a: ["50"] }, 
-        { q: "Jak jest 'ptak' po angielsku?", a: ["bird"] }, 
-        { q: "Jakie miasto jest stolicą Hiszpanii?", a: ["madryt", "madrid"] }, 
-        { q: "Która planeta znajduje się najbliżej słońca?", a: ["merkury"] }, 
-        { q: "Jak jest 'okno' po angielsku?", a: ["window"] } 
-    ],
-    "Kaja": [ 
-        { q: "8 x 7 =", a: ["56"] }, 
-        { q: "Jak jest 'pies' po angielsku?", a: ["dog"] }, 
-        { q: "W jakim państwie leży miasto Paryż?", a: ["francja", "we francji"] }, 
-        { q: "Ile sztuk to jest jeden tuzin?", a: ["12", "dwanascie"] }, 
-        { q: "100 - 45 =", a: ["55"] } 
-    ],
-    "Darek": [ 
-        { q: "9 x 6 =", a: ["54"] }, 
-        { q: "Jak jest 'jabłko' po angielsku?", a: ["apple"] }, 
-        { q: "Jakie państwo graniczy z Polską od zachodu?", a: ["niemcy"] }, 
-        { q: "Który miesiąc w roku ma najmniej dni?", a: ["luty"] }, 
-        { q: "Z połączenia koloru żółtego i niebieskiego powstaje...", a: ["zielony"] } 
-    ],
-    "Jaś": [ 
-        { q: "15 + 15 =", a: ["30"] }, 
-        { q: "Jak jest 'czerwony' po angielsku?", a: ["red"] }, 
-        { q: "Ile kół ma samochód osobowy?", a: ["4", "cztery"] }, 
-        { q: "20 - 5 =", a: ["15"] }, 
-        { q: "Zwierzę, które daje mleko to...", a: ["krowa"] } 
-    ]
-};
-
+let gameConfig = null;
 let currentTaskIndex = 0;
 let globalSolved = 0;
 let isProcessing = false;
 
-// NOWE HASŁO (20 znaków)
-const phraseWords = ["SZUKAJCIE", "DALEJ", "W", "BUCIE"];
-const fullPhrase = phraseWords.join(""); // SZUKAJCIEDALEJWBUCIE
+// KROK 1: Pobranie konfiguracji zrobionej przez Admina
+onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
+    if (docSnap.exists()) {
+        gameConfig = docSnap.data();
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('mainUI').style.display = 'block';
+        updateUI();
+        renderBoard();
+    } else {
+        document.getElementById('loader').innerText = "BRAK DANYCH GRY! ADMIN MUSI ZAPISAĆ KONFIGURACJĘ.";
+    }
+});
 
-// Odsłaniamy 15 pierwszych liter losowo (indeksy 0-14), potem 5 ostatnich "BUCIE" (indeksy 15-19)
-const unlockOrder = [4, 1, 8, 12, 0, 7, 2, 10, 5, 14, 3, 9, 13, 6, 11, 15, 16, 17, 18, 19];
-
+// KROK 2: Pobieranie postępu gracza
 onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     if (docSnap.exists()) {
         currentTaskIndex = docSnap.data().task || 0;
@@ -143,6 +123,7 @@ onSnapshot(doc(db, "gracze", activeAgent), (docSnap) => {
     }
 });
 
+// KROK 3: Pobieranie postępu globalnego
 onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
     if (docSnap.exists()) {
         globalSolved = docSnap.data().totalSolved || 0;
@@ -151,6 +132,12 @@ onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
 });
 
 function updateUI() {
+    if (!gameConfig) return;
+    
+    // Klucz w Firebase dla Jaś musi być bez polskich znaków (ze względu na zdefiniowaną konfigurację admina)
+    let dbKey = activeAgent === "Jaś" ? "Jas" : activeAgent;
+    let myTasks = gameConfig.tasksData[dbKey];
+    
     const container = document.getElementById('taskContainer');
     const input = document.getElementById('answerInput');
     const btn = document.getElementById('submitBtn');
@@ -159,14 +146,14 @@ function updateUI() {
     document.getElementById('msg').innerText = "";
     input.value = "";
     
-    if (currentTaskIndex >= 5) {
+    if (currentTaskIndex >= myTasks.length) {
         container.style.display = "none";
         input.style.display = "none";
         btn.style.display = "none";
         finishedMsg.style.display = "block";
     } else {
-        document.getElementById('taskLabel').innerText = `ZADANIE ${currentTaskIndex + 1} / 5`;
-        document.getElementById('taskQuestion').innerText = tasksData[activeAgent][currentTaskIndex].q;
+        document.getElementById('taskLabel').innerText = `ZADANIE ${currentTaskIndex + 1} / ${myTasks.length}`;
+        document.getElementById('taskQuestion').innerText = myTasks[currentTaskIndex].q;
     }
 }
 
@@ -175,14 +162,18 @@ function normalizeString(str) {
 }
 
 window.checkAnswer = async function() {
-    if (isProcessing) return;
+    if (isProcessing || !gameConfig) return;
+    
     const input = document.getElementById('answerInput');
     const msg = document.getElementById('msg');
-    
     const userAnswer = normalizeString(input.value);
+    
     if (userAnswer === "") return;
     
-    const correctAnswers = tasksData[activeAgent][currentTaskIndex].a;
+    let dbKey = activeAgent === "Jaś" ? "Jas" : activeAgent;
+    let myTasks = gameConfig.tasksData[dbKey];
+    
+    const correctAnswers = myTasks[currentTaskIndex].a;
     let isCorrect = false;
     
     for (let ca of correctAnswers) {
@@ -196,12 +187,16 @@ window.checkAnswer = async function() {
         isProcessing = true;
         msg.innerText = "";
         
-        // Pokazujemy Modal Gratulacji przed wczytaniem kolejnego zadania
-        const unlockedLetter = fullPhrase[unlockOrder[globalSolved]];
+        // Zabezpieczenie, jeśli rozwiązali więcej zadań niż jest liter w haśle
+        let fullPhrase = gameConfig.phrase.join("");
+        let unlockedLetter = "!";
+        if(globalSolved < gameConfig.unlockOrder.length) {
+             unlockedLetter = fullPhrase[gameConfig.unlockOrder[globalSolved]];
+        }
+        
         document.getElementById('foundLetterDisplay').innerText = unlockedLetter;
         document.getElementById('successModal').style.display = "flex";
         
-        // Zapis w tle (UI zaktualizuje się automatycznie pod spodem dzięki onSnapshot)
         await updateDoc(doc(db, "gracze", activeAgent), { task: increment(1) });
         await updateDoc(doc(db, "appState2", "global"), { totalSolved: increment(1) });
     } else {
@@ -225,9 +220,12 @@ window.openBoard = () => document.getElementById('boardModal').style.display = "
 window.closeBoard = () => document.getElementById('boardModal').style.display = "none";
 
 function renderBoard() {
+    if (!gameConfig) return;
     const container = document.getElementById('boardWords');
     container.innerHTML = "";
     
+    const phraseWords = gameConfig.phrase;
+    const unlockOrder = gameConfig.unlockOrder;
     const unlockedIndices = unlockOrder.slice(0, globalSolved);
     let letterCounter = 0;
     
@@ -253,6 +251,7 @@ function renderBoard() {
     });
 }
 
+// Efekt tła
 const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
 canvas.width = window.innerWidth; canvas.height = window.innerHeight;
 let pts = []; for (let i = 0; i < 30; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
