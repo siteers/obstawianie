@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber-Agent | Ekran Główny TV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --cyan: #00d4ff; --bg: #000; --gold: #d4af37; --error: #ff0000; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow: hidden; }
+    
+    /* PEŁNY EKRAN TABLICY (SKALOWANIE DO TV) */
+    #fullscreenBoard { display: flex; width: 100vw; height: 100vh; background: #000; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+    
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 3vw; max-width: 90vw; }
+    .word { display: flex; gap: 0.6vw; justify-content: center; flex-wrap: wrap; }
+    .letter-box { width: 4.5vw; height: 6vw; background: #111; border: 0.2vw solid #333; border-radius: 0.8vw; display: flex; justify-content: center; align-items: center; font-size: 3.5vw; font-weight: bold; color: #fff; text-transform: uppercase; }
+    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.8); }
+
+    /* NAROŻNE WIDŻETY AGENTÓW (TV) */
+    .tv-corner { position: absolute; width: 18vw; background: rgba(0, 0, 0, 0.85); border: 0.15vw solid var(--cyan); border-radius: 1vw; padding: 1vw; display: flex; flex-direction: column; gap: 0.8vw; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.15); transition: all 0.3s; z-index: 900; }
+    .tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 2vw rgba(0, 255, 0, 0.6); transform: scale(1.05); }
+    
+    .tv-top-left { top: 1.5vw; left: 1.5vw; }
+    .tv-top-right { top: 1.5vw; right: 1.5vw; }
+    .tv-bottom-left { bottom: 1.5vw; left: 1.5vw; }
+    .tv-bottom-right { bottom: 1.5vw; right: 1.5vw; }
+    
+    .tv-agent-name { font-size: 1.4vw; color: var(--gold); font-weight: 900; text-align: center; letter-spacing: 0.2vw; }
+    .tv-task-num { font-size: 0.8vw; color: #888; letter-spacing: 0.1vw; text-align: center; font-weight: bold; }
+    .tv-task-q { font-size: 1.1vw; font-weight: bold; text-align: center; min-height: 3vw; display: flex; align-items: center; justify-content: center; }
+    .tv-input-box { background: #111; border: 0.1vw dashed #555; border-radius: 0.5vw; padding: 0.8vw; text-align: center; font-family: monospace; font-size: 1.2vw; color: #aaa; min-height: 1.5vw; word-break: break-all; text-transform: uppercase; }
+    .tv-input-box.active { color: #fff; border-style: solid; border-color: var(--cyan); }
+    .tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: bold; font-size: 1.5vw; }
+    
+    #loading-msg { font-size: 1.5vw; color: var(--cyan); letter-spacing: 0.2vw; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div id="fullscreenBoard">
+    <div class="board" id="boardWords">
+        <div id="loading-msg">ŁĄCZENIE Z SYSTEMEM GŁÓWNYM...</div>
+    </div>
+
+    <!-- PANELE DZIECI -->
+    <div class="tv-corner tv-top-left" id="tv-Lila">
+      <div class="tv-agent-name">LILA</div>
+      <div class="tv-task-num" id="tv-num-Lila">...</div>
+      <div class="tv-task-q" id="tv-q-Lila">...</div>
+      <div class="tv-input-box" id="tv-in-Lila">_</div>
+    </div>
+    
+    <div class="tv-corner tv-top-right" id="tv-Kaja">
+      <div class="tv-agent-name">KAJA</div>
+      <div class="tv-task-num" id="tv-num-Kaja">...</div>
+      <div class="tv-task-q" id="tv-q-Kaja">...</div>
+      <div class="tv-input-box" id="tv-in-Kaja">_</div>
+    </div>
+    
+    <div class="tv-corner tv-bottom-left" id="tv-Darek">
+      <div class="tv-agent-name">DAREK</div>
+      <div class="tv-task-num" id="tv-num-Darek">...</div>
+      <div class="tv-task-q" id="tv-q-Darek">...</div>
+      <div class="tv-input-box" id="tv-in-Darek">_</div>
+    </div>
+    
+    <div class="tv-corner tv-bottom-right" id="tv-Jaś">
+      <div class="tv-agent-name">JAŚ</div>
+      <div class="tv-task-num" id="tv-num-Jaś">...</div>
+      <div class="tv-task-q" id="tv-q-Jaś">...</div>
+      <div class="tv-input-box" id="tv-in-Jaś">_</div>
+    </div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const app = initializeApp(firebaseConfig); 
+const db = getFirestore(app);
+
+let gameConfig = null;
+let globalSolved = 0;
+let agentLocalState = { "Lila": { task: -1, t: null }, "Kaja": { task: -1, t: null }, "Darek": { task: -1, t: null }, "Jaś": { task: -1, t: null } };
+const agentsList = [ { id: "Lila", dbKey: "Lila" }, { id: "Kaja", dbKey: "Kaja" }, { id: "Darek", dbKey: "Darek" }, { id: "Jaś", dbKey: "Jas" } ];
+
+// POBIERANIE KONFIGURACJI Z BAZY
+onSnapshot(doc(db, "appState2", "config"), (docSnap) => { 
+    if (docSnap.exists()) { 
+        gameConfig = docSnap.data(); 
+        renderTVBoard(); 
+        setupAgentListeners(); 
+    } else {
+        document.getElementById('boardWords').innerHTML = "<div id='loading-msg' style='color:red;'>BRAK KONFIGURACJI. ZAPISZ JĄ W PANELU ADMINA.</div>";
+    }
+});
+
+// POBIERANIE GLOBALNYCH PUNKTÓW
+onSnapshot(doc(db, "appState2", "global"), (docSnap) => { 
+    if (docSnap.exists()) { 
+        globalSolved = docSnap.data().totalSolved || 0; 
+        renderTVBoard(); 
+    } 
+});
+
+function renderTVBoard() {
+    if (!gameConfig) return;
+    const container = document.getElementById('boardWords');
+    container.innerHTML = "";
+    
+    const phraseWords = gameConfig.phrase;
+    const unlockOrder = gameConfig.unlockOrder;
+    const unlockedIndices = unlockOrder.slice(0, globalSolved);
+    let letterCounter = 0;
+    
+    phraseWords.forEach(word => {
+        const wordDiv = document.createElement('div'); 
+        wordDiv.className = "word";
+        
+        for (let i = 0; i < word.length; i++) {
+            const letterDiv = document.createElement('div');
+            if (unlockedIndices.includes(letterCounter)) { 
+                letterDiv.className = "letter-box revealed"; 
+                letterDiv.innerText = word[i]; 
+            } else { 
+                letterDiv.className = "letter-box"; 
+                letterDiv.innerText = "?"; 
+            }
+            wordDiv.appendChild(letterDiv); 
+            letterCounter++;
+        }
+        container.appendChild(wordDiv);
+    });
+}
+
+function setupAgentListeners() {
+    agentsList.forEach(agent => {
+        onSnapshot(doc(db, "gracze", agent.id), (docSnap) => {
+            if (!docSnap.exists() || !gameConfig) return;
+            let data = docSnap.data();
+            let currentTask = data.task || 0;
+            let liveInput = data.liveInput || "";
+            let state = agentLocalState[agent.id];
+            
+            let widget = document.getElementById(`tv-${agent.id}`);
+            let inEl = document.getElementById(`tv-in-${agent.id}`);
+            let myTasks = gameConfig.tasksData[agent.dbKey];
+            let totalTasks = myTasks ? myTasks.length : 0;
+
+            // Inicjalizacja lub normalny update
+            if (state.task === -1) {
+                state.task = currentTask;
+                updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+            } 
+            // Animacja sukcesu, gdy wzrośnie poziom zadania
+            else if (currentTask > state.task) {
+                state.task = currentTask;
+                widget.classList.add("flash-success");
+                inEl.classList.add("success");
+                inEl.innerText = "DOBRZE!";
+                
+                clearTimeout(state.t);
+                state.t = setTimeout(() => {
+                    widget.classList.remove("flash-success");
+                    inEl.classList.remove("success");
+                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+                }, 3000);
+            } 
+            // Zwykłe pisanie
+            else {
+                if (!widget.classList.contains("flash-success")) {
+                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+                }
+            }
+        });
+    });
+}
+
+function updateWidgetContent(agentId, currentTask, liveInput, myTasks, totalTasks) {
+    let numEl = document.getElementById(`tv-num-${agentId}`);
+    let qEl = document.getElementById(`tv-q-${agentId}`);
+    let inEl = document.getElementById(`tv-in-${agentId}`);
+
+    if (currentTask >= totalTasks) {
+        numEl.innerText = "ZAKOŃCZONO WSZYSTKO!";
+        qEl.innerText = "Czeka na resztę drużyny...";
+        inEl.innerText = "✔️";
+        inEl.classList.remove("active");
+        return;
+    }
+    
+    numEl.innerText = `ROZWIĄZUJE ZADANIE ${currentTask + 1} / ${totalTasks}`;
+    qEl.innerText = myTasks[currentTask].q;
+    
+    if (liveInput) { 
+        inEl.innerText = liveInput; 
+        inEl.classList.add("active"); 
+    } else { 
+        inEl.innerText = "_"; 
+        inEl.classList.remove("active"); 
+    }
+}
+</script>
+</body>
+</html>
