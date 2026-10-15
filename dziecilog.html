@@ -87,6 +87,7 @@
           <option value="Kaja">Kaja</option>
           <option value="Darek">Darek</option>
           <option value="Jaś">Jaś</option>
+          <option value="Wujek (admin)">Wujek (admin)</option>
         </select>
       </div>
 
@@ -142,8 +143,15 @@ window.authorizeAgent = async function() {
                 msg.style.color = "#00ff00";
                 msg.innerText = "DOSTĘP PRZYZNANY!";
                 
-                localStorage.setItem('activeAgent', agentName);
-                setTimeout(() => { window.location.href = 'wskazowki.html'; }, 1000);
+                setTimeout(() => { 
+                    // Przekierowanie w zależności od tego, kto się loguje
+                    if (agentName === "Wujek (admin)") {
+                        window.location.href = 'admin.html';
+                    } else {
+                        localStorage.setItem('activeAgent', agentName);
+                        window.location.href = 'wskazowki.html'; 
+                    }
+                }, 1000);
             } else {
                 triggerScaryError();
             }
