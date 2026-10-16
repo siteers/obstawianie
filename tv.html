@@ -8,12 +8,15 @@
     :root { --cyan: #00d4ff; --bg: #000; --gold: #d4af37; --error: #ff0000; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow: hidden; }
     
-    /* PEŁNY EKRAN TABLICY (SKALOWANIE DO TV) */
+    /* PEŁNY EKRAN TABLICY (Z POPRAWIONYM ZAWINĘCIEM DLA 40 LITER) */
     #fullscreenBoard { display: flex; width: 100vw; height: 100vh; background: #000; flex-direction: column; align-items: center; justify-content: center; position: relative; }
     
-    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 3vw; max-width: 90vw; }
-    .word { display: flex; gap: 0.6vw; justify-content: center; flex-wrap: wrap; }
-    .letter-box { width: 4.5vw; height: 6vw; background: #111; border: 0.2vw solid #333; border-radius: 0.8vw; display: flex; justify-content: center; align-items: center; font-size: 3.5vw; font-weight: bold; color: #fff; text-transform: uppercase; }
+    /* Zmniejszony max-width do 56vw, żeby tekst nie wchodził pod boczne panele */
+    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 2vw; max-width: 56vw; margin-bottom: 2vw; }
+    .word { display: flex; gap: 0.5vw; justify-content: center; flex-wrap: wrap; }
+    
+    /* Nieco mniejsze kafelki liter, by zmieściło się ich więcej w rzędzie */
+    .letter-box { width: 3.2vw; height: 4.5vw; background: #111; border: 0.2vw solid #333; border-radius: 0.6vw; display: flex; justify-content: center; align-items: center; font-size: 2.5vw; font-weight: bold; color: #fff; text-transform: uppercase; }
     .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.8); }
 
     /* NAROŻNE WIDŻETY AGENTÓW (TV) */
