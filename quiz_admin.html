@@ -8,37 +8,58 @@
     body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; margin: 0; }
     .box { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
     h3 { margin-top: 0; color: #00d4ff; }
-    button { background: #00d4ff; border: none; padding: 15px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px; }
+    button { background: #00d4ff; border: none; padding: 15px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px; text-transform: uppercase; }
     button.red { background: #ff4757; color: white; }
     button.green { background: #2ed573; color: black; }
+    button.gold { background: #d4af37; color: black; }
     
-    .verify-box { background: #d4af37; color: #000; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
-    .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #fff; padding: 10px; border-radius: 5px; }
+    .verify-box, .nominate-box { background: #1e272e; border: 2px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
+    .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; }
+    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
 
   <div class="box">
     <h3>STEROWANIE GRĄ</h3>
-    <button onclick="startGame()">RESETUJ I ZACZNIJ OD NOWA</button><br><br>
+    <button class="red" onclick="startGame()">RESETUJ I ZACZNIJ OD NOWA</button><br><br>
     
     <label>Runda:</label>
-    <select id="roundSel" style="padding: 10px; font-size: 16px; margin-right: 10px;">
-        <option value="1">Runda 1 (ABCD)</option>
-        <option value="2">Runda 2 (Pisanie)</option>
-        <option value="3">Runda 3 (Ryzyko +-20)</option>
+    <select id="roundSel">
+        <option value="1">Runda 1 (ABCD - Kto pierwszy)</option>
+        <option value="2">Runda 2 (Pisanie na czas)</option>
+        <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
-    <button onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
+    <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
+  </div>
+
+  <div class="nominate-box" id="nominateUI">
+    <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA?</h3>
+    <p>Zanim wyświetlisz pytanie z kategorii <b id="n-cat"></b>, wybierz kto ma prawo wskazać gracza:</p>
+    <select id="controllerSel">
+        <option value="Lila">Lila</option>
+        <option value="Kaja">Kaja</option>
+        <option value="Darek">Darek</option>
+        <option value="Jas">Jaś</option>
+    </select>
+    <button class="green" onclick="startNominationPhase()">ROZPOCZNIJ WYBIERANIE</button>
   </div>
 
   <div class="verify-box" id="verifyUI">
-    <h3>WERYFIKACJA ODPOWIEDZI!</h3>
-    <p>Gracz <b><span id="v-player"></span></b> wpisał:</p>
+    <h3 style="color: #d4af37;">WERYFIKACJA ODPOWIEDZI! (Runda 2)</h3>
+    <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał:</p>
     <div class="ans-text" id="v-ans">...</div>
-    <p>Prawidłowa powinna być: <b><span id="v-correct"></span></b></p>
+    <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
-    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (-)</button>
+    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ I ODBLOKUJ INNYCH</button>
+  </div>
+  
+  <div class="verify-box" id="verifyR3UI">
+    <h3 style="color: #d4af37;">WERYFIKACJA RUNDY 3</h3>
+    <p>Odpowiadał: <b style="color:#00ff00"><span id="v3-player"></span></b></p>
+    <button class="green" onclick="judgeR3(true)">✅ DOBRZE (+20)</button>
+    <button class="red" onclick="judgeR3(false)">❌ ŹLE (-20)</button>
   </div>
 
 <script type="module">
@@ -48,13 +69,12 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https:
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// BAZA PYTAŃ TESTOWYCH (Po 5 na rundę)
 const questionsDB = {
     1: [
         { q: "Która planeta jest największa w Układzie Słonecznym?", o: ["Ziemia", "Mars", "Jowisz", "Saturn"], c: 2 },
         { q: "Ile nóg ma pająk?", o: ["Sześć", "Osiem", "Dziesięć", "Dwanaście"], c: 1 },
         { q: "Co jest stolicą Francji?", o: ["Madryt", "Londyn", "Paryż", "Berlin"], c: 2 },
-        { q: "Jak nazywa się pingwin z Madagaskaru, który kocha dynamit?", o: ["Skipper", "Kowalski", "Rico", "Szeregowy"], c: 2 },
+        { q: "Jak nazywa się żółty pokemon Asha?", o: ["Charmander", "Squirtle", "Pikachu", "Bulbasaur"], c: 2 },
         { q: "Ile to jest 7 x 8?", o: ["54", "56", "62", "48"], c: 1 }
     ],
     2: [
@@ -65,11 +85,11 @@ const questionsDB = {
         { q: "Ile dni ma luty w roku przestępnym?", c: "29" }
     ],
     3: [
-        { q: "Jak nazywa się żółty pokemon Basha?", c: "Pikachu" },
-        { q: "Jaki kolor powstanie ze zmieszania żółtego i niebieskiego?", c: "Zielony" },
-        { q: "Czego używa Harry Potter do latania?", c: "Miotły" },
-        { q: "Ile to jest (20 + 30) - 10?", c: "40" },
-        { q: "Kto napisał wiersz 'Lokomotywa'?", c: "Julian Tuwim" }
+        { cat: "BAJKI", q: "Czego używa Harry Potter do latania?", o: ["Dywanu", "Miotły", "Rakiety", "Smoka"], c: 1 },
+        { cat: "KOLORY", q: "Jaki kolor powstanie ze zmieszania żółtego i niebieskiego?", o: ["Fioletowy", "Pomarańczowy", "Czarny", "Zielony"], c: 3 },
+        { cat: "MATEMATYKA", q: "Ile to jest (20 + 30) - 10?", o: ["40", "30", "50", "60"], c: 0 },
+        { cat: "LITERATURA", q: "Kto napisał wiersz 'Lokomotywa'?", o: ["Jan Brzechwa", "Julian Tuwim", "Adam Mickiewicz", "Henryk Sienkiewicz"], c: 1 },
+        { cat: "PRZYRODA", q: "Co jedzą pandy wielkie?", o: ["Mięso", "Eukaliptus", "Bambus", "Banany"], c: 2 }
     ]
 };
 
@@ -80,16 +100,21 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     currentState = docSnap.data();
     
-    // Panel weryfikacji dla Rundy 2 i 3
-    if (currentState.status === "verifying") {
+    document.getElementById('nominateUI').style.display = 'none';
+    document.getElementById('verifyUI').style.display = 'none';
+    document.getElementById('verifyR3UI').style.display = 'none';
+
+    if (currentState.status === "setup_nomination" && currentState.round === 3) {
+        document.getElementById('nominateUI').style.display = 'block';
+        document.getElementById('n-cat').innerText = currentState.category;
+    } else if (currentState.status === "verifying") {
         document.getElementById('verifyUI').style.display = 'block';
         document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
-        
-        let correctTxt = questionsDB[currentState.round][currentQIndex[currentState.round]].c;
-        document.getElementById('v-correct').innerText = correctTxt;
-    } else {
-        document.getElementById('verifyUI').style.display = 'none';
+        document.getElementById('v-correct').innerText = questionsDB[2][currentQIndex[2]].c;
+    } else if (currentState.status === "results_r3_pending") {
+        document.getElementById('verifyR3UI').style.display = 'block';
+        document.getElementById('v3-player').innerText = currentState.nominated.toUpperCase();
     }
 });
 
@@ -97,55 +122,54 @@ window.startGame = async () => {
     if(!confirm("Zresetować punkty wszystkich dzieci do zera?")) return;
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na pierwsze pytanie!" });
+    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [] });
     currentQIndex = { 1: -1, 2: -1, 3: -1 };
-    alert("Gra zresetowana!");
+    alert("Punkty wyzerowane!");
 };
 
 window.nextQuestion = async () => {
     let r = parseInt(document.getElementById('roundSel').value);
     currentQIndex[r]++;
-    
     let qData = questionsDB[r][currentQIndex[r]];
-    if (!qData) return alert("Brak więcej pytań w tej rundzie!");
+    if (!qData) return alert("Koniec pytań w tej rundzie!");
 
-    let payload = {
-        status: "reading",
-        round: r,
-        question: qData.q,
-        fastest: "", winner: "", loser: "", givenAnswer: ""
-    };
-
-    if (r === 1) {
-        payload.options = qData.o;
-        payload.correctIndex = qData.c;
+    if (r === 3) {
+        await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [] });
+    } else {
+        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "" };
+        if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
+        await setDoc(doc(db, "quizGame", "state"), payload);
     }
-    
-    await setDoc(doc(db, "quizGame", "state"), payload);
+};
+
+window.startNominationPhase = async () => {
+    let controller = document.getElementById('controllerSel').value;
+    await updateDoc(doc(db, "quizGame", "state"), { status: "nominating", controller: controller });
 };
 
 window.judgeAnswer = async (isCorrect) => {
-    let r = currentState.round;
     let player = currentState.fastest;
-    let ptsChange = 0;
-    
-    if (r === 2) ptsChange = isCorrect ? 10 : 0;
-    if (r === 3) ptsChange = isCorrect ? 20 : -20;
-    
-    // Aktualizacja punktów w bazie
-    if (ptsChange !== 0) {
+    if (isCorrect) {
         const scoreRef = doc(db, "quizScores", player);
         const scoreSnap = await getDoc(scoreRef);
-        await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
+        await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10 });
+    } else {
+        // Blokujemy gracza i wracamy do trybu czytania dla reszty
+        let newBlocked = [...(currentState.blocked || []), player];
+        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "" });
     }
+};
+
+window.judgeR3 = async (isCorrect) => {
+    let player = currentState.nominated;
+    let ptsChange = isCorrect ? 20 : -20;
     
-    // Ekran wyników na TV
-    await updateDoc(doc(db, "quizGame", "state"), {
-        status: "results",
-        winner: isCorrect ? player : "",
-        loser: isCorrect ? "" : player,
-        pointsChange: ptsChange
-    });
+    const scoreRef = doc(db, "quizScores", player);
+    const scoreSnap = await getDoc(scoreRef);
+    await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
+    
+    await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange });
 };
 </script>
 </body>
