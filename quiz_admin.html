@@ -5,71 +5,76 @@
   <title>Cyber-Quiz | Admin</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; margin: 0; }
-    .box { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
-    h3 { margin-top: 0; color: #00d4ff; text-transform: uppercase; }
-    button { background: #00d4ff; border: none; padding: 15px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px; text-transform: uppercase; transition: 0.2s; }
+    body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; margin: 0; max-width: 800px; margin: 0 auto; }
+    .box { background: #1e272e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
+    h3 { margin-top: 0; color: #00d4ff; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
+    button { background: #00d4ff; border: none; padding: 14px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 15px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; }
     button:active { transform: scale(0.95); }
     button.red { background: #ff4757; color: white; }
     button.green { background: #2ed573; color: black; }
     button.gold { background: #d4af37; color: black; }
+    button.purple { background: #a855f7; color: white; }
     
-    .verify-box, .nominate-box { background: #1e272e; border: 2px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
-    .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; text-transform: uppercase; }
-    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; }
+    .verify-box, .nominate-box { background: #2f3640; border: 3px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; box-shadow: 0 0 25px rgba(212,175,55,0.3); }
+    .ans-text { font-size: 26px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; text-transform: uppercase; }
+    select { padding: 12px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; }
     
-    hr { border: 1px solid #444; margin: 25px 0; }
-    .status-msg { font-size: 14px; font-weight: bold; margin-top: 15px; color: #00ff00; }
-    
-    .setup-panel { background: rgba(212, 175, 55, 0.1); border: 2px dashed #d4af37; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
+    .status-banner { background: #000; border-left: 4px solid #2ed573; padding: 12px; font-size: 14px; font-weight: bold; color: #2ed573; margin-top: 15px; border-radius: 5px; }
   </style>
 </head>
 <body>
 
-  <!-- KROK 1: KONFIGURACJA -->
-  <div class="setup-panel">
-    <h3 style="color: #d4af37;">1. START GRY (Wybór Bazy)</h3>
-    <label>Wybierz bazę pytań:</label>
-    <select id="poolSel">
-        <option value="1">PULA 1 (Rozgrzewka - 90 pytań)</option>
-        <option value="2">PULA 2 (Trudniejsze - 90 pytań)</option>
-    </select>
-    <button class="red" onclick="startGame()">USTAW BAZĘ I ZRESETUJ WSZYSTKIM PUNKTY</button>
+  <!-- KROK 1: RESET PUNKTOW -->
+  <div class="box">
+    <h3>KROK 1: RESETOWANIE PUNKTÓW (Na początku gry)</h3>
+    <button class="red" onclick="resetScoresOnly()">🗑️ WYZERUJ PUNKTY WSZYSTKIM GRACZOM</button>
   </div>
 
-  <!-- KROK 2: STEROWANIE -->
+  <!-- KROK 2: WYBÓR PULI PYTAŃ -->
   <div class="box">
-    <h3>2. STEROWANIE RUNDAMI</h3>
-    <label>Runda:</label>
-    <select id="roundSel">
-        <option value="1">Runda 1 (ABCD - Kto pierwszy)</option>
-        <option value="2">Runda 2 (Pisanie na czas - 15 sek)</option>
-        <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
+    <h3>KROK 2: WYBÓR PULI PYTAŃ</h3>
+    <select id="poolSel">
+        <option value="1">PULA 1 (Podstawowa - 90 pytań)</option>
+        <option value="2">PULA 2 (Trudniejsza - 90 pytań)</option>
     </select>
-    <button class="gold" onclick="nextQuestion()">START -> PUŚĆ NASTĘPNE PYTANIE</button>
-    <div class="status-msg" id="msg">Zarządzaj pytaniami...</div>
+    <button class="purple" onclick="sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
+  </div>
+
+  <!-- KROK 3: STEROWANIE GRĄ I RUNDAMI -->
+  <div class="box">
+    <h3>KROK 3: STEROWANIE RUNDAMI (AUTO-PRZECHODZENIE AKTYWNE)</h3>
+    <label>Wybierz rundę:</label>
+    <select id="roundSel">
+        <option value="1">Runda 1 (ABCD - 10s)</option>
+        <option value="2">Runda 2 (Pisanie - 15s)</option>
+        <option value="3">Runda 3 (Ryzyko - 10s)</option>
+    </select><br><br>
+    <button class="green" onclick="startRoundFirstQuestion()">▶️ START GRY / RUNDY</button>
+    <button class="gold" onclick="nextQuestion()">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
+    
+    <div class="status-banner" id="adminStatus">Status: Oczekiwanie na ruch...</div>
   </div>
 
   <!-- NOMINACJA R3 -->
   <div class="nominate-box" id="nominateUI">
-    <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA?</h3>
-    <p>Kategoria pytania: <b id="n-cat"></b></p>
+    <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA NASTĘPNEGO GRACZA?</h3>
+    <p>Kategoria nadchodzącego pytania: <b id="n-cat" style="color:#00d4ff; font-size:20px;"></b></p>
     <select id="controllerSel">
         <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
         <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
-    <button class="green" onclick="startNominationPhase()">WYSŁAŁ PRAWO GŁOSU NA TELEFON</button>
+    <button class="green" onclick="startNominationPhase()">PRZEKAŻ WYBÓR NA TELEFON GRACZA</button>
   </div>
 
   <!-- WERYFIKACJA R2 -->
   <div class="verify-box" id="verifyUI">
     <h3 style="color: #d4af37;">WERYFIKACJA ODPOWIEDZI! (Runda 2)</h3>
-    <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał w 15 sekund:</p>
+    <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał:</p>
     <div class="ans-text" id="v-ans">...</div>
-    <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
+    <p>Prawidłowa odpowiedź w bazie: <b style="color:#d4af37; font-size: 20px;"><span id="v-correct"></span></b></p>
     
-    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10 PKT)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (ZABLOKUJ GO, -10 PKT I WZNÓW CZAS)</button>
+    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10 PKT I NASTĘPNE PYTANIE)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (-10 PKT, ZABLOKUJ GO I DAJ 15s POZOSTAŁYM)</button>
   </div>
 
 <script type="module">
@@ -79,6 +84,7 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
+// --- PEŁNA BAZA 180 PYTAŃ ---
 const allDBs = {
     1: {
         1: [
@@ -114,7 +120,7 @@ const allDBs = {
             { q: "Które z tych zwierząt hibernuje w zimie?", o: ["Lis", "Niedźwiedź", "Wilk", "Zając"], c: 1 }
         ],
         2: [
-            { q: "Stolica Niemiec to...", c: "Berlin" }, { q: "Z jakiego owocu robi się rodzynki?", c: "Z winogron" }, { q: "Mąż krowy to...", c: "Byk" }, { q: "Wynik dodawania to...", c: "Suma" }, { q: "Ile boków ma trójkąt?", c: "Trzy / 3" }, { q: "Stolica Hiszpanii to...", c: "Madryt" }, { q: "Narzędzie drwala to...", c: "Siekiera" }, { q: "Jak nazywa się dom dla pszczół?", c: "Ul" }, { q: "Przeciwieństwo słowa 'zimno' to...", c: "Ciepło / Gorąco" }, { q: "Jak po angielsku jest 'kot'?", c: "Cat" }, { q: "W jakim sporcie używa się rakietki i lotki?", c: "Badminton" }, { q: "Z czego robi się frytki?", c: "Z ziemniaków / Z ziemniaka" }, { q: "Jak ma na imię brat Mario z gry Nintendo?", c: "Luigi" }, { q: "Największy ptak na świecie to...", c: "Struś" }, { q: "Który miesiąc ma najmniej dni?", c: "Luty" }, { q: "Słodki płyn produkowany przez pszczoły to...", c: "Miód" }, { q: "Co powstaje, gdy woda zamarznie?", c: "Lód" }, { q: "Kto roznosi listy w mieście?", c: "Listonosz" }, { q: "Jaki kolor ma dojrzały banan?", c: "Żółty" }, { q: "Jak po angielsku jest 'pies'?", c: "Dog" }, { q: "Który owoc jest w logo marki iPhone?", c: "Jabłko / Apple" }, { q: "Z czego piecze się chleb?", c: "Z mąki" }, { q: "Czym oddychają ryby pod wodą?", c: "Skrzelami" }, { q: "Jak po angielsku jest cyfra 'jeden'?", c: "One" }, { q: "Która planeta to 'Czerwona Planeta'?", c: "Mars" }, { q: "Jaki instrument ma pudło, struny i gryf?", c: "Gitara" }, { q: "Jak nazywa się młody pies?", c: "Szczeniak / Piesek" }, { q: "W czym nosimy zakupy ze sklepu?", c: "W torbie / Siatce" }, { q: "Jaki geometryczny kształt ma piłka?", c: "Kula / Okrągły" }, { q: "Które afrykańskie zwierzę ma najdłuższą szyję?", c: "Żyrafa" }
+            { q: "Stolica Niemiec to...", c: "Berlin" }, { q: "Z jakiego owocu robi się rodzynki?", c: "Z winogron" }, { q: "Mąż krowy to...", c: "Byk" }, { q: "Wynik dodawania to...", c: "Suma" }, { q: "Ile boków ma trójkąt?", c: "Trzy / 3" }, { q: "Stolica Hiszpanii to...", c: "Madryt" }, { q: "Narzędzie drwala to...", c: "Siekiera" }, { q: "Jak nazywa się dom dla pszczół?", c: "Ul" }, { q: "Przeciwieństwo słowa 'zimno' to...", c: "Ciepło / Gorąco" }, { q: "Jak po angielsku jest 'kot'?", c: "Cat" }, { q: "W jakim sporcie używa się rakietki i lotki?", c: "Badminton" }, { q: "Z czego robi się frytki?", c: "Z ziemniaków" }, { q: "Jak ma na imię brat Mario z gry Nintendo?", c: "Luigi" }, { q: "Największy ptak na świecie to...", c: "Struś" }, { q: "Który miesiąc ma najmniej dni?", c: "Luty" }, { q: "Słodki płyn produkowany przez pszczoły to...", c: "Miód" }, { q: "Co powstaje, gdy woda zamarznie?", c: "Lód" }, { q: "Kto roznosi listy w mieście?", c: "Listonosz" }, { q: "Jaki kolor ma dojrzały banan?", c: "Żółty" }, { q: "Jak po angielsku jest 'pies'?", c: "Dog" }, { q: "Który owoc jest w logo marki iPhone?", c: "Jabłko" }, { q: "Z czego piecze się chleb?", c: "Z mąki" }, { q: "Czym oddychają ryby pod wodą?", c: "Skrzelami" }, { q: "Jak po angielsku jest cyfra 'jeden'?", c: "One" }, { q: "Która planeta to 'Czerwona Planeta'?", c: "Mars" }, { q: "Jaki instrument ma pudło, struny i gryf?", c: "Gitara" }, { q: "Jak nazywa się młody pies?", c: "Szczeniak" }, { q: "W czym nosimy zakupy ze sklepu?", c: "W torbie / Siatce" }, { q: "Jaki geometryczny kształt ma piłka?", c: "Kula / Okrągły" }, { q: "Które afrykańskie zwierzę ma najdłuższą szyję?", c: "Żyrafa" }
         ],
         3: [
             { cat: "CYPR", q: "W jakim państwie leży miasto Paphos?", o: ["W Grecji", "Na Cyprze", "We Włoszech", "W Hiszpanii"], c: 1 },
@@ -130,7 +136,7 @@ const allDBs = {
             { cat: "GEOGRAFIA", q: "Jaki jest najmniejszy kontynent na świecie?", o: ["Australia", "Europa", "Antarktyda", "Azja"], c: 0 },
             { cat: "ANGIELSKI", q: "Jak jest 'ananas' po angielsku?", o: ["Apple", "Pineapple", "Banana", "Orange"], c: 1 },
             { cat: "ANGIELSKI", q: "Jak jest 'szary' po angielsku?", o: ["Green", "Blue", "Grey", "Black"], c: 2 },
-            { cat: "ZWIERZĘTA", q: "Jakie jest najszybsze zwierzę lądowe?", o: ["Lew", "Gepard", "Tygrys", "Kangaroo"], c: 1 },
+            { cat: "ZWIERZĘTA", q: "Jakie jest najszybsze zwierzę lądowe?", o: ["Lew", "Gepard", "Tygrys", "Kangur"], c: 1 },
             { cat: "ZWIERZĘTA", q: "Jak nazywa się największy ocean?", o: ["Spokojny", "Atlantycki", "Indyjski", "Arktyczny"], c: 0 },
             { cat: "BIOLOGIA", q: "Który narząd pompuje krew w naszym organizmie?", o: ["Płuca", "Żołądek", "Serce", "Wątroba"], c: 2 },
             { cat: "KOSMOS", q: "Gwiazda, wokół której krąży Ziemia to:", o: ["Księżyc", "Słońce", "Mars", "Wenus"], c: 1 },
@@ -183,7 +189,7 @@ const allDBs = {
             { q: "Który z instrumentów ma klawiaturę?", o: ["Harfa", "Akordeon", "Wiolonczela", "Flet"], c: 1 }
         ],
         2: [
-            { q: "Wynik mnożenia to...", c: "Iloczyn" }, { q: "Nauka badająca przeszłość to...", c: "Historia" }, { q: "Słodka, biała substancja w kuchni to...", c: "Cukier" }, { q: "Jak po angielsku jest 'drzewo'?", c: "Tree" }, { q: "Kto napisał baśń 'Brzydkie Kaczątko'?", c: "Andersen" }, { q: "Największy ocean to Ocean...", c: "Spokojny" }, { q: "Stolica Czech to...", c: "Praga" }, { q: "Wynik odejmowania to...", c: "Różnica" }, { q: "Jak po angielsku jest 'księżyc'?", c: "Moon" }, { q: "Rzeka w Warszawie to...", c: "Wisła" }, { q: "Kumkający płaz w stawie to...", c: "Żaba" }, { q: "Polska jednostka temperatury to...", c: "Celsjusz / Stopnie Celsjusza" }, { q: "Rodzynka powstaje z...", c: "Winogrona / Winogron" }, { q: "Gaz niezbędny nam do oddychania...", c: "Tlen" }, { q: "Ptak będący godłem Polski to...", c: "Orzeł / Orzeł Biały" }, { q: "Największy drapieżnik lądowy to...", c: "Niedźwiedź polarny" }, { q: "Ile to jest 12 razy 12?", c: "144" }, { q: "Stolica Francji to...", c: "Paryż" }, { q: "Jak po angielsku jest 'dziewczynka'?", c: "Girl" }, { q: "Polski piłkarz w Barcelonie (nr 9) to...", c: "Lewandowski / Robert Lewandowski" }, { q: "Urządzenie robiące zdjęcia to...", c: "Aparat / Aparat fotograficzny" }, { q: "W jakim państwie stoi Wieża Eiffla?", c: "Francja / We Francji" }, { q: "Najzimniejszy kontynent na świecie to...", c: "Antarktyda" }, { q: "Ludzki szkielet składa się z...", c: "Z kości" }, { q: "Gdynia i Sopot tworzą Trójmiasto z...", c: "Gdańskiem / Gdańsk" }, { q: "Do jakiej gromady zwierząt należy pingwin?", c: "Ptaków / Ptak" }, { q: "Polskie tłumaczenie angielskiego 'Water'", c: "Woda" }, { q: "Jakie działanie daje wynik z 'resztą'?", c: "Dzielenie" }, { q: "Jak nazywa się samiec owcy?", c: "Baran" }, { q: "Przenośny komputer osobisty to...", c: "Laptop" }
+            { q: "Wynik mnożenia to...", c: "Iloczyn" }, { q: "Nauka badająca przeszłość to...", c: "Historia" }, { q: "Słodka, biała substancja w kuchni to...", c: "Cukier" }, { q: "Jak po angielsku jest 'drzewo'?", c: "Tree" }, { q: "Kto napisał baśń 'Brzydkie Kaczątko'?", c: "Andersen" }, { q: "Największy ocean to Ocean...", c: "Spokojny" }, { q: "Stolica Czech to...", c: "Praga" }, { q: "Wynik odejmowania to...", c: "Różnica" }, { q: "Jak po angielsku jest 'księżyc'?", c: "Moon" }, { q: "Rzeka w Warszawie to...", c: "Wisła" }, { q: "Kumkający płaz w stawie to...", c: "Żaba" }, { q: "Polska jednostka temperatury to...", c: "Celsjusz" }, { q: "Rodzynka powstaje z...", c: "Winogrona" }, { q: "Gaz niezbędny nam do oddychania...", c: "Tlen" }, { q: "Ptak będący godłem Polski to...", c: "Orzeł Biały" }, { q: "Największy drapieżnik lądowy to...", c: "Niedźwiedź polarny" }, { q: "Ile to jest 12 razy 12?", c: "144" }, { q: "Stolica Francji to...", c: "Paryż" }, { q: "Jak po angielsku jest 'dziewczynka'?", c: "Girl" }, { q: "Polski piłkarz w Barcelonie (nr 9) to...", c: "Lewandowski" }, { q: "Urządzenie robiące zdjęcia to...", c: "Aparat" }, { q: "W jakim państwie stoi Wieża Eiffla?", c: "Francja" }, { q: "Najzimniejszy kontynent na świecie to...", c: "Antarktyda" }, { q: "Ludzki szkielet składa się z...", c: "Z kości" }, { q: "Gdynia i Sopot tworzą Trójmiasto z...", c: "Gdańskiem" }, { q: "Do jakiej gromady zwierząt należy pingwin?", c: "Ptaki" }, { q: "Polskie tłumaczenie angielskiego 'Water'", c: "Woda" }, { q: "Jakie działanie daje wynik z 'resztą'?", c: "Dzielenie" }, { q: "Jak nazywa się samiec owcy?", c: "Baran" }, { q: "Przenośny komputer osobisty to...", c: "Laptop" }
         ],
         3: [
             { cat: "CHEMIA", q: "Jaki symbol chemiczny ma złoto?", o: ["Ag", "Au", "Zn", "Cu"], c: 1 },
@@ -196,7 +202,7 @@ const allDBs = {
             { cat: "MATEMATYKA", q: "Ile wynosi pierwiastek z 144?", o: ["10", "11", "12", "14"], c: 2 },
             { cat: "BIOLOGIA", q: "Co jest najtwardszą substancją w organizmie człowieka?", o: ["Kość udowa", "Szkliwo zębów", "Czaszka", "Paznokieć"], c: 1 },
             { cat: "SPORT", q: "Z jakiego kraju pochodzi sztuka walki Karate?", o: ["Chiny", "Korea", "Japonia", "Tajlandia"], c: 2 },
-            { cat: "ASTRONOMIA", q: "Która planeta jest znana z potężnej, czerwonej plamy (wielkiego cyklonu)?", o: ["Mars", "Wenus", "Jowisz", "Neptun"], c: 2 },
+            { cat: "ASTRONOMIA", q: "Która planeta jest znana z potężnej, czerwonej plamy?", o: ["Mars", "Wenus", "Jowisz", "Neptun"], c: 2 },
             { cat: "CYPR", q: "Po której stronie drogi jeździ się samochodami na Cyprze?", o: ["Tylko po prawej", "Tylko po lewej", "Zależy od miasta", "Po środku"], c: 1 },
             { cat: "TECHNOLOGIA", q: "Kto był wizjonerem i twórcą firmy Apple?", o: ["Steve Jobs", "Tim Cook", "Bill Gates", "Mark Zuckerberg"], c: 0 },
             { cat: "FILM", q: "W jakiej serii filmów pojawia się postać Dartha Vadera?", o: ["Star Trek", "Harry Potter", "Gwiezdne Wojny", "Władca Pierścieni"], c: 2 },
@@ -220,8 +226,14 @@ const allDBs = {
     }
 };
 
+let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
+
+// Timery zarządzane wyłącznie przez Admina
+let suspenseTimer = null;
+let autoFlowTimer = null;
+let lastHandledStatus = "";
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -233,49 +245,156 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (currentState.status === "setup_nomination" && currentState.round === 3) {
         document.getElementById('nominateUI').style.display = 'block';
         document.getElementById('n-cat').innerText = currentState.category;
-    } else if (currentState.status === "verifying" && currentState.round === 2) {
+        document.getElementById('adminStatus').innerText = "Status: Wybierz gracza rozpoczynającego w Rundzie 3.";
+    } 
+    else if (currentState.status === "verifying" && currentState.round === 2) {
         document.getElementById('verifyUI').style.display = 'block';
         document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
-        
-        let pool = currentState.pool || 1;
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
-        document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
-    } 
+        document.getElementById('v-correct').innerText = currentState.correctText || "---";
+        document.getElementById('adminStatus').innerText = "Status: Oceń odpowiedź tekstową gracza!";
+    }
+
+    // 1. OBSŁUGA NAPIĘCIA (3.5s bicia serca) dla R1, R2 i R3
+    if (currentState.status.startsWith("results_pending_")) {
+        let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
+        if (lastHandledStatus !== stateKey) {
+            lastHandledStatus = stateKey;
+            document.getElementById('adminStatus').innerText = `Status: Weryfikacja odpowiedzi (${currentState.fastest})... [3.5s]`;
+            
+            clearTimeout(suspenseTimer);
+            suspenseTimer = setTimeout(async () => {
+                let r = currentState.round;
+                let isCorrect = currentState.isAnswerCorrect;
+                let player = currentState.fastest;
+                let ptsChange = (r === 3) ? (isCorrect ? 20 : -20) : (isCorrect ? 10 : -10);
+
+                // Aktualizacja punktów w bazie po zakończeniu bicia serca
+                const scoreRef = doc(db, "quizScores", player);
+                const scoreSnap = await getDoc(scoreRef);
+                let currentPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+                await updateDoc(scoreRef, { points: currentPts + ptsChange });
+
+                if (isCorrect) {
+                    // Jeśli w R3 ktoś odpowiedział dobrze, przejmuje prawo wyboru na kolejne pytanie!
+                    if (r === 3) {
+                        let sel = document.getElementById('controllerSel');
+                        for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === player) sel.selectedIndex = i; }
+                    }
+                    await updateDoc(doc(db, "quizGame", "state"), {
+                        status: "results", winner: player, loser: "", pointsChange: ptsChange, answerTick: Date.now()
+                    });
+                } else {
+                    // BŁĘDNA ODPOWIEDŹ -> Blokujemy gracza i zużytą opcję ABCD
+                    let newBlocked = [...(currentState.blocked || []), player];
+                    let newUsedOpts = [...(currentState.usedOptions || [])];
+                    if ((r === 1 || r === 3) && currentState.selectedIndex !== undefined) {
+                        newUsedOpts.push(currentState.selectedIndex);
+                    }
+
+                    // Jeśli wszyscy 4 gracze już się pomylili -> Koniec pytania (timeout)
+                    if (newBlocked.length >= 4) {
+                        await updateDoc(doc(db, "quizGame", "state"), {
+                            status: "timeout", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, answerTick: Date.now()
+                        });
+                    } else {
+                        await updateDoc(doc(db, "quizGame", "state"), {
+                            status: "results_wrong", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, answerTick: Date.now()
+                        });
+                    }
+                }
+            }, 3500);
+        }
+    }
+
+    // 2. AUTO-WZNOWIENIE TEGO SAMEGO PYTANIA PO BŁĘDZIE (dla pozostałych graczy)
+    if (currentState.status === "results_wrong") {
+        let wrongKey = "wrong_" + currentState.answerTick;
+        if (lastHandledStatus !== wrongKey) {
+            lastHandledStatus = wrongKey;
+            document.getElementById('adminStatus').innerText = `Status: Błąd gracza ${currentState.loser}! Wznawiam pytanie dla pozostałych za 3.5s...`;
+            
+            clearTimeout(autoFlowTimer);
+            autoFlowTimer = setTimeout(async () => {
+                // W R3 jeśli wyznaczony się pomylił, pozostali też mogą dobijać!
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", tick: Date.now()
+                });
+            }, 3500);
+        }
+    }
+
+    // 3. AUTO-PRZEJŚCIE DO NASTĘPNEGO PYTANIA PO POPRAWNEJ ODPOWIEDZI LUB UPŁYWIE CZASU
+    if (currentState.status === "results" || currentState.status === "timeout") {
+        let endKey = "end_" + currentState.answerTick;
+        if (lastHandledStatus !== endKey) {
+            lastHandledStatus = endKey;
+            document.getElementById('adminStatus').innerText = `Status: Pytanie zakończone! Automatyczne przejście do kolejnego za 5 sekund...`;
+            
+            clearTimeout(autoFlowTimer);
+            autoFlowTimer = setTimeout(() => {
+                nextQuestion();
+            }, 5000);
+        }
+    }
 });
 
-window.startGame = async () => {
-    if(!confirm("Zresetować punkty i zacząć od nowa z ustawioną pulą?")) return;
-    
-    const pool = parseInt(document.getElementById('poolSel').value);
-    
+// KROK 1: Reset punktów
+window.resetScoresOnly = async () => {
+    if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom?")) return;
+    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [], pool: pool });
+    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], pool: currentPool });
+    document.getElementById('adminStatus').innerText = "Status: Punkty wszystkich graczy zostały wyzerowane.";
+};
+
+// KROK 2: Zatwierdzenie puli
+window.sendPoolChoice = async () => {
+    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
+    currentPool = parseInt(document.getElementById('poolSel').value);
     currentQIndex = { 1: -1, 2: -1, 3: -1 };
-    document.getElementById('msg').innerText = "Zresetowano! Możesz puścić pytania.";
+    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], pool: currentPool });
+    document.getElementById('adminStatus').innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
+};
+
+// KROK 3: Start rundy
+window.startRoundFirstQuestion = () => {
+    nextQuestion();
 };
 
 window.nextQuestion = async () => {
+    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
     let r = parseInt(document.getElementById('roundSel').value);
-    let pool = currentState ? (currentState.pool || 1) : parseInt(document.getElementById('poolSel').value);
     
     currentQIndex[r]++;
-    let qData = allDBs[pool][r][currentQIndex[r]];
-    if (!qData) return alert("Koniec pytań w tej rundzie z tej Puli!");
+    let qData = allDBs[currentPool][r][currentQIndex[r]];
+    if (!qData) {
+        document.getElementById('adminStatus').innerText = `Status: Koniec pytań w Rundzie ${r} (Pula ${currentPool})! Zmień rundę.`;
+        return alert(`Koniec pytań w Rundzie ${r} z Puli ${currentPool}! Wybierz kolejną rundę z listy.`);
+    }
+
+    document.getElementById('adminStatus').innerText = `Status: Grane pytanie #${currentQIndex[r] + 1} (Runda ${r}, Pula ${currentPool})`;
 
     if (r === 3) {
-        let bestPlayer = "Lila";
         if (currentQIndex[r] === 0) {
             const snap = await getDocs(collection(db, "quizScores"));
-            let maxPts = -999;
+            let maxPts = -999; let bestPlayer = "Lila";
             snap.forEach(d => { let pts = d.data().points || 0; if (pts > maxPts) { maxPts = pts; bestPlayer = d.id; } });
             let sel = document.getElementById('controllerSel');
             for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === bestPlayer) sel.selectedIndex = i; }
         }
-        await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [], pool: pool });
+        await setDoc(doc(db, "quizGame", "state"), { 
+            status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, 
+            options: qData.o, correctIndex: qData.c, blocked: [], usedOptions: [], pool: currentPool 
+        });
     } else {
-        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: pool };
+        let payload = { 
+            status: "reading", round: r, question: qData.q, blocked: [], usedOptions: [], 
+            fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: currentPool 
+        };
         if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
+        if (r === 2) { payload.correctText = qData.c; }
         await setDoc(doc(db, "quizGame", "state"), payload);
     }
 };
@@ -288,8 +407,6 @@ window.startNominationPhase = async () => {
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
     let ans = currentState.givenAnswer; 
-    
-    // Panel admina sam podaje informację czy było Prawidłowo czy Fałszywie, bo na telefonach wpisywany tekst jest dowolny
     await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
 };
 </script>
