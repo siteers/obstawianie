@@ -37,10 +37,8 @@
     <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA?</h3>
     <p>Zanim wyświetlisz pytanie z kategorii <b id="n-cat"></b>, wybierz kto ma prawo wskazać gracza:</p>
     <select id="controllerSel">
-        <option value="Lila">Lila</option>
-        <option value="Kaja">Kaja</option>
-        <option value="Darek">Darek</option>
-        <option value="Jas">Jaś</option>
+        <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
+        <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
     <button class="green" onclick="startNominationPhase()">ROZPOCZNIJ WYBIERANIE</button>
   </div>
@@ -52,14 +50,7 @@
     <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
     <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (ODBLOKUJ INNYCH I DAJ 10 SEKUND)</button>
-  </div>
-  
-  <div class="verify-box" id="verifyR3UI">
-    <h3 style="color: #d4af37;">WERYFIKACJA RUNDY 3</h3>
-    <p>Odpowiadał: <b style="color:#00ff00"><span id="v3-player"></span></b></p>
-    <button class="green" onclick="judgeR3(true)">✅ DOBRZE (+20)</button>
-    <button class="red" onclick="judgeR3(false)">❌ ŹLE (-20)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (DAJ -10 PKT, ODBLOKUJ INNYCH)</button>
   </div>
 
 <script type="module">
@@ -95,6 +86,7 @@ const questionsDB = {
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
+let suspenseTimeout = null;
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -102,19 +94,55 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     
     document.getElementById('nominateUI').style.display = 'none';
     document.getElementById('verifyUI').style.display = 'none';
-    document.getElementById('verifyR3UI').style.display = 'none';
 
     if (currentState.status === "setup_nomination" && currentState.round === 3) {
         document.getElementById('nominateUI').style.display = 'block';
         document.getElementById('n-cat').innerText = currentState.category;
-    } else if (currentState.status === "verifying") {
+    } else if (currentState.status === "verifying" && currentState.round === 2) {
         document.getElementById('verifyUI').style.display = 'block';
         document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
         document.getElementById('v-correct').innerText = questionsDB[2][currentQIndex[2]].c;
-    } else if (currentState.status === "results_r3_pending") {
-        document.getElementById('verifyR3UI').style.display = 'block';
-        document.getElementById('v3-player').innerText = currentState.nominated.toUpperCase();
+    } 
+
+    // AUTOMATYCZNE ROZLICZANIE R1 Z NAPIĘCIEM
+    if (currentState.status === "results_pending_r1") {
+        if (!suspenseTimeout) {
+            suspenseTimeout = setTimeout(async () => {
+                let isCorrect = currentState.isCorrectR1;
+                let player = currentState.fastest;
+                let ptsChange = isCorrect ? 10 : -10;
+
+                const scoreRef = doc(db, "quizScores", player);
+                const scoreSnap = await getDoc(scoreRef);
+                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
+
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange
+                });
+                suspenseTimeout = null;
+            }, 4500); // 4.5s bicia serca
+        }
+    }
+
+    // AUTOMATYCZNE ROZLICZANIE R3 Z NAPIĘCIEM
+    if (currentState.status === "results_pending_r3") {
+        if (!suspenseTimeout) {
+            suspenseTimeout = setTimeout(async () => {
+                let isCorrect = currentState.isCorrectR3;
+                let player = currentState.fastest;
+                let ptsChange = isCorrect ? 20 : -20;
+
+                const scoreRef = doc(db, "quizScores", player);
+                const scoreSnap = await getDoc(scoreRef);
+                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
+
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange
+                });
+                suspenseTimeout = null;
+            }, 4500);
+        }
     }
 });
 
@@ -135,23 +163,15 @@ window.nextQuestion = async () => {
 
     if (r === 3) {
         let bestPlayer = "Lila";
-        // Jeśli to 1 pytanie 3. Rundy, szukamy lidera!
         if (currentQIndex[r] === 0) {
             const snap = await getDocs(collection(db, "quizScores"));
             let maxPts = -999;
-            snap.forEach(d => {
-                let pts = d.data().points || 0;
-                if (pts > maxPts) { maxPts = pts; bestPlayer = d.id; }
-            });
-            // Automatyczne ustawienie dropdownu
+            snap.forEach(d => { let pts = d.data().points || 0; if (pts > maxPts) { maxPts = pts; bestPlayer = d.id; } });
             let sel = document.getElementById('controllerSel');
-            for(let i=0; i<sel.options.length; i++) {
-                if(sel.options[i].value === bestPlayer) sel.selectedIndex = i;
-            }
+            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === bestPlayer) sel.selectedIndex = i; }
         }
         await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [] });
     } else {
-        // Dodany TICK do uruchomienia 10-sekundowego timera
         let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now() };
         if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
         await setDoc(doc(db, "quizGame", "state"), payload);
@@ -165,27 +185,25 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
+    
     if (isCorrect) {
         const scoreRef = doc(db, "quizScores", player);
         const scoreSnap = await getDoc(scoreRef);
         await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
         await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10 });
     } else {
-        // Odrzucenie: Gracz wędruje do zablokowanych, wysyłamy nowy TICK aby zresetować timer dla reszty
-        let newBlocked = [...(currentState.blocked || []), player];
-        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-    }
-};
+        const scoreRef = doc(db, "quizScores", player);
+        const scoreSnap = await getDoc(scoreRef);
+        await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
 
-window.judgeR3 = async (isCorrect) => {
-    let player = currentState.nominated;
-    let ptsChange = isCorrect ? 20 : -20;
-    
-    const scoreRef = doc(db, "quizScores", player);
-    const scoreSnap = await getDoc(scoreRef);
-    await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-    
-    await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange });
+        let newBlocked = [...(currentState.blocked || []), player];
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_r2_wrong", loser: player, pointsChange: -10, blocked: newBlocked });
+        
+        // Zjazd po 3 sekundach by gra trwała dalej (nowy timer dla reszty)
+        setTimeout(async () => {
+            await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
+        }, 3000);
+    }
 };
 </script>
 </body>
