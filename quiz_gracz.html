@@ -8,24 +8,25 @@
     :root { --cyan: #00d4ff; --bg: #050b14; }
     body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
     
-    .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); }
+    .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
     select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
     
     #gamePad { display: none; width: 90%; max-width: 400px; }
-    .status-top { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
+    .status-top { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
     
     .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none; }
-    .btn-abcd { background: #111; border: 2px solid var(--cyan); color: #fff; font-size: 30px; font-weight: bold; padding: 40px 20px; border-radius: 15px; cursor: pointer; }
+    .btn-abcd { background: #111; border: 2px solid var(--cyan); color: #fff; font-size: 30px; font-weight: bold; padding: 35px 20px; border-radius: 15px; cursor: pointer; transition: 0.2s; }
     .btn-abcd:active { background: var(--cyan); color: #000; transform: scale(0.95); }
+    .btn-abcd:disabled { opacity: 0.2; border-color: #ff4757; color: #ff4757; text-decoration: line-through; pointer-events: none; }
     
     .input-area { display: none; flex-direction: column; gap: 15px; }
     input[type="text"] { font-size: 24px; padding: 15px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
-    .btn-submit { background: var(--cyan); color: #000; font-size: 20px; font-weight: bold; padding: 20px; border: none; border-radius: 10px; cursor: pointer; }
+    .btn-submit { background: var(--cyan); color: #000; font-size: 20px; font-weight: bold; padding: 20px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
     
     .nominate-area { display: none; flex-direction: column; gap: 10px; }
     .btn-nom { background: #d4af37; color: #000; font-size: 20px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
     
-    .locked-msg { font-size: 24px; color: #ff4757; font-weight: bold; margin-top: 50px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+    .locked-msg { font-size: 22px; color: #ff4757; font-weight: bold; margin-top: 30px; display: none; border: 2px dashed #ff4757; padding: 25px; border-radius: 15px; background: rgba(255,0,0,0.1); }
   </style>
 </head>
 <body>
@@ -37,15 +38,17 @@
       <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
       <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
-    <button class="btn-submit" style="width:100%;" onclick="joinGame()">GRAJ</button>
+    <button class="btn-submit" style="width:100%;" onclick="joinGame()">DOŁĄCZ DO GRY</button>
   </div>
 
   <div id="gamePad">
     <div class="status-top" id="padStatus">Oczekiwanie na pytanie...</div>
     
     <div class="grid-abcd" id="ui-abcd">
-      <button class="btn-abcd" onclick="sendAnswer('0')">A</button><button class="btn-abcd" onclick="sendAnswer('1')">B</button>
-      <button class="btn-abcd" onclick="sendAnswer('2')">C</button><button class="btn-abcd" onclick="sendAnswer('3')">D</button>
+      <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">A</button>
+      <button class="btn-abcd" id="pad-btn-1" onclick="sendAnswer(1)">B</button>
+      <button class="btn-abcd" id="pad-btn-2" onclick="sendAnswer(2)">C</button>
+      <button class="btn-abcd" id="pad-btn-3" onclick="sendAnswer(3)">D</button>
     </div>
     
     <div class="input-area" id="ui-input">
@@ -74,8 +77,6 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let currentState = null;
-let currentTick = null;
-let timerInterval = null;
 
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
@@ -97,63 +98,51 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     document.getElementById('ui-locked').style.display = 'none';
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "results_r2_wrong" || currentState.status === "timeout") {
-        document.getElementById('padStatus').innerText = "Patrz na telewizor!";
-        clearInterval(timerInterval);
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout") {
+        document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
         return;
     }
     
     if (currentState.status === "nominating") {
         if (currentState.controller === myName) {
-            document.getElementById('padStatus').innerText = "WYBIERZ PRZECIWNIKA!";
+            document.getElementById('padStatus').innerText = "WYBIERZ KTO ODPOWIADA!";
             document.getElementById('ui-nominate').style.display = 'flex';
         } else {
-            document.getElementById('padStatus').innerText = "CZEKAJ AŻ ZOSTANIESZ WYBRANY...";
+            document.getElementById('padStatus').innerText = "CZEKAJ NA WYBÓR GRACZA...";
         }
-        clearInterval(timerInterval);
         return;
     }
 
     if (currentState.status === "reading") {
+        // Sprawdź czy gracz podał już błędną odpowiedź w tym pytaniu
         if (currentState.blocked && currentState.blocked.includes(myName)) {
-            document.getElementById('padStatus').innerText = "BŁĘDNA ODPOWIEDŹ!";
+            document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
             document.getElementById('ui-locked').style.display = 'block';
-            document.getElementById('ui-locked').innerText = "ZABLOKOWANO CIĘ W TYM PYTANIU.";
-            clearInterval(timerInterval);
+            document.getElementById('ui-locked').innerText = "PODAŁEŚ BŁĘDNĄ ODPOWIEDŹ. TERAZ PRÓBUJĄ POZOSTALI!";
             return;
         }
 
-        if (currentState.tick !== currentTick) {
-            currentTick = currentState.tick;
-            clearInterval(timerInterval);
-            let timeLeft = currentState.round === 2 ? 15 : 10;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('ui-abcd').style.display = 'none';
-                    document.getElementById('ui-input').style.display = 'none';
-                    document.getElementById('padStatus').innerText = "CZAS MINĄŁ!";
-                    document.getElementById('ui-locked').style.display = 'block';
-                    document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
-                }
-            }, 1000);
+        // Dezaktywuj zużyte już błędne opcje ABCD
+        for(let i=0; i<4; i++) {
+            let btn = document.getElementById(`pad-btn-${i}`);
+            btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
         }
 
         if (currentState.round === 1) {
-            document.getElementById('padStatus').innerText = "SZYBKO WYBIERZ!";
+            document.getElementById('padStatus').innerText = "SZYBKO WYBIERZ ODPOWIEDŹ!";
             document.getElementById('ui-abcd').style.display = 'grid';
         } else if (currentState.round === 2) {
-            document.getElementById('padStatus').innerText = "WPISUJ SZYBKO!";
+            document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISUJ!";
             document.getElementById('ui-input').style.display = 'flex';
         } else if (currentState.round === 3) {
-            if (currentState.nominated === myName) {
-                document.getElementById('padStatus').innerText = "ZOSTAŁEŚ WYBRANY! ODPOWIADAJ!";
+            // Jeśli nominated jest ustawione, odpowiada tylko wskazany. Jeśli puste (bo wskazany się pomylił), dobijają pozostali!
+            if (!currentState.nominated || currentState.nominated === myName) {
+                document.getElementById('padStatus').innerText = "TWOJA SZANSA! ODPOWIADAJ!";
                 document.getElementById('ui-abcd').style.display = 'grid';
             } else {
                 document.getElementById('padStatus').innerText = "KIBICUJ!";
                 document.getElementById('ui-locked').style.display = 'block';
-                document.getElementById('ui-locked').innerText = "ODPOWIADA INNY GRACZ.";
+                document.getElementById('ui-locked').innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
             }
         }
     }
@@ -161,21 +150,18 @@ function updatePadUI() {
     if (currentState.status.startsWith("results_pending") || currentState.status === "verifying") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
-        document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
-        clearInterval(timerInterval);
+        document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR!";
     }
 }
 
-window.sendAnswer = async (indexStr) => {
+window.sendAnswer = async (index) => {
     if (currentState.status !== "reading") return;
-    const index = parseInt(indexStr);
     const isCorrect = (index === currentState.correctIndex);
     
-    // Ujednolicona weryfikacja pod nazwą "isAnswerCorrect" we wszystkich rundach
     if (currentState.round === 1) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isAnswerCorrect: isCorrect });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
     } else if (currentState.round === 3) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, isAnswerCorrect: isCorrect });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
     }
 };
 
