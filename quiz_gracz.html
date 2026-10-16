@@ -74,8 +74,6 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let currentState = null;
-let currentTick = null;
-let timerInterval = null;
 
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
@@ -97,9 +95,9 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     document.getElementById('ui-locked').style.display = 'none';
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_r2_wrong" || currentState.status === "timeout") {
+    // Jeśli stan jest wynikiem błędu (np. z R2, R1 lub R3), każ patrzeć na TV
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout") {
         document.getElementById('padStatus').innerText = "Patrz na telewizor!";
-        clearInterval(timerInterval);
         return;
     }
     
@@ -110,34 +108,16 @@ function updatePadUI() {
         } else {
             document.getElementById('padStatus').innerText = "CZEKAJ AŻ ZOSTANIESZ WYBRANY...";
         }
-        clearInterval(timerInterval);
         return;
     }
 
     if (currentState.status === "reading") {
+        // Jeśli byłem zablokowany, mam ekran kary, gdy inni zgadują
         if (currentState.blocked && currentState.blocked.includes(myName)) {
             document.getElementById('padStatus').innerText = "BŁĘDNA ODPOWIEDŹ!";
             document.getElementById('ui-locked').style.display = 'block';
             document.getElementById('ui-locked').innerText = "ZABLOKOWANO CIĘ W TYM PYTANIU.";
-            clearInterval(timerInterval);
             return;
-        }
-
-        if (currentState.tick !== currentTick) {
-            currentTick = currentState.tick;
-            clearInterval(timerInterval);
-            let timeLeft = 10;
-            timerInterval = setInterval(() => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    document.getElementById('ui-abcd').style.display = 'none';
-                    document.getElementById('ui-input').style.display = 'none';
-                    document.getElementById('padStatus').innerText = "CZAS MINĄŁ!";
-                    document.getElementById('ui-locked').style.display = 'block';
-                    document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
-                }
-            }, 1000);
         }
 
         if (currentState.round === 1) {
@@ -162,14 +142,13 @@ function updatePadUI() {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
-        clearInterval(timerInterval);
     }
 }
 
 window.sendAnswer = async (indexStr) => {
     if (currentState.status !== "reading") return;
     const index = parseInt(indexStr);
-    const isCorrect = (index === currentState.correctIndex);
+    const isCorrect = (index === currentState.correctIndex); // Pobiera P/F
     
     if (currentState.round === 1) {
         await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isAnswerCorrect: isCorrect });
