@@ -73,6 +73,8 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let currentState = null;
+let currentTick = null;
+let timerInterval = null;
 
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
@@ -94,6 +96,7 @@ function updatePadUI() {
     
     if (!currentState || currentState.status === "idle" || currentState.status === "results") {
         document.getElementById('padStatus').innerText = "Patrz na telewizor!";
+        clearInterval(timerInterval);
         return;
     }
     
@@ -104,6 +107,7 @@ function updatePadUI() {
         } else {
             document.getElementById('padStatus').innerText = "CZEKAJ AŻ ZOSTANIESZ WYBRANY...";
         }
+        clearInterval(timerInterval);
         return;
     }
 
@@ -112,7 +116,26 @@ function updatePadUI() {
             document.getElementById('padStatus').innerText = "BŁĘDNA ODPOWIEDŹ!";
             document.getElementById('ui-locked').style.display = 'block';
             document.getElementById('ui-locked').innerText = "ZABLOKOWANO CIĘ W TYM PYTANIU.";
+            clearInterval(timerInterval);
             return;
+        }
+
+        // LOGIKA BLOKOWANIA EKRANU TELEFONU PO 10 SEKUNDACH
+        if (currentState.tick !== currentTick) {
+            currentTick = currentState.tick;
+            clearInterval(timerInterval);
+            let timeLeft = 10;
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    document.getElementById('ui-abcd').style.display = 'none';
+                    document.getElementById('ui-input').style.display = 'none';
+                    document.getElementById('padStatus').innerText = "CZAS MINĄŁ!";
+                    document.getElementById('ui-locked').style.display = 'block';
+                    document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
+                }
+            }, 1000);
         }
 
         if (currentState.round === 1) {
@@ -137,6 +160,7 @@ function updatePadUI() {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
+        clearInterval(timerInterval);
     }
 }
 
@@ -156,7 +180,6 @@ window.sendAnswer = async (indexStr) => {
             await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
         }
     } else if (currentState.round === 3) {
-        // Blokujemy ekran i prosimy admina o ocenę
         await updateDoc(doc(db, "quizGame", "state"), { status: "results_r3_pending" });
         if (isCorrect) {
             const scoreRef = doc(db, "quizScores", myName);
@@ -176,12 +199,13 @@ window.sendTypedAnswer = async () => {
     const ans = document.getElementById('typeAnswer').value.trim();
     if (!ans || currentState.status !== "reading" || currentState.round !== 2) return;
     await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
-    document.getElementById('typeAnswer').value = ""; // Czyszczenie
+    document.getElementById('typeAnswer').value = ""; 
 };
 
 window.nominatePlayer = async (targetPlayer) => {
     if (currentState.status !== "nominating" || currentState.controller !== myName) return;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer });
+    // Ważne: Wybór gracza w R3 wysyła nowy TICK, aby zegar zaczął odliczać 10s od zera dla wskazanego!
+    await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer, tick: Date.now() });
 };
 </script>
 </body>
