@@ -158,7 +158,7 @@ function updatePadUI() {
         }
     }
     
-    if (currentState.status === "verifying" || currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3" || currentState.status === "results_pending_r2") {
+    if (currentState.status.startsWith("results_pending") || currentState.status === "verifying") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
