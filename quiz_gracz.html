@@ -94,7 +94,7 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     document.getElementById('ui-locked').style.display = 'none';
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results") {
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_r2_wrong") {
         document.getElementById('padStatus').innerText = "Patrz na telewizor!";
         clearInterval(timerInterval);
         return;
@@ -120,7 +120,6 @@ function updatePadUI() {
             return;
         }
 
-        // LOGIKA BLOKOWANIA EKRANU TELEFONU PO 10 SEKUNDACH
         if (currentState.tick !== currentTick) {
             currentTick = currentState.tick;
             clearInterval(timerInterval);
@@ -156,7 +155,7 @@ function updatePadUI() {
         }
     }
     
-    if (currentState.status === "verifying" || currentState.status === "results_r3_pending") {
+    if (currentState.status === "verifying" || currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
@@ -170,28 +169,9 @@ window.sendAnswer = async (indexStr) => {
     const isCorrect = (index === currentState.correctIndex);
     
     if (currentState.round === 1) {
-        await updateDoc(doc(db, "quizGame", "state"), { 
-            status: "results", fastest: myName, 
-            winner: isCorrect ? myName : "", loser: isCorrect ? "" : myName, pointsChange: isCorrect ? 10 : 0 
-        });
-        if (isCorrect) {
-            const scoreRef = doc(db, "quizScores", myName);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
-        }
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isCorrectR1: isCorrect });
     } else if (currentState.round === 3) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_r3_pending" });
-        if (isCorrect) {
-            const scoreRef = doc(db, "quizScores", myName);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points + 20 });
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: myName, pointsChange: 20 });
-        } else {
-            const scoreRef = doc(db, "quizScores", myName);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points - 20 });
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", loser: myName, pointsChange: -20 });
-        }
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, isCorrectR3: isCorrect });
     }
 };
 
@@ -204,7 +184,6 @@ window.sendTypedAnswer = async () => {
 
 window.nominatePlayer = async (targetPlayer) => {
     if (currentState.status !== "nominating" || currentState.controller !== myName) return;
-    // Ważne: Wybór gracza w R3 wysyła nowy TICK, aby zegar zaczął odliczać 10s od zera dla wskazanego!
     await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer, tick: Date.now() });
 };
 </script>
