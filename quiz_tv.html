@@ -21,11 +21,9 @@
       50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
     }
 
-    /* Zegar wyżej i mniejszy, by nie nachodził na ramkę */
     .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 6.5vw; height: 6.5vw; display: none; align-items: center; justify-content: center; font-size: 3.2vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
     .timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
 
-    /* Kompaktowe narożniki - nie kolidują ze środkiem */
     .score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
     .top-left { top: 1.5vw; left: 1.5vw; } .top-right { top: 1.5vw; right: 1.5vw; }
     .bottom-left { bottom: 1.5vw; left: 1.5vw; } .bottom-right { bottom: 1.5vw; right: 1.5vw; }
@@ -33,12 +31,10 @@
     .player-score { font-size: 3vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.3vw; }
     .blocked-tag { display: none; font-size: 0.9vw; color: #fff; background: #ff0000; padding: 0.2vw 0.5vw; border-radius: 0.4vw; margin-top: 0.4vw; font-weight: 900; letter-spacing: 0.1vw; }
 
-    /* Miganie na czerwono osoby, która odpowiedziała źle */
     .score-corner.blocked { animation: blockedFlash 0.8s infinite !important; }
     .score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
     .score-corner.blocked .blocked-tag { display: inline-block; }
 
-    /* Zwężona i wyśrodkowana scena główna (46vw zamiast 55vw) */
     .center-stage { width: 46vw; max-width: 46vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2.2vw 2.5vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
     .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
     .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
@@ -50,7 +46,6 @@
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
     .option { background: #111; border: 0.18vw solid #444; padding: 1.2vw; font-size: 1.6vw; border-radius: 0.8vw; font-weight: bold; transition: 0.3s; }
     .option.used-wrong { background: rgba(255, 0, 0, 0.15); border-color: #ff4757; color: #ff4757; text-decoration: line-through; opacity: 0.45; }
-    .option.correct-highlight { background: rgba(0, 255, 0, 0.25); border-color: #00ff00; color: #00ff00; box-shadow: 0 0 1.5vw rgba(0,255,0,0.5); }
     
     #tv-qr-container { display: none; margin-top: 1.5vw; }
     #tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
@@ -59,10 +54,9 @@
     #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
     #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-    .winner-announcement { font-size: 2.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
-    .status-msg { font-size: 2.5vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
+    .winner-announcement { font-size: 2.3vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+    .status-msg { font-size: 2.4vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
     
-    /* Boks wyświetlający prawidłową odpowiedź */
     .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
     .correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
 
@@ -168,7 +162,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
     
-    let roundNames = {1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 2: "RUNDA 2: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 3: "RUNDA 3: RYZYKO | +20 / -20 PKT"};
+    let roundNames = {
+        1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 
+        2: "RUNDA 2: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 
+        3: "RUNDA 3: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)"
+    };
     document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
     
     const stage = document.getElementById('stage-box');
@@ -188,7 +186,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
     stage.classList.remove("success-glow", "error-glow");
 
-    // Aktualizacja czerwonego migania zablokowanych graczy
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
         let el = document.getElementById(`score-${p}`);
@@ -206,9 +203,13 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
             catEl.innerText = "KATEGORIA: " + data.category;
+            if (data.tieMsg) {
+                winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+                winnerEl.innerText = data.tieMsg;
+            }
             qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
         } else {
-            qEl.innerText = "Zaraz zaczynamy! Przygotujcie telefony.";
+            qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
         }
         
     } else if (data.status === "reading") {
@@ -223,16 +224,21 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             for(let i=0; i<4; i++) {
                 let optEl = document.getElementById(`opt-${i}`);
                 optEl.innerText = `${letters[i]}: ${data.options[i]}`;
-                optEl.classList.remove('used-wrong', 'correct-highlight');
+                optEl.classList.remove('used-wrong');
                 if (data.usedOptions && data.usedOptions.includes(i)) {
                     optEl.classList.add('used-wrong');
                 }
             }
             opts.style.display = "grid";
         }
-        if (data.round === 3 && data.nominated) {
+        if (data.round === 3) {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-            winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()}`;
+            if (data.nominated) {
+                let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
+                winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} [${stawkTxt}]`;
+            } else {
+                winnerEl.innerText = `DOBIJAJĄ POZOSTALI GRACZE! (±10 PKT)`;
+            }
         }
 
         if (data.tick !== currentTick) {
@@ -250,7 +256,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
                     timerEl.innerText = "0";
-                    await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
+                    // Jeśli w R3 wskazany gracz nie odpowiedział w czasie -> dostaje karę punktową!
+                    if (data.round === 3 && data.nominated) {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
+                    } else {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
+                    }
                 } else {
                     timerEl.innerText = timeLeft;
                     if (timeLeft <= 3) {
@@ -295,9 +306,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (data.status === "timeout") {
             stage.classList.add("error-glow");
             winnerEl.style.color = "var(--error)";
-            winnerEl.innerText = "CZAS MINĄŁ / BRAK POPRAWNEJ ODPOWIEDZI!";
+            if (data.loser) {
+                winnerEl.innerText = `${data.loser.toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)`;
+            } else {
+                winnerEl.innerText = "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.";
+            }
             
-            // Pokaż jaka była prawidłowa odpowiedź po upływie czasu
             correctBanner.style.display = "block";
             if ((data.round === 1 || data.round === 3) && data.options) {
                 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
@@ -307,7 +321,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
 
         } else if (data.winner) {
-            // PRAWIDŁOWA ODPOWIEDŹ - Pokaż co było prawidłowe!
             stage.classList.add("success-glow");
             statusEl.style.display = "block";
             winnerEl.style.color = "#00ff00"; 
@@ -325,11 +338,13 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
 
         } else if (data.loser) {
-            // BŁĘDNA ODPOWIEDŹ - Nie zdradzaj jeszcze prawidłowej, bo reszta graczy zaraz odpowiada!
             stage.classList.add("error-glow");
             statusEl.style.display = "block";
             
-            if (data.round === 2 && data.givenAnswer) {
+            if (data.timeoutPenalty) {
+                typedAnsEl.style.display = "block";
+                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
+            } else if (data.round === 2 && data.givenAnswer) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
             } else if ((data.round === 1 || data.round === 3) && data.selectedIndex !== undefined && data.options) {
@@ -338,9 +353,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
 
             winnerEl.style.color = "#ff4757"; 
-            winnerEl.innerText = `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
+            winnerEl.innerText = data.timeoutPenalty ? `${data.loser.toUpperCase()} - CZAS MINĄŁ!` : `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; 
-            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ GRAJĄ POZOSTALI!)`;
+            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ PRÓBUJĄ POZOSTALI!)`;
             
             if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
         }
