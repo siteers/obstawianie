@@ -34,8 +34,9 @@
   <div class="box">
     <h3>KROK 2: WYBÓR PULI PYTAŃ</h3>
     <select id="poolSel">
-        <option value="1">PULA 1 (Podstawowa - 90 pytań)</option>
-        <option value="2">PULA 2 (Trudniejsza - 90 pytań)</option>
+        <option value="1">PULA 1 (Łatwa - 90 pytań)</option>
+        <option value="3">PULA 3 (Średnia - 90 pytań)</option>
+        <option value="2">PULA 2 (Trudna - 90 pytań)</option>
     </select>
     <button class="purple" onclick="sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
   </div>
@@ -55,15 +56,16 @@
     <div class="status-banner" id="adminStatus">Status: Oczekiwanie na ruch...</div>
   </div>
 
-  <!-- NOMINACJA R3 -->
+  <!-- NOMINACJA R3 (Awaryjna ręczna zmiana, bo teraz dzieje się automatycznie!) -->
   <div class="nominate-box" id="nominateUI">
-    <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA NASTĘPNEGO GRACZA?</h3>
-    <p>Kategoria nadchodzącego pytania: <b id="n-cat" style="color:#00d4ff; font-size:20px;"></b></p>
+    <h3 style="color: #d4af37;">RUNDA 3: KTO TERAZ WYBIERA? (Auto-przekazane na telefon)</h3>
+    <p>Kategoria: <b id="n-cat" style="color:#00d4ff; font-size:20px;"></b> | Aktualnie wybiera: <b id="n-curr" style="color:#2ed573;"></b></p>
+    <p style="font-size:12px; color:#ccc;">Gracz ma już aktywny wybór na telefonie. Poniżej możesz ręcznie zmienić osobę wybierającą tylko w razie awarii:</p>
     <select id="controllerSel">
         <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
         <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
-    <button class="green" onclick="startNominationPhase()">PRZEKAŻ WYBÓR NA TELEFON GRACZA</button>
+    <button class="gold" onclick="startNominationPhase()">ZMIEŃ RĘCZNIE WYBIERAJĄCEGO</button>
   </div>
 
   <!-- WERYFIKACJA R2 -->
@@ -84,7 +86,7 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- PEŁNA BAZA 180 PYTAŃ ---
+// --- PEŁNA BAZA 270 PYTAŃ (3 PULE PO 90) ---
 const allDBs = {
     1: {
         1: [
@@ -223,6 +225,105 @@ const allDBs = {
             { cat: "MUZYKA", q: "Z jakiego kraju pochodzi zespół ABBA?", o: ["Z Wielkiej Brytanii", "Ze Szwecji", "Z Niemiec", "Z Norwegii"], c: 1 },
             { cat: "MATEMATYKA", q: "Co to jest liczba Pi w przybliżeniu?", o: ["2.14", "3.14", "4.14", "5.14"], c: 1 }
         ]
+    },
+    // --- NOWA PULA 3 (ŚREDNIA - POMIĘDZY 1 A 2) ---
+    3: {
+        1: [
+            { q: "Ile minut ma półtorej godziny?", o: ["60", "75", "90", "100"], c: 2 },
+            { q: "Nad jakim morzem leży Polska?", o: ["Czarne", "Śródziemne", "Bałtyckie", "Północne"], c: 2 },
+            { q: "Jak nazywa się zielony ogr z bagien, przyjaciel Osła?", o: ["Fiona", "Shrek", "Hulk", "Gargamel"], c: 1 },
+            { q: "Które zwierzę nosi swoje małe w torbie na brzuchu?", o: ["Niedźwiedź", "Małpa", "Kangur", "Słoń"], c: 2 },
+            { q: "Ile to jest 6 x 7?", o: ["36", "42", "48", "49"], c: 1 },
+            { q: "Co przyciąga magnes?", o: ["Drewno", "Plastik", "Żelazo", "Szkło"], c: 2 },
+            { q: "Z jakiego miasta pochodzą słynne pierniki?", o: ["Z Krakowa", "Z Torunia", "Z Poznania", "Z Wrocławia"], c: 1 },
+            { q: "Jak nazywa się przyrząd z igłą, który zawsze wskazuje północ?", o: ["Termometr", "Zegar", "Kompas", "Lornetka"], c: 2 },
+            { q: "Który ptak słynie z tego, że potrafi powtarzać ludzkie słowa?", o: ["Wróbel", "Papuga", "Bocian", "Gołąb"], c: 1 },
+            { q: "Jaki kolor ma kamień szlachetny o nazwie rubin?", o: ["Zielony", "Niebieski", "Czerwony", "Żółty"], c: 2 },
+            { q: "Ile palców u obu rąk i obu stóp ma razem człowiek?", o: ["10", "15", "20", "24"], c: 2 },
+            { q: "Jak miała na imię warszawska Syrenka według legend?", o: ["Wanda", "Sawa", "Kinga", "Dobrawa"], c: 1 },
+            { q: "Z jakiego kraju pochodzą klocki LEGO?", o: ["Z Niemiec", "Z Danii", "Z Polski", "Ze Szwecji"], c: 1 },
+            { q: "Która pora roku następuje bezpośrednio po lecie?", o: ["Wiosna", "Zima", "Jesień", "Przedwiośnie"], c: 2 },
+            { q: "Ile to jest 250 + 150?", o: ["300", "350", "400", "450"], c: 2 },
+            { q: "Jak nazywa się doktor, który leczy zwierzęta?", o: ["Dentysta", "Okulista", "Weterynarz", "Chirurg"], c: 2 },
+            { q: "W jakiej bajce występuje mały drewniany chłopiec, któremu rośnie nos?", o: ["Kopciuszek", "Pinokio", "Piotruś Pan", "Aladyn"], c: 1 },
+            { q: "Który z tych ssaków potrafi latać?", o: ["Wiewiórka", "Nietoperz", "Struś", "Pingwin"], c: 1 },
+            { q: "Jak nazywa się góra w Zakopanem przypominająca śpiącego rycerza?", o: ["Rysy", "Śnieżka", "Giewont", "Kasprowy Wierch"], c: 2 },
+            { q: "Ile kółek jest we fladze olimpijskiej?", o: ["4", "5", "6", "7"], c: 1 },
+            { q: "Co robi kameleon, aby ukryć się przed drapieżnikiem?", o: ["Ucieka pod wodę", "Zmienia kolor skóry", "Udaje martwego", "Świeci w ciemności"], c: 1 },
+            { q: "Jak po angielsku powiesz 'Szkoła'?", o: ["House", "School", "Shop", "Street"], c: 1 },
+            { q: "Z jakiego ziarna produkuje się tabliczki czekolady?", o: ["Z kawy", "Z kakaowca", "Z pszenicy", "Z kukurydzy"], c: 1 },
+            { q: "Ile dni ma tydzień?", o: ["5", "6", "7", "8"], c: 2 },
+            { q: "Które miasto było pierwszą historyczną stolicą Polski?", o: ["Kraków", "Warszawa", "Gniezno", "Poznań"], c: 2 },
+            { q: "Jak nazywa się biały niedźwiedź żyjący na północy?", o: ["Grizzly", "Brunatny", "Polarny", "Panda"], c: 2 },
+            { q: "Ile to jest połowa ze 150?", o: ["50", "65", "75", "85"], c: 2 },
+            { q: "W jakim sporcie na lodzie używa się krążka i kijów?", o: ["Łyżwiarstwo", "Curling", "Hokej", "Saneczkarstwo"], c: 2 },
+            { q: "Co znajduje się w środku owocu brzoskwini lub czereśni?", o: ["Pestka", "Orzech", "Szyszka", "Nic"], c: 0 },
+            { q: "Który superbohater nosi czerwono-niebieski strój i strzela siecią?", o: ["Batman", "Superman", "Spider-Man", "Thor"], c: 2 }
+        ],
+        2: [
+            { q: "Zamarznięta woda zwisająca zimą z dachu to...", c: "Sopel" },
+            { q: "Jak po angielsku jest 'słońce'?", c: "Sun" },
+            { q: "Ptak, który podrzuca swoje jajka do cudzych gniazd to...", c: "Kukułka" },
+            { q: "Ile groszy ma jedna złotówka?", c: "100 / Sto" },
+            { q: "Stolica Polski to...", c: "Warszawa" },
+            { q: "Zwierzę w czarno-białe paski przypominające konia to...", c: "Zebra" },
+            { q: "Jak ma na imię najlepszy przyjaciel Kubusia Puchatka (mały różowy)?", c: "Prosiaczek" },
+            { q: "Ile to jest 9 razy 5?", c: "45" },
+            { q: "Część rośliny, która znajduje się pod ziemią to...", c: "Korzeń" },
+            { q: "Jak po angielsku jest 'samochód'?", c: "Car" },
+            { q: "Jak nazywa się król zwierząt z grzywą?", c: "Lew" },
+            { q: "Co pojawia się na niebie po deszczu, gdy świeci słońce (ma 7 kolorów)?", c: "Tęcza" },
+            { q: "Mieszkaniec Polski to Polak, a mieszkaniec Włoch to...", c: "Włoch" },
+            { q: "Ile godzin ma jedna doba?", c: "24" },
+            { q: "Owad w czerwone kropki, który przynosi szczęście to...", c: "Biedronka" },
+            { q: "Jak po angielsku jest 'mleko'?", c: "Milk" },
+            { q: "Z czego buduje się zamki na plaży?", c: "Z piasku" },
+            { q: "Kto gasi pożary?", c: "Strażak" },
+            { q: "Ile boków ma kwadrat?", c: "4 / Cztery" },
+            { q: "Jak nazywa się statek, który pływa pod wodą?", c: "Łódź podwodna" },
+            { q: "Kwaśne warzywo kiszone w beczce lub słoiku to...", c: "Ogórek / Kapusta" },
+            { q: "Jak po angielsku jest 'dom'?", c: "House / Home" },
+            { q: "Zwierzę, które nosi swój dom (muszlę) na grzbiecie to...", c: "Ślimak / Żółw" },
+            { q: "Ile to jest 100 minus 25?", c: "75" },
+            { q: "Czym piszemy po tablicy w szkole?", c: "Kredą / Mazakiem" },
+            { q: "Jak nazywa się młody kot?", c: "Kociak / Kotek" },
+            { q: "W jakim miesiącu obchodzimy Wigilię i Boże Narodzenie?", c: "Grudzień / W grudniu" },
+            { q: "Jak po angielsku jest 'książka'?", c: "Book" },
+            { q: "Największy ssak żyjący w oceanach to...", c: "Płetwal błękitny / Wieloryb" },
+            { q: "Ile centymetrów ma jeden metr?", c: "100 / Sto" }
+        ],
+        3: [
+            { cat: "GEOGRAFIA", q: "Które z tych państw graniczy z Polską od południa?", o: ["Niemcy", "Czechy", "Szwecja", "Litwa"], c: 1 },
+            { cat: "MATEMATYKA", q: "Ile to jest 3 x 15?", o: ["35", "40", "45", "50"], c: 2 },
+            { cat: "BAJKI", q: "Jak nazywa się kowboj z bajki 'Toy Story'?", o: ["Buzz Astral", "Chudy", "Rex", "Zurg"], c: 1 },
+            { cat: "PRZYRODA", q: "Z jakiego drzewa spadają żołędzie?", o: ["Z sosny", "Z kasztanowca", "Z dębu", "Z brzozy"], c: 2 },
+            { cat: "ANGIELSKI", q: "Co oznacza angielskie słowo 'Butterfly'?", o: ["Masło", "Mucha", "Motyl", "Ptak"], c: 2 },
+            { cat: "SPORT", q: "Ile trwa cały mecz piłki nożnej (bez dogrywki)?", o: ["45 minut", "60 minut", "80 minut", "90 minut"], c: 3 },
+            { cat: "HISTORIA", q: "Jak nazywał się smok, który mieszkał w jamie pod Wawelem?", o: ["Smok Welski", "Smok Wawelski", "Smok Krakowski", "Bazyliszek"], c: 1 },
+            { cat: "KOSMOS", q: "Jak nazywa się naturalny satelita Ziemi widoczny w nocy?", o: ["Mars", "Słońce", "Księżyc", "Wenus"], c: 2 },
+            { cat: "ZWIERZĘTA", q: "Ile garbów ma wielbłąd dwugarbny (baktrian)?", o: ["Jeden", "Dwa", "Trzy", "Zero"], c: 1 },
+            { cat: "KULINARIA", q: "Co jest głównym składnikiem włoskiego sosu Bolognese (oprócz mięsa)?", o: ["Śmietana", "Pomidory", "Szpinak", "Ser pleśniowy"], c: 1 },
+            { cat: "MATEMATYKA", q: "Ile wynosi obwód kwadratu o boku 5 cm?", o: ["10 cm", "15 cm", "20 cm", "25 cm"], c: 2 },
+            { cat: "GEOGRAFIA", q: "W jakim mieście w Polsce znajduje się słynny pomnik Neptuna?", o: ["W Krakowie", "W Gdańsku", "W Warszawie", "We Wrocławiu"], c: 1 },
+            { cat: "GRY", q: "Czego trzeba unikać w grze Minecraft, bo wybucha i syczy?", o: ["Zombie", "Creepera", "Pająka", "Endermana"], c: 1 },
+            { cat: "ANGIELSKI", q: "Jak powiesz po angielsku 'Dziękuję'?", o: ["Please", "Hello", "Thank you", "Sorry"], c: 2 },
+            { cat: "MUZYKA", q: "Jak nazywa się polski taniec narodowy oraz tytuł naszego hymnu?", o: ["Polonez", "Krakowiak", "Mazurek", "Oberek"], c: 2 },
+            { cat: "BIOLOGIA", q: "Który zmysł odpowiada za rozpoznawanie zapachów?", o: ["Wzrok", "Słuch", "Węch", "Smak"], c: 2 },
+            { cat: "BAJKI", q: "Ilu krasnoludków opiekowało się Królewną Śnieżką?", o: ["Pięciu", "Sześciu", "Siedmiu", "Ośmiu"], c: 2 },
+            { cat: "TECHNOLOGIA", q: "Czego używamy do klikania na ekranie komputera?", o: ["Klawiatury", "Myszki", "Głośnika", "Drukarki"], c: 1 },
+            { cat: "PRZYRODA", q: "Który z tych grzybów jest trujący (czerwony w białe kropki)?", o: ["Borowik", "Pieczarka", "Muchomor", "Kurka"], c: 2 },
+            { cat: "SPORT", q: "W jakiej dyscyplinie wielkie sukcesy odnosi Iga Świątek?", o: ["W siatkówce", "W pływaniu", "W tenisie ziemnym", "W biegach"], c: 2 },
+            { cat: "MATEMATYKA", q: "Jaka jest kolejna liczba w ciągu: 2, 4, 8, 16, ...?", o: ["20", "24", "32", "64"], c: 2 },
+            { cat: "GEOGRAFIA", q: "Z jakiego kontynentu pochodzą kangury i misie koala?", o: ["Z Afryki", "Z Australii", "Z Azji", "Z Europy"], c: 1 },
+            { cat: "TRANSPORT", q: "Co oznacza czerwone światło na sygnalizatorze?", o: ["Jedź szybko", "Przygotuj się", "Stój!", "Skręć w prawo"], c: 2 },
+            { cat: "ANGIELSKI", q: "Jakim dniem tygodnia jest 'Monday'?", o: ["Wtorek", "Piątek", "Poniedziałek", "Niedziela"], c: 2 },
+            { cat: "ZWIERZĘTA", q: "Które zwierzę buduje tamy z patyków na rzekach?", o: ["Wydra", "Bóbr", "Borsuk", "Szop"], c: 1 },
+            { cat: "LITERATURA", q: "Jak nazywał się słoń z powieści 'W pustyni i w puszczy'?", o: ["Dumbo", "King", "Saba", "Bimbo"], c: 1 },
+            { cat: "NAUKA", q: "W ilu stopniach Celsjusza wrze (gotuje się) woda?", o: ["50°C", "90°C", "100°C", "120°C"], c: 2 },
+            { cat: "BAJKI", q: "Jakiego koloru są Smerfy?", o: ["Zielonego", "Żółtego", "Niebieskiego", "Czerwonego"], c: 2 },
+            { cat: "GEOGRAFIA", q: "Jak nazywają się najwyższe góry na świecie (tam gdzie Mount Everest)?", o: ["Alpy", "Tatry", "Himalaje", "Andy"], c: 2 },
+            { cat: "MATEMATYKA", q: "Ile to jest 72 podzielone przez 9?", o: ["6", "7", "8", "9"], c: 2 }
+        ]
     }
 };
 
@@ -230,10 +331,35 @@ let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
 
-// Timery zarządzane wyłącznie przez Admina
+// Zmienna przechowująca aktualnego "władcę" w Rundzie 3
+let r3Controller = "";
+
 let suspenseTimer = null;
 let autoFlowTimer = null;
 let lastHandledStatus = "";
+
+// Funkcja wyznaczająca lidera z R1 i R2 (z losowaniem przy remisie!)
+async function determineInitialR3Controller() {
+    const snap = await getDocs(collection(db, "quizScores"));
+    let maxPts = -999999;
+    let leaders = [];
+    snap.forEach(d => {
+        let pts = d.data().points || 0;
+        if (pts > maxPts) {
+            maxPts = pts;
+            leaders = [d.id];
+        } else if (pts === maxPts) {
+            leaders.push(d.id);
+        }
+    });
+    if (leaders.length === 0) return { player: "Lila", tieMsg: "" };
+    if (leaders.length === 1) {
+        return { player: leaders[0], tieMsg: `NAJWIĘCEJ PUNKTÓW (${maxPts}) MA: ${leaders[0].toUpperCase()}!` };
+    } else {
+        let chosen = leaders[Math.floor(Math.random() * leaders.length)];
+        return { player: chosen, tieMsg: `REMIS LIDERÓW (${maxPts} PKT)! WYLOSOWANO: ${chosen.toUpperCase()}!` };
+    }
+}
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -242,173 +368,4 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     document.getElementById('nominateUI').style.display = 'none';
     document.getElementById('verifyUI').style.display = 'none';
 
-    if (currentState.status === "setup_nomination" && currentState.round === 3) {
-        document.getElementById('nominateUI').style.display = 'block';
-        document.getElementById('n-cat').innerText = currentState.category;
-        document.getElementById('adminStatus').innerText = "Status: Wybierz gracza rozpoczynającego w Rundzie 3.";
-    } 
-    else if (currentState.status === "verifying" && currentState.round === 2) {
-        document.getElementById('verifyUI').style.display = 'block';
-        document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
-        document.getElementById('v-ans').innerText = currentState.givenAnswer;
-        document.getElementById('v-correct').innerText = currentState.correctText || "---";
-        document.getElementById('adminStatus').innerText = "Status: Oceń odpowiedź tekstową gracza!";
-    }
-
-    // 1. OBSŁUGA NAPIĘCIA (3.5s bicia serca) dla R1, R2 i R3
-    if (currentState.status.startsWith("results_pending_")) {
-        let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
-        if (lastHandledStatus !== stateKey) {
-            lastHandledStatus = stateKey;
-            document.getElementById('adminStatus').innerText = `Status: Weryfikacja odpowiedzi (${currentState.fastest})... [3.5s]`;
-            
-            clearTimeout(suspenseTimer);
-            suspenseTimer = setTimeout(async () => {
-                let r = currentState.round;
-                let isCorrect = currentState.isAnswerCorrect;
-                let player = currentState.fastest;
-                let ptsChange = (r === 3) ? (isCorrect ? 20 : -20) : (isCorrect ? 10 : -10);
-
-                // Aktualizacja punktów w bazie po zakończeniu bicia serca
-                const scoreRef = doc(db, "quizScores", player);
-                const scoreSnap = await getDoc(scoreRef);
-                let currentPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-                await updateDoc(scoreRef, { points: currentPts + ptsChange });
-
-                if (isCorrect) {
-                    // Jeśli w R3 ktoś odpowiedział dobrze, przejmuje prawo wyboru na kolejne pytanie!
-                    if (r === 3) {
-                        let sel = document.getElementById('controllerSel');
-                        for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === player) sel.selectedIndex = i; }
-                    }
-                    await updateDoc(doc(db, "quizGame", "state"), {
-                        status: "results", winner: player, loser: "", pointsChange: ptsChange, answerTick: Date.now()
-                    });
-                } else {
-                    // BŁĘDNA ODPOWIEDŹ -> Blokujemy gracza i zużytą opcję ABCD
-                    let newBlocked = [...(currentState.blocked || []), player];
-                    let newUsedOpts = [...(currentState.usedOptions || [])];
-                    if ((r === 1 || r === 3) && currentState.selectedIndex !== undefined) {
-                        newUsedOpts.push(currentState.selectedIndex);
-                    }
-
-                    // Jeśli wszyscy 4 gracze już się pomylili -> Koniec pytania (timeout)
-                    if (newBlocked.length >= 4) {
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: "timeout", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, answerTick: Date.now()
-                        });
-                    } else {
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: "results_wrong", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, answerTick: Date.now()
-                        });
-                    }
-                }
-            }, 3500);
-        }
-    }
-
-    // 2. AUTO-WZNOWIENIE TEGO SAMEGO PYTANIA PO BŁĘDZIE (dla pozostałych graczy)
-    if (currentState.status === "results_wrong") {
-        let wrongKey = "wrong_" + currentState.answerTick;
-        if (lastHandledStatus !== wrongKey) {
-            lastHandledStatus = wrongKey;
-            document.getElementById('adminStatus').innerText = `Status: Błąd gracza ${currentState.loser}! Wznawiam pytanie dla pozostałych za 3.5s...`;
-            
-            clearTimeout(autoFlowTimer);
-            autoFlowTimer = setTimeout(async () => {
-                // W R3 jeśli wyznaczony się pomylił, pozostali też mogą dobijać!
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", tick: Date.now()
-                });
-            }, 3500);
-        }
-    }
-
-    // 3. AUTO-PRZEJŚCIE DO NASTĘPNEGO PYTANIA PO POPRAWNEJ ODPOWIEDZI LUB UPŁYWIE CZASU
-    if (currentState.status === "results" || currentState.status === "timeout") {
-        let endKey = "end_" + currentState.answerTick;
-        if (lastHandledStatus !== endKey) {
-            lastHandledStatus = endKey;
-            document.getElementById('adminStatus').innerText = `Status: Pytanie zakończone! Automatyczne przejście do kolejnego za 5 sekund...`;
-            
-            clearTimeout(autoFlowTimer);
-            autoFlowTimer = setTimeout(() => {
-                nextQuestion();
-            }, 5000);
-        }
-    }
-});
-
-// KROK 1: Reset punktów
-window.resetScoresOnly = async () => {
-    if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom?")) return;
-    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
-    const players = ["Lila", "Kaja", "Darek", "Jas"];
-    for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], pool: currentPool });
-    document.getElementById('adminStatus').innerText = "Status: Punkty wszystkich graczy zostały wyzerowane.";
-};
-
-// KROK 2: Zatwierdzenie puli
-window.sendPoolChoice = async () => {
-    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
-    currentPool = parseInt(document.getElementById('poolSel').value);
-    currentQIndex = { 1: -1, 2: -1, 3: -1 };
-    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], pool: currentPool });
-    document.getElementById('adminStatus').innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
-};
-
-// KROK 3: Start rundy
-window.startRoundFirstQuestion = () => {
-    nextQuestion();
-};
-
-window.nextQuestion = async () => {
-    clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
-    let r = parseInt(document.getElementById('roundSel').value);
-    
-    currentQIndex[r]++;
-    let qData = allDBs[currentPool][r][currentQIndex[r]];
-    if (!qData) {
-        document.getElementById('adminStatus').innerText = `Status: Koniec pytań w Rundzie ${r} (Pula ${currentPool})! Zmień rundę.`;
-        return alert(`Koniec pytań w Rundzie ${r} z Puli ${currentPool}! Wybierz kolejną rundę z listy.`);
-    }
-
-    document.getElementById('adminStatus').innerText = `Status: Grane pytanie #${currentQIndex[r] + 1} (Runda ${r}, Pula ${currentPool})`;
-
-    if (r === 3) {
-        if (currentQIndex[r] === 0) {
-            const snap = await getDocs(collection(db, "quizScores"));
-            let maxPts = -999; let bestPlayer = "Lila";
-            snap.forEach(d => { let pts = d.data().points || 0; if (pts > maxPts) { maxPts = pts; bestPlayer = d.id; } });
-            let sel = document.getElementById('controllerSel');
-            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === bestPlayer) sel.selectedIndex = i; }
-        }
-        await setDoc(doc(db, "quizGame", "state"), { 
-            status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, 
-            options: qData.o, correctIndex: qData.c, blocked: [], usedOptions: [], pool: currentPool 
-        });
-    } else {
-        let payload = { 
-            status: "reading", round: r, question: qData.q, blocked: [], usedOptions: [], 
-            fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: currentPool 
-        };
-        if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
-        if (r === 2) { payload.correctText = qData.c; }
-        await setDoc(doc(db, "quizGame", "state"), payload);
-    }
-};
-
-window.startNominationPhase = async () => {
-    let controller = document.getElementById('controllerSel').value;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "nominating", controller: controller });
-};
-
-window.judgeAnswer = async (isCorrect) => {
-    let player = currentState.fastest;
-    let ans = currentState.givenAnswer; 
-    await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
-};
-</script>
-</body>
-</html>
+    if ((currentState.status === "setup_nomination" || currentState.status ===
