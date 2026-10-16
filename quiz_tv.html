@@ -82,11 +82,11 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// Dźwięki
-const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3"); 
-bgMusic.loop = true; bgMusic.volume = 0.2;
+// Łagodny pad ambientowy jako muzyka tła, bardzo cichy
+const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/228/228-preview.mp3"); 
+bgMusic.loop = true; bgMusic.volume = 0.08;
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
-tickSound.loop = true; tickSound.volume = 0.6;
+tickSound.loop = true; tickSound.volume = 0.7;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
@@ -99,9 +99,7 @@ window.initAudio = function() {
 
 let currentTick = null;
 let timerInterval = null;
-let currentAnswerTick = null;
-let isSuspense = false;
-let pendingScores = {}; // Ukryte punkty podczas bicia serca
+let lastPlayedResult = null;
 
 window.onload = () => {
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -109,15 +107,8 @@ window.onload = () => {
     document.getElementById('qrGraczTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${graczUrl}&color=000000&bgcolor=ffffff`;
 };
 
-// Nasłuchiwanie punktów (Zapisuje do pamięci, wyświetla tylko jeśli nie ma napięcia)
 onSnapshot(collection(db, "quizScores"), (snap) => {
-    snap.forEach(doc => { 
-        pendingScores[doc.id] = doc.data().points; 
-        if(!isSuspense) {
-            let el = document.getElementById(`pts-${doc.id}`); 
-            if(el) el.innerText = doc.data().points; 
-        }
-    });
+    snap.forEach(doc => { let el = document.getElementById(`pts-${doc.id}`); if(el) el.innerText = doc.data().points; });
 });
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
@@ -136,6 +127,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const timerEl = document.getElementById('tv-timer');
     const qrContainer = document.getElementById('tv-qr-container');
     
+    catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
+    qrContainer.style.display = (data.status === "idle") ? "block" : "none";
+    stage.classList.remove("success-glow", "error-glow");
+
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
         let el = document.getElementById(`score-${p}`);
@@ -144,14 +139,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     });
 
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
-        isSuspense = false;
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        bgMusic.pause();
-        
-        catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
-        stage.classList.remove("success-glow", "error-glow");
-        qrContainer.style.display = (data.status === "idle") ? "block" : "none";
         
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
@@ -162,16 +151,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
         
     } else if (data.status === "reading") {
-        isSuspense = false;
-        bgMusic.play().catch(e=>{});
-        suspenseSound.pause(); suspenseSound.currentTime = 0;
-        
-        // Zaktualizuj punkty na ekranie (w razie gdyby coś zalegało)
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-        catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
-        stage.classList.remove("success-glow", "error-glow");
-        qrContainer.style.display = "none";
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         
         qEl.innerText = data.question;
         
@@ -187,11 +168,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.innerText = `ODPOWIADA TYLKO: ${data.nominated.toUpperCase()}`;
         }
 
-        // LOGIKA ZEGARA Z PIKANIEM TYLKO NA KOŃCU
         if (data.tick !== currentTick) {
             currentTick = data.tick;
-            clearInterval(timerInterval);
-            tickSound.pause(); tickSound.currentTime = 0;
             let timeLeft = 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
@@ -211,6 +189,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     opts.style.display = "none";
                 } else {
                     timerEl.innerText = timeLeft;
+                    // Dźwięk pikania tylko przez ostatnie 3 sekundy
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
                         tickSound.play().catch(e=>{});
@@ -219,56 +198,34 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }, 1000);
         }
 
-    } else if (data.status === "verifying") {
+    } else if (data.status === "verifying" || data.status === "results_pending_r1" || data.status === "results_pending_r3") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
+        suspenseSound.play().catch(e=>{}); // WŁĄCZA BICIE SERCA
         
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-        winnerEl.innerText = `${data.fastest.toUpperCase()} WYSŁAŁ ODPOWIEDŹ. WERYFIKACJA...`;
+        winnerEl.style.animation = "pulse 0.5s infinite";
+        winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
         
     } else if (data.status === "results") {
-        // SAMODZIELNA LOGIKA NAPIĘCIA NA TV
-        if (data.answerTick !== currentAnswerTick) {
-            currentAnswerTick = data.answerTick;
-            isSuspense = true;
-            
-            clearInterval(timerInterval); timerEl.style.display = 'none';
-            tickSound.pause(); tickSound.currentTime = 0;
-            bgMusic.pause();
-            suspenseSound.play().catch(e=>{});
-            
-            qEl.innerText = data.question;
-            opts.style.display = "none";
-            winnerEl.style.display = "block"; 
-            winnerEl.style.color = "#d4af37";
-            winnerEl.style.animation = "pulse 0.5s infinite";
-            
-            let pName = (data.winner || data.loser || "").toUpperCase();
-            winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${pName}...`;
-            
-            // TV CZEKA 3.5 SEKUNDY ZANIM POKAŻE WYNIK
-            setTimeout(() => {
-                isSuspense = false;
-                suspenseSound.pause(); suspenseSound.currentTime = 0;
-                winnerEl.style.animation = "none";
-                
-                // Aktualizacja punktów w rogach!
-                for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-                
-                statusEl.style.display = "block";
-                if (data.winner) {
-                    stage.classList.add("success-glow");
-                    winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-                    statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
-                    winSound.play();
-                } else if (data.loser) {
-                    stage.classList.add("error-glow");
-                    winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
-                    statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
-                    loseSound.play();
-                }
-            }, 3500);
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        winnerEl.style.animation = "none";
+        
+        qEl.innerText = data.question;
+        winnerEl.style.display = "block"; statusEl.style.display = "block";
+        
+        if (data.winner) {
+            stage.classList.add("success-glow");
+            winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+            statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "win_" + currentTick) { winSound.play(); lastPlayedResult = "win_" + currentTick; }
+        } else if (data.loser) {
+            stage.classList.add("error-glow");
+            winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
+            statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "lose_" + currentTick) { loseSound.play(); lastPlayedResult = "lose_" + currentTick; }
         }
     }
 });
