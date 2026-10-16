@@ -120,6 +120,7 @@ import { getFirestore, doc, onSnapshot, updateDoc, collection } from "https://ww
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
+// EFEKTY DŹWIĘKOWE MP3
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
 tickSound.loop = true; tickSound.volume = 0.6;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
@@ -129,8 +130,74 @@ winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
 
+// --- SYNTEZATOR GŁADKIEGO PODKŁADU TELETURNIEJOWEGO (WEB AUDIO API) ---
+// Generuje ciągły, miękki akord ambientowy bez żadnego tykania i zapętlania krótkich plików
+let audioCtx = null;
+let bgMasterGain = null;
+
+function createSmoothShowPad() {
+    if (audioCtx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+    
+    bgMasterGain = audioCtx.createGain();
+    bgMasterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    
+    // Filtr dolnoprzepustowy daje ciepłe, telewizyjne brzmienie w tle
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(320, audioCtx.currentTime);
+    
+    // Wolna modulacja filtra (delikatny "oddech" podkładu)
+    const lfo = audioCtx.createOscillator();
+    const lfoGain = audioCtx.createGain();
+    lfo.frequency.setValueAtTime(0.12, audioCtx.currentTime); // Cykl co ~8 sekund
+    lfoGain.gain.setValueAtTime(80, audioCtx.currentTime);
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+    lfo.start();
+
+    filter.connect(bgMasterGain);
+    bgMasterGain.connect(audioCtx.destination);
+
+    // Akord ambientowy (C2, G2, D3, A3) - miękki i przyjemny dla ucha
+    const freqs = [65.41, 98.00, 146.83, 220.00];
+    freqs.forEach((f, idx) => {
+        const osc = audioCtx.createOscillator();
+        const oscGain = audioCtx.createGain();
+        osc.type = idx % 2 === 0 ? "sine" : "triangle";
+        osc.frequency.setValueAtTime(f, audioCtx.currentTime);
+        // Lekkie odstrojenie dla przestrzennego efektu stereo/chorus
+        osc.detune.setValueAtTime((idx - 1.5) * 4, audioCtx.currentTime);
+        oscGain.gain.setValueAtTime(0.18 / freqs.length, audioCtx.currentTime);
+        osc.connect(oscGain);
+        oscGain.connect(filter);
+        osc.start();
+    });
+}
+
+// Funkcja włączająca i wyłączająca podkład (działa TYLKO gdy nie gra nic innego)
+function setBgPadActive(active) {
+    if (!audioCtx || !bgMasterGain) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const now = audioCtx.currentTime;
+    bgMasterGain.gain.cancelScheduledValues(now);
+    bgMasterGain.gain.setValueAtTime(bgMasterGain.gain.value, now);
+    
+    if (active) {
+        // Płynne wejście cichego podkładu
+        bgMasterGain.gain.linearRampToValueAtTime(0.12, now + 0.8);
+    } else {
+        // Natychmiastowe wyciszenie, gdy gra dowolny inny dźwięk
+        bgMasterGain.gain.linearRampToValueAtTime(0.0001, now + 0.15);
+    }
+}
+
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
+    createSmoothShowPad();
+    setBgPadActive(true);
     [tickSound, suspenseSound, winSound, loseSound].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
     });
@@ -200,6 +267,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         
+        // Brak innych dźwięków -> włączamy delikatny podkład w tle
+        setBgPadActive(true);
+        
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
             catEl.innerText = "KATEGORIA: " + data.category;
@@ -215,6 +285,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     } else if (data.status === "reading") {
         isSuspense = false;
         suspenseSound.pause(); suspenseSound.currentTime = 0;
+        
+        // Na początku czytania pytania (zanim zacznie pikać zegar) gra delikatny podkład
+        setBgPadActive(true);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
@@ -255,8 +328,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
+                    setBgPadActive(false); // Wyłącz podkład na czas dźwięku końca czasu
                     timerEl.innerText = "0";
-                    // Jeśli w R3 wskazany gracz nie odpowiedział w czasie -> dostaje karę punktową!
                     if (data.round === 3 && data.nominated) {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
                     } else {
@@ -266,6 +339,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     timerEl.innerText = timeLeft;
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
+                        // Włącza się tykanie timera -> wyciszamy podkład w tle!
+                        setBgPadActive(false);
                         tickSound.play().catch(()=>{});
                     }
                 }
@@ -276,6 +351,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         isSuspense = true;
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
+        
+        // Włącza się bicie serca -> wyciszamy podkład w tle!
+        setBgPadActive(false);
         suspenseSound.play().catch(()=>{}); 
         
         qEl.innerText = data.question;
@@ -297,6 +375,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         winnerEl.style.animation = "none";
         isSuspense = false;
+        
+        // Na czas fanfar wygranej / przegranej / końca czasu podkład w tle jest wyłączony!
+        setBgPadActive(false);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
         
