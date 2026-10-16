@@ -15,14 +15,23 @@
     
     .verify-box, .nominate-box { background: #1e272e; border: 2px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
     .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; }
-    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; }
+    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold;}
+    
+    #auto-progress-msg { color: #2ed573; font-weight: bold; display: none; margin-top: 10px; }
   </style>
 </head>
 <body>
 
   <div class="box">
     <h3>STEROWANIE GRĄ</h3>
-    <button class="red" onclick="startGame()">RESETUJ I ZACZNIJ OD NOWA</button><br><br>
+    
+    <label>Wybór bazy pytań:</label>
+    <select id="poolSel">
+        <option value="1">PULA 1 (Podstawowa - 90 pytań)</option>
+        <option value="2">PULA 2 (Trudniejsza - 90 pytań)</option>
+    </select>
+    <button class="red" onclick="startGame()">RESETUJ PUNKTY I ZACZNIJ OD NOWA</button><br><br>
+    <hr style="border-color: #444; margin: 20px 0;">
     
     <label>Runda:</label>
     <select id="roundSel">
@@ -31,6 +40,7 @@
         <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
     <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
+    <div id="auto-progress-msg">⏱ System odlicza 5 sekund do kolejnego pytania...</div>
   </div>
 
   <div class="nominate-box" id="nominateUI">
@@ -60,109 +70,152 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// PEŁNA BAZA 90 PYTAŃ
-const questionsDB = {
-    1: [
-        { q: "Która planeta jest największa w Układzie Słonecznym?", o: ["Ziemia", "Mars", "Jowisz", "Saturn"], c: 2 },
-        { q: "Ile nóg ma typowy pająk?", o: ["Sześć", "Osiem", "Dziesięć", "Dwanaście"], c: 1 },
-        { q: "Co jest stolicą Włoch?", o: ["Madryt", "Paryż", "Rzym", "Berlin"], c: 2 },
-        { q: "Jak nazywa się żółty pokemon Asha?", o: ["Charmander", "Squirtle", "Pikachu", "Bulbasaur"], c: 2 },
-        { q: "Ile to jest 8 x 8?", o: ["54", "56", "64", "48"], c: 2 },
-        { q: "Jaki kolor ma szmaragd?", o: ["Czerwony", "Niebieski", "Zielony", "Żółty"], c: 2 },
-        { q: "Najdłuższa rzeka w Polsce to:", o: ["Odra", "Wisła", "Warta", "Bug"], c: 1 },
-        { q: "Kto napisał 'Akademię Pana Kleksa'?", o: ["Jan Brzechwa", "Julian Tuwim", "H. Sienkiewicz", "Adam Mickiewicz"], c: 0 },
-        { q: "Co jedzą pandy wielkie?", o: ["Mięso", "Eukaliptus", "Bambus", "Banany"], c: 2 },
-        { q: "Ile dni ma rok przestępny?", o: ["365", "366", "364", "360"], c: 1 },
-        { q: "W jakiej wodzie żyje wieloryb?", o: ["Słodkiej", "Słonej", "Mineralnej", "Gazowanej"], c: 1 },
-        { q: "Co jest zimniejsze?", o: ["Lód", "Woda", "Para", "Śnieg"], c: 0 },
-        { q: "Jak ma na imię siostra Elsy z Krainy Lodu?", o: ["Olaf", "Anna", "Ariel", "Mulan"], c: 1 },
-        { q: "Które z tych zwierząt jest gadem?", o: ["Żaba", "Wąż", "Pies", "Bocian"], c: 1 },
-        { q: "Jak nazywa się nasz kontynent?", o: ["Azja", "Ameryka", "Europa", "Afryka"], c: 2 },
-        { q: "Ile to jest 100 - 35?", o: ["65", "75", "55", "45"], c: 0 },
-        { q: "Jaki instrument ma czarno-białe klawisze?", o: ["Gitara", "Skrzypce", "Pianino", "Flet"], c: 2 },
-        { q: "Z czego robi się szkło?", o: ["Z wody", "Z piasku", "Z gliny", "Z drewna"], c: 1 },
-        { q: "Jak nazywa się sześcian używany do gier planszowych?", o: ["Pionek", "Kostka", "Kula", "Walec"], c: 1 },
-        { q: "Kto zbudował zamek w Malborku?", o: ["Krzyżacy", "Królowie", "Rzymianie", "Grecy"], c: 0 },
-        { q: "Który miesiąc jest pierwszy w roku?", o: ["Luty", "Styczeń", "Marzec", "Grudzień"], c: 1 },
-        { q: "Który ocean jest największy?", o: ["Atlantycki", "Indyjski", "Spokojny", "Arktyczny"], c: 2 },
-        { q: "Jak nazywa się nauka o gwiazdach?", o: ["Biologia", "Chemia", "Geografia", "Astronomia"], c: 3 },
-        { q: "Jaki jest najszybszy ptak na świecie?", o: ["Sokół wędrowny", "Struś", "Orzeł", "Gołąb"], c: 0 },
-        { q: "Z jakiego kraju pochodzi pizza?", o: ["Grecja", "Hiszpania", "Włochy", "Polska"], c: 2 },
-        { q: "Co to jest H2O?", o: ["Tlen", "Woda", "Węgiel", "Złoto"], c: 1 },
-        { q: "Kto namalował 'Mona Lisę'?", o: ["Picasso", "Da Vinci", "Van Gogh", "Matejko"], c: 1 },
-        { q: "Który z tych owoców jest cytrusowy?", o: ["Jabłko", "Banan", "Cytryna", "Śliwka"], c: 2 },
-        { q: "Jak nazywa się waluta w Polsce?", o: ["Euro", "Dolar", "Złoty", "Funt"], c: 2 },
-        { q: "Które z tych zwierząt hibernuje w zimie?", o: ["Lis", "Niedźwiedź", "Wilk", "Zając"], c: 1 }
-    ],
-    2: [
-        { q: "Stolica Niemiec to...", c: "Berlin" },
-        { q: "Z jakiego owocu robi się rodzynki?", c: "Z winogron" },
-        { q: "Mąż krowy to...", c: "Byk" },
-        { q: "Wynik dodawania to...", c: "Suma" },
-        { q: "Ile boków ma trójkąt?", c: "Trzy / 3" },
-        { q: "Stolica Hiszpanii to...", c: "Madryt" },
-        { q: "Narzędzie drwala to...", c: "Siekiera" },
-        { q: "Jak nazywa się dom dla pszczół?", c: "Ul" },
-        { q: "Przeciwieństwo słowa 'zimno' to...", c: "Ciepło / Gorąco" },
-        { q: "Jak po angielsku jest 'kot'?", c: "Cat" },
-        { q: "W jakim sporcie używa się rakietki i lotki?", c: "Badminton" },
-        { q: "Z czego robi się frytki?", c: "Z ziemniaków" },
-        { q: "Jak ma na imię brat Mario z popularnej gry?", c: "Luigi" },
-        { q: "Największy ptak na świecie to...", c: "Struś" },
-        { q: "Który miesiąc ma najmniej dni?", c: "Luty" },
-        { q: "Słodki płyn produkowany przez pszczoły to...", c: "Miód" },
-        { q: "Co powstaje, gdy woda zamarznie?", c: "Lód" },
-        { q: "Kto roznosi listy?", c: "Listonosz" },
-        { q: "Jaki kolor ma dojrzały banan?", c: "Żółty" },
-        { q: "Jak po angielsku jest 'pies'?", c: "Dog" },
-        { q: "Który owoc jest symbolem firmy Apple?", c: "Jabłko" },
-        { q: "Z czego robi się chleb?", c: "Z mąki" },
-        { q: "Czym oddychają ryby?", c: "Skrzelami" },
-        { q: "Jak po angielsku jest 'jeden'?", c: "One" },
-        { q: "Która planeta to 'Czerwona Planeta'?", c: "Mars" },
-        { q: "Jaki instrument ma struny i gryf?", c: "Gitara" },
-        { q: "Jak nazywa się młody pies?", c: "Szczeniak" },
-        { q: "W czym nosimy zakupy ze sklepu?", c: "W torbie / Siatce" },
-        { q: "Jaki kształt ma piłka?", c: "Kula / Okrągły" },
-        { q: "Które zwierzę ma najdłuższą szyję?", c: "Żyrafa" }
-    ],
-    3: [
-        { cat: "CYPR", q: "W jakim państwie leży miasto Paphos?", o: ["W Grecji", "Na Cyprze", "We Włoszech", "W Hiszpanii"], c: 1 },
-        { cat: "RODZINA", q: "W jakim miesiącu ma urodziny dziadek Janusz?", o: ["Styczeń", "Luty", "Marzec", "Kwiecień"], c: 1 },
-        { cat: "RODZINA", q: "Jak ma na drugie imię ciocia Ania?", o: ["Maria", "Katarzyna", "Ewa", "Zofia"], c: 0 },
-        { cat: "RODZINA", q: "W jakim mieście urodziła się twoja Mama?", o: ["Katowice", "Chorzów", "Sosnowiec", "Bytom"], c: 1 },
-        { cat: "RODZINA", q: "Jak ma na nazwisko panieńskie Babcia Ela?", o: ["Lis", "Wilk", "Kot", "Zając"], c: 1 },
-        { cat: "SPORT", q: "Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?", o: ["9", "10", "11", "12"], c: 2 },
-        { cat: "MATEMATYKA", q: "Ile to jest (20 + 30) - 10?", o: ["40", "30", "50", "60"], c: 0 },
-        { cat: "MATEMATYKA", q: "((8 x 7) + 44) - 100 = ?", o: ["0", "1", "10", "100"], c: 0 },
-        { cat: "MATEMATYKA", q: "Ile sztuk to jest jeden tuzin?", o: ["10", "12", "15", "20"], c: 1 },
-        { cat: "GEOGRAFIA", q: "Na jakim kontynencie leży Egipt?", o: ["Europa", "Azja", "Ameryka", "Afryka"], c: 3 },
-        { cat: "GEOGRAFIA", q: "Jaki jest najmniejszy kontynent na świecie?", o: ["Australia", "Europa", "Antarktyda", "Azja"], c: 0 },
-        { cat: "ANGIELSKI", q: "Jak jest 'ananas' po angielsku?", o: ["Apple", "Pineapple", "Banana", "Orange"], c: 1 },
-        { cat: "ANGIELSKI", q: "Jak jest 'szary' po angielsku?", o: ["Green", "Blue", "Grey", "Black"], c: 2 },
-        { cat: "ZWIERZĘTA", q: "Jakie jest najszybsze zwierzę lądowe?", o: ["Lew", "Gepard", "Tygrys", "Kangaroo"], c: 1 },
-        { cat: "ZWIERZĘTA", q: "Jak nazywa się największy ocean w którym pływają wieloryby?", o: ["Spokojny", "Atlantycki", "Indyjski", "Arktyczny"], c: 0 },
-        { cat: "BIOLOGIA", q: "Który narząd pompuje krew w naszym organizmie?", o: ["Płuca", "Żołądek", "Serce", "Wątroba"], c: 2 },
-        { cat: "KOSMOS", q: "Jak nazywa się gwiazda, wokół której krąży Ziemia?", o: ["Księżyc", "Słońce", "Mars", "Wenus"], c: 1 },
-        { cat: "KOSMOS", q: "Kto był pierwszym człowiekiem na Księżycu?", o: ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "Kopernik"], c: 0 },
-        { cat: "BAJKI", q: "Kto mieszka w ananasie na dnie morza?", o: ["Patryk", "Skalmar", "SpongeBob", "Pan Krab"], c: 2 },
-        { cat: "BAJKI", q: "Czego używa Harry Potter do latania?", o: ["Dywanu", "Miotły", "Rakiety", "Smoka"], c: 1 },
-        { cat: "MUZYKA", q: "Ile strun ma klasyczna gitara?", o: ["4", "5", "6", "7"], c: 2 },
-        { cat: "HISTORIA", q: "Który król zastał Polskę drewnianą, a zostawił murowaną?", o: ["Bolesław Chrobry", "Kazimierz Wielki", "Mieszko I", "Władysław Jagiełło"], c: 1 },
-        { cat: "POGODA", q: "Co pada z nieba, gdy woda zamarza wysoko w chmurach latem?", o: ["Deszcz", "Grad", "Śnieg", "Rosa"], c: 1 },
-        { cat: "ANATOMIA", q: "Z ilu zębów składa się pełne uzębienie dorosłego człowieka?", o: ["28", "30", "32", "34"], c: 2 },
-        { cat: "TECHNOLOGIA", q: "Kto jest założycielem firmy Microsoft?", o: ["Steve Jobs", "Mark Zuckerberg", "Bill Gates", "Elon Musk"], c: 2 },
-        { cat: "LITERATURA", q: "Kto jest autorem baśni o Kopciuszku?", o: ["Bracia Grimm", "Andersen", "Perrault", "To opowieść ludowa (wszyscy z nich)"], c: 3 },
-        { cat: "SPORT", q: "Co ile lat odbywają się letnie Igrzyska Olimpijskie?", o: ["2", "3", "4", "5"], c: 2 },
-        { cat: "PRZYRODA", q: "Jak nazywa się proces, w którym rośliny produkują tlen?", o: ["Oddychanie", "Fotosynteza", "Trawienie", "Parowanie"], c: 1 },
-        { cat: "ASTRONOMIA", q: "Która planeta ma najwięcej widocznych pierścieni?", o: ["Uran", "Neptun", "Jowisz", "Saturn"], c: 3 },
-        { cat: "MATEMATYKA", q: "Ile to jest 100 podzielone na 4?", o: ["20", "25", "30", "50"], c: 1 }
-    ]
+// --- BAZA 180 PYTAŃ (2 PULE PO 90) ---
+const allDBs = {
+    1: {
+        1: [
+            { q: "Która planeta jest największa w Układzie Słonecznym?", o: ["Ziemia", "Mars", "Jowisz", "Saturn"], c: 2 },
+            { q: "Ile nóg ma typowy pająk?", o: ["Sześć", "Osiem", "Dziesięć", "Dwanaście"], c: 1 },
+            { q: "Co jest stolicą Włoch?", o: ["Madryt", "Paryż", "Rzym", "Berlin"], c: 2 },
+            { q: "Jak nazywa się żółty pokemon Asha?", o: ["Charmander", "Squirtle", "Pikachu", "Bulbasaur"], c: 2 },
+            { q: "Ile to jest 8 x 8?", o: ["54", "56", "64", "48"], c: 2 },
+            { q: "Jaki kolor ma szmaragd?", o: ["Czerwony", "Niebieski", "Zielony", "Żółty"], c: 2 },
+            { q: "Najdłuższa rzeka w Polsce to:", o: ["Odra", "Wisła", "Warta", "Bug"], c: 1 },
+            { q: "Kto napisał 'Akademię Pana Kleksa'?", o: ["Jan Brzechwa", "Julian Tuwim", "H. Sienkiewicz", "A. Mickiewicz"], c: 0 },
+            { q: "Co jedzą pandy wielkie?", o: ["Mięso", "Eukaliptus", "Bambus", "Banany"], c: 2 },
+            { q: "Ile dni ma rok przestępny?", o: ["365", "366", "364", "360"], c: 1 },
+            { q: "W jakiej wodzie żyje wieloryb?", o: ["Słodkiej", "Słonej", "Mineralnej", "Gazowanej"], c: 1 },
+            { q: "Co jest zimniejsze?", o: ["Lód", "Woda", "Para", "Śnieg"], c: 0 },
+            { q: "Jak ma na imię siostra Elsy z Krainy Lodu?", o: ["Olaf", "Anna", "Ariel", "Mulan"], c: 1 },
+            { q: "Które z tych zwierząt jest gadem?", o: ["Żaba", "Wąż", "Pies", "Bocian"], c: 1 },
+            { q: "Jak nazywa się nasz kontynent?", o: ["Azja", "Ameryka", "Europa", "Afryka"], c: 2 },
+            { q: "Ile to jest 100 - 35?", o: ["65", "75", "55", "45"], c: 0 },
+            { q: "Jaki instrument ma czarno-białe klawisze?", o: ["Gitara", "Skrzypce", "Pianino", "Flet"], c: 2 },
+            { q: "Z czego robi się szkło?", o: ["Z wody", "Z piasku", "Z gliny", "Z drewna"], c: 1 },
+            { q: "Jak nazywa się sześcian używany do gier planszowych?", o: ["Pionek", "Kostka", "Kula", "Walec"], c: 1 },
+            { q: "Kto zbudował zamek w Malborku?", o: ["Krzyżacy", "Królowie", "Rzymianie", "Grecy"], c: 0 },
+            { q: "Który miesiąc jest pierwszy w roku?", o: ["Luty", "Styczeń", "Marzec", "Grudzień"], c: 1 },
+            { q: "Który ocean jest największy?", o: ["Atlantycki", "Indyjski", "Spokojny", "Arktyczny"], c: 2 },
+            { q: "Jak nazywa się nauka o gwiazdach?", o: ["Biologia", "Chemia", "Geografia", "Astronomia"], c: 3 },
+            { q: "Jaki jest najszybszy ptak na świecie?", o: ["Sokół wędrowny", "Struś", "Orzeł", "Gołąb"], c: 0 },
+            { q: "Z jakiego kraju pochodzi pizza?", o: ["Grecja", "Hiszpania", "Włochy", "Polska"], c: 2 },
+            { q: "Co to jest H2O?", o: ["Tlen", "Woda", "Węgiel", "Złoto"], c: 1 },
+            { q: "Kto namalował 'Mona Lisę'?", o: ["Picasso", "Da Vinci", "Van Gogh", "Matejko"], c: 1 },
+            { q: "Który z tych owoców jest cytrusowy?", o: ["Jabłko", "Banan", "Cytryna", "Śliwka"], c: 2 },
+            { q: "Jak nazywa się waluta w Polsce?", o: ["Euro", "Dolar", "Złoty", "Funt"], c: 2 },
+            { q: "Które z tych zwierząt hibernuje w zimie?", o: ["Lis", "Niedźwiedź", "Wilk", "Zając"], c: 1 }
+        ],
+        2: [
+            { q: "Stolica Niemiec to...", c: "Berlin" }, { q: "Z jakiego owocu robi się rodzynki?", c: "Z winogron" }, { q: "Mąż krowy to...", c: "Byk" }, { q: "Wynik dodawania to...", c: "Suma" }, { q: "Ile boków ma trójkąt?", c: "Trzy / 3" }, { q: "Stolica Hiszpanii to...", c: "Madryt" }, { q: "Narzędzie drwala to...", c: "Siekiera" }, { q: "Jak nazywa się dom dla pszczół?", c: "Ul" }, { q: "Przeciwieństwo słowa 'zimno' to...", c: "Ciepło / Gorąco" }, { q: "Jak po angielsku jest 'kot'?", c: "Cat" }, { q: "W jakim sporcie używa się rakietki i lotki?", c: "Badminton" }, { q: "Z czego robi się frytki?", c: "Z ziemniaków / Z ziemniaka" }, { q: "Jak ma na imię brat Mario z gry Nintendo?", c: "Luigi" }, { q: "Największy ptak na świecie to...", c: "Struś" }, { q: "Który miesiąc ma najmniej dni?", c: "Luty" }, { q: "Słodki płyn produkowany przez pszczoły to...", c: "Miód" }, { q: "Co powstaje, gdy woda zamarznie?", c: "Lód" }, { q: "Kto roznosi listy w mieście?", c: "Listonosz" }, { q: "Jaki kolor ma dojrzały banan?", c: "Żółty" }, { q: "Jak po angielsku jest 'pies'?", c: "Dog" }, { q: "Który owoc jest w logo marki iPhone?", c: "Jabłko / Apple" }, { q: "Z czego piecze się chleb?", c: "Z mąki" }, { q: "Czym oddychają ryby pod wodą?", c: "Skrzelami" }, { q: "Jak po angielsku jest cyfra 'jeden'?", c: "One" }, { q: "Która planeta to 'Czerwona Planeta'?", c: "Mars" }, { q: "Jaki instrument ma pudło, struny i gryf?", c: "Gitara" }, { q: "Jak nazywa się młody pies?", c: "Szczeniak / Piesek" }, { q: "W czym nosimy zakupy ze sklepu?", c: "W torbie / Siatce" }, { q: "Jaki geometryczny kształt ma piłka?", c: "Kula / Okrągły" }, { q: "Które afrykańskie zwierzę ma najdłuższą szyję?", c: "Żyrafa" }
+        ],
+        3: [
+            { cat: "CYPR", q: "W jakim państwie leży miasto Paphos?", o: ["W Grecji", "Na Cyprze", "We Włoszech", "W Hiszpanii"], c: 1 },
+            { cat: "RODZINA", q: "W jakim miesiącu ma urodziny dziadek Janusz?", o: ["Styczeń", "Luty", "Marzec", "Kwiecień"], c: 1 },
+            { cat: "RODZINA", q: "Jak ma na drugie imię ciocia Ania?", o: ["Maria", "Katarzyna", "Ewa", "Zofia"], c: 0 },
+            { cat: "RODZINA", q: "W jakim mieście urodziła się twoja Mama?", o: ["Katowice", "Chorzów", "Sosnowiec", "Bytom"], c: 1 },
+            { cat: "RODZINA", q: "Jak ma na nazwisko panieńskie Babcia Ela?", o: ["Lis", "Wilk", "Kot", "Zając"], c: 1 },
+            { cat: "SPORT", q: "Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?", o: ["9", "10", "11", "12"], c: 2 },
+            { cat: "MATEMATYKA", q: "Ile to jest (20 + 30) - 10?", o: ["40", "30", "50", "60"], c: 0 },
+            { cat: "MATEMATYKA", q: "((8 x 7) + 44) - 100 = ?", o: ["0", "1", "10", "100"], c: 0 },
+            { cat: "MATEMATYKA", q: "Ile sztuk to jest jeden tuzin?", o: ["10", "12", "15", "20"], c: 1 },
+            { cat: "GEOGRAFIA", q: "Na jakim kontynencie leży Egipt?", o: ["Europa", "Azja", "Ameryka", "Afryka"], c: 3 },
+            { cat: "GEOGRAFIA", q: "Jaki jest najmniejszy kontynent na świecie?", o: ["Australia", "Europa", "Antarktyda", "Azja"], c: 0 },
+            { cat: "ANGIELSKI", q: "Jak jest 'ananas' po angielsku?", o: ["Apple", "Pineapple", "Banana", "Orange"], c: 1 },
+            { cat: "ANGIELSKI", q: "Jak jest 'szary' po angielsku?", o: ["Green", "Blue", "Grey", "Black"], c: 2 },
+            { cat: "ZWIERZĘTA", q: "Jakie jest najszybsze zwierzę lądowe?", o: ["Lew", "Gepard", "Tygrys", "Kangaroo"], c: 1 },
+            { cat: "ZWIERZĘTA", q: "Jak nazywa się największy ocean?", o: ["Spokojny", "Atlantycki", "Indyjski", "Arktyczny"], c: 0 },
+            { cat: "BIOLOGIA", q: "Który narząd pompuje krew w naszym organizmie?", o: ["Płuca", "Żołądek", "Serce", "Wątroba"], c: 2 },
+            { cat: "KOSMOS", q: "Gwiazda, wokół której krąży Ziemia to:", o: ["Księżyc", "Słońce", "Mars", "Wenus"], c: 1 },
+            { cat: "KOSMOS", q: "Pierwszy człowiek na Księżycu to:", o: ["Neil Armstrong", "Yuri Gagarin", "Buzz Aldrin", "Kopernik"], c: 0 },
+            { cat: "BAJKI", q: "Kto mieszka w ananasie na dnie morza?", o: ["Patryk", "Skalmar", "SpongeBob", "Pan Krab"], c: 2 },
+            { cat: "BAJKI", q: "Czego używa Harry Potter do latania?", o: ["Dywanu", "Miotły", "Rakiety", "Smoka"], c: 1 },
+            { cat: "MUZYKA", q: "Ile strun ma klasyczna gitara?", o: ["4", "5", "6", "7"], c: 2 },
+            { cat: "HISTORIA", q: "Który król zastał Polskę drewnianą, a zostawił murowaną?", o: ["Chrobry", "Kazimierz Wielki", "Mieszko I", "Jagiełło"], c: 1 },
+            { cat: "POGODA", q: "Co pada z nieba, gdy woda zamarza wysoko latem?", o: ["Deszcz", "Grad", "Śnieg", "Rosa"], c: 1 },
+            { cat: "ANATOMIA", q: "Z ilu zębów składa się pełne uzębienie dorosłego człowieka?", o: ["28", "30", "32", "34"], c: 2 },
+            { cat: "TECHNOLOGIA", q: "Kto jest założycielem Microsoftu?", o: ["Steve Jobs", "Mark Zuckerberg", "Bill Gates", "Elon Musk"], c: 2 },
+            { cat: "LITERATURA", q: "Kto jest autorem baśni o Kopciuszku?", o: ["Bracia Grimm", "Andersen", "Perrault", "Wszyscy (różne wersje)"], c: 3 },
+            { cat: "SPORT", q: "Co ile lat odbywają się Igrzyska Olimpijskie?", o: ["2", "3", "4", "5"], c: 2 },
+            { cat: "PRZYRODA", q: "Proces, w którym rośliny produkują tlen to:", o: ["Oddychanie", "Fotosynteza", "Trawienie", "Parowanie"], c: 1 },
+            { cat: "ASTRONOMIA", q: "Która planeta ma najwięcej widocznych pierścieni?", o: ["Uran", "Neptun", "Jowisz", "Saturn"], c: 3 },
+            { cat: "MATEMATYKA", q: "Ile to jest 100 podzielone na 4?", o: ["20", "25", "30", "50"], c: 1 }
+        ]
+    },
+    2: {
+        1: [
+            { q: "Który instrument należy do grupy dętych?", o: ["Gitara", "Skrzypce", "Trąbka", "Perkusja"], c: 2 },
+            { q: "W jakim państwie zbudowano Piramidę Cheopsa?", o: ["Meksyk", "Egipt", "Peru", "Grecja"], c: 1 },
+            { q: "Jaki jest największy kraj na świecie pod względem powierzchni?", o: ["USA", "Chiny", "Rosja", "Kanada"], c: 2 },
+            { q: "Jak nazywa się nasza galaktyka?", o: ["Andromeda", "Droga Mleczna", "Czarna Dziura", "Mgławica Oriona"], c: 1 },
+            { q: "Jak nazywał się starożytny rzymski amfiteatr?", o: ["Partenon", "Panteon", "Koloseum", "Piramida"], c: 2 },
+            { q: "W którym roku wybuchła II Wojna Światowa?", o: ["1914", "1939", "1945", "1989"], c: 1 },
+            { q: "Kto napisał epopeję 'Pan Tadeusz'?", o: ["Słowacki", "Kochanowski", "Mickiewicz", "Prus"], c: 2 },
+            { q: "Jaki gaz pobierają z powietrza rośliny w procesie fotosyntezy?", o: ["Tlen", "Azot", "Dwutlenek węgla", "Wodór"], c: 2 },
+            { q: "Gdzie odbyły się starożytne Igrzyska Olimpijskie?", o: ["W Rzymie", "W Atenach", "W Sparcie", "W Olimpii"], c: 3 },
+            { q: "Ile lat żyje przeciętny kot domowy (w dobrych warunkach)?", o: ["Około 5-8", "Około 12-16", "Powyżej 25", "Około 30"], c: 1 },
+            { q: "Z jakiego kraju pochodzi jedzenie o nazwie Sushi?", o: ["Chiny", "Japonia", "Tajlandia", "Wietnam"], c: 1 },
+            { q: "Jak po angielsku powiesz 'Biblioteka'?", o: ["Bookstore", "Library", "School", "Museum"], c: 1 },
+            { q: "Co jest stolicą Wielkiej Brytanii?", o: ["Dublin", "Edynburg", "Londyn", "Paryż"], c: 2 },
+            { q: "Z ilu województw składa się Polska?", o: ["14", "15", "16", "17"], c: 2 },
+            { q: "Gdzie leżą Tatry?", o: ["Na północy Polski", "Na południu Polski", "Na zachodzie", "Na wschodzie"], c: 1 },
+            { q: "Ile wynosi pierwiastek kwadratowy z 81?", o: ["7", "8", "9", "10"], c: 2 },
+            { q: "Jak ma na imię pajęczy superbohater Marvela?", o: ["Iron Man", "Peter Parker", "Bruce Wayne", "Clark Kent"], c: 1 },
+            { q: "Z czego składa się woda (H2O)?", o: ["Tlen i Azot", "Wodór i Tlen", "Wodór i Węgiel", "Azot i Węgiel"], c: 1 },
+            { q: "Jaki owad odpowiada za produkcję jedwabiu?", o: ["Pająk", "Pszczoła", "Jedwabnik", "Motyl"], c: 2 },
+            { q: "Kto jest twórcą popularnej gry Minecraft?", o: ["EA Games", "Mojang (Markus Persson)", "Ubisoft", "Nintendo"], c: 1 },
+            { q: "Co oznacza skrót PC?", o: ["Personal Computer", "Play Console", "Power Control", "Portable Computer"], c: 0 },
+            { q: "Który stan skupienia ma lód?", o: ["Ciekły", "Gazowy", "Stały", "Plazma"], c: 2 },
+            { q: "Które z tych drzew gubi igły na zimę?", o: ["Świerk", "Sosna", "Jodła", "Modrzew"], c: 3 },
+            { q: "Jak nazywa się najwyższa góra w Polsce?", o: ["Gubałówka", "Śnieżka", "Rysy", "Giewont"], c: 2 },
+            { q: "Co znajduje się w centrum naszego Układu Słonecznego?", o: ["Jowisz", "Ziemia", "Słońce", "Czarna dziura"], c: 2 },
+            { q: "Jaka waluta obowiązuje w Wielkiej Brytanii?", o: ["Euro", "Funt szterling", "Dolar", "Frank"], c: 1 },
+            { q: "Ile nóg ma dorosły owad (np. mucha)?", o: ["4", "6", "8", "10"], c: 1 },
+            { q: "Jaką literą rzymską zapisujemy liczbę 50?", o: ["X", "L", "C", "D"], c: 1 },
+            { q: "Jakie miasto jest gospodarzem Wawelu?", o: ["Warszawa", "Poznań", "Gdańsk", "Kraków"], c: 3 },
+            { q: "Który z tych instrumentów ma klawiaturę?", o: ["Harfa", "Akordeon", "Wiolonczela", "Flet"], c: 1 }
+        ],
+        2: [
+            { q: "Wynik mnożenia to...", c: "Iloczyn" }, { q: "Jak nazywa się nauka badająca przeszłość?", c: "Historia" }, { q: "Biała substancja używana do słodzenia to...", c: "Cukier" }, { q: "Jak po angielsku jest 'drzewo'?", c: "Tree" }, { q: "Kto napisał baśń 'Brzydkie Kaczątko'?", c: "Andersen" }, { q: "Największy ocean to Ocean...", c: "Spokojny" }, { q: "Stolica Czech to...", c: "Praga" }, { q: "Wynik odejmowania to...", c: "Różnica" }, { q: "Jak po angielsku jest 'księżyc'?", c: "Moon" }, { q: "Która rzeka przepływa przez Warszawę?", c: "Wisła" }, { q: "Płaz, który kumka w stawie to...", c: "Żaba" }, { q: "W jakiej jednostce mierzymy temperaturę w Polsce?", c: "Celsjusz / Stopnie Celsjusza" }, { q: "Wysuszona śliwka to...", c: "Suszona śliwka / Suszka (uznaj)" }, { q: "Pierwiastek chemiczny niezbędny do oddychania to...", c: "Tlen" }, { q: "Ptak będący godłem Polski to...", c: "Orzeł / Orzeł Biały" }, { q: "Jaki jest największy lądowy ssak drapieżny?", c: "Niedźwiedź polarny" }, { q: "12 razy 12 wynosi...", c: "144" }, { q: "Stolica Francji to...", c: "Paryż" }, { q: "Jak po angielsku powiesz 'dziewczynka'?", c: "Girl" }, { q: "Polski piłkarz grający z numerem 9 w Barcelonie to...", c: "Lewandowski / Robert Lewandowski" }, { q: "Urządzenie do robienia zdjęć to...", c: "Aparat / Aparat fotograficzny" }, { q: "W jakim państwie znajduje się Wieża Eiffla?", c: "Francja / We Francji" }, { q: "Jak nazywa się najzimniejszy kontynent?", c: "Antarktyda" }, { q: "Z czego składa się ludzki szkielet?", c: "Z kości" }, { q: "Złoty środek polskiego morza to miasto na literę G...", c: "Gdynia / Gdańsk (zaliczyć)" }, { q: "Czym jest pingwin: ssakiem, płazem czy ptakiem?", c: "Ptakiem" }, { q: "Przetłumacz na polski słowo 'Water'", c: "Woda" }, { q: "Czego wynikiem jest 5 reszty z 2?", c: "Dzielenia" }, { q: "Jak nazywa się samiec owcy?", c: "Baran" }, { q: "Osobisty komputer przenośny to...", c: "Laptop" }
+        ],
+        3: [
+            { cat: "CHEMIA", q: "Jaki symbol chemiczny ma złoto?", o: ["Ag", "Au", "Zn", "Cu"], c: 1 },
+            { cat: "CYPR", q: "Jakie jest główne, międzynarodowe lotnisko na Cyprze?", o: ["Paphos", "Larnaka", "Nikozja", "Limassol"], c: 1 },
+            { cat: "HISTORIA", q: "W którym roku odbyła się Bitwa pod Grunwaldem?", o: ["1410", "966", "1525", "1914"], c: 0 },
+            { cat: "CYPR", q: "Jaki język urzędowy (obok tureckiego) obowiązuje na Cyprze?", o: ["Angielski", "Włoski", "Grecki", "Hiszpański"], c: 2 },
+            { cat: "MUZYKA", q: "Kto skomponował słynne 'Dla Elizy'?", o: ["Chopin", "Beethoven", "Mozart", "Bach"], c: 1 },
+            { cat: "GEOGRAFIA", q: "Jakie jest najmniejsze państwo świata?", o: ["Monako", "Malta", "Watykan", "San Marino"], c: 2 },
+            { cat: "LITERATURA", q: "Kto napisał 'Harrego Pottera'?", o: ["J.R.R. Tolkien", "J.K. Rowling", "Stephen King", "Suzanne Collins"], c: 1 },
+            { cat: "MATEMATYKA", q: "Ile wynosi pierwiastek z 144?", o: ["10", "11", "12", "14"], c: 2 },
+            { cat: "BIOLOGIA", q: "Co jest najtwardszą substancją w organizmie człowieka?", o: ["Kość udowa", "Szkliwo zębów", "Czaszka", "Paznokieć"], c: 1 },
+            { cat: "SPORT", q: "Z jakiego kraju pochodzi sztuka walki Karate?", o: ["Chiny", "Korea", "Japonia", "Tajlandia"], c: 2 },
+            { cat: "ASTRONOMIA", q: "Która planeta jest znana z potężnej, czerwonej plamy (wielkiego cyklonu)?", o: ["Mars", "Wenus", "Jowisz", "Neptun"], c: 2 },
+            { cat: "CYPR", q: "Po której stronie drogi jeździ się samochodami na Cyprze?", o: ["Tylko po prawej", "Tylko po lewej", "Zależy od miasta", "Po środku"], c: 1 },
+            { cat: "TECHNOLOGIA", q: "Kto był wizjonerem i twórcą firmy Apple?", o: ["Steve Jobs", "Tim Cook", "Bill Gates", "Mark Zuckerberg"], c: 0 },
+            { cat: "FILM", q: "W jakiej serii filmów pojawia się postać Dartha Vadera?", o: ["Star Trek", "Harry Potter", "Gwiezdne Wojny", "Władca Pierścieni"], c: 2 },
+            { cat: "MATEMATYKA", q: "Jaki jest wynik równania: 5 + 5 x 5?", o: ["50", "25", "30", "15"], c: 2 },
+            { cat: "GEOGRAFIA", q: "Gdzie znajduje się słynny Wielki Mur?", o: ["W Japonii", "W Chinach", "W Indiach", "W Rosji"], c: 1 },
+            { cat: "ANATOMIA", q: "Jaka jest największa kość w ludzkim ciele?", o: ["Kość udowa", "Kręgosłup", "Czaszka", "Piszczel"], c: 0 },
+            { cat: "ANGIELSKI", q: "Co oznacza słowo 'Yellow'?", o: ["Zielony", "Czarny", "Żółty", "Biały"], c: 2 },
+            { cat: "HISTORIA", q: "Kto był pierwszym prezydentem Polski po odzyskaniu niepodległości w 1918 (funkcja naczelnika)?", o: ["Lech Wałęsa", "Józef Piłsudski", "Gabriel Narutowicz", "Ignacy Mościcki"], c: 1 },
+            { cat: "KULINARIA", q: "Z jakiego warzywa robi się placki ziemniaczane?", o: ["Z marchwi", "Z cebuli", "Z ziemniaków", "Z selera"], c: 2 },
+            { cat: "PRZYRODA", q: "Drzewo będące symbolem Polski (bardzo twarde drewno) to:", o: ["Sosna", "Dąb", "Brzoza", "Topola"], c: 1 },
+            { cat: "MATEMATYKA", q: "Kąt prosty ma dokładnie:", o: ["45 stopni", "90 stopni", "180 stopni", "360 stopni"], c: 1 },
+            { cat: "CYPR", q: "Jaką walutą płaci się na Cyprze Południowym?", o: ["Euro", "Lira", "Dolar", "Funt"], c: 0 },
+            { cat: "LITERATURA", q: "W jakiej lekturze bohaterowie walczą z wiatrakami?", o: ["W Pustyni i w Puszczy", "Krzyżacy", "Don Kichot", "Pan Tadeusz"], c: 2 },
+            { cat: "ZWIERZĘTA", q: "Który ptak nie potrafi latać, ale świetnie biega?", o: ["Łabędź", "Pelikan", "Struś", "Orzeł"], c: 2 },
+            { cat: "SPORT", q: "Jakiego koloru jest koszulka lidera w wyścigu Tour de France?", o: ["Żółtego", "Czerwonego", "Białego", "Zielonego"], c: 0 },
+            { cat: "BIOLOGIA", q: "Jaka grupa krwi jest nazywana uniwersalnym dawcą?", o: ["A", "B", "AB", "0 (Zero)"], c: 3 },
+            { cat: "GEOGRAFIA", q: "Przez jaką stolicę przepływa Tamiza?", o: ["Paryż", "Londyn", "Berlin", "Rzym"], c: 1 },
+            { cat: "MUZYKA", q: "Z jakiego kraju pochodzi zespół ABBA?", o: ["Z Wielkiej Brytanii", "Ze Szwecji", "Z Niemiec", "Z Norwegii"], c: 1 },
+            { cat: "MATEMATYKA", q: "Co to jest liczba Pi w przybliżeniu?", o: ["2.14", "3.14", "4.14", "5.14"], c: 1 }
+        ]
+    }
 };
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
 let suspenseTimeout = null;
+let autoNextTimer = null; // Timer do samoczynnego puszczania 1 i 3 rundy po 5 sekundach
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -170,6 +223,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     
     document.getElementById('nominateUI').style.display = 'none';
     document.getElementById('verifyUI').style.display = 'none';
+    document.getElementById('auto-progress-msg').style.display = 'none';
 
     if (currentState.status === "setup_nomination" && currentState.round === 3) {
         document.getElementById('nominateUI').style.display = 'block';
@@ -177,16 +231,18 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     } else if (currentState.status === "verifying" && currentState.round === 2) {
         document.getElementById('verifyUI').style.display = 'block';
         document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
+        
+        let pool = currentState.pool || 1;
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
-        document.getElementById('v-correct').innerText = questionsDB[2][currentQIndex[2]].c;
+        document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
     } 
 
-    // ODLICZANIE NAPIĘCIA DLA R1 i R3 (Admin czeka aż skończy się bicie serca)
+    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY)
     if (currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
         if (!suspenseTimeout) {
             suspenseTimeout = setTimeout(async () => {
                 let r = currentState.round;
-                let isCorrect = currentState.isCorrect;
+                let isCorrect = r === 1 ? currentState.isCorrectR1 : currentState.isCorrectR3;
                 let player = currentState.fastest;
                 let ptsChange = 0;
                 if(r === 1) ptsChange = isCorrect ? 10 : -10;
@@ -196,33 +252,52 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 const scoreSnap = await getDoc(scoreRef);
                 await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
 
+                // WYPUSZCZENIE WYNIKU NA EKRAN TV
                 await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange
+                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange, answerTick: Date.now()
                 });
                 suspenseTimeout = null;
-            }, 3500); // 3.5 sekundy bicia serca
+            }, 3500); 
         }
+    }
+    
+    // AUTO NEXT PO ZAKOŃCZENIU RUNDY 1 LUB 3
+    if (currentState.status === "results" && (currentState.round === 1 || currentState.round === 3)) {
+        document.getElementById('auto-progress-msg').style.display = 'block';
+        clearTimeout(autoNextTimer);
+        autoNextTimer = setTimeout(() => {
+            // Upewniamy się, że nikt w międzyczasie sam nie kliknął "PUŚĆ NASTĘPNE"
+            if(currentState.status === "results") {
+                nextQuestion();
+            }
+        }, 5000);
     }
 });
 
 window.startGame = async () => {
-    if(!confirm("Zresetować punkty wszystkich dzieci do zera?")) return;
+    if(!confirm("Zresetować punkty wszystkich dzieci do zera? Pamiętaj o ustawieniu prawidłowej Puli Pytań na górze!")) return;
+    
+    document.getElementById('poolSel').disabled = true; // Blokuje zmianę puli po rozpoczęciu
+    const pool = parseInt(document.getElementById('poolSel').value);
+    
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [] });
+    await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [], pool: pool });
     currentQIndex = { 1: -1, 2: -1, 3: -1 };
-    alert("Punkty wyzerowane!");
+    alert("Punkty wyzerowane! Możesz puścić pierwsze pytanie.");
 };
 
 window.nextQuestion = async () => {
+    clearTimeout(autoNextTimer);
     let r = parseInt(document.getElementById('roundSel').value);
+    let pool = currentState ? currentState.pool : parseInt(document.getElementById('poolSel').value);
+    
     currentQIndex[r]++;
-    let qData = questionsDB[r][currentQIndex[r]];
-    if (!qData) return alert("Koniec pytań w tej rundzie!");
+    let qData = allDBs[pool][r][currentQIndex[r]];
+    if (!qData) return alert("Koniec pytań w tej rundzie z tej Puli!");
 
     if (r === 3) {
         let bestPlayer = "Lila";
-        // Szukanie lidera przy 1 pytaniu
         if (currentQIndex[r] === 0) {
             const snap = await getDocs(collection(db, "quizScores"));
             let maxPts = -999;
@@ -230,9 +305,9 @@ window.nextQuestion = async () => {
             let sel = document.getElementById('controllerSel');
             for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === bestPlayer) sel.selectedIndex = i; }
         }
-        await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [] });
+        await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [], pool: pool });
     } else {
-        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now() };
+        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: pool };
         if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
         await setDoc(doc(db, "quizGame", "state"), payload);
     }
@@ -245,30 +320,30 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
+    let aTick = Date.now();
+    let ans = currentState.givenAnswer; // Zapisuje, żeby przekazać TV do wyświetlenia
     
-    // NAPIĘCIE RÓWNIEŻ W RUNDZIE 2! Włącza bicie serca i czeka 3.5s zanim przyzna/zabierze punkty.
-    await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player });
+    await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans });
     
     setTimeout(async () => {
         if (isCorrect) {
             const scoreRef = doc(db, "quizScores", player);
             const scoreSnap = await getDoc(scoreRef);
             await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10 });
+            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, givenAnswer: ans, answerTick: aTick });
         } else {
             const scoreRef = doc(db, "quizScores", player);
             const scoreSnap = await getDoc(scoreRef);
             await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
 
             let newBlocked = [...(currentState.blocked || []), player];
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", loser: player, winner: "", pointsChange: -10 });
+            await updateDoc(doc(db, "quizGame", "state"), { status: "results_r2_wrong", loser: player, winner: "", pointsChange: -10, givenAnswer: ans, answerTick: aTick, blocked: newBlocked });
             
-            // Wznowienie timera 10s dla reszty po pokazaniu czerwonego ekranu przez 3.5s
             setTimeout(async () => {
                 await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-            }, 3500);
+            }, 5000); // Admin daje 5 sekund kary ekranowej i rusza zegar na nowo dla innych!
         }
-    }, 3500);
+    }, 3500); // 3.5 sekundy napięcia od wciśnięcia ZALICZ/ODRZUĆ
 };
 </script>
 </body>
