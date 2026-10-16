@@ -24,7 +24,9 @@
     .btn-submit { background: var(--cyan); color: #000; font-size: 20px; font-weight: bold; padding: 20px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
     
     .nominate-area { display: none; flex-direction: column; gap: 10px; }
-    .btn-nom { background: #d4af37; color: #000; font-size: 20px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
+    .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
+    .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
+    .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
     
     .locked-msg { font-size: 22px; color: #ff4757; font-weight: bold; margin-top: 30px; display: none; border: 2px dashed #ff4757; padding: 25px; border-radius: 15px; background: rgba(255,0,0,0.1); }
   </style>
@@ -58,11 +60,11 @@
     
     <div class="nominate-area" id="ui-nominate">
       <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
-      <p style="font-size: 12px; margin-top: 0;">Kto zmierzy się z tym pytaniem?</p>
-      <button class="btn-nom" onclick="nominatePlayer('Lila')">LILA</button>
-      <button class="btn-nom" onclick="nominatePlayer('Kaja')">KAJA</button>
-      <button class="btn-nom" onclick="nominatePlayer('Darek')">DAREK</button>
-      <button class="btn-nom" onclick="nominatePlayer('Jas')">JAŚ</button>
+      <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
+      <button class="btn-nom" id="nom-Lila" onclick="nominatePlayer('Lila')">LILA</button>
+      <button class="btn-nom" id="nom-Kaja" onclick="nominatePlayer('Kaja')">KAJA</button>
+      <button class="btn-nom" id="nom-Darek" onclick="nominatePlayer('Darek')">DAREK</button>
+      <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
     </div>
     
     <div class="locked-msg" id="ui-locked">ZABLOKOWANE! Patrz na ekran.</div>
@@ -98,31 +100,50 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     document.getElementById('ui-locked').style.display = 'none';
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout") {
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout" || currentState.status === "nominated_timeout") {
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
         return;
     }
     
     if (currentState.status === "nominating") {
         if (currentState.controller === myName) {
-            document.getElementById('padStatus').innerText = "WYBIERZ KTO ODPOWIADA!";
+            document.getElementById('padStatus').innerText = "DECZYJA NALEŻY DO CIEBIE!";
+            document.getElementById('pad-cat').innerText = currentState.category || "";
+            
+            const allPlayers = [
+                { id: "Lila", label: "LILA" },
+                { id: "Kaja", label: "KAJA" },
+                { id: "Darek", label: "DAREK" },
+                { id: "Jas", label: "JAŚ" }
+            ];
+            allPlayers.forEach(p => {
+                let btn = document.getElementById(`nom-${p.id}`);
+                let isBlocked = currentState.blocked && currentState.blocked.includes(p.id);
+                btn.disabled = isBlocked;
+                if (p.id === myName) {
+                    btn.classList.add('self-btn');
+                    btn.innerText = `${p.label} - BIORĘ NA SIEBIE! (±20 PKT)`;
+                } else {
+                    btn.classList.remove('self-btn');
+                    btn.innerText = `${p.label} (±10 PKT)`;
+                }
+            });
+
             document.getElementById('ui-nominate').style.display = 'flex';
         } else {
-            document.getElementById('padStatus').innerText = "CZEKAJ NA WYBÓR GRACZA...";
+            document.getElementById('padStatus').innerText = `${currentState.controller.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
         }
         return;
     }
 
     if (currentState.status === "reading") {
-        // Sprawdź czy gracz podał już błędną odpowiedź w tym pytaniu
         if (currentState.blocked && currentState.blocked.includes(myName)) {
             document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
             document.getElementById('ui-locked').style.display = 'block';
-            document.getElementById('ui-locked').innerText = "PODAŁEŚ BŁĘDNĄ ODPOWIEDŹ. TERAZ PRÓBUJĄ POZOSTALI!";
+            document.getElementById('ui-locked').innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
             return;
         }
 
-        // Dezaktywuj zużyte już błędne opcje ABCD
         for(let i=0; i<4; i++) {
             let btn = document.getElementById(`pad-btn-${i}`);
             btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
@@ -135,9 +156,9 @@ function updatePadUI() {
             document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISUJ!";
             document.getElementById('ui-input').style.display = 'flex';
         } else if (currentState.round === 3) {
-            // Jeśli nominated jest ustawione, odpowiada tylko wskazany. Jeśli puste (bo wskazany się pomylił), dobijają pozostali!
             if (!currentState.nominated || currentState.nominated === myName) {
-                document.getElementById('padStatus').innerText = "TWOJA SZANSA! ODPOWIADAJ!";
+                let msg = (currentState.nominated === currentState.controller) ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "TWOJA SZANSA (±10 PKT)! ODPOWIADAJ!";
+                document.getElementById('padStatus').innerText = msg;
                 document.getElementById('ui-abcd').style.display = 'grid';
             } else {
                 document.getElementById('padStatus').innerText = "KIBICUJ!";
@@ -174,7 +195,7 @@ window.sendTypedAnswer = async () => {
 
 window.nominatePlayer = async (targetPlayer) => {
     if (currentState.status !== "nominating" || currentState.controller !== myName) return;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer, tick: Date.now() });
+    await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer, tieMsg: "", tick: Date.now() });
 };
 </script>
 </body>
