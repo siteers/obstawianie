@@ -120,9 +120,8 @@ import { getFirestore, doc, onSnapshot, updateDoc, collection } from "https://ww
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// EFEKTY DŹWIĘKOWE MP3
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
-tickSound.loop = true; tickSound.volume = 0.6;
+tickSound.loop = true; tickSound.volume = 0.5;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
@@ -130,84 +129,82 @@ winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
 
-// --- GENERATOR PLIKU AUDIO (WAV) W PAMIĘCI PRZEGLĄDARKI ---
-// Tworzy 16-sekundowy, gładki podkład teleturniejowy w pasmie dobrze słyszalnym na TV i laptopach (220-660 Hz)
-function createShowPadAudio() {
-    const sampleRate = 22050;
-    const duration = 16; // 16-sekundowa bezszwowa pętla
-    const numSamples = sampleRate * duration;
-    const buffer = new ArrayBuffer(44 + numSamples * 2);
-    const view = new DataView(buffer);
+// --- DYNAMICZNY, ŻYWY I PRZYJAZNY DLA DZIECI SYNTEZATOR MUZYKI W TLE ---
+// Generuje wesoły, skoczny elektroniczny podkład (retro arcade / teleturniej) w pamięci przeglądarki
+let audioCtx = null;
+let bgMasterGain = null;
+let musicInterval = null;
 
-    const writeString = (offset, str) => {
-        for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
-    };
+function createUpbeatGameMusic() {
+    if (audioCtx) return;
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    audioCtx = new AudioContext();
+    
+    bgMasterGain = audioCtx.createGain();
+    bgMasterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    bgMasterGain.connect(audioCtx.destination);
 
-    writeString(0, 'RIFF');
-    view.setUint32(4, 36 + numSamples * 2, true);
-    writeString(8, 'WAVE');
-    writeString(12, 'fmt ');
-    view.setUint32(16, 16, true);
-    view.setUint16(20, 1, true);
-    view.setUint16(22, 1, true);
-    view.setUint32(24, sampleRate, true);
-    view.setUint32(28, sampleRate * 2, true);
-    view.setUint16(32, 2, true);
-    view.setUint16(34, 16, true);
-    writeString(36, 'data');
-    view.setUint32(40, numSamples * 2, true);
+    // Wesoła pentatoniczna skala (C, D, E, G, A) w skocznym tempie
+    const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+    const bassNotes = [130.81, 146.83, 164.81, 196.00];
 
-    // Ciepły akord teleturniejowy (A3, C4, E4, G4) + powolna, miękka fala melodii
-    const padFreqs = [220.00, 261.63, 329.63, 392.00];
-    const melodyNotes = [440.00, 493.88, 523.25, 659.25, 587.33, 523.25, 493.88, 392.00];
+    let step = 0;
+    musicInterval = setInterval(() => {
+        if (!audioCtx || bgMasterGain.gain.value <= 0.001) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume();
 
-    for (let i = 0; i < numSamples; i++) {
-        const t = i / sampleRate;
-        let sample = 0;
+        const now = audioCtx.currentTime;
 
-        // 1. Miękkie tło akordowe (płynnie falujące)
-        for (let j = 0; j < padFreqs.length; j++) {
-            const f = padFreqs[j];
-            const lfo = 0.75 + 0.25 * Math.sin(2 * Math.PI * (t / duration) * (j + 1));
-            sample += Math.sin(2 * Math.PI * f * t) * 0.14 * lfo;
-            sample += Math.sin(2 * Math.PI * (f * 1.002) * t) * 0.08 * lfo; // Efekt przestrzenny (Chorus)
+        // 1. Skoczny bas co krok
+        const bassOsc = audioCtx.createOscillator();
+        const bassGain = audioCtx.createGain();
+        bassOsc.type = "triangle";
+        bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
+        bassGain.gain.setValueAtTime(0.12, now);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        bassOsc.connect(bassGain);
+        bassGain.connect(bgMasterGain);
+        bassOsc.start(now);
+        bassOsc.stop(now + 0.25);
+
+        // 2. Wesołe, skaczące melodyjki
+        if (step % 2 === 0) {
+            const leadOsc = audioCtx.createOscillator();
+            const leadGain = audioCtx.createGain();
+            leadOsc.type = "sine";
+            const note = scale[Math.floor(Math.random() * scale.length)];
+            leadOsc.frequency.setValueAtTime(note, now);
+            leadGain.gain.setValueAtTime(0.08, now);
+            leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            leadOsc.connect(leadGain);
+            leadGain.connect(bgMasterGain);
+            leadOsc.start(now);
+            leadOsc.stop(now + 0.18);
         }
 
-        // 2. Bardzo łagodne, powolne nuty w tle (zmiana co 2 sekundy, miękkie narastanie i opadanie)
-        const noteIdx = Math.floor(t / 2) % melodyNotes.length;
-        const noteTime = t % 2;
-        const env = Math.sin(Math.PI * (noteTime / 2)); // Gładka obwiednia bez żadnego kliknięcia/dzwonu
-        sample += Math.sin(2 * Math.PI * melodyNotes[noteIdx] * t) * 0.10 * env;
-
-        const pcm = Math.max(-1, Math.min(1, sample)) * 32767;
-        view.setInt16(44 + i * 2, pcm, true);
-    }
-
-    const blob = new Blob([buffer], { type: 'audio/wav' });
-    const audio = new Audio(URL.createObjectURL(blob));
-    audio.loop = true;
-    audio.volume = 0.28; // Przyjemna, wyraźna głośność w tle
-    return audio;
+        step++;
+    }, 220); // Szybkie, radosne tempo
 }
 
-const bgMusic = createShowPadAudio();
-let audioUnlocked = false;
-let shouldBgPlay = true;
-
-function setBgPadActive(active) {
-    shouldBgPlay = active;
-    if (!audioUnlocked) return;
+function setBgMusicActive(active) {
+    if (!audioCtx || !bgMasterGain) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    
+    const now = audioCtx.currentTime;
+    bgMasterGain.gain.cancelScheduledValues(now);
+    bgMasterGain.gain.setValueAtTime(bgMasterGain.gain.value, now);
+    
     if (active) {
-        if (bgMusic.paused) bgMusic.play().catch(()=>{});
+        bgMasterGain.gain.linearRampToValueAtTime(0.25, now + 0.5);
     } else {
-        if (!bgMusic.paused) bgMusic.pause();
+        bgMasterGain.gain.linearRampToValueAtTime(0.0001, now + 0.1);
     }
 }
 
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
-    audioUnlocked = true;
-    if (shouldBgPlay) bgMusic.play().catch(()=>{});
+    createUpbeatGameMusic();
+    setBgMusicActive(true);
     [tickSound, suspenseSound, winSound, loseSound].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
     });
@@ -277,8 +274,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         
-        // Brak innych dźwięków -> gra przyjemny podkład w tle
-        setBgPadActive(true);
+        // Włączamy żywą, wesołą muzykę w tle
+        setBgMusicActive(true);
         
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
@@ -296,8 +293,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         isSuspense = false;
         suspenseSound.pause(); suspenseSound.currentTime = 0;
         
-        // Podczas czytania pytania (zanim włączy się końcowe odliczanie) gra podkład w tle
-        setBgPadActive(true);
+        // Podczas czytania pytania gra wesoła muzyka
+        setBgMusicActive(true);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
@@ -338,19 +335,14 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
-                    setBgPadActive(false); // Wyłącz podkład na czas dźwięku końca czasu
+                    setBgMusicActive(false); // Wyłączamy muzykę na czas końca czasu
                     timerEl.innerText = "0";
-                    if (data.round === 3 && data.nominated) {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
-                    } else {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
-                    }
+                    await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
                 } else {
                     timerEl.innerText = timeLeft;
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
-                        // Włącza się tykanie zegara -> wyłączamy podkład w tle!
-                        setBgPadActive(false);
+                        setBgMusicActive(false); // Wyciszamy muzykę gdy leci tykanie zegara
                         tickSound.play().catch(()=>{});
                     }
                 }
@@ -362,8 +354,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
         
-        // Włącza się bicie serca -> wyłączamy podkład w tle!
-        setBgPadActive(false);
+        // Wyciszenie muzyki na czas bicia serca
+        setBgMusicActive(false);
         suspenseSound.play().catch(()=>{}); 
         
         qEl.innerText = data.question;
@@ -386,8 +378,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         winnerEl.style.animation = "none";
         isSuspense = false;
         
-        // Na czas fanfar wygranej / błędu / końca czasu podkład w tle jest wyłączony!
-        setBgPadActive(false);
+        // Wyciszenie muzyki podczas fanfar
+        setBgMusicActive(false);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
         
