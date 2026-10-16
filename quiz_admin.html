@@ -7,60 +7,69 @@
   <style>
     body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; margin: 0; }
     .box { background: #222; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
-    h3 { margin-top: 0; color: #00d4ff; }
-    button { background: #00d4ff; border: none; padding: 15px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px; text-transform: uppercase; }
+    h3 { margin-top: 0; color: #00d4ff; text-transform: uppercase; }
+    button { background: #00d4ff; border: none; padding: 15px 20px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 16px; margin: 5px; text-transform: uppercase; transition: 0.2s; }
+    button:active { transform: scale(0.95); }
     button.red { background: #ff4757; color: white; }
     button.green { background: #2ed573; color: black; }
     button.gold { background: #d4af37; color: black; }
     
     .verify-box, .nominate-box { background: #1e272e; border: 2px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
-    .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; }
-    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 10px;}
+    .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; text-transform: uppercase; }
+    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; }
     
-    #auto-progress-msg { color: #2ed573; font-weight: bold; display: none; margin-top: 10px; padding: 10px; background: rgba(46, 213, 115, 0.1); border: 1px dashed #2ed573; border-radius: 8px;}
+    hr { border: 1px solid #444; margin: 25px 0; }
+    .status-msg { font-size: 14px; font-weight: bold; margin-top: 15px; color: #00ff00; }
+    
+    .setup-panel { background: rgba(212, 175, 55, 0.1); border: 2px dashed #d4af37; padding: 20px; border-radius: 15px; margin-bottom: 30px; }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <h3>STEROWANIE GRĄ</h3>
-    
-    <label>Wybór bazy pytań:</label>
+  <!-- KROK 1: KONFIGURACJA -->
+  <div class="setup-panel">
+    <h3 style="color: #d4af37;">1. START GRY (Wybór Bazy)</h3>
+    <label>Wybierz bazę pytań:</label>
     <select id="poolSel">
-        <option value="1">PULA 1 (Podstawowa - 90 pytań)</option>
-        <option value="2">PULA 2 (Trudniejsza - 90 pytań)</option>
+        <option value="1">PULA 1 (Rozgrzewka - 90 pytań)</option>
+        <option value="2">PULA 2 (Trudniejsze - 90 pytań)</option>
     </select>
-    <button class="red" onclick="startGame()">RESETUJ PUNKTY I ZACZNIJ OD NOWA</button><br>
-    <hr style="border-color: #444; margin: 20px 0;">
-    
+    <button class="red" onclick="startGame()">USTAW BAZĘ I ZRESETUJ WSZYSTKIM PUNKTY</button>
+  </div>
+
+  <!-- KROK 2: STEROWANIE -->
+  <div class="box">
+    <h3>2. STEROWANIE RUNDAMI</h3>
     <label>Runda:</label>
     <select id="roundSel">
         <option value="1">Runda 1 (ABCD - Kto pierwszy)</option>
-        <option value="2">Runda 2 (Pisanie na czas)</option>
+        <option value="2">Runda 2 (Pisanie na czas - 15 sek)</option>
         <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
-    <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
-    <div id="auto-progress-msg">⏱ Gra w trybie AUTO. Kolejne pytanie za ok. 5 sekund...</div>
+    <button class="gold" onclick="nextQuestion()">START -> PUŚĆ NASTĘPNE PYTANIE</button>
+    <div class="status-msg" id="msg">Zarządzaj pytaniami...</div>
   </div>
 
+  <!-- NOMINACJA R3 -->
   <div class="nominate-box" id="nominateUI">
     <h3 style="color: #d4af37;">RUNDA 3: KTO WYBIERA?</h3>
-    <p>Zanim wyświetlisz pytanie z kategorii <b id="n-cat"></b>, wybierz kto ma prawo wskazać gracza:</p>
+    <p>Kategoria pytania: <b id="n-cat"></b></p>
     <select id="controllerSel">
         <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
         <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
-    <button class="green" onclick="startNominationPhase()">ROZPOCZNIJ WYBIERANIE</button>
+    <button class="green" onclick="startNominationPhase()">WYSŁAŁ PRAWO GŁOSU NA TELEFON</button>
   </div>
 
+  <!-- WERYFIKACJA R2 -->
   <div class="verify-box" id="verifyUI">
     <h3 style="color: #d4af37;">WERYFIKACJA ODPOWIEDZI! (Runda 2)</h3>
-    <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał:</p>
+    <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał w 15 sekund:</p>
     <div class="ans-text" id="v-ans">...</div>
     <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
-    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (DAJ -10 PKT I WZNÓW CZAS DLA RESZTY)</button>
+    <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10 PKT)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (ZABLOKUJ GO, -10 PKT I WZNÓW CZAS)</button>
   </div>
 
 <script type="module">
@@ -70,7 +79,6 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- BAZA 180 PYTAŃ (2 PULE PO 90) ---
 const allDBs = {
     1: {
         1: [
@@ -214,8 +222,6 @@ const allDBs = {
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
-let suspenseTimeout = null;
-let autoNextTimer = null; 
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -235,82 +241,27 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
         document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
     } 
-
-    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY)
-    if (currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
-        if (!suspenseTimeout) {
-            suspenseTimeout = setTimeout(async () => {
-                let r = currentState.round;
-                let isCorrect = currentState.isAnswerCorrect;
-                let player = currentState.fastest;
-                let ptsChange = (r === 1) ? (isCorrect ? 10 : -10) : (isCorrect ? 20 : -20);
-
-                const scoreRef = doc(db, "quizScores", player);
-                const scoreSnap = await getDoc(scoreRef);
-                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-
-                let newBlocked = [...(currentState.blocked || []), player];
-
-                if (isCorrect || newBlocked.length >= 4) {
-                    await updateDoc(doc(db, "quizGame", "state"), {
-                        status: newBlocked.length >= 4 && !isCorrect ? "timeout" : "results", 
-                        winner: isCorrect ? player : "", 
-                        loser: isCorrect ? "" : player, 
-                        pointsChange: ptsChange, 
-                        answerTick: Date.now(),
-                        blocked: newBlocked
-                    });
-                } else {
-                    // Ktoś źle kliknął w R1/R3 - dajemy kare i WZNAWIAMY pytanie dla reszty
-                    await updateDoc(doc(db, "quizGame", "state"), {
-                        status: "results_wrong", loser: player, winner: "", pointsChange: ptsChange, answerTick: Date.now(), blocked: newBlocked
-                    });
-                    setTimeout(async () => {
-                        let freshSnap = await getDoc(doc(db, "quizGame", "state"));
-                        if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
-                            await updateDoc(doc(db, "quizGame", "state"), { status: "reading", fastest: "", givenAnswer: "", tick: Date.now() });
-                        }
-                    }, 4000); 
-                }
-                suspenseTimeout = null;
-            }, 3500); 
-        }
-    }
-    
-    // AUTO-NEXT Z ADMINA (PO ZIELONYM EKRANIE, CZERWONYM W R2, LUB TIMEOUT)
-    if ((currentState.status === "results" && currentState.winner) || currentState.status === "timeout" || currentState.status === "results_r2_wrong") {
-        document.getElementById('auto-progress-msg').style.display = 'block';
-        clearTimeout(autoNextTimer);
-        autoNextTimer = setTimeout(() => {
-            if(currentState.status === "results" || currentState.status === "timeout") {
-                nextQuestion();
-            }
-        }, 5000);
-    } else {
-        document.getElementById('auto-progress-msg').style.display = 'none';
-        clearTimeout(autoNextTimer);
-    }
 });
 
 window.startGame = async () => {
-    if(!confirm("Zresetować punkty i zacząć od nowa?")) return;
+    if(!confirm("Zresetować punkty i zacząć od nowa z ustawioną pulą?")) return;
     
     const pool = parseInt(document.getElementById('poolSel').value);
+    
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
     await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [], pool: pool });
     currentQIndex = { 1: -1, 2: -1, 3: -1 };
-    alert("Punkty wyzerowane! Możesz puścić pierwsze pytanie.");
+    document.getElementById('msg').innerText = "Zresetowano! Możesz puścić pytania.";
 };
 
 window.nextQuestion = async () => {
-    clearTimeout(autoNextTimer);
     let r = parseInt(document.getElementById('roundSel').value);
     let pool = currentState ? (currentState.pool || 1) : parseInt(document.getElementById('poolSel').value);
     
     currentQIndex[r]++;
     let qData = allDBs[pool][r][currentQIndex[r]];
-    if (!qData) return alert("Koniec pytań w tej rundzie z wybranej Puli!");
+    if (!qData) return alert("Koniec pytań w tej rundzie z tej Puli!");
 
     if (r === 3) {
         let bestPlayer = "Lila";
@@ -336,39 +287,10 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
-    let aTick = Date.now();
     let ans = currentState.givenAnswer; 
     
+    // Panel admina sam podaje informację czy było Prawidłowo czy Fałszywie, bo na telefonach wpisywany tekst jest dowolny
     await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
-    
-    setTimeout(async () => {
-        if (isCorrect) {
-            const scoreRef = doc(db, "quizScores", player);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, givenAnswer: ans, answerTick: aTick });
-            
-        } else {
-            const scoreRef = doc(db, "quizScores", player);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
-
-            let newBlocked = [...(currentState.blocked || []), player];
-            
-            if (newBlocked.length >= 4) {
-                await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", blocked: newBlocked });
-            } else {
-                await updateDoc(doc(db, "quizGame", "state"), { status: "results_wrong", loser: player, winner: "", pointsChange: -10, givenAnswer: ans, answerTick: aTick, blocked: newBlocked });
-                
-                setTimeout(async () => {
-                    let freshSnap = await getDoc(doc(db, "quizGame", "state"));
-                    if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-                    }
-                }, 4000); 
-            }
-        }
-    }, 3500); 
 };
 </script>
 </body>
