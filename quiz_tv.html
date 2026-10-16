@@ -7,50 +7,45 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    /* Wyniki w narożnikach */
-    .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: 0.3s; }
+    .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); }
     .top-left { top: 2vw; left: 2vw; } .top-right { top: 2vw; right: 2vw; }
     .bottom-left { bottom: 2vw; left: 2vw; } .bottom-right { bottom: 2vw; right: 2vw; }
-    
     .player-name { font-size: 2vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2vw; }
     .player-score { font-size: 3.5vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.5vw; }
 
-    /* Centrum ekranu */
     .center-stage { width: 60vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); }
     .round-title { font-size: 1.5vw; color: #888; text-transform: uppercase; letter-spacing: 0.3vw; margin-bottom: 1vw; }
-    .question-text { font-size: 3vw; font-weight: bold; line-height: 1.3; margin-bottom: 2vw; }
+    .question-text { font-size: 3vw; font-weight: bold; line-height: 1.3; margin-bottom: 2vw; color: #fff; }
+    .category-text { font-size: 2.5vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.5vw; margin-bottom: 2vw; display: none; text-shadow: 0 0 2vw #00d4ff; }
     
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; display: none; }
     .option { background: #111; border: 0.2vw solid #444; padding: 1.5vw; font-size: 2vw; border-radius: 1vw; font-weight: bold; }
     
     .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
-    .winner-announcement { font-size: 4vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; animation: pulse 1s infinite; }
+    .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; animation: pulse 1s infinite; }
     
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
 
-  <!-- Rogi -->
   <div class="score-corner top-left" id="score-Lila"><div class="player-name">Lila</div><div class="player-score" id="pts-Lila">0</div></div>
   <div class="score-corner top-right" id="score-Kaja"><div class="player-name">Kaja</div><div class="player-score" id="pts-Kaja">0</div></div>
   <div class="score-corner bottom-left" id="score-Darek"><div class="player-name">Darek</div><div class="player-score" id="pts-Darek">0</div></div>
   <div class="score-corner bottom-right" id="score-Jas"><div class="player-name">Jaś</div><div class="player-score" id="pts-Jas">0</div></div>
 
-  <!-- Pytanie -->
   <div class="center-stage">
     <div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
+    <div class="category-text" id="tv-cat">KATEGORIA</div>
     <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
     
     <div class="options-grid" id="tv-options">
-      <div class="option" id="opt-A">A: ...</div>
-      <div class="option" id="opt-B">B: ...</div>
-      <div class="option" id="opt-C">C: ...</div>
-      <div class="option" id="opt-D">D: ...</div>
+      <div class="option" id="opt-A">A: ...</div><div class="option" id="opt-B">B: ...</div>
+      <div class="option" id="opt-C">C: ...</div><div class="option" id="opt-D">D: ...</div>
     </div>
     
-    <div class="winner-announcement" id="tv-winner">LILA WCIŚKA PRZYCISK!</div>
-    <div class="status-msg" id="tv-status">ZDOBYWA 10 PKT!</div>
+    <div class="winner-announcement" id="tv-winner"></div>
+    <div class="status-msg" id="tv-status"></div>
   </div>
 
 <script type="module">
@@ -60,60 +55,55 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// Nasłuchuj wyników
 onSnapshot(collection(db, "quizScores"), (snap) => {
-    snap.forEach(doc => {
-        let el = document.getElementById(`pts-${doc.id}`);
-        if(el) el.innerText = doc.data().points;
-    });
+    snap.forEach(doc => { let el = document.getElementById(`pts-${doc.id}`); if(el) el.innerText = doc.data().points; });
 });
 
-// Nasłuchuj stanu gry
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
     
     let roundNames = {1: "RUNDA 1: KTO PIERWSZY (ABCD) | 10 PKT", 2: "RUNDA 2: SZYBKIE PISANIE | 10 PKT", 3: "RUNDA 3: RYZYKO | +20 / -20 PKT"};
     document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
-    document.getElementById('tv-question').innerText = data.question;
     
+    const catEl = document.getElementById('tv-cat');
+    const qEl = document.getElementById('tv-question');
     const opts = document.getElementById('tv-options');
     const winnerEl = document.getElementById('tv-winner');
     const statusEl = document.getElementById('tv-status');
     
-    opts.style.display = "none";
-    winnerEl.style.display = "none";
-    statusEl.style.display = "none";
+    catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
 
-    if (data.status === "reading") {
-        if (data.round === 1 && data.options) {
+    if (data.status === "setup_nomination" || data.status === "nominating") {
+        catEl.style.display = "block";
+        catEl.innerText = "KATEGORIA: " + data.category;
+        qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "LOSOWANIE GRACZA...";
+    } else if (data.status === "reading") {
+        qEl.innerText = data.question;
+        if (data.round === 1 || data.round === 3) {
             document.getElementById('opt-A').innerText = "A: " + data.options[0];
             document.getElementById('opt-B').innerText = "B: " + data.options[1];
             document.getElementById('opt-C').innerText = "C: " + data.options[2];
             document.getElementById('opt-D').innerText = "D: " + data.options[3];
             opts.style.display = "grid";
         }
-    } else if (data.status === "answering") {
-        winnerEl.style.display = "block";
-        winnerEl.style.color = "#00d4ff";
-        winnerEl.innerText = `CZEKAMY NA ODPOWIEDŹ OD: ${data.fastest.toUpperCase()}...`;
+        if (data.round === 3) {
+            winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
+            winnerEl.innerText = `ODPOWIADA TYLKO: ${data.nominated.toUpperCase()}`;
+        }
     } else if (data.status === "verifying") {
-        winnerEl.style.display = "block";
-        winnerEl.style.color = "#d4af37";
-        winnerEl.innerText = `${data.fastest.toUpperCase()} ZATWIERDZA ODPOWIEDŹ. WERYFIKACJA...`;
-    } else if (data.status === "results") {
-        winnerEl.style.display = "block";
-        statusEl.style.display = "block";
+        qEl.innerText = data.question;
+        winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
+        winnerEl.innerText = `${data.fastest.toUpperCase()} WYSŁAŁ ODPOWIEDŹ. WERYFIKACJA...`;
+    } else if (data.status === "results" || data.status === "results_r3_pending") {
+        qEl.innerText = data.question;
+        winnerEl.style.display = "block"; statusEl.style.display = "block";
         if (data.winner) {
-            winnerEl.style.color = "#00ff00";
-            winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-            statusEl.style.color = "#00ff00";
-            statusEl.innerText = `+${data.pointsChange} PKT`;
+            winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+            statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
         } else if (data.loser) {
-            winnerEl.style.color = "#ff4757";
-            winnerEl.innerText = `${data.loser.toUpperCase()} PODAJE BŁĘDNĄ ODPOWIEDŹ!`;
-            statusEl.style.color = "#ff4757";
-            statusEl.innerText = `${data.pointsChange} PKT`;
+            winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
+            statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
         }
     }
 });
