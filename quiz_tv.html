@@ -7,11 +7,19 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); }
+    /* Timer okrągły na górze */
+    .timer-box { position: absolute; top: 2vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
+    .timer-alert { color: var(--error) !important; animation: pulse 0.5s infinite; }
+
+    .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; }
     .top-left { top: 2vw; left: 2vw; } .top-right { top: 2vw; right: 2vw; }
     .bottom-left { bottom: 2vw; left: 2vw; } .bottom-right { bottom: 2vw; right: 2vw; }
-    .player-name { font-size: 2vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2vw; }
-    .player-score { font-size: 3.5vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.5vw; }
+    .player-name { font-size: 2vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2vw; transition: 0.3s; }
+    .player-score { font-size: 3.5vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.5vw; transition: 0.3s; }
+
+    /* Klasa dla ZABLOKOWANYCH GRACZY w R2 */
+    .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
+    .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
 
     .center-stage { width: 60vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); }
     .round-title { font-size: 1.5vw; color: #888; text-transform: uppercase; letter-spacing: 0.3vw; margin-bottom: 1vw; }
@@ -22,12 +30,14 @@
     .option { background: #111; border: 0.2vw solid #444; padding: 1.5vw; font-size: 2vw; border-radius: 1vw; font-weight: bold; }
     
     .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
-    .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; animation: pulse 1s infinite; }
+    .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; }
     
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
+
+  <div class="timer-box" id="tv-timer">10</div>
 
   <div class="score-corner top-left" id="score-Lila"><div class="player-name">Lila</div><div class="player-score" id="pts-Lila">0</div></div>
   <div class="score-corner top-right" id="score-Kaja"><div class="player-name">Kaja</div><div class="player-score" id="pts-Kaja">0</div></div>
@@ -55,6 +65,9 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
+let currentTick = null;
+let timerInterval = null;
+
 onSnapshot(collection(db, "quizScores"), (snap) => {
     snap.forEach(doc => { let el = document.getElementById(`pts-${doc.id}`); if(el) el.innerText = doc.data().points; });
 });
@@ -71,13 +84,25 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const opts = document.getElementById('tv-options');
     const winnerEl = document.getElementById('tv-winner');
     const statusEl = document.getElementById('tv-status');
+    const timerEl = document.getElementById('tv-timer');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
+
+    // OZNACZANIE ZABLOKOWANYCH GRACZY (Runda 2)
+    const players = ["Lila", "Kaja", "Darek", "Jas"];
+    players.forEach(p => {
+        let el = document.getElementById(`score-${p}`);
+        if(data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
+        else el.classList.remove('blocked');
+    });
 
     if (data.status === "setup_nomination" || data.status === "nominating") {
         catEl.style.display = "block";
         catEl.innerText = "KATEGORIA: " + data.category;
         qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "LOSOWANIE GRACZA...";
+        
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        
     } else if (data.status === "reading") {
         qEl.innerText = data.question;
         if (data.round === 1 || data.round === 3) {
@@ -91,11 +116,41 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
             winnerEl.innerText = `ODPOWIADA TYLKO: ${data.nominated.toUpperCase()}`;
         }
+
+        // LOGIKA TIMERA
+        if (data.tick !== currentTick) {
+            currentTick = data.tick;
+            clearInterval(timerInterval);
+            let timeLeft = 10;
+            timerEl.style.display = 'flex';
+            timerEl.classList.remove('timer-alert');
+            timerEl.innerText = timeLeft;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    timerEl.innerText = "0";
+                    winnerEl.style.display = "block";
+                    winnerEl.style.color = "var(--error)";
+                    winnerEl.innerText = "CZAS MINĄŁ!";
+                    qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
+                    opts.style.display = "none";
+                } else {
+                    timerEl.innerText = timeLeft;
+                    if (timeLeft <= 3) timerEl.classList.add('timer-alert');
+                }
+            }, 1000);
+        }
+
     } else if (data.status === "verifying") {
+        clearInterval(timerInterval); timerEl.style.display = 'none';
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
         winnerEl.innerText = `${data.fastest.toUpperCase()} WYSŁAŁ ODPOWIEDŹ. WERYFIKACJA...`;
+        
     } else if (data.status === "results" || data.status === "results_r3_pending") {
+        clearInterval(timerInterval); timerEl.style.display = 'none';
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; statusEl.style.display = "block";
         if (data.winner) {
