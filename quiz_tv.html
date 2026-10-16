@@ -10,8 +10,15 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    .timer-box { position: absolute; top: 3vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
-    .timer-alert { color: var(--error) !important; animation: pulse 0.5s infinite; }
+    /* Dedykowana animacja timera, żeby nie skakał w lewo! */
+    @keyframes pulseTimer {
+      0% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.1); }
+      100% { transform: translateX(-50%) scale(1); }
+    }
+
+    .timer-box { position: absolute; top: 6vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
+    .timer-alert { color: var(--error) !important; animation: pulseTimer 0.5s infinite !important; }
 
     .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; }
     .top-left { top: 2vw; left: 2vw; } .top-right { top: 2vw; right: 2vw; }
@@ -22,7 +29,7 @@
     .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
     .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
 
-    .center-stage { width: 50vw; max-width: 50vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; z-index: 10; margin-top: 5vw; }
+    .center-stage { width: 55vw; max-width: 55vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; z-index: 10; margin-top: 4vw; }
     .center-stage.success-glow { box-shadow: 0 0 6vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
     .center-stage.error-glow { box-shadow: 0 0 6vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
@@ -37,7 +44,7 @@
     #tv-qr-container p { font-size: 1.2vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 1vw; }
     #tv-qr-container img { width: 12vw; height: 12vw; border: 0.3vw solid var(--cyan); border-radius: 1vw; padding: 0.5vw; background: #fff; }
 
-    #tv-typed-answer { font-size: 2.2vw; color: #aaa; margin-bottom: 1.5vw; font-style: italic; display: none; }
+    #tv-typed-answer { font-size: 2vw; color: #aaa; margin-bottom: 1.5vw; font-style: italic; display: none; }
     #tv-typed-answer span { color: #fff; font-weight: bold; font-style: normal; }
 
     .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
@@ -49,7 +56,7 @@
 <body>
 
   <div id="audio-overlay">
-    <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ DŹWIĘK TV</button>
+    <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ EKRAN TV</button>
   </div>
 
   <div class="timer-box" id="tv-timer">10</div>
@@ -81,13 +88,13 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc, getDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
-tickSound.loop = true; tickSound.volume = 0.8;
+tickSound.loop = true; tickSound.volume = 0.5;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
@@ -95,15 +102,12 @@ const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/29
 
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
-    // Puste odtworzenie odblokowuje silnik w przeglądarce
     winSound.play().then(() => { winSound.pause(); winSound.currentTime = 0; }).catch(()=>{});
 };
 
 let currentTick = null;
 let timerInterval = null;
-let suspenseTimeout = null;
-let autoNextTimer = null;
-let lastPlayedResult = null;
+let currentAnswerTick = null;
 let isSuspense = false;
 let pendingScores = {}; 
 
@@ -207,7 +211,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
                     opts.style.display = "none";
                     
-                    // WYMUSZENIE TIMEOUT I AUTO-NEXT
+                    // WYMUSZENIE TIMEOUT DO ADMINA
                     await updateDoc(doc(db, "quizGame", "state"), { status: "timeout" });
                 } else {
                     timerEl.innerText = timeLeft;
@@ -220,7 +224,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
 
     } else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
-        // ROZPOCZĘCIE BICIA SERCA I ODLICZANIE NAPIĘCIA W TV
         if (!isSuspense) {
             isSuspense = true;
             clearInterval(timerInterval); timerEl.style.display = 'none';
@@ -237,88 +240,47 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
             winnerEl.style.animation = "pulse 0.5s infinite";
             winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
-
-            if (!suspenseTimeout && data.status !== "verifying") {
-                suspenseTimeout = setTimeout(async () => {
-                    let r = data.round;
-                    let isCorrect = data.isAnswerCorrect;
-                    let player = data.fastest;
-                    let ptsChange = 0;
-                    
-                    if(r === 1) ptsChange = isCorrect ? 10 : -10;
-                    if(r === 2) ptsChange = isCorrect ? 10 : -10;
-                    if(r === 3) ptsChange = isCorrect ? 20 : -20;
-
-                    const scoreRef = doc(db, "quizScores", player);
-                    const scoreSnap = await getDoc(scoreRef);
-                    await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-
-                    if (isCorrect) {
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: "results", winner: player, loser: "", pointsChange: ptsChange, answerTick: Date.now()
-                        });
-                    } else {
-                        let newBlocked = [...(data.blocked || []), player];
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: r === 2 ? "results_r2_wrong" : "results", loser: player, winner: "", pointsChange: ptsChange, answerTick: Date.now(), blocked: newBlocked
-                        });
-                        
-                        if (r === 2) {
-                            setTimeout(async () => {
-                                await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-                            }, 5000);
-                        }
-                    }
-                    suspenseTimeout = null;
-                }, 3500); 
-            }
         }
         
-    } else if (data.status === "results" || data.status === "results_r2_wrong" || data.status === "timeout") {
+    } else if (data.status === "results" || data.status === "results_wrong") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         winnerEl.style.animation = "none";
         isSuspense = false;
         
         qEl.innerText = data.question;
-        winnerEl.style.display = "block"; 
-
-        if (data.status === "timeout") {
-            winnerEl.style.color = "var(--error)";
-            winnerEl.innerText = "CZAS MINĄŁ!";
-            qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
-        } else {
-            statusEl.style.display = "block";
-            if (data.round === 2 && data.givenAnswer) {
-                typedAnsEl.style.display = "block";
-                typedAnsEl.innerHTML = `${(data.winner || data.loser || data.fastest || "").toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-            }
-
-            for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-            
-            if (data.winner) {
-                stage.classList.add("success-glow");
-                winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-                statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
-                if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(e=>{}); lastPlayedResult = "win_" + data.answerTick; }
-            } else if (data.loser) {
-                stage.classList.add("error-glow");
-                winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
-                statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
-                if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(e=>{}); lastPlayedResult = "lose_" + data.answerTick; }
-            }
+        winnerEl.style.display = "block"; statusEl.style.display = "block";
+        
+        if (data.round === 2 && data.givenAnswer) {
+            typedAnsEl.style.display = "block";
+            let pName = (data.winner || data.loser || data.fastest || "").toUpperCase();
+            typedAnsEl.innerHTML = `${pName} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
         }
 
-        // AUTOMATYCZNE PRZEWIJANIE (W R1 i R3 LUB PO TIMEOUT)
-        if (data.status === "timeout" || data.status === "results") {
-            clearTimeout(autoNextTimer);
-            autoNextTimer = setTimeout(async () => {
-                // Skrypt na TV powiadamia admina o progresie ukrytym flago-stanem by puścić nowe
-                if (currentState.status === "results" || currentState.status === "timeout") {
-                    await updateDoc(doc(db, "quizGame", "state"), { triggerNext: Date.now() });
-                }
-            }, 6000); // 6 sekund żeby zobaczyli punkty
+        // AKTUALIZACJA PUNKTÓW W ROGACH
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+        
+        if (data.winner) {
+            stage.classList.add("success-glow");
+            winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+            statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play(); lastPlayedResult = "win_" + data.answerTick; }
+        } else if (data.loser) {
+            stage.classList.add("error-glow");
+            winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
+            statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play(); lastPlayedResult = "lose_" + data.answerTick; }
         }
+    } else if (data.status === "timeout") {
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        winnerEl.style.animation = "none";
+        
+        winnerEl.style.display = "block";
+        winnerEl.style.color = "var(--error)";
+        winnerEl.innerText = "CZAS MINĄŁ!";
+        qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
+        opts.style.display = "none";
     }
 });
 </script>
