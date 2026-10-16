@@ -10,7 +10,11 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    .timer-box { position: absolute; top: 2vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
+    /* GŁOŚNIK MUTE TŁA */
+    #mute-btn { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); font-size: 2.5vw; cursor: pointer; z-index: 200; background: rgba(0,0,0,0.5); padding: 0.5vw 1vw; border-radius: 1vw; border: 1px solid #444; user-select: none; transition: 0.2s; }
+    #mute-btn:hover { background: rgba(255,255,255,0.1); }
+
+    .timer-box { position: absolute; top: 6vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
     .timer-alert { color: var(--error) !important; animation: pulse 0.5s infinite; }
 
     .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; }
@@ -22,7 +26,7 @@
     .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
     .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
 
-    .center-stage { width: 50vw; max-width: 50vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; z-index: 10; }
+    .center-stage { width: 55vw; max-width: 55vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; z-index: 10; margin-top: 4vw; }
     .center-stage.success-glow { box-shadow: 0 0 6vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
     .center-stage.error-glow { box-shadow: 0 0 6vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
@@ -37,8 +41,12 @@
     #tv-qr-container p { font-size: 1.2vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 1vw; }
     #tv-qr-container img { width: 12vw; height: 12vw; border: 0.3vw solid var(--cyan); border-radius: 1vw; padding: 0.5vw; background: #fff; }
 
+    /* Wpisywany tekst z R2 */
+    #tv-typed-answer { font-size: 2.2vw; color: #aaa; margin-bottom: 1.5vw; font-style: italic; display: none; }
+    #tv-typed-answer span { color: #fff; font-weight: bold; font-style: normal; }
+
     .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
-    .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; }
+    .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 1vw; text-shadow: 0 0 2vw var(--gold); display: none; }
     
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
   </style>
@@ -49,6 +57,7 @@
     <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ DŹWIĘK TV</button>
   </div>
 
+  <div id="mute-btn" onclick="toggleMuteBg()">🔊</div>
   <div class="timer-box" id="tv-timer">10</div>
 
   <div class="score-corner top-left" id="score-Lila"><div class="player-name">Lila</div><div class="player-score" id="pts-Lila">0</div></div>
@@ -71,6 +80,7 @@
       <div class="option" id="opt-C">C: ...</div><div class="option" id="opt-D">D: ...</div>
     </div>
     
+    <div id="tv-typed-answer"></div>
     <div class="winner-announcement" id="tv-winner"></div>
     <div class="status-msg" id="tv-status"></div>
   </div>
@@ -82,11 +92,19 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// Łagodny pad ambientowy jako muzyka tła, bardzo cichy
-const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/228/228-preview.mp3"); 
-bgMusic.loop = true; bgMusic.volume = 0.08;
+// Łagodny ciągły pad + Bicie serca na odpowiedź
+const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/228/228-preview.mp3"); // Łagodny, jednostajny ambient
+bgMusic.loop = true; bgMusic.volume = 0.15;
+
+let isBgMuted = false;
+window.toggleMuteBg = function() {
+    isBgMuted = !isBgMuted;
+    bgMusic.muted = isBgMuted;
+    document.getElementById('mute-btn').innerText = isBgMuted ? "🔇" : "🔊";
+};
+
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
-tickSound.loop = true; tickSound.volume = 0.7;
+tickSound.loop = true; tickSound.volume = 0.5;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
@@ -100,6 +118,8 @@ window.initAudio = function() {
 let currentTick = null;
 let timerInterval = null;
 let lastPlayedResult = null;
+let isSuspense = false;
+let pendingScores = {}; 
 
 window.onload = () => {
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -108,7 +128,13 @@ window.onload = () => {
 };
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
-    snap.forEach(doc => { let el = document.getElementById(`pts-${doc.id}`); if(el) el.innerText = doc.data().points; });
+    snap.forEach(doc => { 
+        pendingScores[doc.id] = doc.data().points; 
+        if(!isSuspense) {
+            let el = document.getElementById(`pts-${doc.id}`); 
+            if(el) el.innerText = doc.data().points; 
+        }
+    });
 });
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
@@ -126,8 +152,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const statusEl = document.getElementById('tv-status');
     const timerEl = document.getElementById('tv-timer');
     const qrContainer = document.getElementById('tv-qr-container');
+    const typedAnsEl = document.getElementById('tv-typed-answer');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
+    typedAnsEl.style.display = "none";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
     stage.classList.remove("success-glow", "error-glow");
 
@@ -139,8 +167,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     });
 
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
+        isSuspense = false;
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        bgMusic.play().catch(e=>{}); // Muzyka w tle podczas przerw i nominacji
         
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
@@ -151,9 +181,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
         
     } else if (data.status === "reading") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        isSuspense = false;
+        bgMusic.play().catch(e=>{});
+        suspenseSound.pause(); suspenseSound.currentTime = 0;
         
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
         qEl.innerText = data.question;
         
         if (data.round === 1 || data.round === 3) {
@@ -170,6 +203,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
         if (data.tick !== currentTick) {
             currentTick = data.tick;
+            clearInterval(timerInterval);
+            tickSound.pause(); tickSound.currentTime = 0;
             let timeLeft = 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
@@ -189,7 +224,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     opts.style.display = "none";
                 } else {
                     timerEl.innerText = timeLeft;
-                    // Dźwięk pikania tylko przez ostatnie 3 sekundy
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
                         tickSound.play().catch(e=>{});
@@ -201,31 +235,43 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     } else if (data.status === "verifying" || data.status === "results_pending_r1" || data.status === "results_pending_r3") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
-        suspenseSound.play().catch(e=>{}); // WŁĄCZA BICIE SERCA
+        bgMusic.pause(); // Cisza na czas weryfikacji!
+        suspenseSound.play().catch(e=>{}); 
         
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
         winnerEl.style.animation = "pulse 0.5s infinite";
         winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
         
-    } else if (data.status === "results") {
+    } else if (data.status === "results" || data.status === "results_r2_wrong") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         winnerEl.style.animation = "none";
+        isSuspense = false;
         
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; statusEl.style.display = "block";
+        
+        // POKAŻ CO WPISANO W R2
+        if (data.round === 2 && data.givenAnswer) {
+            typedAnsEl.style.display = "block";
+            let pName = (data.winner || data.loser || data.fastest || "").toUpperCase();
+            typedAnsEl.innerHTML = `${pName} wpisał/a: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
+        }
+
+        // AKTUALIZACJA PUNKTÓW
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
         
         if (data.winner) {
             stage.classList.add("success-glow");
             winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
             statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "win_" + currentTick) { winSound.play(); lastPlayedResult = "win_" + currentTick; }
+            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play(); lastPlayedResult = "win_" + data.answerTick; }
         } else if (data.loser) {
             stage.classList.add("error-glow");
             winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "lose_" + currentTick) { loseSound.play(); lastPlayedResult = "lose_" + currentTick; }
+            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play(); lastPlayedResult = "lose_" + data.answerTick; }
         }
     }
 });
