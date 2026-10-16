@@ -168,6 +168,13 @@ window.onload = () => {
     document.getElementById('qrTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${tvUrl}&color=000000&bgcolor=ffffff`;
 };
 
+// OBSŁUGA KLAWISZA ENTER W POLACH LOGOWANIA
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter') {
+        authorizeAgent();
+    }
+});
+
 window.authorizeAgent = async function() {
     const agentName = document.getElementById('agentSelect').value;
     const passInput = document.getElementById('agentPassword');
