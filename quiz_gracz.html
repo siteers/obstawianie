@@ -66,7 +66,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
@@ -155,7 +155,7 @@ function updatePadUI() {
         }
     }
     
-    if (currentState.status === "verifying") {
+    if (currentState.status === "verifying" || currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
@@ -167,23 +167,13 @@ window.sendAnswer = async (indexStr) => {
     if (currentState.status !== "reading") return;
     const index = parseInt(indexStr);
     const isCorrect = (index === currentState.correctIndex);
-    let aTick = Date.now();
-    let ptsChange = 0;
     
-    if (currentState.round === 1) ptsChange = isCorrect ? 10 : -10;
-    if (currentState.round === 3) ptsChange = isCorrect ? 20 : -20;
-    
-    // Zapis punktów w bazie
-    const scoreRef = doc(db, "quizScores", myName);
-    const scoreSnap = await getDoc(scoreRef);
-    await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-    
-    // Wypuszczenie wyniku do TV (wyzwala bicie serca)
-    await updateDoc(doc(db, "quizGame", "state"), { 
-        status: "results", fastest: myName, 
-        winner: isCorrect ? myName : "", loser: isCorrect ? "" : myName, 
-        pointsChange: ptsChange, answerTick: aTick 
-    });
+    // Telefony JUŻ NIE dodają punktów, tylko wysyłają status do Admina
+    if (currentState.round === 1) {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isCorrect: isCorrect });
+    } else if (currentState.round === 3) {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, isCorrect: isCorrect });
+    }
 };
 
 window.sendTypedAnswer = async () => {
