@@ -7,11 +7,9 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    /* Overlay aktywacji audio */
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    /* Timer okrągły na górze */
     .timer-box { position: absolute; top: 2vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
     .timer-alert { color: var(--error) !important; animation: pulse 0.5s infinite; }
 
@@ -24,7 +22,10 @@
     .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
     .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
 
-    .center-stage { width: 60vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); }
+    .center-stage { width: 60vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; }
+    .center-stage.success-glow { box-shadow: 0 0 6vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+    .center-stage.error-glow { box-shadow: 0 0 6vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
+
     .round-title { font-size: 1.5vw; color: #888; text-transform: uppercase; letter-spacing: 0.3vw; margin-bottom: 1vw; }
     .question-text { font-size: 3vw; font-weight: bold; line-height: 1.3; margin-bottom: 2vw; color: #fff; }
     .category-text { font-size: 2.5vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.5vw; margin-bottom: 2vw; display: none; text-shadow: 0 0 2vw #00d4ff; }
@@ -32,7 +33,6 @@
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; display: none; }
     .option { background: #111; border: 0.2vw solid #444; padding: 1.5vw; font-size: 2vw; border-radius: 1vw; font-weight: bold; }
     
-    /* Kod QR Gracza */
     #tv-qr-container { display: none; margin-top: 2vw; }
     #tv-qr-container p { font-size: 1.2vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 1vw; }
     #tv-qr-container img { width: 12vw; height: 12vw; border: 0.3vw solid var(--cyan); border-radius: 1vw; padding: 0.5vw; background: #fff; }
@@ -45,7 +45,6 @@
 </head>
 <body>
 
-  <!-- Ekran startowy Audio (Zabezpieczenie przeglądarek) -->
   <div id="audio-overlay">
     <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ DŹWIĘK TV</button>
   </div>
@@ -57,7 +56,7 @@
   <div class="score-corner bottom-left" id="score-Darek"><div class="player-name">Darek</div><div class="player-score" id="pts-Darek">0</div></div>
   <div class="score-corner bottom-right" id="score-Jas"><div class="player-name">Jaś</div><div class="player-score" id="pts-Jas">0</div></div>
 
-  <div class="center-stage">
+  <div class="center-stage" id="stage-box">
     <div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
     <div class="category-text" id="tv-cat">KATEGORIA</div>
     <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
@@ -83,22 +82,24 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// DŹWIĘKI SYSTEMOWE (Darmowe zasoby z Mixkit)
-const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3"); // Muzyka w tle
-bgMusic.loop = true; bgMusic.volume = 0.15;
+// SYSTEM AUDIO Z NAPIĘCIEM
+const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/2573/2573-preview.mp3"); // Mroczny drone
+bgMusic.loop = true; bgMusic.volume = 0.3;
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); // Tykanie
-tickSound.loop = true; tickSound.volume = 0.6;
+tickSound.loop = true; tickSound.volume = 0.8;
+const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); // Bicie serca
+suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); // Sukces
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); // Błąd
 
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
-    bgMusic.play().catch(e => console.log("Błąd autoodtwarzania: " + e));
+    bgMusic.play().catch(e => console.log(e));
 };
 
 let currentTick = null;
 let timerInterval = null;
-let lastPlayedResult = null; // Zabezpieczenie przed dublowaniem dźwięku sukcesu
+let lastPlayedResult = null;
 
 window.onload = () => {
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -117,6 +118,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     let roundNames = {1: "RUNDA 1: KTO PIERWSZY (ABCD) | 10 PKT", 2: "RUNDA 2: SZYBKIE PISANIE | 10 PKT", 3: "RUNDA 3: RYZYKO | +20 / -20 PKT"};
     document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
     
+    const stage = document.getElementById('stage-box');
     const catEl = document.getElementById('tv-cat');
     const qEl = document.getElementById('tv-question');
     const opts = document.getElementById('tv-options');
@@ -127,6 +129,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
+    stage.classList.remove("success-glow", "error-glow");
 
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
@@ -137,7 +140,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
     if (data.status === "setup_nomination" || data.status === "nominating" || data.status === "idle") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
@@ -149,6 +152,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         
     } else if (data.status === "reading") {
         qEl.innerText = data.question;
+        suspenseSound.pause(); suspenseSound.currentTime = 0;
+        
         if (data.round === 1 || data.round === 3) {
             document.getElementById('opt-A').innerText = "A: " + data.options[0];
             document.getElementById('opt-B').innerText = "B: " + data.options[1];
@@ -189,25 +194,32 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }, 1000);
         }
 
-    } else if (data.status === "verifying") {
+    } else if (data.status === "verifying" || data.status === "results_pending_r1" || data.status === "results_pending_r3") {
+        // CHWILA NIEPEWNOŚCI
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
+        suspenseSound.play().catch(e=>{});
+        
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-        winnerEl.innerText = `${data.fastest.toUpperCase()} WYSŁAŁ ODPOWIEDŹ. WERYFIKACJA...`;
+        winnerEl.style.animation = "pulse 0.5s infinite";
+        winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
         
-    } else if (data.status === "results" || data.status === "results_r3_pending") {
+    } else if (data.status === "results" || data.status === "results_r2_wrong") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        winnerEl.style.animation = "none";
         
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; statusEl.style.display = "block";
         
         if (data.winner) {
+            stage.classList.add("success-glow");
             winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
             statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
             if (lastPlayedResult !== "win_" + currentTick) { winSound.play(); lastPlayedResult = "win_" + currentTick; }
         } else if (data.loser) {
+            stage.classList.add("error-glow");
             winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
             if (lastPlayedResult !== "lose_" + currentTick) { loseSound.play(); lastPlayedResult = "lose_" + currentTick; }
