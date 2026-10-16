@@ -7,64 +7,96 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
     @keyframes pulseTimer {
       0% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.1); }
+      50% { transform: translateX(-50%) scale(1.12); }
       100% { transform: translateX(-50%) scale(1); }
     }
 
-    /* Zablokowane sztywne centrowanie timera! */
-    .timer-box { position: absolute; top: 6vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; margin: 0 !important; }
-    .timer-alert { color: var(--error) !important; animation: pulseTimer 0.5s infinite !important; }
+    @keyframes blockedFlash {
+      0%, 100% { border-color: #ff0000; background: rgba(255, 0, 0, 0.35); box-shadow: 0 0 2.5vw #ff0000; }
+      50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
+    }
 
-    .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; }
-    .top-left { top: 2vw; left: 2vw; } .top-right { top: 2vw; right: 2vw; }
-    .bottom-left { bottom: 2vw; left: 2vw; } .bottom-right { bottom: 2vw; right: 2vw; }
-    .player-name { font-size: 2vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2vw; transition: 0.3s; }
-    .player-score { font-size: 3.5vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.5vw; transition: 0.3s; }
+    /* Zegar wyżej i mniejszy, by nie nachodził na ramkę */
+    .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 6.5vw; height: 6.5vw; display: none; align-items: center; justify-content: center; font-size: 3.2vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
+    .timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
 
-    .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
-    .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
+    /* Kompaktowe narożniki - nie kolidują ze środkiem */
+    .score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
+    .top-left { top: 1.5vw; left: 1.5vw; } .top-right { top: 1.5vw; right: 1.5vw; }
+    .bottom-left { bottom: 1.5vw; left: 1.5vw; } .bottom-right { bottom: 1.5vw; right: 1.5vw; }
+    .player-name { font-size: 1.7vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; }
+    .player-score { font-size: 3vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.3vw; }
+    .blocked-tag { display: none; font-size: 0.9vw; color: #fff; background: #ff0000; padding: 0.2vw 0.5vw; border-radius: 0.4vw; margin-top: 0.4vw; font-weight: 900; letter-spacing: 0.1vw; }
 
-    .center-stage { width: 55vw; max-width: 55vw; text-align: center; background: rgba(15,23,42,0.9); border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 3vw; box-shadow: 0 0 4vw rgba(212, 175, 55, 0.3); transition: 0.5s; z-index: 10; margin-top: 4vw; }
-    .center-stage.success-glow { box-shadow: 0 0 6vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
-    .center-stage.error-glow { box-shadow: 0 0 6vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
+    /* Miganie na czerwono osoby, która odpowiedziała źle */
+    .score-corner.blocked { animation: blockedFlash 0.8s infinite !important; }
+    .score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
+    .score-corner.blocked .blocked-tag { display: inline-block; }
 
-    .round-title { font-size: 1.5vw; color: #888; text-transform: uppercase; letter-spacing: 0.3vw; margin-bottom: 1vw; }
-    .question-text { font-size: 2.8vw; font-weight: bold; line-height: 1.3; margin-bottom: 2vw; color: #fff; }
-    .category-text { font-size: 2.5vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.5vw; margin-bottom: 2vw; display: none; text-shadow: 0 0 2vw #00d4ff; }
+    /* Zwężona i wyśrodkowana scena główna (46vw zamiast 55vw) */
+    .center-stage { width: 46vw; max-width: 46vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2.2vw 2.5vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+    .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+    .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
+
+    .round-title { font-size: 1.2vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.25vw; margin-bottom: 0.8vw; font-weight: bold; }
+    .question-text { font-size: 2.3vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.5vw; color: #fff; }
+    .category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1.2vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
     
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; display: none; }
-    .option { background: #111; border: 0.2vw solid #444; padding: 1.5vw; font-size: 1.8vw; border-radius: 1vw; font-weight: bold; }
+    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
+    .option { background: #111; border: 0.18vw solid #444; padding: 1.2vw; font-size: 1.6vw; border-radius: 0.8vw; font-weight: bold; transition: 0.3s; }
+    .option.used-wrong { background: rgba(255, 0, 0, 0.15); border-color: #ff4757; color: #ff4757; text-decoration: line-through; opacity: 0.45; }
+    .option.correct-highlight { background: rgba(0, 255, 0, 0.25); border-color: #00ff00; color: #00ff00; box-shadow: 0 0 1.5vw rgba(0,255,0,0.5); }
     
-    #tv-qr-container { display: none; margin-top: 2vw; }
-    #tv-qr-container p { font-size: 1.2vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 1vw; }
-    #tv-qr-container img { width: 12vw; height: 12vw; border: 0.3vw solid var(--cyan); border-radius: 1vw; padding: 0.5vw; background: #fff; }
+    #tv-qr-container { display: none; margin-top: 1.5vw; }
+    #tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
+    #tv-qr-container img { width: 10vw; height: 10vw; border: 0.25vw solid var(--cyan); border-radius: 0.8vw; padding: 0.4vw; background: #fff; }
 
-    #tv-typed-answer { font-size: 2vw; color: #aaa; margin-bottom: 1.5vw; font-style: italic; display: none; }
-    #tv-typed-answer span { color: #fff; font-weight: bold; font-style: normal; }
+    #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
+    #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-    .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
-    .winner-announcement { font-size: 3vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 1vw; text-shadow: 0 0 2vw var(--gold); display: none; }
+    .winner-announcement { font-size: 2.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+    .status-msg { font-size: 2.5vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
     
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+    /* Boks wyświetlający prawidłową odpowiedź */
+    .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
+    .correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
+
+    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
   </style>
 </head>
 <body>
 
   <div id="audio-overlay">
-    <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ EKRAN TV</button>
+    <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN I DŹWIĘK TV</button>
   </div>
 
   <div class="timer-box" id="tv-timer">10</div>
 
-  <div class="score-corner top-left" id="score-Lila"><div class="player-name">Lila</div><div class="player-score" id="pts-Lila">0</div></div>
-  <div class="score-corner top-right" id="score-Kaja"><div class="player-name">Kaja</div><div class="player-score" id="pts-Kaja">0</div></div>
-  <div class="score-corner bottom-left" id="score-Darek"><div class="player-name">Darek</div><div class="player-score" id="pts-Darek">0</div></div>
-  <div class="score-corner bottom-right" id="score-Jas"><div class="player-name">Jaś</div><div class="player-score" id="pts-Jas">0</div></div>
+  <div class="score-corner top-left" id="score-Lila">
+    <div class="player-name">Lila</div>
+    <div class="player-score" id="pts-Lila">0</div>
+    <div class="blocked-tag">ZABLOKOWANA</div>
+  </div>
+  <div class="score-corner top-right" id="score-Kaja">
+    <div class="player-name">Kaja</div>
+    <div class="player-score" id="pts-Kaja">0</div>
+    <div class="blocked-tag">ZABLOKOWANA</div>
+  </div>
+  <div class="score-corner bottom-left" id="score-Darek">
+    <div class="player-name">Darek</div>
+    <div class="player-score" id="pts-Darek">0</div>
+    <div class="blocked-tag">ZABLOKOWANY</div>
+  </div>
+  <div class="score-corner bottom-right" id="score-Jas">
+    <div class="player-name">Jaś</div>
+    <div class="player-score" id="pts-Jas">0</div>
+    <div class="blocked-tag">ZABLOKOWANY</div>
+  </div>
 
   <div class="center-stage" id="stage-box">
     <div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
@@ -77,13 +109,14 @@
     </div>
     
     <div class="options-grid" id="tv-options">
-      <div class="option" id="opt-A">A: ...</div><div class="option" id="opt-B">B: ...</div>
-      <div class="option" id="opt-C">C: ...</div><div class="option" id="opt-D">D: ...</div>
+      <div class="option" id="opt-0">A: ...</div><div class="option" id="opt-1">B: ...</div>
+      <div class="option" id="opt-2">C: ...</div><div class="option" id="opt-3">D: ...</div>
     </div>
     
     <div id="tv-typed-answer"></div>
     <div class="winner-announcement" id="tv-winner"></div>
     <div class="status-msg" id="tv-status"></div>
+    <div class="correct-answer-banner" id="tv-correct-banner">Prawidłowa odpowiedź: <span id="tv-correct-val"></span></div>
   </div>
 
 <script type="module">
@@ -94,22 +127,23 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
-tickSound.loop = true; tickSound.volume = 0.5;
+tickSound.loop = true; tickSound.volume = 0.6;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
+winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
+loseSound.volume = 0.9;
 
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
-    winSound.play().then(() => { winSound.pause(); winSound.currentTime = 0; }).catch(()=>{});
-    loseSound.play().then(() => { loseSound.pause(); loseSound.currentTime = 0; }).catch(()=>{});
+    [tickSound, suspenseSound, winSound, loseSound].forEach(s => {
+        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
+    });
 };
 
 let currentTick = null;
 let timerInterval = null;
-let suspenseTimeout = null;
-let autoNextTimer = null;
 let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = {}; 
@@ -134,7 +168,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
     
-    let roundNames = {1: "RUNDA 1: KTO PIERWSZY (ABCD) | 10 PKT", 2: "RUNDA 2: SZYBKIE PISANIE | 10 PKT", 3: "RUNDA 3: RYZYKO | +20 / -20 PKT"};
+    let roundNames = {1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 2: "RUNDA 2: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 3: "RUNDA 3: RYZYKO | +20 / -20 PKT"};
     document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
     
     const stage = document.getElementById('stage-box');
@@ -146,18 +180,23 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const timerEl = document.getElementById('tv-timer');
     const qrContainer = document.getElementById('tv-qr-container');
     const typedAnsEl = document.getElementById('tv-typed-answer');
+    const correctBanner = document.getElementById('tv-correct-banner');
+    const correctVal = document.getElementById('tv-correct-val');
     
-    catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
-    typedAnsEl.style.display = "none";
+    catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; 
+    statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
     stage.classList.remove("success-glow", "error-glow");
 
+    // Aktualizacja czerwonego migania zablokowanych graczy
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
         let el = document.getElementById(`score-${p}`);
         if(data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
         else el.classList.remove('blocked');
     });
+
+    const letters = ["A", "B", "C", "D"];
 
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
         isSuspense = false;
@@ -167,7 +206,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (data.status === "setup_nomination" || data.status === "nominating") {
             catEl.style.display = "block";
             catEl.innerText = "KATEGORIA: " + data.category;
-            qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "LOSOWANIE GRACZA...";
+            qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
         } else {
             qEl.innerText = "Zaraz zaczynamy! Przygotujcie telefony.";
         }
@@ -180,23 +219,27 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
         qEl.innerText = data.question;
         
-        if (data.round === 1 || data.round === 3) {
-            document.getElementById('opt-A').innerText = "A: " + data.options[0];
-            document.getElementById('opt-B').innerText = "B: " + data.options[1];
-            document.getElementById('opt-C').innerText = "C: " + data.options[2];
-            document.getElementById('opt-D').innerText = "D: " + data.options[3];
+        if ((data.round === 1 || data.round === 3) && data.options) {
+            for(let i=0; i<4; i++) {
+                let optEl = document.getElementById(`opt-${i}`);
+                optEl.innerText = `${letters[i]}: ${data.options[i]}`;
+                optEl.classList.remove('used-wrong', 'correct-highlight');
+                if (data.usedOptions && data.usedOptions.includes(i)) {
+                    optEl.classList.add('used-wrong');
+                }
+            }
             opts.style.display = "grid";
         }
-        if (data.round === 3) {
+        if (data.round === 3 && data.nominated) {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-            winnerEl.innerText = `ODPOWIADA TYLKO: ${data.nominated.toUpperCase()}`;
+            winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()}`;
         }
 
         if (data.tick !== currentTick) {
             currentTick = data.tick;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = data.round === 2 ? 15 : 10; // RUNDA 2 ma 15 SEKUND!
+            let timeLeft = data.round === 2 ? 15 : 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
@@ -206,109 +249,100 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
-                    loseSound.play().catch(e=>{});
                     timerEl.innerText = "0";
-                    winnerEl.style.display = "block";
-                    winnerEl.style.color = "var(--error)";
-                    winnerEl.innerText = "CZAS MINĄŁ!";
-                    qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
-                    opts.style.display = "none";
-                    
-                    await updateDoc(doc(db, "quizGame", "state"), { status: "timeout" });
+                    await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
                 } else {
                     timerEl.innerText = timeLeft;
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
-                        tickSound.play().catch(e=>{});
+                        tickSound.play().catch(()=>{});
                     }
                 }
             }, 1000);
         }
 
     } else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
-        if (!isSuspense) {
-            isSuspense = true;
-            clearInterval(timerInterval); timerEl.style.display = 'none';
-            tickSound.pause(); tickSound.currentTime = 0;
-            suspenseSound.play().catch(e=>{}); 
-            
-            if (data.round === 2 && data.givenAnswer) {
-                typedAnsEl.style.display = "block";
-                typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-            }
-
-            qEl.innerText = data.question;
-            opts.style.display = "none";
-            winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-            winnerEl.style.animation = "pulse 0.5s infinite";
-            winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
-
-            if (!suspenseTimeout && data.status !== "verifying") {
-                suspenseTimeout = setTimeout(async () => {
-                    let r = data.round;
-                    let isCorrect = data.isAnswerCorrect;
-                    let player = data.fastest;
-                    let ptsChange = 0;
-                    
-                    if(r === 1) ptsChange = isCorrect ? 10 : -10;
-                    if(r === 2) ptsChange = isCorrect ? 10 : -10;
-                    if(r === 3) ptsChange = isCorrect ? 20 : -20;
-
-                    if (isCorrect) {
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: "results", winner: player, loser: "", pointsChange: ptsChange, answerTick: Date.now()
-                        });
-                    } else {
-                        let newBlocked = [...(data.blocked || []), player];
-                        await updateDoc(doc(db, "quizGame", "state"), {
-                            status: r === 2 ? "results_r2_wrong" : "results_wrong", loser: player, winner: "", pointsChange: ptsChange, answerTick: Date.now(), blocked: newBlocked
-                        });
-                        
-                        if (r !== 2) {
-                            setTimeout(async () => {
-                                let freshSnap = await getDoc(doc(db, "quizGame", "state"));
-                                if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
-                                    if(newBlocked.length >= 4) {
-                                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout" });
-                                    } else {
-                                        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-                                    }
-                                }
-                            }, 3500); 
-                        }
-                    }
-                    suspenseTimeout = null;
-                }, 3500); 
-            }
-        }
+        isSuspense = true;
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        suspenseSound.play().catch(()=>{}); 
         
-    } else if (data.status === "results" || data.status === "results_wrong" || data.status === "results_r2_wrong" || data.status === "timeout") {
+        qEl.innerText = data.question;
+        
+        if (data.round === 2 && data.givenAnswer) {
+            typedAnsEl.style.display = "block";
+            typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
+        } else if ((data.round === 1 || data.round === 3) && data.selectedIndex !== undefined && data.options) {
+            typedAnsEl.style.display = "block";
+            typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
+        }
+
+        winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
+        winnerEl.style.animation = "pulse 0.5s infinite";
+        winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
+        
+    } else if (data.status === "results" || data.status === "results_wrong" || data.status === "timeout") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         winnerEl.style.animation = "none";
         isSuspense = false;
         
-        qEl.innerText = data.question;
-        winnerEl.style.display = "block"; statusEl.style.display = "block";
-        
-        if (data.round === 2 && data.givenAnswer) {
-            typedAnsEl.style.display = "block";
-            let pName = (data.winner || data.loser || data.fastest || "").toUpperCase();
-            typedAnsEl.innerHTML = `${pName} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-        }
-
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
         
-        if (data.winner) {
-            stage.classList.add("success-glow");
-            winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-            statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(e=>{}); lastPlayedResult = "win_" + data.answerTick; }
-        } else if (data.loser) {
+        qEl.innerText = data.question;
+        winnerEl.style.display = "block";
+
+        if (data.status === "timeout") {
             stage.classList.add("error-glow");
-            winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
-            statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(e=>{}); lastPlayedResult = "lose_" + data.answerTick; }
+            winnerEl.style.color = "var(--error)";
+            winnerEl.innerText = "CZAS MINĄŁ / BRAK POPRAWNEJ ODPOWIEDZI!";
+            
+            // Pokaż jaka była prawidłowa odpowiedź po upływie czasu
+            correctBanner.style.display = "block";
+            if ((data.round === 1 || data.round === 3) && data.options) {
+                correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+            } else if (data.round === 2 && data.correctText) {
+                correctVal.innerText = data.correctText;
+            }
+            if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
+
+        } else if (data.winner) {
+            // PRAWIDŁOWA ODPOWIEDŹ - Pokaż co było prawidłowe!
+            stage.classList.add("success-glow");
+            statusEl.style.display = "block";
+            winnerEl.style.color = "#00ff00"; 
+            winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+            statusEl.style.color = "#00ff00"; 
+            statusEl.innerText = `+${data.pointsChange} PKT`;
+            
+            correctBanner.style.display = "block";
+            if ((data.round === 1 || data.round === 3) && data.options) {
+                correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+            } else if (data.round === 2) {
+                correctVal.innerText = `${data.givenAnswer.toUpperCase()} (${data.correctText || ""})`;
+            }
+
+            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
+
+        } else if (data.loser) {
+            // BŁĘDNA ODPOWIEDŹ - Nie zdradzaj jeszcze prawidłowej, bo reszta graczy zaraz odpowiada!
+            stage.classList.add("error-glow");
+            statusEl.style.display = "block";
+            
+            if (data.round === 2 && data.givenAnswer) {
+                typedAnsEl.style.display = "block";
+                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
+            } else if ((data.round === 1 || data.round === 3) && data.selectedIndex !== undefined && data.options) {
+                typedAnsEl.style.display = "block";
+                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
+            }
+
+            winnerEl.style.color = "#ff4757"; 
+            winnerEl.innerText = `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
+            statusEl.style.color = "#ff4757"; 
+            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ GRAJĄ POZOSTALI!)`;
+            
+            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
         }
     }
 });
