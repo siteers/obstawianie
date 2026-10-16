@@ -33,6 +33,7 @@
   <div class="login-box" id="loginUI">
     <h2>WYBIERZ AGENTA</h2>
     <select id="agentSel">
+      <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
       <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
       <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
@@ -78,6 +79,8 @@ let timerInterval = null;
 
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
+    if(!myName) return alert("Musisz wybrać Agenta z listy!");
+    
     document.getElementById('loginUI').style.display = 'none';
     document.getElementById('gamePad').style.display = 'block';
     
@@ -94,7 +97,7 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     document.getElementById('ui-locked').style.display = 'none';
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results") {
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_r2_wrong" || currentState.status === "timeout") {
         document.getElementById('padStatus').innerText = "Patrz na telewizor!";
         clearInterval(timerInterval);
         return;
@@ -155,7 +158,7 @@ function updatePadUI() {
         }
     }
     
-    if (currentState.status === "verifying" || currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
+    if (currentState.status === "verifying" || currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3" || currentState.status === "results_pending_r2") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         document.getElementById('ui-locked').style.display = 'block';
         document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR";
@@ -168,11 +171,10 @@ window.sendAnswer = async (indexStr) => {
     const index = parseInt(indexStr);
     const isCorrect = (index === currentState.correctIndex);
     
-    // Telefony JUŻ NIE dodają punktów, tylko wysyłają status do Admina
     if (currentState.round === 1) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isCorrect: isCorrect });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, isAnswerCorrect: isCorrect });
     } else if (currentState.round === 3) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, isCorrect: isCorrect });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, isAnswerCorrect: isCorrect });
     }
 };
 
