@@ -10,14 +10,14 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    /* Dedykowana animacja timera, żeby nie skakał w lewo! */
     @keyframes pulseTimer {
       0% { transform: translateX(-50%) scale(1); }
       50% { transform: translateX(-50%) scale(1.1); }
       100% { transform: translateX(-50%) scale(1); }
     }
 
-    .timer-box { position: absolute; top: 6vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
+    /* Zablokowane sztywne centrowanie timera! */
+    .timer-box { position: absolute; top: 6vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; margin: 0 !important; }
     .timer-alert { color: var(--error) !important; animation: pulseTimer 0.5s infinite !important; }
 
     .score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.8); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1.5vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; }
@@ -103,11 +103,14 @@ const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/29
 window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
     winSound.play().then(() => { winSound.pause(); winSound.currentTime = 0; }).catch(()=>{});
+    loseSound.play().then(() => { loseSound.pause(); loseSound.currentTime = 0; }).catch(()=>{});
 };
 
 let currentTick = null;
 let timerInterval = null;
-let currentAnswerTick = null;
+let suspenseTimeout = null;
+let autoNextTimer = null;
+let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = {}; 
 
@@ -193,7 +196,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             currentTick = data.tick;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = 10;
+            let timeLeft = data.round === 2 ? 15 : 10; // RUNDA 2 ma 15 SEKUND!
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
@@ -203,7 +206,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
-                    loseSound.play();
+                    loseSound.play().catch(e=>{});
                     timerEl.innerText = "0";
                     winnerEl.style.display = "block";
                     winnerEl.style.color = "var(--error)";
@@ -211,7 +214,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
                     opts.style.display = "none";
                     
-                    // WYMUSZENIE TIMEOUT DO ADMINA
                     await updateDoc(doc(db, "quizGame", "state"), { status: "timeout" });
                 } else {
                     timerEl.innerText = timeLeft;
@@ -240,9 +242,47 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
             winnerEl.style.animation = "pulse 0.5s infinite";
             winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
+
+            if (!suspenseTimeout && data.status !== "verifying") {
+                suspenseTimeout = setTimeout(async () => {
+                    let r = data.round;
+                    let isCorrect = data.isAnswerCorrect;
+                    let player = data.fastest;
+                    let ptsChange = 0;
+                    
+                    if(r === 1) ptsChange = isCorrect ? 10 : -10;
+                    if(r === 2) ptsChange = isCorrect ? 10 : -10;
+                    if(r === 3) ptsChange = isCorrect ? 20 : -20;
+
+                    if (isCorrect) {
+                        await updateDoc(doc(db, "quizGame", "state"), {
+                            status: "results", winner: player, loser: "", pointsChange: ptsChange, answerTick: Date.now()
+                        });
+                    } else {
+                        let newBlocked = [...(data.blocked || []), player];
+                        await updateDoc(doc(db, "quizGame", "state"), {
+                            status: r === 2 ? "results_r2_wrong" : "results_wrong", loser: player, winner: "", pointsChange: ptsChange, answerTick: Date.now(), blocked: newBlocked
+                        });
+                        
+                        if (r !== 2) {
+                            setTimeout(async () => {
+                                let freshSnap = await getDoc(doc(db, "quizGame", "state"));
+                                if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
+                                    if(newBlocked.length >= 4) {
+                                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout" });
+                                    } else {
+                                        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
+                                    }
+                                }
+                            }, 3500); 
+                        }
+                    }
+                    suspenseTimeout = null;
+                }, 3500); 
+            }
         }
         
-    } else if (data.status === "results" || data.status === "results_wrong") {
+    } else if (data.status === "results" || data.status === "results_wrong" || data.status === "results_r2_wrong" || data.status === "timeout") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         winnerEl.style.animation = "none";
@@ -257,30 +297,19 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             typedAnsEl.innerHTML = `${pName} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
         }
 
-        // AKTUALIZACJA PUNKTÓW W ROGACH
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
         
         if (data.winner) {
             stage.classList.add("success-glow");
             winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
             statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play(); lastPlayedResult = "win_" + data.answerTick; }
+            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(e=>{}); lastPlayedResult = "win_" + data.answerTick; }
         } else if (data.loser) {
             stage.classList.add("error-glow");
             winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
-            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play(); lastPlayedResult = "lose_" + data.answerTick; }
+            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(e=>{}); lastPlayedResult = "lose_" + data.answerTick; }
         }
-    } else if (data.status === "timeout") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        winnerEl.style.animation = "none";
-        
-        winnerEl.style.display = "block";
-        winnerEl.style.color = "var(--error)";
-        winnerEl.innerText = "CZAS MINĄŁ!";
-        qEl.innerText = "Nikt nie zdążył odpowiedzieć.";
-        opts.style.display = "none";
     }
 });
 </script>
