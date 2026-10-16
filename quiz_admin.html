@@ -40,7 +40,7 @@
         <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
     <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
-    <div id="auto-progress-msg">⏱ System odlicza 5 sekund do kolejnego pytania...</div>
+    <div id="auto-progress-msg">⏱ System z automatu puści kolejne pytanie po 5 sekundach na TV...</div>
   </div>
 
   <div class="nominate-box" id="nominateUI">
@@ -60,7 +60,7 @@
     <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
     <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (DAJ -10 PKT I WZNÓW CZAS)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (DAJ -10 PKT I WZNÓW CZAS DLA RESZTY)</button>
   </div>
 
 <script type="module">
@@ -162,7 +162,7 @@ const allDBs = {
             { q: "Jak ma na imię pajęczy superbohater Marvela?", o: ["Iron Man", "Peter Parker", "Bruce Wayne", "Clark Kent"], c: 1 },
             { q: "Z czego składa się woda (H2O)?", o: ["Tlen i Azot", "Wodór i Tlen", "Wodór i Węgiel", "Azot i Węgiel"], c: 1 },
             { q: "Jaki owad odpowiada za produkcję jedwabiu?", o: ["Pająk", "Pszczoła", "Jedwabnik", "Motyl"], c: 2 },
-            { q: "Kto jest twórcą popularnej gry Minecraft?", o: ["EA Games", "Mojang (Markus Persson)", "Ubisoft", "Nintendo"], c: 1 },
+            { q: "Kto jest twórcą popularnej gry Minecraft?", o: ["EA Games", "Mojang", "Ubisoft", "Nintendo"], c: 1 },
             { q: "Co oznacza skrót PC?", o: ["Personal Computer", "Play Console", "Power Control", "Portable Computer"], c: 0 },
             { q: "Który stan skupienia ma lód?", o: ["Ciekły", "Gazowy", "Stały", "Plazma"], c: 2 },
             { q: "Które z tych drzew gubi igły na zimę?", o: ["Świerk", "Sosna", "Jodła", "Modrzew"], c: 3 },
@@ -196,9 +196,9 @@ const allDBs = {
             { cat: "GEOGRAFIA", q: "Gdzie znajduje się słynny Wielki Mur?", o: ["W Japonii", "W Chinach", "W Indiach", "W Rosji"], c: 1 },
             { cat: "ANATOMIA", q: "Jaka jest największa kość w ludzkim ciele?", o: ["Kość udowa", "Kręgosłup", "Czaszka", "Piszczel"], c: 0 },
             { cat: "ANGIELSKI", q: "Co oznacza słowo 'Yellow'?", o: ["Zielony", "Czarny", "Żółty", "Biały"], c: 2 },
-            { cat: "HISTORIA", q: "Kto był pierwszym prezydentem Polski po odzyskaniu niepodległości w 1918 (funkcja naczelnika)?", o: ["Lech Wałęsa", "Józef Piłsudski", "Gabriel Narutowicz", "Ignacy Mościcki"], c: 1 },
+            { cat: "HISTORIA", q: "Kto był pierwszym naczelnikiem państwa polskiego po 1918?", o: ["Lech Wałęsa", "Józef Piłsudski", "Gabriel Narutowicz", "Ignacy Mościcki"], c: 1 },
             { cat: "KULINARIA", q: "Z jakiego warzywa robi się placki ziemniaczane?", o: ["Z marchwi", "Z cebuli", "Z ziemniaków", "Z selera"], c: 2 },
-            { cat: "PRZYRODA", q: "Drzewo będące symbolem Polski (bardzo twarde drewno) to:", o: ["Sosna", "Dąb", "Brzoza", "Topola"], c: 1 },
+            { cat: "PRZYRODA", q: "Drzewo będące symbolem twardości w Polsce to:", o: ["Sosna", "Dąb", "Brzoza", "Topola"], c: 1 },
             { cat: "MATEMATYKA", q: "Kąt prosty ma dokładnie:", o: ["45 stopni", "90 stopni", "180 stopni", "360 stopni"], c: 1 },
             { cat: "CYPR", q: "Jaką walutą płaci się na Cyprze Południowym?", o: ["Euro", "Lira", "Dolar", "Funt"], c: 0 },
             { cat: "LITERATURA", q: "W jakiej lekturze bohaterowie walczą z wiatrakami?", o: ["W Pustyni i w Puszczy", "Krzyżacy", "Don Kichot", "Pan Tadeusz"], c: 2 },
@@ -215,7 +215,7 @@ const allDBs = {
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
 let suspenseTimeout = null;
-let autoNextTimer = null; // Timer do samoczynnego puszczania 1 i 3 rundy po 5 sekundach
+let autoNextTimer = null; 
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -237,12 +237,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
     } 
 
-    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY)
+    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY), ZAMIENIONO isCorrectR1 na isAnswerCorrect z telefonow
     if (currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
         if (!suspenseTimeout) {
             suspenseTimeout = setTimeout(async () => {
                 let r = currentState.round;
-                let isCorrect = r === 1 ? currentState.isCorrectR1 : currentState.isCorrectR3;
+                let isCorrect = currentState.isAnswerCorrect; // POPRAWIONE
                 let player = currentState.fastest;
                 let ptsChange = 0;
                 if(r === 1) ptsChange = isCorrect ? 10 : -10;
@@ -252,7 +252,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 const scoreSnap = await getDoc(scoreRef);
                 await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
 
-                // WYPUSZCZENIE WYNIKU NA EKRAN TV
                 await updateDoc(doc(db, "quizGame", "state"), {
                     status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange, answerTick: Date.now()
                 });
@@ -261,13 +260,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
     
-    // AUTO NEXT PO ZAKOŃCZENIU RUNDY 1 LUB 3
-    if (currentState.status === "results" && (currentState.round === 1 || currentState.round === 3)) {
+    // AUTO NEXT PO ZAKOŃCZENIU RUNDY 1 LUB 3 LUB PO TIMEOUT
+    if ((currentState.status === "results" || currentState.status === "timeout") && (currentState.round === 1 || currentState.round === 3)) {
         document.getElementById('auto-progress-msg').style.display = 'block';
         clearTimeout(autoNextTimer);
         autoNextTimer = setTimeout(() => {
-            // Upewniamy się, że nikt w międzyczasie sam nie kliknął "PUŚĆ NASTĘPNE"
-            if(currentState.status === "results") {
+            if(currentState.status === "results" || currentState.status === "timeout") {
                 nextQuestion();
             }
         }, 5000);
@@ -275,9 +273,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 });
 
 window.startGame = async () => {
-    if(!confirm("Zresetować punkty wszystkich dzieci do zera? Pamiętaj o ustawieniu prawidłowej Puli Pytań na górze!")) return;
+    if(!confirm("Zresetować punkty i zacząć od nowa? Pamiętaj o ustawieniu odpowiedniej PULI u góry!")) return;
     
-    document.getElementById('poolSel').disabled = true; // Blokuje zmianę puli po rozpoczęciu
+    document.getElementById('poolSel').disabled = true; 
     const pool = parseInt(document.getElementById('poolSel').value);
     
     const players = ["Lila", "Kaja", "Darek", "Jas"];
@@ -290,11 +288,11 @@ window.startGame = async () => {
 window.nextQuestion = async () => {
     clearTimeout(autoNextTimer);
     let r = parseInt(document.getElementById('roundSel').value);
-    let pool = currentState ? currentState.pool : parseInt(document.getElementById('poolSel').value);
+    let pool = currentState ? (currentState.pool || 1) : parseInt(document.getElementById('poolSel').value);
     
     currentQIndex[r]++;
     let qData = allDBs[pool][r][currentQIndex[r]];
-    if (!qData) return alert("Koniec pytań w tej rundzie z tej Puli!");
+    if (!qData) return alert("Koniec pytań w tej rundzie z wybranej Puli!");
 
     if (r === 3) {
         let bestPlayer = "Lila";
@@ -321,7 +319,7 @@ window.startNominationPhase = async () => {
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
     let aTick = Date.now();
-    let ans = currentState.givenAnswer; // Zapisuje, żeby przekazać TV do wyświetlenia
+    let ans = currentState.givenAnswer; 
     
     await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans });
     
@@ -331,6 +329,11 @@ window.judgeAnswer = async (isCorrect) => {
             const scoreSnap = await getDoc(scoreRef);
             await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
             await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, givenAnswer: ans, answerTick: aTick });
+            
+            document.getElementById('auto-progress-msg').style.display = 'block';
+            clearTimeout(autoNextTimer);
+            autoNextTimer = setTimeout(() => { nextQuestion(); }, 5000);
+            
         } else {
             const scoreRef = doc(db, "quizScores", player);
             const scoreSnap = await getDoc(scoreRef);
@@ -341,9 +344,9 @@ window.judgeAnswer = async (isCorrect) => {
             
             setTimeout(async () => {
                 await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-            }, 5000); // Admin daje 5 sekund kary ekranowej i rusza zegar na nowo dla innych!
+            }, 5000); 
         }
-    }, 3500); // 3.5 sekundy napięcia od wciśnięcia ZALICZ/ODRZUĆ
+    }, 3500); 
 };
 </script>
 </body>
