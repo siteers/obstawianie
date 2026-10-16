@@ -50,7 +50,7 @@
     <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
     <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (DAJ -10 PKT, ODBLOKUJ INNYCH)</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (-10 PKT I WZNOWIENIE DLA RESZTY)</button>
   </div>
 
 <script type="module">
@@ -86,7 +86,6 @@ const questionsDB = {
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
-let suspenseTimeout = null;
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -104,46 +103,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
         document.getElementById('v-correct').innerText = questionsDB[2][currentQIndex[2]].c;
     } 
-
-    // AUTOMATYCZNE ROZLICZANIE R1 Z NAPIĘCIEM
-    if (currentState.status === "results_pending_r1") {
-        if (!suspenseTimeout) {
-            suspenseTimeout = setTimeout(async () => {
-                let isCorrect = currentState.isCorrectR1;
-                let player = currentState.fastest;
-                let ptsChange = isCorrect ? 10 : -10;
-
-                const scoreRef = doc(db, "quizScores", player);
-                const scoreSnap = await getDoc(scoreRef);
-                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange
-                });
-                suspenseTimeout = null;
-            }, 4500); // 4.5s bicia serca
-        }
-    }
-
-    // AUTOMATYCZNE ROZLICZANIE R3 Z NAPIĘCIEM
-    if (currentState.status === "results_pending_r3") {
-        if (!suspenseTimeout) {
-            suspenseTimeout = setTimeout(async () => {
-                let isCorrect = currentState.isCorrectR3;
-                let player = currentState.fastest;
-                let ptsChange = isCorrect ? 20 : -20;
-
-                const scoreRef = doc(db, "quizScores", player);
-                const scoreSnap = await getDoc(scoreRef);
-                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange
-                });
-                suspenseTimeout = null;
-            }, 4500);
-        }
-    }
 });
 
 window.startGame = async () => {
@@ -185,24 +144,27 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
+    let aTick = Date.now();
     
     if (isCorrect) {
         const scoreRef = doc(db, "quizScores", player);
         const scoreSnap = await getDoc(scoreRef);
         await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10 });
+        // Wysyła do TV (bicie serca)
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, answerTick: aTick });
     } else {
         const scoreRef = doc(db, "quizScores", player);
         const scoreSnap = await getDoc(scoreRef);
         await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
 
         let newBlocked = [...(currentState.blocked || []), player];
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_r2_wrong", loser: player, pointsChange: -10, blocked: newBlocked });
+        // Wysyła do TV (bicie serca dla zlej odpowiedzi w R2)
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results", loser: player, winner: "", pointsChange: -10, answerTick: aTick });
         
-        // Zjazd po 3 sekundach by gra trwała dalej (nowy timer dla reszty)
+        // Wznów po 7s dla innych (3.5s napięcia + 3.5s pokazywania bledu na TV)
         setTimeout(async () => {
             await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-        }, 3000);
+        }, 7000);
     }
 };
 </script>
