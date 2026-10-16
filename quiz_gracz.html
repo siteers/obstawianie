@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Cyber-Pad | Gracz</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    :root { --cyan: #00d4ff; --bg: #050b14; }
+    body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
+    
+    .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); }
+    select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
+    
+    #gamePad { display: none; width: 90%; max-width: 400px; }
+    .status-top { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; }
+    
+    /* Przyciski ABCD */
+    .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none; }
+    .btn-abcd { background: #111; border: 2px solid var(--cyan); color: #fff; font-size: 30px; font-weight: bold; padding: 40px 20px; border-radius: 15px; cursor: pointer; transition: 0.1s; }
+    .btn-abcd:active { background: var(--cyan); color: #000; transform: scale(0.95); }
+    
+    /* Wpisywanie Runda 2 i 3 */
+    .input-area { display: none; flex-direction: column; gap: 15px; }
+    input[type="text"] { font-size: 24px; padding: 15px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
+    .btn-submit { background: var(--cyan); color: #000; font-size: 20px; font-weight: bold; padding: 20px; border: none; border-radius: 10px; cursor: pointer; }
+    
+    /* Zgłoś się Runda 3 */
+    .buzz-area { display: none; }
+    .btn-buzz { background: linear-gradient(135deg, #ff0000, #990000); color: #fff; border: 4px solid #ff4757; font-size: 30px; font-weight: 900; padding: 50px 20px; border-radius: 50%; width: 250px; height: 250px; box-shadow: 0 0 30px rgba(255,0,0,0.5); cursor: pointer; margin: 0 auto; transition: 0.1s; text-transform: uppercase; }
+    .btn-buzz:active { transform: scale(0.9); }
+    
+    .locked-msg { font-size: 24px; color: #ff4757; font-weight: bold; margin-top: 50px; display: none; }
+    button:disabled { opacity: 0.3; pointer-events: none; }
+  </style>
+</head>
+<body>
+
+  <div class="login-box" id="loginUI">
+    <h2>WYBIERZ AGENTA</h2>
+    <select id="agentSel">
+      <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
+      <option value="Darek">Darek</option><option value="Jas">Jaś</option>
+    </select>
+    <button class="btn-submit" style="width:100%;" onclick="joinGame()">GRAJ</button>
+  </div>
+
+  <div id="gamePad">
+    <div class="status-top" id="padStatus">Oczekiwanie na pytanie...</div>
+    
+    <div class="grid-abcd" id="ui-abcd">
+      <button class="btn-abcd" onclick="sendAnswer('0')">A</button>
+      <button class="btn-abcd" onclick="sendAnswer('1')">B</button>
+      <button class="btn-abcd" onclick="sendAnswer('2')">C</button>
+      <button class="btn-abcd" onclick="sendAnswer('3')">D</button>
+    </div>
+    
+    <div class="input-area" id="ui-input">
+      <input type="text" id="typeAnswer" placeholder="Wpisz odpowiedź...">
+      <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ</button>
+    </div>
+    
+    <div class="buzz-area" id="ui-buzz">
+      <button class="btn-buzz" onclick="buzzIn()">ZGŁOŚ SIĘ!</button>
+    </div>
+    
+    <div class="locked-msg" id="ui-locked">ZABLOKOWANE! Ktoś był szybszy.</div>
+  </div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, onSnapshot, updateDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const db = getFirestore(initializeApp(firebaseConfig));
+
+let myName = "";
+let currentState = null;
+
+window.joinGame = () => {
+    myName = document.getElementById('agentSel').value;
+    document.getElementById('loginUI').style.display = 'none';
+    document.getElementById('gamePad').style.display = 'block';
+    
+    onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
+        if (!docSnap.exists()) return;
+        currentState = docSnap.data();
+        updatePadUI();
+    });
+};
+
+function updatePadUI() {
+    document.getElementById('ui-abcd').style.display = 'none';
+    document.getElementById('ui-input').style.display = 'none';
+    document.getElementById('ui-buzz').style.display = 'none';
+    document.getElementById('ui-locked').style.display = 'none';
+    
+    if (currentState.status === "idle" || currentState.status === "results") {
+        document.getElementById('padStatus').innerText = "Patrz na telewizor!";
+        return;
+    }
+    
+    if (currentState.status === "reading") {
+        document.getElementById('padStatus').innerText = "SZYBKO ODPOWIEDZ!";
+        document.getElementById('typeAnswer').value = ""; // Czyszczenie
+        
+        if (currentState.round === 1) document.getElementById('ui-abcd').style.display = 'grid';
+        if (currentState.round === 2) document.getElementById('ui-input').style.display = 'flex';
+        if (currentState.round === 3) document.getElementById('ui-buzz').style.display = 'block';
+    }
+    
+    // Jeśli ktoś się zgłosił w R3 lub podał odpowiedź w R2
+    if (currentState.status === "answering" || currentState.status === "verifying") {
+        if (currentState.fastest === myName) {
+            document.getElementById('padStatus').innerText = "TWÓJ CZAS! WPISZ ODPOWIEDŹ!";
+            document.getElementById('ui-input').style.display = 'flex';
+        } else {
+            document.getElementById('padStatus').innerText = "KTOŚ BYŁ SZYBSZY!";
+            document.getElementById('ui-locked').style.display = 'block';
+        }
+    }
+}
+
+window.sendAnswer = async (indexStr) => {
+    if (currentState.status !== "reading") return;
+    const index = parseInt(indexStr);
+    const isCorrect = (index === currentState.correctIndex);
+    
+    // Zabezpieczenie przed podwójnym kliknięciem
+    await updateDoc(doc(db, "quizGame", "state"), { 
+        status: "results", fastest: myName, 
+        winner: isCorrect ? myName : "", 
+        loser: isCorrect ? "" : myName, 
+        pointsChange: isCorrect ? 10 : 0 
+    });
+    
+    if (isCorrect) {
+        const scoreRef = doc(db, "quizScores", myName);
+        const scoreSnap = await getDoc(scoreRef);
+        await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
+    }
+};
+
+window.sendTypedAnswer = async () => {
+    const ans = document.getElementById('typeAnswer').value.trim();
+    if (!ans) return;
+    
+    // Jeśli to R2 - pierwszy wysyła i blokuje innych
+    if (currentState.round === 2 && currentState.status === "reading") {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
+    } 
+    // Jeśli to R3 - wysyła po zgłoszeniu się
+    else if (currentState.round === 3 && currentState.status === "answering" && currentState.fastest === myName) {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", givenAnswer: ans });
+    }
+};
+
+window.buzzIn = async () => {
+    if (currentState.status !== "reading") return;
+    await updateDoc(doc(db, "quizGame", "state"), { status: "answering", fastest: myName });
+};
+</script>
+</body>
+</html>
