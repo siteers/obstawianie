@@ -15,9 +15,9 @@
     
     .verify-box, .nominate-box { background: #1e272e; border: 2px solid #d4af37; padding: 20px; border-radius: 15px; display: none; margin-bottom: 20px; }
     .ans-text { font-size: 24px; font-weight: 900; margin: 15px 0; background: #000; color: #00d4ff; padding: 15px; border-radius: 10px; text-align: center; }
-    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold;}
+    select { padding: 10px; font-size: 16px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 10px;}
     
-    #auto-progress-msg { color: #2ed573; font-weight: bold; display: none; margin-top: 10px; }
+    #auto-progress-msg { color: #2ed573; font-weight: bold; display: none; margin-top: 10px; padding: 10px; background: rgba(46, 213, 115, 0.1); border: 1px dashed #2ed573; border-radius: 8px;}
   </style>
 </head>
 <body>
@@ -30,7 +30,7 @@
         <option value="1">PULA 1 (Podstawowa - 90 pytań)</option>
         <option value="2">PULA 2 (Trudniejsza - 90 pytań)</option>
     </select>
-    <button class="red" onclick="startGame()">RESETUJ PUNKTY I ZACZNIJ OD NOWA</button><br><br>
+    <button class="red" onclick="startGame()">RESETUJ PUNKTY I ZACZNIJ OD NOWA</button><br>
     <hr style="border-color: #444; margin: 20px 0;">
     
     <label>Runda:</label>
@@ -40,7 +40,7 @@
         <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
     <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
-    <div id="auto-progress-msg">⏱ System z automatu puści kolejne pytanie po odliczeniu czasu na TV...</div>
+    <div id="auto-progress-msg">⏱ Gra w trybie AUTO. Kolejne pytanie za ok. 5 sekund...</div>
   </div>
 
   <div class="nominate-box" id="nominateUI">
@@ -70,7 +70,7 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- BAZA 180 PYTAŃ ---
+// --- BAZA 180 PYTAŃ (2 PULE PO 90) ---
 const allDBs = {
     1: {
         1: [
@@ -214,7 +214,8 @@ const allDBs = {
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
-let currentTickListener = null;
+let suspenseTimeout = null;
+let autoNextTimer = null; 
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -222,7 +223,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     
     document.getElementById('nominateUI').style.display = 'none';
     document.getElementById('verifyUI').style.display = 'none';
-    document.getElementById('auto-progress-msg').style.display = 'none';
 
     if (currentState.status === "setup_nomination" && currentState.round === 3) {
         document.getElementById('nominateUI').style.display = 'block';
@@ -236,20 +236,66 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
     } 
 
-    // AUTO-NEXT Z TELEWIZORA
-    if (currentState.triggerNext && currentState.triggerNext !== currentTickListener) {
-        currentTickListener = currentState.triggerNext;
+    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY)
+    if (currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
+        if (!suspenseTimeout) {
+            suspenseTimeout = setTimeout(async () => {
+                let r = currentState.round;
+                let isCorrect = currentState.isAnswerCorrect;
+                let player = currentState.fastest;
+                let ptsChange = (r === 1) ? (isCorrect ? 10 : -10) : (isCorrect ? 20 : -20);
+
+                const scoreRef = doc(db, "quizScores", player);
+                const scoreSnap = await getDoc(scoreRef);
+                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
+
+                let newBlocked = [...(currentState.blocked || []), player];
+
+                if (isCorrect || newBlocked.length >= 4) {
+                    await updateDoc(doc(db, "quizGame", "state"), {
+                        status: newBlocked.length >= 4 && !isCorrect ? "timeout" : "results", 
+                        winner: isCorrect ? player : "", 
+                        loser: isCorrect ? "" : player, 
+                        pointsChange: ptsChange, 
+                        answerTick: Date.now(),
+                        blocked: newBlocked
+                    });
+                } else {
+                    // Ktoś źle kliknął w R1/R3 - dajemy kare i WZNAWIAMY pytanie dla reszty
+                    await updateDoc(doc(db, "quizGame", "state"), {
+                        status: "results_wrong", loser: player, winner: "", pointsChange: ptsChange, answerTick: Date.now(), blocked: newBlocked
+                    });
+                    setTimeout(async () => {
+                        let freshSnap = await getDoc(doc(db, "quizGame", "state"));
+                        if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
+                            await updateDoc(doc(db, "quizGame", "state"), { status: "reading", fastest: "", givenAnswer: "", tick: Date.now() });
+                        }
+                    }, 4000); 
+                }
+                suspenseTimeout = null;
+            }, 3500); 
+        }
+    }
+    
+    // AUTO-NEXT Z ADMINA (PO ZIELONYM EKRANIE, CZERWONYM W R2, LUB TIMEOUT)
+    if ((currentState.status === "results" && currentState.winner) || currentState.status === "timeout" || currentState.status === "results_r2_wrong") {
         document.getElementById('auto-progress-msg').style.display = 'block';
-        nextQuestion();
+        clearTimeout(autoNextTimer);
+        autoNextTimer = setTimeout(() => {
+            if(currentState.status === "results" || currentState.status === "timeout") {
+                nextQuestion();
+            }
+        }, 5000);
+    } else {
+        document.getElementById('auto-progress-msg').style.display = 'none';
+        clearTimeout(autoNextTimer);
     }
 });
 
 window.startGame = async () => {
-    if(!confirm("Zresetować punkty i zacząć od nowa? Pamiętaj o ustawieniu odpowiedniej PULI u góry!")) return;
+    if(!confirm("Zresetować punkty i zacząć od nowa?")) return;
     
-    document.getElementById('poolSel').disabled = true; 
     const pool = parseInt(document.getElementById('poolSel').value);
-    
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
     await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Czekamy na start!", blocked: [], pool: pool });
@@ -258,6 +304,7 @@ window.startGame = async () => {
 };
 
 window.nextQuestion = async () => {
+    clearTimeout(autoNextTimer);
     let r = parseInt(document.getElementById('roundSel').value);
     let pool = currentState ? (currentState.pool || 1) : parseInt(document.getElementById('poolSel').value);
     
@@ -289,9 +336,39 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
+    let aTick = Date.now();
     let ans = currentState.givenAnswer; 
     
     await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
+    
+    setTimeout(async () => {
+        if (isCorrect) {
+            const scoreRef = doc(db, "quizScores", player);
+            const scoreSnap = await getDoc(scoreRef);
+            await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
+            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, givenAnswer: ans, answerTick: aTick });
+            
+        } else {
+            const scoreRef = doc(db, "quizScores", player);
+            const scoreSnap = await getDoc(scoreRef);
+            await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
+
+            let newBlocked = [...(currentState.blocked || []), player];
+            
+            if (newBlocked.length >= 4) {
+                await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", blocked: newBlocked });
+            } else {
+                await updateDoc(doc(db, "quizGame", "state"), { status: "results_wrong", loser: player, winner: "", pointsChange: -10, givenAnswer: ans, answerTick: aTick, blocked: newBlocked });
+                
+                setTimeout(async () => {
+                    let freshSnap = await getDoc(doc(db, "quizGame", "state"));
+                    if(freshSnap.exists() && freshSnap.data().status === "results_wrong") {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
+                    }
+                }, 4000); 
+            }
+        }
+    }, 3500); 
 };
 </script>
 </body>
