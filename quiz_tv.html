@@ -7,6 +7,10 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
+    /* Overlay aktywacji audio */
+    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
+
     /* Timer okrągły na górze */
     .timer-box { position: absolute; top: 2vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 0.3vw solid var(--error); border-radius: 50%; width: 8vw; height: 8vw; display: none; align-items: center; justify-content: center; font-size: 4vw; font-weight: 900; color: #fff; box-shadow: 0 0 2vw rgba(255, 71, 87, 0.5); z-index: 100; transition: color 0.3s; }
     .timer-alert { color: var(--error) !important; animation: pulse 0.5s infinite; }
@@ -17,7 +21,6 @@
     .player-name { font-size: 2vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.2vw; transition: 0.3s; }
     .player-score { font-size: 3.5vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.5vw; transition: 0.3s; }
 
-    /* Klasa dla ZABLOKOWANYCH GRACZY w R2 */
     .score-corner.blocked { filter: grayscale(1); opacity: 0.4; border-color: var(--error) !important; box-shadow: none; }
     .score-corner.blocked .player-name { text-decoration: line-through; color: var(--error); }
 
@@ -29,6 +32,11 @@
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5vw; display: none; }
     .option { background: #111; border: 0.2vw solid #444; padding: 1.5vw; font-size: 2vw; border-radius: 1vw; font-weight: bold; }
     
+    /* Kod QR Gracza */
+    #tv-qr-container { display: none; margin-top: 2vw; }
+    #tv-qr-container p { font-size: 1.2vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 1vw; }
+    #tv-qr-container img { width: 12vw; height: 12vw; border: 0.3vw solid var(--cyan); border-radius: 1vw; padding: 0.5vw; background: #fff; }
+
     .status-msg { font-size: 3vw; color: #00ff00; font-weight: bold; margin-top: 2vw; display: none; text-shadow: 0 0 2vw #00ff00; }
     .winner-announcement { font-size: 3.5vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 2vw; text-shadow: 0 0 2vw var(--gold); display: none; }
     
@@ -36,6 +44,11 @@
   </style>
 </head>
 <body>
+
+  <!-- Ekran startowy Audio (Zabezpieczenie przeglądarek) -->
+  <div id="audio-overlay">
+    <button id="audio-btn" onclick="initAudio()">KLIKNIJ, ABY AKTYWOWAĆ DŹWIĘK TV</button>
+  </div>
 
   <div class="timer-box" id="tv-timer">10</div>
 
@@ -48,6 +61,11 @@
     <div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
     <div class="category-text" id="tv-cat">KATEGORIA</div>
     <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
+    
+    <div id="tv-qr-container">
+        <p>Zeskanuj, aby wejść do gry</p>
+        <img id="qrGraczTv" src="" alt="QR">
+    </div>
     
     <div class="options-grid" id="tv-options">
       <div class="option" id="opt-A">A: ...</div><div class="option" id="opt-B">B: ...</div>
@@ -65,8 +83,28 @@ import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.c
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
+// DŹWIĘKI SYSTEMOWE (Darmowe zasoby z Mixkit)
+const bgMusic = new Audio("https://assets.mixkit.co/active_storage/sfx/135/135-preview.mp3"); // Muzyka w tle
+bgMusic.loop = true; bgMusic.volume = 0.15;
+const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); // Tykanie
+tickSound.loop = true; tickSound.volume = 0.6;
+const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); // Sukces
+const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); // Błąd
+
+window.initAudio = function() {
+    document.getElementById('audio-overlay').style.display = 'none';
+    bgMusic.play().catch(e => console.log("Błąd autoodtwarzania: " + e));
+};
+
 let currentTick = null;
 let timerInterval = null;
+let lastPlayedResult = null; // Zabezpieczenie przed dublowaniem dźwięku sukcesu
+
+window.onload = () => {
+    const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+    const graczUrl = encodeURIComponent(baseHref + 'quiz_gracz.html');
+    document.getElementById('qrGraczTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${graczUrl}&color=000000&bgcolor=ffffff`;
+};
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
     snap.forEach(doc => { let el = document.getElementById(`pts-${doc.id}`); if(el) el.innerText = doc.data().points; });
@@ -85,10 +123,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const winnerEl = document.getElementById('tv-winner');
     const statusEl = document.getElementById('tv-status');
     const timerEl = document.getElementById('tv-timer');
+    const qrContainer = document.getElementById('tv-qr-container');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; statusEl.style.display = "none";
+    qrContainer.style.display = (data.status === "idle") ? "block" : "none";
 
-    // OZNACZANIE ZABLOKOWANYCH GRACZY (Runda 2)
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
         let el = document.getElementById(`score-${p}`);
@@ -96,12 +135,17 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         else el.classList.remove('blocked');
     });
 
-    if (data.status === "setup_nomination" || data.status === "nominating") {
-        catEl.style.display = "block";
-        catEl.innerText = "KATEGORIA: " + data.category;
-        qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "LOSOWANIE GRACZA...";
-        
+    if (data.status === "setup_nomination" || data.status === "nominating" || data.status === "idle") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        
+        if (data.status === "setup_nomination" || data.status === "nominating") {
+            catEl.style.display = "block";
+            catEl.innerText = "KATEGORIA: " + data.category;
+            qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "LOSOWANIE GRACZA...";
+        } else {
+            qEl.innerText = "Zaraz zaczynamy! Przygotujcie telefony.";
+        }
         
     } else if (data.status === "reading") {
         qEl.innerText = data.question;
@@ -117,10 +161,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.innerText = `ODPOWIADA TYLKO: ${data.nominated.toUpperCase()}`;
         }
 
-        // LOGIKA TIMERA
         if (data.tick !== currentTick) {
             currentTick = data.tick;
             clearInterval(timerInterval);
+            tickSound.play().catch(e=>{});
             let timeLeft = 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
@@ -130,6 +174,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 timeLeft--;
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
+                    tickSound.pause(); tickSound.currentTime = 0;
+                    loseSound.play();
                     timerEl.innerText = "0";
                     winnerEl.style.display = "block";
                     winnerEl.style.color = "var(--error)";
@@ -145,20 +191,26 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
     } else if (data.status === "verifying") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
         winnerEl.innerText = `${data.fastest.toUpperCase()} WYSŁAŁ ODPOWIEDŹ. WERYFIKACJA...`;
         
     } else if (data.status === "results" || data.status === "results_r3_pending") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        
         qEl.innerText = data.question;
         winnerEl.style.display = "block"; statusEl.style.display = "block";
+        
         if (data.winner) {
             winnerEl.style.color = "#00ff00"; winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
             statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "win_" + currentTick) { winSound.play(); lastPlayedResult = "win_" + currentTick; }
         } else if (data.loser) {
             winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${data.loser.toUpperCase()} BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; statusEl.innerText = `${data.pointsChange} PKT`;
+            if (lastPlayedResult !== "lose_" + currentTick) { loseSound.play(); lastPlayedResult = "lose_" + currentTick; }
         }
     }
 });
