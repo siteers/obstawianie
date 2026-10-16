@@ -40,7 +40,7 @@
         <option value="3">Runda 3 (Ryzyko - Wybieranie gracza)</option>
     </select>
     <button class="gold" onclick="nextQuestion()">PUŚĆ NASTĘPNE PYTANIE</button>
-    <div id="auto-progress-msg">⏱ System z automatu puści kolejne pytanie po 5 sekundach na TV...</div>
+    <div id="auto-progress-msg">⏱ System z automatu puści kolejne pytanie po odliczeniu czasu na TV...</div>
   </div>
 
   <div class="nominate-box" id="nominateUI">
@@ -70,7 +70,7 @@ import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, coll
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- BAZA 180 PYTAŃ (2 PULE PO 90) ---
+// --- BAZA 180 PYTAŃ ---
 const allDBs = {
     1: {
         1: [
@@ -143,39 +143,39 @@ const allDBs = {
     },
     2: {
         1: [
-            { q: "Który instrument należy do grupy dętych?", o: ["Gitara", "Skrzypce", "Trąbka", "Perkusja"], c: 2 },
-            { q: "W jakim państwie zbudowano Piramidę Cheopsa?", o: ["Meksyk", "Egipt", "Peru", "Grecja"], c: 1 },
-            { q: "Jaki jest największy kraj na świecie pod względem powierzchni?", o: ["USA", "Chiny", "Rosja", "Kanada"], c: 2 },
+            { q: "Który z tych instrumentów należy do grupy dętych?", o: ["Gitara", "Skrzypce", "Trąbka", "Perkusja"], c: 2 },
+            { q: "Gdzie znajduje się Piramida Cheopsa?", o: ["Meksyk", "Egipt", "Peru", "Grecja"], c: 1 },
+            { q: "Największy kraj na świecie to?", o: ["USA", "Chiny", "Rosja", "Kanada"], c: 2 },
             { q: "Jak nazywa się nasza galaktyka?", o: ["Andromeda", "Droga Mleczna", "Czarna Dziura", "Mgławica Oriona"], c: 1 },
-            { q: "Jak nazywał się starożytny rzymski amfiteatr?", o: ["Partenon", "Panteon", "Koloseum", "Piramida"], c: 2 },
+            { q: "Starożytny rzymski amfiteatr to...", o: ["Partenon", "Panteon", "Koloseum", "Piramida"], c: 2 },
             { q: "W którym roku wybuchła II Wojna Światowa?", o: ["1914", "1939", "1945", "1989"], c: 1 },
-            { q: "Kto napisał epopeję 'Pan Tadeusz'?", o: ["Słowacki", "Kochanowski", "Mickiewicz", "Prus"], c: 2 },
-            { q: "Jaki gaz pobierają z powietrza rośliny w procesie fotosyntezy?", o: ["Tlen", "Azot", "Dwutlenek węgla", "Wodór"], c: 2 },
-            { q: "Gdzie odbyły się starożytne Igrzyska Olimpijskie?", o: ["W Rzymie", "W Atenach", "W Sparcie", "W Olimpii"], c: 3 },
-            { q: "Ile lat żyje przeciętny kot domowy (w dobrych warunkach)?", o: ["Około 5-8", "Około 12-16", "Powyżej 25", "Około 30"], c: 1 },
-            { q: "Z jakiego kraju pochodzi jedzenie o nazwie Sushi?", o: ["Chiny", "Japonia", "Tajlandia", "Wietnam"], c: 1 },
-            { q: "Jak po angielsku powiesz 'Biblioteka'?", o: ["Bookstore", "Library", "School", "Museum"], c: 1 },
+            { q: "Kto jest autorem 'Pana Tadeusza'?", o: ["Słowacki", "Kochanowski", "Mickiewicz", "Prus"], c: 2 },
+            { q: "Co pobierają rośliny z powietrza (fotosynteza)?", o: ["Tlen", "Azot", "Dwutlenek węgla", "Wodór"], c: 2 },
+            { q: "Gdzie odbyły się pierwsze Igrzyska Olimpijskie?", o: ["W Rzymie", "W Atenach", "W Sparcie", "W Olimpii"], c: 3 },
+            { q: "Ile lat żyje przeciętny kot domowy?", o: ["Około 5-8", "Około 12-16", "Powyżej 25", "Około 30"], c: 1 },
+            { q: "Z jakiego kraju wywodzi się Sushi?", o: ["Chiny", "Japonia", "Tajlandia", "Wietnam"], c: 1 },
+            { q: "Jak po angielsku jest 'Biblioteka'?", o: ["Bookstore", "Library", "School", "Museum"], c: 1 },
             { q: "Co jest stolicą Wielkiej Brytanii?", o: ["Dublin", "Edynburg", "Londyn", "Paryż"], c: 2 },
             { q: "Z ilu województw składa się Polska?", o: ["14", "15", "16", "17"], c: 2 },
-            { q: "Gdzie leżą Tatry?", o: ["Na północy Polski", "Na południu Polski", "Na zachodzie", "Na wschodzie"], c: 1 },
+            { q: "Gdzie w Polsce leżą Tatry?", o: ["Na północy", "Na południu", "Na zachodzie", "Na wschodzie"], c: 1 },
             { q: "Ile wynosi pierwiastek kwadratowy z 81?", o: ["7", "8", "9", "10"], c: 2 },
-            { q: "Jak ma na imię pajęczy superbohater Marvela?", o: ["Iron Man", "Peter Parker", "Bruce Wayne", "Clark Kent"], c: 1 },
-            { q: "Z czego składa się woda (H2O)?", o: ["Tlen i Azot", "Wodór i Tlen", "Wodór i Węgiel", "Azot i Węgiel"], c: 1 },
-            { q: "Jaki owad odpowiada za produkcję jedwabiu?", o: ["Pająk", "Pszczoła", "Jedwabnik", "Motyl"], c: 2 },
-            { q: "Kto jest twórcą popularnej gry Minecraft?", o: ["EA Games", "Mojang", "Ubisoft", "Nintendo"], c: 1 },
-            { q: "Co oznacza skrót PC?", o: ["Personal Computer", "Play Console", "Power Control", "Portable Computer"], c: 0 },
-            { q: "Który stan skupienia ma lód?", o: ["Ciekły", "Gazowy", "Stały", "Plazma"], c: 2 },
-            { q: "Które z tych drzew gubi igły na zimę?", o: ["Świerk", "Sosna", "Jodła", "Modrzew"], c: 3 },
-            { q: "Jak nazywa się najwyższa góra w Polsce?", o: ["Gubałówka", "Śnieżka", "Rysy", "Giewont"], c: 2 },
+            { q: "Prawdziwe imię Spider-Mana to?", o: ["Iron Man", "Peter Parker", "Bruce Wayne", "Clark Kent"], c: 1 },
+            { q: "Z czego składa się cząsteczka H2O?", o: ["Tlen i Azot", "Wodór i Tlen", "Wodór i Węgiel", "Azot i Węgiel"], c: 1 },
+            { q: "Owad produkujący jedwab to?", o: ["Pająk", "Pszczoła", "Jedwabnik", "Motyl"], c: 2 },
+            { q: "Twórcą gry Minecraft był...", o: ["EA Games", "Markus Persson", "Ubisoft", "Nintendo"], c: 1 },
+            { q: "Skrót PC oznacza...", o: ["Personal Computer", "Play Console", "Power Control", "Portable Computer"], c: 0 },
+            { q: "Jaki stan skupienia ma lód?", o: ["Ciekły", "Gazowy", "Stały", "Plazma"], c: 2 },
+            { q: "Które drzewo iglaste gubi igły na zimę?", o: ["Świerk", "Sosna", "Jodła", "Modrzew"], c: 3 },
+            { q: "Najwyższa góra w Polsce to...", o: ["Gubałówka", "Śnieżka", "Rysy", "Giewont"], c: 2 },
             { q: "Co znajduje się w centrum naszego Układu Słonecznego?", o: ["Jowisz", "Ziemia", "Słońce", "Czarna dziura"], c: 2 },
-            { q: "Jaka waluta obowiązuje w Wielkiej Brytanii?", o: ["Euro", "Funt szterling", "Dolar", "Frank"], c: 1 },
-            { q: "Ile nóg ma dorosły owad (np. mucha)?", o: ["4", "6", "8", "10"], c: 1 },
-            { q: "Jaką literą rzymską zapisujemy liczbę 50?", o: ["X", "L", "C", "D"], c: 1 },
-            { q: "Jakie miasto jest gospodarzem Wawelu?", o: ["Warszawa", "Poznań", "Gdańsk", "Kraków"], c: 3 },
-            { q: "Który z tych instrumentów ma klawiaturę?", o: ["Harfa", "Akordeon", "Wiolonczela", "Flet"], c: 1 }
+            { q: "Jaka waluta obowiązuje w Londynie?", o: ["Euro", "Funt szterling", "Dolar", "Frank"], c: 1 },
+            { q: "Ile nóg ma mucha?", o: ["4", "6", "8", "10"], c: 1 },
+            { q: "Jaka litera rzymska oznacza 50?", o: ["X", "L", "C", "D"], c: 1 },
+            { q: "W jakim mieście znajdziemy Wawel?", o: ["Warszawa", "Poznań", "Gdańsk", "Kraków"], c: 3 },
+            { q: "Który z instrumentów ma klawiaturę?", o: ["Harfa", "Akordeon", "Wiolonczela", "Flet"], c: 1 }
         ],
         2: [
-            { q: "Wynik mnożenia to...", c: "Iloczyn" }, { q: "Jak nazywa się nauka badająca przeszłość?", c: "Historia" }, { q: "Biała substancja używana do słodzenia to...", c: "Cukier" }, { q: "Jak po angielsku jest 'drzewo'?", c: "Tree" }, { q: "Kto napisał baśń 'Brzydkie Kaczątko'?", c: "Andersen" }, { q: "Największy ocean to Ocean...", c: "Spokojny" }, { q: "Stolica Czech to...", c: "Praga" }, { q: "Wynik odejmowania to...", c: "Różnica" }, { q: "Jak po angielsku jest 'księżyc'?", c: "Moon" }, { q: "Która rzeka przepływa przez Warszawę?", c: "Wisła" }, { q: "Płaz, który kumka w stawie to...", c: "Żaba" }, { q: "W jakiej jednostce mierzymy temperaturę w Polsce?", c: "Celsjusz / Stopnie Celsjusza" }, { q: "Wysuszona śliwka to...", c: "Suszona śliwka / Suszka (uznaj)" }, { q: "Pierwiastek chemiczny niezbędny do oddychania to...", c: "Tlen" }, { q: "Ptak będący godłem Polski to...", c: "Orzeł / Orzeł Biały" }, { q: "Jaki jest największy lądowy ssak drapieżny?", c: "Niedźwiedź polarny" }, { q: "12 razy 12 wynosi...", c: "144" }, { q: "Stolica Francji to...", c: "Paryż" }, { q: "Jak po angielsku powiesz 'dziewczynka'?", c: "Girl" }, { q: "Polski piłkarz grający z numerem 9 w Barcelonie to...", c: "Lewandowski / Robert Lewandowski" }, { q: "Urządzenie do robienia zdjęć to...", c: "Aparat / Aparat fotograficzny" }, { q: "W jakim państwie znajduje się Wieża Eiffla?", c: "Francja / We Francji" }, { q: "Jak nazywa się najzimniejszy kontynent?", c: "Antarktyda" }, { q: "Z czego składa się ludzki szkielet?", c: "Z kości" }, { q: "Złoty środek polskiego morza to miasto na literę G...", c: "Gdynia / Gdańsk (zaliczyć)" }, { q: "Czym jest pingwin: ssakiem, płazem czy ptakiem?", c: "Ptakiem" }, { q: "Przetłumacz na polski słowo 'Water'", c: "Woda" }, { q: "Czego wynikiem jest 5 reszty z 2?", c: "Dzielenia" }, { q: "Jak nazywa się samiec owcy?", c: "Baran" }, { q: "Osobisty komputer przenośny to...", c: "Laptop" }
+            { q: "Wynik mnożenia to...", c: "Iloczyn" }, { q: "Nauka badająca przeszłość to...", c: "Historia" }, { q: "Słodka, biała substancja w kuchni to...", c: "Cukier" }, { q: "Jak po angielsku jest 'drzewo'?", c: "Tree" }, { q: "Kto napisał baśń 'Brzydkie Kaczątko'?", c: "Andersen" }, { q: "Największy ocean to Ocean...", c: "Spokojny" }, { q: "Stolica Czech to...", c: "Praga" }, { q: "Wynik odejmowania to...", c: "Różnica" }, { q: "Jak po angielsku jest 'księżyc'?", c: "Moon" }, { q: "Rzeka w Warszawie to...", c: "Wisła" }, { q: "Kumkający płaz w stawie to...", c: "Żaba" }, { q: "Polska jednostka temperatury to...", c: "Celsjusz / Stopnie Celsjusza" }, { q: "Rodzynka powstaje z...", c: "Winogrona / Winogron" }, { q: "Gaz niezbędny nam do oddychania...", c: "Tlen" }, { q: "Ptak będący godłem Polski to...", c: "Orzeł / Orzeł Biały" }, { q: "Największy drapieżnik lądowy to...", c: "Niedźwiedź polarny" }, { q: "Ile to jest 12 razy 12?", c: "144" }, { q: "Stolica Francji to...", c: "Paryż" }, { q: "Jak po angielsku jest 'dziewczynka'?", c: "Girl" }, { q: "Polski piłkarz w Barcelonie (nr 9) to...", c: "Lewandowski / Robert Lewandowski" }, { q: "Urządzenie robiące zdjęcia to...", c: "Aparat / Aparat fotograficzny" }, { q: "W jakim państwie stoi Wieża Eiffla?", c: "Francja / We Francji" }, { q: "Najzimniejszy kontynent na świecie to...", c: "Antarktyda" }, { q: "Ludzki szkielet składa się z...", c: "Z kości" }, { q: "Gdynia i Sopot tworzą Trójmiasto z...", c: "Gdańskiem / Gdańsk" }, { q: "Do jakiej gromady zwierząt należy pingwin?", c: "Ptaków / Ptak" }, { q: "Polskie tłumaczenie angielskiego 'Water'", c: "Woda" }, { q: "Jakie działanie daje wynik z 'resztą'?", c: "Dzielenie" }, { q: "Jak nazywa się samiec owcy?", c: "Baran" }, { q: "Przenośny komputer osobisty to...", c: "Laptop" }
         ],
         3: [
             { cat: "CHEMIA", q: "Jaki symbol chemiczny ma złoto?", o: ["Ag", "Au", "Zn", "Cu"], c: 1 },
@@ -214,8 +214,7 @@ const allDBs = {
 
 let currentQIndex = { 1: -1, 2: -1, 3: -1 };
 let currentState = null;
-let suspenseTimeout = null;
-let autoNextTimer = null; 
+let currentTickListener = null;
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
@@ -237,38 +236,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('v-correct').innerText = allDBs[pool][2][currentQIndex[2]].c;
     } 
 
-    // ADMIN CZEKA NA BICIE SERCA R1 I R3 (3.5 SEKUNDY), ZAMIENIONO isCorrectR1 na isAnswerCorrect z telefonow
-    if (currentState.status === "results_pending_r1" || currentState.status === "results_pending_r3") {
-        if (!suspenseTimeout) {
-            suspenseTimeout = setTimeout(async () => {
-                let r = currentState.round;
-                let isCorrect = currentState.isAnswerCorrect; // POPRAWIONE
-                let player = currentState.fastest;
-                let ptsChange = 0;
-                if(r === 1) ptsChange = isCorrect ? 10 : -10;
-                if(r === 3) ptsChange = isCorrect ? 20 : -20;
-
-                const scoreRef = doc(db, "quizScores", player);
-                const scoreSnap = await getDoc(scoreRef);
-                await updateDoc(scoreRef, { points: scoreSnap.data().points + ptsChange });
-
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "results", winner: isCorrect ? player : "", loser: isCorrect ? "" : player, pointsChange: ptsChange, answerTick: Date.now()
-                });
-                suspenseTimeout = null;
-            }, 3500); 
-        }
-    }
-    
-    // AUTO NEXT PO ZAKOŃCZENIU RUNDY 1 LUB 3 LUB PO TIMEOUT
-    if ((currentState.status === "results" || currentState.status === "timeout") && (currentState.round === 1 || currentState.round === 3)) {
+    // AUTO-NEXT Z TELEWIZORA
+    if (currentState.triggerNext && currentState.triggerNext !== currentTickListener) {
+        currentTickListener = currentState.triggerNext;
         document.getElementById('auto-progress-msg').style.display = 'block';
-        clearTimeout(autoNextTimer);
-        autoNextTimer = setTimeout(() => {
-            if(currentState.status === "results" || currentState.status === "timeout") {
-                nextQuestion();
-            }
-        }, 5000);
+        nextQuestion();
     }
 });
 
@@ -286,7 +258,6 @@ window.startGame = async () => {
 };
 
 window.nextQuestion = async () => {
-    clearTimeout(autoNextTimer);
     let r = parseInt(document.getElementById('roundSel').value);
     let pool = currentState ? (currentState.pool || 1) : parseInt(document.getElementById('poolSel').value);
     
@@ -318,35 +289,9 @@ window.startNominationPhase = async () => {
 
 window.judgeAnswer = async (isCorrect) => {
     let player = currentState.fastest;
-    let aTick = Date.now();
     let ans = currentState.givenAnswer; 
     
-    await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans });
-    
-    setTimeout(async () => {
-        if (isCorrect) {
-            const scoreRef = doc(db, "quizScores", player);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10, givenAnswer: ans, answerTick: aTick });
-            
-            document.getElementById('auto-progress-msg').style.display = 'block';
-            clearTimeout(autoNextTimer);
-            autoNextTimer = setTimeout(() => { nextQuestion(); }, 5000);
-            
-        } else {
-            const scoreRef = doc(db, "quizScores", player);
-            const scoreSnap = await getDoc(scoreRef);
-            await updateDoc(scoreRef, { points: scoreSnap.data().points - 10 });
-
-            let newBlocked = [...(currentState.blocked || []), player];
-            await updateDoc(doc(db, "quizGame", "state"), { status: "results_r2_wrong", loser: player, winner: "", pointsChange: -10, givenAnswer: ans, answerTick: aTick, blocked: newBlocked });
-            
-            setTimeout(async () => {
-                await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
-            }, 5000); 
-        }
-    }, 3500); 
+    await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
 };
 </script>
 </body>
