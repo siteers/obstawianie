@@ -52,7 +52,7 @@
     <p>Prawidłowa powinna być: <b style="color:#d4af37"><span id="v-correct"></span></b></p>
     
     <button class="green" onclick="judgeAnswer(true)">✅ ZALICZ (+10)</button>
-    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ I ODBLOKUJ INNYCH</button>
+    <button class="red" onclick="judgeAnswer(false)">❌ ODRZUĆ (ODBLOKUJ INNYCH I DAJ 10 SEKUND)</button>
   </div>
   
   <div class="verify-box" id="verifyR3UI">
@@ -64,7 +64,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
@@ -134,9 +134,25 @@ window.nextQuestion = async () => {
     if (!qData) return alert("Koniec pytań w tej rundzie!");
 
     if (r === 3) {
+        let bestPlayer = "Lila";
+        // Jeśli to 1 pytanie 3. Rundy, szukamy lidera!
+        if (currentQIndex[r] === 0) {
+            const snap = await getDocs(collection(db, "quizScores"));
+            let maxPts = -999;
+            snap.forEach(d => {
+                let pts = d.data().points || 0;
+                if (pts > maxPts) { maxPts = pts; bestPlayer = d.id; }
+            });
+            // Automatyczne ustawienie dropdownu
+            let sel = document.getElementById('controllerSel');
+            for(let i=0; i<sel.options.length; i++) {
+                if(sel.options[i].value === bestPlayer) sel.selectedIndex = i;
+            }
+        }
         await setDoc(doc(db, "quizGame", "state"), { status: "setup_nomination", round: 3, category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, blocked: [] });
     } else {
-        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "" };
+        // Dodany TICK do uruchomienia 10-sekundowego timera
+        let payload = { status: "reading", round: r, question: qData.q, blocked: [], fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now() };
         if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
         await setDoc(doc(db, "quizGame", "state"), payload);
     }
@@ -155,9 +171,9 @@ window.judgeAnswer = async (isCorrect) => {
         await updateDoc(scoreRef, { points: scoreSnap.data().points + 10 });
         await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: 10 });
     } else {
-        // Blokujemy gracza i wracamy do trybu czytania dla reszty
+        // Odrzucenie: Gracz wędruje do zablokowanych, wysyłamy nowy TICK aby zresetować timer dla reszty
         let newBlocked = [...(currentState.blocked || []), player];
-        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "" });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "reading", blocked: newBlocked, fastest: "", givenAnswer: "", tick: Date.now() });
     }
 };
 
