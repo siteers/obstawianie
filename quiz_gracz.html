@@ -77,7 +77,7 @@
   <div id="gamePad">
     <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
     
-    <!-- RUNDA 1 i 4: ABCD (Z PODPIĘTYMI TEKSTAMI ODPOWIEDZI) -->
+    <!-- RUNDA 1 i 4: ABCD -->
     <div class="grid-abcd" id="ui-abcd">
       <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">
         <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
@@ -132,9 +132,8 @@ let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
 
-// Zmienne dla Koła Fortuny i inteligentnego czyszczenia Rundy 3
 let currentWheelTick = null;
-let lastR3Question = null; // Czyści pole TYLKO gdy zmieni się pytanie, a nie po czyimś błędzie!
+let lastR3Question = null;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
@@ -144,7 +143,6 @@ function normalizeChar(str) {
     return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
 }
 
-// Funkcja awaryjnej synchronizacji (gdy przeglądarka telefonu uśpi kartę z powodu braku RAM)
 window.forceSyncState = async () => {
     if (!myName) return;
     try {
@@ -163,7 +161,6 @@ function startRealtimeListener() {
         currentState = docSnap.data();
         updatePadUI();
     }, () => {
-        // W razie zerwania strumienia WebSocket próbujemy odpytać ręcznie po 1.5s
         setTimeout(window.forceSyncState, 1500);
     });
 }
@@ -177,12 +174,10 @@ window.joinGame = () => {
     
     startRealtimeListener();
 
-    // Strażnik połączenia: co 2.5s weryfikuje, czy telefon nie zaspał przez uśpienie karty
     clearInterval(watchdogInterval);
     watchdogInterval = setInterval(window.forceSyncState, 2500);
 };
 
-// Automatyczne wybudzenie po powrocie do karty / odblokowaniu ekranu telefonu
 document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible" && myName) {
         startRealtimeListener();
@@ -313,8 +308,16 @@ function updatePadUI() {
     lockedEl.style.display = 'none';
     lockedEl.classList.remove('win-msg');
     document.body.classList.remove('keyboard-mode');
+
+    if (currentState && currentState.status === "podium") {
+        clearInterval(padWheelInterval);
+        document.getElementById('padStatus').innerText = "🏆 WIELKI FINAŁ! 🏆";
+        lockedEl.classList.add('win-msg');
+        lockedEl.style.display = 'block';
+        lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
+        return;
+    }
     
-    // Gdy przechodzimy do podsumowania pytania (koniec pytania lub ktoś już wygrał) -> resetujemy pamięć pytania R3
     if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
         clearInterval(padWheelInterval);
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
@@ -325,15 +328,13 @@ function updatePadUI() {
         return;
     }
 
-    // Gdy ktoś pomylił się i na TV trwa 3.5s czerwonego komunikatu -> NIE kasujemy pola tekstowego R3 pozostałym graczom!
     if (currentState.status === "results_wrong") {
-        document.getElementById('padStatus').innerText = "KTOŚ SIĘ POMYLIŁ! ZA CHWILĘ WZNOWIENIE...";
+        document.getElementById('padStatus').innerText = "KTOŚ SIĘ POMYLIŁ! ZA CHWILĘ DOBITKA...";
         lockedEl.style.display = 'block';
-        lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT WRACAMY DO PYTANIA!";
+        lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
         return;
     }
 
-    // --- RUNDA 2: KOŁO FORTUNY Z KAFELKAMI NA TELEFONIE ---
     if (currentState.status === "wheel_reading" && currentState.round === 2) {
         const winners = currentState.wheelWinners || [];
         const myRank = winners.indexOf(myName);
@@ -406,7 +407,6 @@ function updatePadUI() {
     }
 
     if (currentState.status === "reading") {
-        // Czyścimy pole w R3 TYLKO wtedy, gdy zmieniła się treść pytania! Jeśli to wznowienie po czyimś błędzie, Twój tekst zostaje!
         if (currentState.round === 3 && currentState.question !== lastR3Question) {
             lastR3Question = currentState.question;
             document.getElementById('typeAnswer').value = "";
@@ -435,7 +435,9 @@ function updatePadUI() {
             document.getElementById('ui-input').style.display = 'flex';
         } else if (currentState.round === 4) {
             if (!currentState.nominated || currentState.nominated === myName) {
-                let msg = (currentState.nominated === currentState.controller) ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "TWOJA SZANSA (±10 PKT)! ODPOWIADAJ!";
+                let msg = !currentState.nominated 
+                    ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" 
+                    : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!");
                 document.getElementById('padStatus').innerText = msg;
                 document.getElementById('ui-abcd').style.display = 'grid';
             } else {
