@@ -3,34 +3,57 @@
 <head>
   <meta charset="UTF-8">
   <title>Cyber-Pad | Gracz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
   <style>
-    :root { --cyan: #00d4ff; --bg: #050b14; }
-    body { font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; text-align: center; }
+    :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
+    body { 
+      font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      min-height: 100vh; text-align: center; box-sizing: border-box;
+    }
+    /* Gdy otwarta jest klawiatura w R2/R3, przypinamy interfejs do góry ekranu */
+    body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
     
     .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
     select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
     
-    #gamePad { display: none; width: 90%; max-width: 400px; }
-    .status-top { font-size: 14px; color: #888; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 2px; font-weight: bold; }
+    #gamePad { display: none; width: 94%; max-width: 420px; }
+    .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; }
     
     .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none; }
     .btn-abcd { background: #111; border: 2px solid var(--cyan); color: #fff; font-size: 30px; font-weight: bold; padding: 35px 20px; border-radius: 15px; cursor: pointer; transition: 0.2s; }
     .btn-abcd:active { background: var(--cyan); color: #000; transform: scale(0.95); }
     .btn-abcd:disabled { opacity: 0.2; border-color: #ff4757; color: #ff4757; text-decoration: line-through; pointer-events: none; }
     
-    .input-area { display: none; flex-direction: column; gap: 15px; }
-    input[type="text"] { font-size: 24px; padding: 15px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
-    .btn-submit { background: var(--cyan); color: #000; font-size: 20px; font-weight: bold; padding: 20px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; }
+    /* KAFELKI KOŁA FORTUNY NA TELEFONIE (RUNDA 2) */
+    .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+    .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+    .wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 6px 0; width: 100%; }
+    .wheel-pad-word { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+    
+    .wheel-tile-input {
+      width: 34px; height: 42px; background: #111; border: 2px solid #444; border-radius: 7px;
+      color: #fff; font-size: 20px; font-weight: 900; text-align: center; text-transform: uppercase;
+      padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret-color: transparent;
+    }
+    .wheel-tile-input:focus { border-color: var(--cyan); background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); transform: translateY(-2px); }
+    .wheel-tile-input.revealed { background: var(--gold) !important; color: #000 !important; border-color: #fff !important; pointer-events: none; }
+    .wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
+
+    /* RUNDA 3: SZYBKIE PISANIE */
+    .input-area { display: none; flex-direction: column; gap: 12px; }
+    input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
+    .btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
+    .btn-submit:active { transform: scale(0.97); }
     
     .nominate-area { display: none; flex-direction: column; gap: 10px; }
     .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
     .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
     .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
     
-    .locked-msg { font-size: 22px; color: #ff4757; font-weight: bold; margin-top: 30px; display: none; border: 2px dashed #ff4757; padding: 25px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+    .locked-msg { font-size: 20px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
     .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
-    #padFeedback { font-size: 14px; color: #ff4757; font-weight: bold; min-height: 20px; }
+    .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
   </style>
 </head>
 <body>
@@ -42,25 +65,35 @@
       <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
       <option value="Darek">Darek</option><option value="Jas">Jaś</option>
     </select>
-    <button class="btn-submit" style="width:100%;" onclick="joinGame()">DOŁĄCZ DO GRY</button>
+    <button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
   </div>
 
   <div id="gamePad">
     <div class="status-top" id="padStatus">Oczekiwanie na pytanie...</div>
     
+    <!-- RUNDA 1 i 4: ABCD -->
     <div class="grid-abcd" id="ui-abcd">
       <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">A</button>
       <button class="btn-abcd" id="pad-btn-1" onclick="sendAnswer(1)">B</button>
       <button class="btn-abcd" id="pad-btn-2" onclick="sendAnswer(2)">C</button>
       <button class="btn-abcd" id="pad-btn-3" onclick="sendAnswer(3)">D</button>
     </div>
+
+    <!-- RUNDA 2: INTERAKTYWNE KAFELKI KOŁA FORTUNY -->
+    <div class="wheel-pad-area" id="ui-wheel">
+      <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
+      <div class="wheel-pad-board" id="wheelPadBoard"></div>
+      <div class="feedback-msg" id="wheelFeedback"></div>
+      <button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
+    </div>
     
+    <!-- RUNDA 3: SZYBKIE PISANIE -->
     <div class="input-area" id="ui-input">
-      <input type="text" id="typeAnswer" placeholder="Wpisz odpowiedź...">
-      <div id="padFeedback"></div>
+      <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź...">
       <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ</button>
     </div>
     
+    <!-- RUNDA 4: WYBIERANIE -->
     <div class="nominate-area" id="ui-nominate">
       <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
       <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
@@ -83,7 +116,14 @@ const db = getFirestore(initializeApp(firebaseConfig));
 let myName = "";
 let currentState = null;
 
-function cleanPhrase(str) {
+// Zmienne dla Koła Fortuny na telefonie
+let currentWheelTick = null;
+let padWheelInterval = null;
+let padRevealedCount = 0;
+let tileInputs = [];
+let targetLetters = [];
+
+function normalizeChar(str) {
     return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
 }
 
@@ -101,34 +141,163 @@ window.joinGame = () => {
     });
 };
 
+// Budowanie kafelków do wpisywania na telefonie
+function buildWheelPadTiles(phrase) {
+    const board = document.getElementById('wheelPadBoard');
+    board.innerHTML = "";
+    tileInputs = [];
+    targetLetters = [];
+    let globalIdx = 0;
+
+    phrase.split(" ").forEach(word => {
+        const wDiv = document.createElement('div');
+        wDiv.className = "wheel-pad-word";
+        for (let ch of word) {
+            const inp = document.createElement('input');
+            inp.type = "text";
+            inp.maxLength = 1;
+            inp.className = "wheel-tile-input";
+            inp.dataset.idx = globalIdx;
+            inp.autocomplete = "off";
+            inp.autocapitalize = "characters";
+            inp.spellcheck = false;
+
+            const idxCopy = globalIdx;
+            targetLetters.push(ch);
+
+            // Gdy gracz kliknie w kafelek, zaznacz zawartość by łatwo ją nadpisać
+            inp.addEventListener('focus', () => { inp.select(); });
+
+            // Automatyczny przeskok do następnego wolnego pola po wpisaniu litery
+            inp.addEventListener('input', (e) => {
+                document.getElementById('wheelFeedback').innerText = "";
+                let val = e.target.value.trim().slice(-1).toUpperCase();
+                e.target.value = val;
+                if (val) {
+                    inp.classList.add('filled');
+                    focusNextEditableTile(idxCopy + 1);
+                } else {
+                    inp.classList.remove('filled');
+                }
+            });
+
+            // Obsługa Backspace (cofanie do poprzedniego edytowalnego kafelka) oraz Enter
+            inp.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace') {
+                    if (inp.value === "") {
+                        e.preventDefault();
+                        focusPrevEditableTile(idxCopy - 1);
+                    } else {
+                        inp.value = "";
+                        inp.classList.remove('filled');
+                    }
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    window.submitWheelTiles();
+                }
+            });
+
+            wDiv.appendChild(inp);
+            tileInputs.push(inp);
+            globalIdx++;
+        }
+        board.appendChild(wDiv);
+    });
+}
+
+function focusNextEditableTile(startIdx) {
+    for (let i = startIdx; i < tileInputs.length; i++) {
+        if (!tileInputs[i].readOnly) {
+            tileInputs[i].focus();
+            return;
+        }
+    }
+}
+
+function focusPrevEditableTile(startIdx) {
+    for (let i = startIdx; i >= 0; i--) {
+        if (!tileInputs[i].readOnly) {
+            tileInputs[i].focus();
+            tileInputs[i].value = "";
+            tileInputs[i].classList.remove('filled');
+            return;
+        }
+    }
+}
+
+// Synchronizacja odsłanianych liter z TV
+function updateRevealedTilesOnPad() {
+    if (!currentState || !currentState.wheelOrder) return;
+    const unlocked = currentState.wheelOrder.slice(0, padRevealedCount);
+    unlocked.forEach(idx => {
+        const inp = tileInputs[idx];
+        if (inp && !inp.readOnly) {
+            const wasFocused = (document.activeElement === inp);
+            inp.value = targetLetters[idx];
+            inp.readOnly = true;
+            inp.classList.remove('filled');
+            inp.classList.add('revealed');
+            // Jeśli gracz akurat miał kursor w polu, które odsłonił system -> przeskocz dalej!
+            if (wasFocused) focusNextEditableTile(idx + 1);
+        }
+    });
+}
+
 function updatePadUI() {
     document.getElementById('ui-abcd').style.display = 'none';
+    document.getElementById('ui-wheel').style.display = 'none';
     document.getElementById('ui-input').style.display = 'none';
     document.getElementById('ui-nominate').style.display = 'none';
     const lockedEl = document.getElementById('ui-locked');
     lockedEl.style.display = 'none';
     lockedEl.classList.remove('win-msg');
-    document.getElementById('padFeedback').innerText = "";
+    document.body.classList.remove('keyboard-mode');
     
     if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
+        clearInterval(padWheelInterval);
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
         return;
     }
 
-    // OBSŁUGA RUNDY 2: KOŁO FORTUNY
+    // --- RUNDA 2: KOŁO FORTUNY Z KAFELKAMI NA TELEFONIE ---
     if (currentState.status === "wheel_reading" && currentState.round === 2) {
         const winners = currentState.wheelWinners || [];
         const myRank = winners.indexOf(myName);
         const ptsMap = [20, 15, 10, 5];
 
         if (myRank !== -1) {
+            clearInterval(padWheelInterval);
             document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
             lockedEl.classList.add('win-msg');
             lockedEl.style.display = 'block';
             lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
-        } else {
-            document.getElementById('padStatus').innerText = `KOŁO FORTUNY (${ currentState.category }) - WPISZ PEŁNE HASŁO!`;
-            document.getElementById('ui-input').style.display = 'flex';
+            return;
+        }
+
+        // Układ na górze ekranu, aby klawiatura telefonu nie zasłaniała kafelków
+        document.body.classList.add('keyboard-mode');
+        document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
+        document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
+        document.getElementById('ui-wheel').style.display = 'flex';
+
+        if (currentState.tick !== currentWheelTick) {
+            currentWheelTick = currentState.tick;
+            clearInterval(padWheelInterval);
+            padRevealedCount = 0;
+            document.getElementById('wheelFeedback').innerText = "";
+            buildWheelPadTiles(currentState.question);
+
+            let totalLetters = (currentState.wheelOrder || []).length;
+            let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+            padWheelInterval = setInterval(() => {
+                if (padRevealedCount < totalLetters) {
+                    padRevealedCount++;
+                    updateRevealedTilesOnPad();
+                }
+            }, intervalMs);
+
+            // Ustaw kursor w pierwszym kafelku
+            setTimeout(() => focusNextEditableTile(0), 100);
         }
         return;
     }
@@ -181,6 +350,7 @@ function updatePadUI() {
             document.getElementById('padStatus').innerText = "SZYBKO WYBIERZ ODPOWIEDŹ!";
             document.getElementById('ui-abcd').style.display = 'grid';
         } else if (currentState.round === 3) {
+            document.body.classList.add('keyboard-mode');
             document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISUJ!";
             document.getElementById('ui-input').style.display = 'flex';
         } else if (currentState.round === 4) {
@@ -203,6 +373,54 @@ function updatePadUI() {
     }
 }
 
+// Zatwierdzenie hasła z kafelków w Rundzie 2
+window.submitWheelTiles = async () => {
+    if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
+    
+    const userBuilt = tileInputs.map(inp => inp.value).join("");
+    const targetBuilt = targetLetters.join("");
+
+    if (normalizeChar(userBuilt).length < normalizeChar(targetBuilt).length) {
+        document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI!";
+        focusNextEditableTile(0);
+        return;
+    }
+
+    if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
+        const stateRef = doc(db, "quizGame", "state");
+        const snap = await getDoc(stateRef);
+        const data = snap.data();
+        let winners = data.wheelWinners || [];
+
+        if (!winners.includes(myName)) {
+            const ptsMap = [20, 15, 10, 5];
+            let myPts = ptsMap[winners.length] || 5;
+            winners.push(myName);
+
+            const scoreRef = doc(db, "quizScores", myName);
+            const scoreSnap = await getDoc(scoreRef);
+            let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+            await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+
+            if (winners.length >= 4) {
+                await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
+            } else {
+                await updateDoc(stateRef, { wheelWinners: winners });
+            }
+        }
+    } else {
+        document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! POPRAW LITERY!";
+        // Czyścimy tylko ręcznie wpisane (błędne) kafelki, zostawiając złote!
+        tileInputs.forEach(inp => {
+            if (!inp.readOnly) {
+                inp.value = "";
+                inp.classList.remove('filled');
+            }
+        });
+        focusNextEditableTile(0);
+    }
+};
+
 window.sendAnswer = async (index) => {
     if (currentState.status !== "reading") return;
     const isCorrect = (index === currentState.correctIndex);
@@ -219,39 +437,6 @@ window.sendTypedAnswer = async () => {
     const ans = inputEl.value.trim();
     if (!ans) return;
 
-    // RUNDA 2: KOŁO FORTUNY - automatyczne sprawdzanie hasła
-    if (currentState.round === 2 && currentState.status === "wheel_reading") {
-        if (cleanPhrase(ans) === cleanPhrase(currentState.question)) {
-            inputEl.value = "";
-            const stateRef = doc(db, "quizGame", "state");
-            const snap = await getDoc(stateRef);
-            const data = snap.data();
-            let winners = data.wheelWinners || [];
-
-            if (!winners.includes(myName)) {
-                const ptsMap = [20, 15, 10, 5];
-                let myPts = ptsMap[winners.length] || 5;
-                winners.push(myName);
-
-                const scoreRef = doc(db, "quizScores", myName);
-                const scoreSnap = await getDoc(scoreRef);
-                let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-                await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-
-                if (winners.length >= 4) {
-                    await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
-                } else {
-                    await updateDoc(stateRef, { wheelWinners: winners });
-                }
-            }
-        } else {
-            document.getElementById('padFeedback').innerText = "❌ BŁĘDNE HASŁO! PRÓBUJ DALEJ!";
-            inputEl.value = "";
-        }
-        return;
-    }
-
-    // RUNDA 3: SZYBKIE PISANIE (do weryfikacji przez Admina)
     if (currentState.status === "reading" && currentState.round === 3) {
         await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
         inputEl.value = ""; 
