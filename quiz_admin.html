@@ -95,7 +95,6 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// Funkcje parsujące bazę
 const parseR1 = (str) => str.trim().split('\n').map(l => {
     let [q, o, c] = l.split('|');
     return { q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
@@ -113,7 +112,7 @@ const parseR4 = (str) => str.trim().split('\n').map(l => {
     return { cat: cat.trim(), q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
 
-// --- BAZA PYTAŃ (PULA 1, PULA 2, PULA 3) ---
+// --- BAZA PYTAŃ (Z DOPRECYZOWANYMI PYTANIAMI O RODZINĘ DLA RODZEŃSTWA I KUZYNA) ---
 const allDBs = {
     1: {
         1: parseR1(`
@@ -187,8 +186,8 @@ Które afrykańskie zwierzę ma najdłuższą szyję?|Żyrafa`),
         4: parseR4(`
 CYPR|W jakim państwie leży miasto Paphos?|W Grecji;Na Cyprze;We Włoszech;W Hiszpanii|1
 RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
-RODZINA|Jak ma na drugie imię ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
-RODZINA|W jakim mieście urodziła się twoja Mama?|Katowice;Chorzów;Sosnowiec;Bytom|1
+RODZINA|Jak ma na drugie imię Mama/Ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
+RODZINA|W jakim mieście urodziła się Mama/Ciocia Ola?|Katowice;Chorzów;Sosnowiec;Bytom|1
 RODZINA|Jak ma na nazwisko panieńskie Babcia Ela?|Lis;Wilk;Kot;Zając|1
 SPORT|Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?|9;10;11;12|2
 MATEMATYKA|Ile to jest (20 + 30) - 10?|40;30;50;60|0
@@ -478,7 +477,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         statusEl.innerText = `Status: Runda 2 (Koło Fortuny) w toku! Odgadło już: ${winnersCount}/4 graczy.`;
     }
 
-    // Kara za brak odpowiedzi w czasie dla wyznaczonego gracza w R4
     if (currentState.status === "nominated_timeout" && currentState.round === 4) {
         let nomTimeKey = "nom_timeout_" + currentState.answerTick;
         if (lastHandledStatus !== nomTimeKey) {
@@ -509,7 +507,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // 1. Napięcie (3.5s bicia serca) dla R1, R3 i R4
     if (currentState.status && currentState.status.startsWith("results_pending_")) {
         let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
         if (lastHandledStatus !== stateKey) {
@@ -568,7 +565,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // 2. Auto-wznowienie po błędzie
     if (currentState.status === "results_wrong") {
         let wrongKey = "wrong_" + currentState.answerTick;
         if (lastHandledStatus !== wrongKey) {
@@ -592,7 +588,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // 3. Auto-przejście do następnego pytania (w tym po zakończeniu Koła Fortuny `wheel_results`)
     if (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "wheel_results") {
         let endKey = "end_" + currentState.answerTick;
         if (lastHandledStatus !== endKey) {
@@ -645,7 +640,6 @@ async function nextQuestion() {
         statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} (Runda ${r}, Pula ${currentPool})`;
 
         if (r === 2) {
-            // RUNDA 2: KOŁO FORTUNY (60s)
             let phraseClean = qData.phrase.replace(/ /g, "");
             let indices = [];
             for (let i = 0; i < phraseClean.length; i++) indices.push(i);
@@ -656,7 +650,6 @@ async function nextQuestion() {
                 wheelOrder: indices, wheelWinners: [], tick: Date.now(), pool: currentPool
             });
         } else if (r === 4) {
-            // RUNDA 4: RYZYKO
             let tieBanner = "";
             if (currentQIndex[r] === 0 || !r4Controller) {
                 let initRes = await determineInitialR4Controller();
@@ -672,7 +665,6 @@ async function nextQuestion() {
                 blocked: [], usedOptions: [], nominated: "", pool: currentPool 
             });
         } else {
-            // RUNDA 1 (ABCD) lub RUNDA 3 (Szybkie pisanie)
             let payload = { 
                 status: "reading", round: r, question: qData.q, blocked: [], usedOptions: [], 
                 fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: currentPool 
