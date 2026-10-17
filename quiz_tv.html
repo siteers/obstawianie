@@ -10,8 +10,8 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    /* CANVAS FAJERWERKÓW */
-    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; }
+    /* CANVAS FAJERWERKÓW NA PIERWSZYM PLANIE */
+    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 800; display: none; }
 
     @keyframes pulseTimer {
       0% { transform: translateX(-50%) scale(1); }
@@ -60,15 +60,15 @@
 
     /* WIELKIE PODIUM FINAŁOWE */
     #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
-    .podium-title { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.4vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2.5vw; animation: pulse 1.2s infinite; }
-    .podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 2vw; height: 28vw; width: 100%; }
-    .podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 11vw; }
-    .podium-avatar { font-size: 3vw; margin-bottom: 0.5vw; }
-    .podium-pname { font-size: 1.8vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.4vw; }
-    .podium-pts { font-size: 1.5vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
+    .podium-title { font-size: 2.8vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.3vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2vw; animation: pulse 1.2s infinite; }
+    .podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 1.8vw; height: 27vw; width: 100%; }
+    .podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 10vw; }
+    .podium-avatar { font-size: 2.8vw; margin-bottom: 0.4vw; filter: drop-shadow(0 0 0.8vw rgba(255,255,255,0.5)); }
+    .podium-pname { font-size: 1.7vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.3vw; }
+    .podium-pts { font-size: 1.4vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
     .podium-pedestal { width: 100%; border-radius: 1vw 1vw 0 0; display: flex; align-items: center; justify-content: center; font-size: 3.5vw; font-weight: 900; color: #000; box-shadow: 0 0 2.5vw rgba(255,255,255,0.2); animation: growUp 1s ease-out forwards; transform-origin: bottom; }
     .ped-1 { height: 16vw; background: linear-gradient(180deg, #ffd700, #b8860b); border: 0.25vw solid #fff; box-shadow: 0 0 3.5vw rgba(255, 215, 0, 0.8); }
-    .ped-2 { height: 12vw; background: linear-gradient(180deg, #e2e8f0, #64748b); border: 0.2vw solid #fff; }
+    .ped-2 { height: 12vw; background: linear-gradient(180deg, #e2e8f0, #64748b); border: 0.2vw solid #fff; box-shadow: 0 0 2vw rgba(226, 232, 240, 0.5); }
     .ped-3 { height: 9vw; background: linear-gradient(180deg, #d97706, #78350f); border: 0.2vw solid #fbd38d; }
     .ped-4 { height: 6vw; background: linear-gradient(180deg, #334155, #0f172a); color: #fff; border: 0.15vw solid #64748b; font-size: 2.2vw; }
     @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
@@ -164,16 +164,17 @@ tickSound.loop = true; tickSound.volume = 0.5;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
-winSound.volume = 0.9;
+winSound.volume = 1.0;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- PANCERNY SYNTEZATOR MUZYKI W TLE + FANFARY FINAŁOWE ---
+// --- SYNTEZATOR MUZYKI W TLE ORAZ POTĘŻNYCH FANFAR I HUKU FAJERWERKÓW ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
+let fanfareLoopInterval = null;
 let isBgMusicPlaying = false;
 
 function createUpbeatGameMusic() {
@@ -224,37 +225,108 @@ function createUpbeatGameMusic() {
     }, 220);
 }
 
-// Syntezator uroczystych fanfar na podium (gdy wjeżdża finał)
-function playVictoryFanfare() {
+// Dźwięk wybuchu fajerwerku (syntezator huku petardy)
+function playFireworkBoom() {
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    const now = audioCtx.currentTime;
+
+    // 1. Szum eksplozji
+    const bufferSize = audioCtx.sampleRate * 0.45;
+    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const output = noiseBuffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.12));
+    }
+    const whiteNoise = audioCtx.createBufferSource();
+    whiteNoise.buffer = noiseBuffer;
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(900, now);
+    filter.frequency.exponentialRampToValueAtTime(120, now + 0.4);
+
+    const gain = audioCtx.createGain();
+    gain.gain.setValueAtTime(0.45, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.44);
+
+    whiteNoise.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    whiteNoise.start(now);
+
+    // 2. Niskie uderzenie basowe ("Thump")
+    const punchOsc = audioCtx.createOscillator();
+    const punchGain = audioCtx.createGain();
+    punchOsc.type = "sine";
+    punchOsc.frequency.setValueAtTime(130, now);
+    punchOsc.frequency.exponentialRampToValueAtTime(35, now + 0.25);
+    punchGain.gain.setValueAtTime(0.5, now);
+    punchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+    punchOsc.connect(punchGain);
+    punchGain.connect(audioCtx.destination);
+    punchOsc.start(now);
+    punchOsc.stop(now + 0.26);
+}
+
+// Potężne, wielogłosowe fanfary orkiestrowe (akordy trąbek sawtooth)
+function playGrandFanfareSequence() {
     fanfareSound.currentTime = 0;
     fanfareSound.play().catch(()=>{});
     winSound.currentTime = 0;
     winSound.play().catch(()=>{});
+
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-    
-    const notes = [
-        { f: 523.25, t: 0.0, d: 0.2 },
-        { f: 523.25, t: 0.22, d: 0.2 },
-        { f: 523.25, t: 0.44, d: 0.2 },
-        { f: 659.25, t: 0.68, d: 0.5 },
-        { f: 587.33, t: 1.25, d: 0.4 },
-        { f: 659.25, t: 1.70, d: 0.4 },
-        { f: 783.99, t: 2.15, d: 1.2 }
-    ];
-    const now = audioCtx.currentTime;
-    notes.forEach(n => {
-        const osc = audioCtx.createOscillator();
-        const g = audioCtx.createGain();
-        osc.type = "triangle";
-        osc.frequency.setValueAtTime(n.f, now + n.t);
-        g.gain.setValueAtTime(0.25, now + n.t);
-        g.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
-        osc.connect(g);
-        g.connect(audioCtx.destination);
-        osc.start(now + n.t);
-        osc.stop(now + n.t + n.d);
-    });
+
+    const playBrassChord = (freqs, startOffset, duration, vol = 0.22) => {
+        const now = audioCtx.currentTime + startOffset;
+        freqs.forEach((f, idx) => {
+            const osc = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const g = audioCtx.createGain();
+
+            osc.type = "sawtooth"; // Brzmienie sekcji dętej (trąbki/puzony)
+            osc.frequency.setValueAtTime(f, now);
+            osc.detune.setValueAtTime((idx - 1) * 6, now); // Szerokie brzmienie orkiestry
+
+            filter.type = "lowpass";
+            filter.frequency.setValueAtTime(2400, now);
+
+            g.gain.setValueAtTime(0.001, now);
+            g.gain.linearRampToValueAtTime(vol, now + 0.03);
+            g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(filter);
+            filter.connect(g);
+            g.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.02);
+        });
+    };
+
+    // Triumfalna sekwencja akordowa (C-dur -> G-dur -> A-dur -> F-dur -> G-dur -> C-dur Wielki Finał)
+    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
+    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
+    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
+    playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
+    playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
+    playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
+    playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.35);
+}
+
+function startVictoryFanfareLoop() {
+    clearInterval(fanfareLoopInterval);
+    playGrandFanfareSequence();
+    // Powtarzaj uroczyste fanfary co 6.5 sekundy podczas trwania pokazu na podium
+    fanfareLoopInterval = setInterval(() => {
+        if (fwActive) playGrandFanfareSequence();
+    }, 6500);
+}
+
+function stopVictoryFanfareLoop() {
+    clearInterval(fanfareLoopInterval);
 }
 
 function setBgMusicActive(active) {
@@ -273,12 +345,32 @@ window.initAudio = function() {
     });
 };
 
-// --- SILNIK FAJERWERKÓW NA ŻYWO (CANVAS) ---
+// --- POTĘŻNY SILNIK FAJERWERKÓW NA ŻYWO (RAKIETY + PODWÓJNE EKSPLOZJE + BŁYSKI + DŹWIĘK) ---
 const fwCanvas = document.getElementById('fireworks-canvas');
 const fwCtx = fwCanvas.getContext('2d');
 let fwParticles = [];
+let fwRockets = [];
 let fwActive = false;
 let fwLoopId = null;
+let fwSpawnTimer = null;
+
+function createExplosion(x, y, mainColor) {
+    playFireworkBoom();
+    const count = 95;
+    for (let i = 0; i < count; i++) {
+        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
+        const speed = Math.random() * 8 + 2.5;
+        fwParticles.push({
+            x, y,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            alpha: 1,
+            size: Math.random() * 3.5 + 2,
+            color: i % 3 === 0 ? '#ffffff' : mainColor,
+            decay: Math.random() * 0.012 + 0.010
+        });
+    }
+}
 
 function startFireworks() {
     if (fwActive) return;
@@ -287,47 +379,80 @@ function startFireworks() {
     fwCanvas.width = window.innerWidth;
     fwCanvas.height = window.innerHeight;
     fwParticles = [];
+    fwRockets = [];
 
-    function spawnBurst() {
+    const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43', '#00ffcc'];
+
+    function launchWave() {
         if (!fwActive) return;
-        const x = Math.random() * fwCanvas.width * 0.8 + fwCanvas.width * 0.1;
-        const y = Math.random() * fwCanvas.height * 0.5 + fwCanvas.height * 0.1;
-        const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ffffff'];
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        for (let i = 0; i < 45; i++) {
-            const angle = (Math.PI * 2 * i) / 45;
-            const speed = Math.random() * 5 + 2;
-            fwParticles.push({
-                x, y,
-                vx: Math.cos(angle) * speed,
-                vy: Math.sin(angle) * speed,
-                alpha: 1,
+        // Wystrzel 2 lub 3 rakiety naraz
+        const rocketsCount = Math.random() > 0.4 ? 2 : 3;
+        for (let r = 0; r < rocketsCount; r++) {
+            const startX = fwCanvas.width * (0.15 + Math.random() * 0.7);
+            const targetY = fwCanvas.height * (0.12 + Math.random() * 0.38);
+            const color = colors[Math.floor(Math.random() * colors.length)];
+            fwRockets.push({
+                x: startX,
+                y: fwCanvas.height,
+                vx: (Math.random() - 0.5) * 2.5,
+                vy: -(Math.random() * 5 + 11),
+                targetY,
                 color
             });
         }
-        setTimeout(spawnBurst, 650);
+        fwSpawnTimer = setTimeout(launchWave, 550);
     }
-    spawnBurst();
+    launchWave();
 
     function animateFw() {
         if (!fwActive) return;
-        fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+        fwCtx.globalCompositeOperation = 'destination-out';
+        fwCtx.fillStyle = 'rgba(0, 0, 0, 0.22)'; // Efekt smugi świetlnej
+        fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
+        fwCtx.globalCompositeOperation = 'lighter';
+
+        // Rysowanie lecących rakiet
+        for (let i = fwRockets.length - 1; i >= 0; i--) {
+            const r = fwRockets[i];
+            r.x += r.vx;
+            r.y += r.vy;
+            r.vy += 0.12;
+
+            fwCtx.globalAlpha = 1;
+            fwCtx.fillStyle = '#ffffff';
+            fwCtx.beginPath();
+            fwCtx.arc(r.x, r.y, 4, 0, Math.PI * 2);
+            fwCtx.fill();
+
+            if (r.y <= r.targetY || r.vy >= 0) {
+                createExplosion(r.x, r.y, r.color);
+                fwRockets.splice(i, 1);
+            }
+        }
+
+        // Rysowanie iskier eksplozji
         for (let i = fwParticles.length - 1; i >= 0; i--) {
             const p = fwParticles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vy += 0.06; // Grawitacja
-            p.alpha -= 0.016;
+            p.vx *= 0.97;
+            p.vy *= 0.97;
+            p.vy += 0.08; // Grawitacja
+            p.alpha -= p.decay;
+
             if (p.alpha <= 0) {
                 fwParticles.splice(i, 1);
             } else {
                 fwCtx.globalAlpha = p.alpha;
+                fwCtx.shadowBlur = 12;
+                fwCtx.shadowColor = p.color;
                 fwCtx.fillStyle = p.color;
                 fwCtx.beginPath();
-                fwCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+                fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 fwCtx.fill();
             }
         }
+        fwCtx.shadowBlur = 0;
         fwLoopId = requestAnimationFrame(animateFw);
     }
     animateFw();
@@ -335,7 +460,9 @@ function startFireworks() {
 
 function stopFireworks() {
     fwActive = false;
+    clearTimeout(fwSpawnTimer);
     if (fwLoopId) cancelAnimationFrame(fwLoopId);
+    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
     fwCanvas.style.display = 'none';
 }
 
@@ -379,32 +506,47 @@ function renderWheelBoard(phrase, order, count) {
     });
 }
 
+// SPRAWIEDLIWE PODIUM Z OBSŁUGĄ REMISÓW (EX AEQUO)
 function renderPodium() {
     const container = document.getElementById('podium-bars-container');
     container.innerHTML = "";
     const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
     
+    // 1. Sortujemy graczy malejąco po punktach
     let sorted = Object.keys(displayNames).map(id => ({
         id,
         name: displayNames[id],
-        pts: pendingScores[id] || 0
+        pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
     })).sort((a, b) => b.pts - a.pts);
 
-    // Kolejność wizualna słupków na scenie: 2. miejsce (lewo), 1. miejsce (środek), 3. miejsce (prawo), 4. miejsce (skrajnie prawo)
-    const visualOrder = [1, 0, 2, 3];
-    const medals = ["🥇", "🥈", "🥉", "🏅"];
-    const pedClasses = ["ped-1", "ped-2", "ped-3", "ped-4"];
+    // 2. Przypisujemy sprawiedliwe miejsca (jeśli mają tyle samo punktów -> mają to samo miejsce, ten sam medal i tę samą wysokość słupka!)
+    let currentRank = 1;
+    for (let i = 0; i < sorted.length; i++) {
+        if (i > 0 && sorted[i].pts < sorted[i - 1].pts) {
+            currentRank = currentRank + 1; // Kolejny próg punktowy dostaje kolejne miejsce na podium (1 -> 2 -> 3 -> 4)
+        }
+        sorted[i].rank = currentRank;
+    }
 
-    visualOrder.forEach(rankIdx => {
-        const p = sorted[rankIdx];
-        if (!p) return;
+    // 3. Układamy wizualnie tak, aby najwyższe miejsce (1.) było na środku sceny
+    const visualArrangement = [];
+    sorted.forEach((player, idx) => {
+        if (idx % 2 === 0) visualArrangement.push(player);
+        else visualArrangement.unshift(player);
+    });
+
+    const medalsMap = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
+    const pedClassMap = { 1: "ped-1", 2: "ped-2", 3: "ped-3", 4: "ped-4" };
+
+    visualArrangement.forEach(p => {
+        const r = Math.min(4, p.rank);
         const col = document.createElement('div');
         col.className = "podium-col";
         col.innerHTML = `
-            <div class="podium-avatar">${medals[rankIdx]}</div>
+            <div class="podium-avatar">${medalsMap[r]}</div>
             <div class="podium-pname">${p.name}</div>
             <div class="podium-pts">${p.pts} PKT</div>
-            <div class="podium-pedestal ${pedClasses[rankIdx]}">${rankIdx + 1}</div>
+            <div class="podium-pedestal ${pedClassMap[r]}">${r}</div>
         `;
         container.appendChild(col);
     });
@@ -418,6 +560,10 @@ onSnapshot(collection(db, "quizScores"), (snap) => {
             if(el) el.innerText = doc.data().points; 
         }
     });
+    // Jeśli jesteśmy na ekranie podium i zmienią się punkty (np. reset), odśwież słupki na żywo
+    if (document.getElementById('podium-view').style.display === 'flex') {
+        renderPodium();
+    }
 });
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
@@ -458,6 +604,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
     if (data.status !== "podium") {
         stopFireworks();
+        stopVictoryFanfareLoop();
     }
 
     const players = ["Lila", "Kaja", "Darek", "Jas"];
@@ -470,7 +617,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const letters = ["A", "B", "C", "D"];
 
     if (data.status === "podium") {
-        // --- WIELKI FINAŁ: PODIUM, FAJERWERKI I FANFARY ---
+        // --- WIELKI FINAŁ: SPRAWIEDLIWE PODIUM, GĘSTE FAJERWERKI I GŁOŚNE FANFARY ---
         isSuspense = false;
         clearInterval(timerInterval); clearInterval(wheelRevealInterval);
         timerEl.style.display = 'none';
@@ -484,7 +631,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         startFireworks();
 
         if (lastPlayedResult !== "podium_" + data.answerTick) {
-            playVictoryFanfare();
+            startVictoryFanfareLoop();
             lastPlayedResult = "podium_" + data.answerTick;
         }
         return;
