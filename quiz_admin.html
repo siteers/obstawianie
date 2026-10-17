@@ -51,6 +51,7 @@
     </select><br><br>
     <button type="button" class="green" id="btnStartRound">▶️ START GRY / RUNDY</button>
     <button type="button" class="gold" id="btnNextQ">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
+    <button type="button" class="purple" id="btnShowPodium">🏆 POKAŻ PODIUM / FINAŁ</button>
     
     <div class="status-banner" id="adminStatus">⏳ Ładowanie skryptu i łączenie z Firebase...</div>
     <div class="error-banner" id="errorBox"></div>
@@ -112,7 +113,7 @@ const parseR4 = (str) => str.trim().split('\n').map(l => {
     return { cat: cat.trim(), q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
 
-// --- BAZA PYTAŃ (Z DOPRECYZOWANYMI PYTANIAMI O RODZINĘ DLA RODZEŃSTWA I KUZYNA) ---
+// --- BAZA PYTAŃ ---
 const allDBs = {
     1: {
         1: parseR1(`
@@ -452,6 +453,16 @@ async function determineInitialR4Controller() {
     }
 }
 
+async function showGrandFinale() {
+    try {
+        clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
+        await updateDoc(doc(db, "quizGame", "state"), {
+            status: "podium", answerTick: Date.now()
+        });
+        statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium i fajerwerki!";
+    } catch (err) { showError(err.message); }
+}
+
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     currentState = docSnap.data();
@@ -522,6 +533,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     
                     let ptsChange = 0;
                     if (r === 4) {
+                        // +20/-20 TYLKO gdy wyznaczony sam siebie odpowiada jako pierwszy (nominated === controller). Podczas dobitki (nominated === "") jest ±10!
                         let isSelfPlay = (player === currentState.controller && currentState.nominated === currentState.controller);
                         let stake = isSelfPlay ? 20 : 10;
                         ptsChange = isCorrect ? stake : -stake;
@@ -565,26 +577,18 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
+    // Po błędnej odpowiedzi w R1, R3 ORAZ R4: "KTO PIERWSZY, TEN LEPSZY" dla pozostałych niezablokowanych graczy!
     if (currentState.status === "results_wrong") {
         let wrongKey = "wrong_" + currentState.answerTick;
         if (lastHandledStatus !== wrongKey) {
             lastHandledStatus = wrongKey;
             clearTimeout(autoFlowTimer);
-            if (currentState.round === 4) {
-                statusEl.innerText = `Status: Błąd gracza ${currentState.loser}! Za 3.5s ${currentState.controller} wybiera kolejną osobę...`;
-                autoFlowTimer = setTimeout(async () => {
-                    await updateDoc(doc(db, "quizGame", "state"), {
-                        status: "nominating", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", timeoutPenalty: false, tieMsg: `BŁĄD! ${currentState.controller.toUpperCase()} WYBIERA KOLEJNĄ OSOBĘ!`
-                    });
-                }, 3500);
-            } else {
-                statusEl.innerText = `Status: Błąd gracza ${currentState.loser}! Wznawiam pytanie dla pozostałych za 3.5s...`;
-                autoFlowTimer = setTimeout(async () => {
-                    await updateDoc(doc(db, "quizGame", "state"), {
-                        status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", timeoutPenalty: false, tick: Date.now()
-                    });
-                }, 3500);
-            }
+            statusEl.innerText = `Status: Błąd gracza ${currentState.loser}! Za 3.5s DOBITKA (Kto pierwszy, ten lepszy) dla pozostałych...`;
+            autoFlowTimer = setTimeout(async () => {
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", timeoutPenalty: false, tick: Date.now()
+                });
+            }, 3500);
         }
     }
 
@@ -633,6 +637,11 @@ async function nextQuestion() {
         currentQIndex[r]++;
         let qData = allDBs[currentPool][r][currentQIndex[r]];
         if (!qData) {
+            if (r === 4) {
+                // Po ostatnim pytaniu z 4. rundy automatycznie wjeżdża Podium, Fajerwerki i Fanfary!
+                await showGrandFinale();
+                return;
+            }
             statusEl.innerText = `Status: Koniec pytań w Rundzie ${r} (Pula ${currentPool})! Zmień rundę.`;
             return alert(`Koniec pytań w Rundzie ${r} z Puli ${currentPool}! Wybierz kolejną rundę z listy.`);
         }
@@ -695,6 +704,7 @@ document.getElementById('btnResetScores').addEventListener('click', resetScoresO
 document.getElementById('btnSendPool').addEventListener('click', sendPoolChoice);
 document.getElementById('btnStartRound').addEventListener('click', nextQuestion);
 document.getElementById('btnNextQ').addEventListener('click', nextQuestion);
+document.getElementById('btnShowPodium').addEventListener('click', showGrandFinale);
 document.getElementById('btnManualNom').addEventListener('click', startNominationPhase);
 document.getElementById('btnJudgeYes').addEventListener('click', () => judgeAnswer(true));
 document.getElementById('btnJudgeNo').addEventListener('click', () => judgeAnswer(false));
