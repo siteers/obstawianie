@@ -33,9 +33,9 @@
   <div class="box">
     <h3>KROK 2: WYBÓR PULI PYTAŃ</h3>
     <select id="poolSel">
-        <option value="1">PULA 1 (Łatwa - 90 pytań)</option>
-        <option value="3">PULA 3 (Średnia - 90 pytań)</option>
-        <option value="2">PULA 2 (Trudna - 90 pytań)</option>
+        <option value="1">PULA 1 (Łatwa - 95 pytań)</option>
+        <option value="3">PULA 3 (Średnia - 95 pytań)</option>
+        <option value="2">PULA 2 (Trudna - 95 pytań)</option>
     </select>
     <button type="button" class="purple" id="btnSendPool">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
   </div>
@@ -44,9 +44,10 @@
     <h3>KROK 3: STEROWANIE RUNDAMI (AUTO-PRZECHODZENIE AKTYWNE)</h3>
     <label>Wybierz rundę:</label>
     <select id="roundSel">
-        <option value="1">Runda 1 (ABCD - 10s)</option>
-        <option value="2">Runda 2 (Pisanie - 15s)</option>
-        <option value="3">Runda 3 (Ryzyko - 10s)</option>
+        <option value="1">Runda 1: ABCD - Kto pierwszy (10s | 30 pytań)</option>
+        <option value="2">Runda 2: Koło Fortuny (60s | 5 haseł | 20/15/10/5 pkt)</option>
+        <option value="3">Runda 3: Szybkie pisanie (15s | 30 pytań)</option>
+        <option value="4">Runda 4: Ryzyko - Wybieranie gracza (10s | 30 pytań)</option>
     </select><br><br>
     <button type="button" class="green" id="btnStartRound">▶️ START GRY / RUNDY</button>
     <button type="button" class="gold" id="btnNextQ">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
@@ -56,7 +57,7 @@
   </div>
 
   <div class="nominate-box" id="nominateUI">
-    <h3 style="color: #d4af37;">RUNDA 3: KTO TERAZ WYBIERA? (Auto-przekazane na telefon)</h3>
+    <h3 style="color: #d4af37;">RUNDA 4: KTO TERAZ WYBIERA? (Auto-przekazane na telefon)</h3>
     <p>Kategoria: <b id="n-cat" style="color:#00d4ff; font-size:20px;"></b> | Aktualnie wybiera: <b id="n-curr" style="color:#2ed573;"></b></p>
     <p style="font-size:12px; color:#ccc;">Gracz ma już aktywny wybór na telefonie. Poniżej możesz ręcznie zmienić osobę wybierającą w razie potrzeby:</p>
     <select id="controllerSel">
@@ -67,7 +68,7 @@
   </div>
 
   <div class="verify-box" id="verifyUI">
-    <h3 style="color: #d4af37;">WERYFIKACJA ODPOWIEDZI! (Runda 2)</h3>
+    <h3 style="color: #d4af37;">WERYFIKACJA ODPOWIEDZI! (Runda 3 - Szybkie Pisanie)</h3>
     <p>Gracz <b style="color:#00ff00"><span id="v-player"></span></b> wpisał:</p>
     <div class="ans-text" id="v-ans">...</div>
     <p>Prawidłowa odpowiedź w bazie: <b style="color:#d4af37; font-size: 20px;"><span id="v-correct"></span></b></p>
@@ -94,21 +95,25 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// Funkcje parsujące zwartą bazę 270 pytań
+// Funkcje parsujące bazę
 const parseR1 = (str) => str.trim().split('\n').map(l => {
     let [q, o, c] = l.split('|');
     return { q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
-const parseR2 = (str) => str.trim().split('\n').map(l => {
+const parseWheel = (str) => str.trim().split('\n').map(l => {
+    let [cat, phrase] = l.split('|');
+    return { cat: cat.trim(), phrase: phrase.trim().toUpperCase() };
+});
+const parseR3 = (str) => str.trim().split('\n').map(l => {
     let [q, c] = l.split('|');
     return { q: q.trim(), c: c.trim() };
 });
-const parseR3 = (str) => str.trim().split('\n').map(l => {
+const parseR4 = (str) => str.trim().split('\n').map(l => {
     let [cat, q, o, c] = l.split('|');
     return { cat: cat.trim(), q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
 
-// --- BAZA 270 PYTAŃ (PULA 1, PULA 2, PULA 3) ---
+// --- BAZA PYTAŃ (PULA 1, PULA 2, PULA 3) ---
 const allDBs = {
     1: {
         1: parseR1(`
@@ -142,7 +147,13 @@ Kto namalował 'Mona Lisę'?|Picasso;Da Vinci;Van Gogh;Matejko|1
 Który z tych owoców jest cytrusowy?|Jabłko;Banan;Cytryna;Śliwka|2
 Jak nazywa się waluta w Polsce?|Euro;Dolar;Złoty;Funt|2
 Które z tych zwierząt hibernuje w zimie?|Lis;Niedźwiedź;Wilk;Zając|1`),
-        2: parseR2(`
+        2: parseWheel(`
+BAJKA|KRAINA LODU
+JEDZENIE|LODY WANILIOWE
+ZWIERZĘTA|ZŁOTA RYBKA
+POSTAĆ|MYSZKA MIKI
+BAJKA|KUBUŚ PUCHATEK`),
+        3: parseR3(`
 Stolica Niemiec to...|Berlin
 Z jakiego owocu robi się rodzynki?|Z winogron
 Mąż krowy to...|Byk
@@ -173,7 +184,7 @@ Jak nazywa się młody pies?|Szczeniak
 W czym nosimy zakupy ze sklepu?|W torbie / Siatce
 Jaki geometryczny kształt ma piłka?|Kula / Okrągły
 Które afrykańskie zwierzę ma najdłuższą szyję?|Żyrafa`),
-        3: parseR3(`
+        4: parseR4(`
 CYPR|W jakim państwie leży miasto Paphos?|W Grecji;Na Cyprze;We Włoszech;W Hiszpanii|1
 RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
 RODZINA|Jak ma na drugie imię ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
@@ -237,7 +248,13 @@ Ile nóg ma mucha?|4;6;8;10|1
 Jaka litera rzymska oznacza 50?|X;L;C;D|1
 W jakim mieście znajdziemy Wawel?|Warszawa;Poznań;Gdańsk;Kraków|3
 Który z instrumentów ma klawiaturę?|Harfa;Akordeon;Wiolonczela;Flet|1`),
-        2: parseR2(`
+        2: parseWheel(`
+GEOGRAFIA|WIELKI MUR CHIŃSKI
+KOSMOS|UKŁAD SŁONECZNY
+HISTORIA|BITWA POD GRUNWALDEM
+ZABYTKI|WIEŻA EIFFLA
+NAUKA|SZTUCZNA INTELIGENCJA`),
+        3: parseR3(`
 Wynik mnożenia to...|Iloczyn
 Nauka badająca przeszłość to...|Historia
 Słodka, biała substancja w kuchni to...|Cukier
@@ -268,7 +285,7 @@ Polskie tłumaczenie angielskiego 'Water'|Woda
 Jakie działanie daje wynik z 'resztą'?|Dzielenie
 Jak nazywa się samiec owcy?|Baran
 Przenośny komputer osobisty to...|Laptop`),
-        3: parseR3(`
+        4: parseR4(`
 CHEMIA|Jaki symbol chemiczny ma złoto?|Ag;Au;Zn;Cu|1
 CYPR|Jakie jest główne, międzynarodowe lotnisko na Cyprze?|Paphos;Larnaka;Nikozja;Limassol|1
 HISTORIA|W którym roku odbyła się Bitwa pod Grunwaldem?|1410;966;1525;1914|0
@@ -332,7 +349,13 @@ Ile to jest połowa ze 150?|50;65;75;85|2
 W jakim sporcie na lodzie używa się krążka i kijów?|Łyżwiarstwo;Curling;Hokej;Saneczkarstwo|2
 Co znajduje się w środku owocu brzoskwini lub czereśni?|Pestka;Orzech;Szyszka;Nic|0
 Który superbohater nosi czerwono-niebieski strój i strzela siecią?|Batman;Superman;Spider-Man;Thor|2`),
-        2: parseR2(`
+        2: parseWheel(`
+FILM|GWIEZDNE WOJNY
+LITERATURA|AKADEMIA PANA KLEKSA
+GEOGRAFIA|MORZE BAŁTYCKIE
+SPORT|PIŁKA NOŻNA
+BOHATER|HARRY POTTER`),
+        3: parseR3(`
 Zamarznięta woda zwisająca zimą z dachu to...|Sopel
 Jak po angielsku jest 'słońce'?|Sun
 Ptak, który podrzuca swoje jajka do cudzych gniazd to...|Kukułka
@@ -363,7 +386,7 @@ W jakim miesiącu obchodzimy Wigilię i Boże Narodzenie?|Grudzień
 Jak po angielsku jest 'książka'?|Book
 Największy ssak żyjący w oceanach to...|Płetwal błękitny / Wieloryb
 Ile centymetrów ma jeden metr?|100 / Sto`),
-        3: parseR3(`
+        4: parseR4(`
 GEOGRAFIA|Które z tych państw graniczy z Polską od południa?|Niemcy;Czechy;Szwecja;Litwa|1
 MATEMATYKA|Ile to jest 3 x 15?|35;40;45;50|2
 BAJKI|Jak nazywa się kowboj z bajki 'Toy Story'?|Buzz Astral;Chudy;Rex;Zurg|1
@@ -398,9 +421,9 @@ MATEMATYKA|Ile to jest 72 podzielone przez 9?|6;7;8;9|2`)
 };
 
 let currentPool = 1;
-let currentQIndex = { 1: -1, 2: -1, 3: -1 };
+let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1 };
 let currentState = null;
-let r3Controller = "";
+let r4Controller = "";
 
 let suspenseTimer = null;
 let autoFlowTimer = null;
@@ -408,7 +431,7 @@ let lastHandledStatus = "";
 
 statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz pulę lub kliknij START GRY.";
 
-async function determineInitialR3Controller() {
+async function determineInitialR4Controller() {
     const snap = await getDocs(collection(db, "quizScores"));
     let maxPts = -999999;
     let leaders = [];
@@ -437,22 +460,26 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     document.getElementById('nominateUI').style.display = 'none';
     document.getElementById('verifyUI').style.display = 'none';
 
-    if ((currentState.status === "setup_nomination" || currentState.status === "nominating") && currentState.round === 3) {
+    if ((currentState.status === "setup_nomination" || currentState.status === "nominating") && currentState.round === 4) {
         document.getElementById('nominateUI').style.display = 'block';
         document.getElementById('n-cat').innerText = currentState.category;
-        document.getElementById('n-curr').innerText = currentState.controller || r3Controller;
-        statusEl.innerText = `Status: Runda 3 - ${currentState.controller} wybiera na telefonie kto odpowiada!`;
+        document.getElementById('n-curr').innerText = currentState.controller || r4Controller;
+        statusEl.innerText = `Status: Runda 4 - ${currentState.controller} wybiera na telefonie kto odpowiada!`;
     } 
-    else if (currentState.status === "verifying" && currentState.round === 2) {
+    else if (currentState.status === "verifying" && currentState.round === 3) {
         document.getElementById('verifyUI').style.display = 'block';
         document.getElementById('v-player').innerText = currentState.fastest.toUpperCase();
         document.getElementById('v-ans').innerText = currentState.givenAnswer;
         document.getElementById('v-correct').innerText = currentState.correctText || "---";
         statusEl.innerText = "Status: Oceń odpowiedź tekstową gracza!";
     }
+    else if (currentState.status === "wheel_reading" && currentState.round === 2) {
+        let winnersCount = (currentState.wheelWinners || []).length;
+        statusEl.innerText = `Status: Runda 2 (Koło Fortuny) w toku! Odgadło już: ${winnersCount}/4 graczy.`;
+    }
 
-    // Kara za brak odpowiedzi w czasie dla wyznaczonego gracza w R3
-    if (currentState.status === "nominated_timeout" && currentState.round === 3) {
+    // Kara za brak odpowiedzi w czasie dla wyznaczonego gracza w R4
+    if (currentState.status === "nominated_timeout" && currentState.round === 4) {
         let nomTimeKey = "nom_timeout_" + currentState.answerTick;
         if (lastHandledStatus !== nomTimeKey) {
             lastHandledStatus = nomTimeKey;
@@ -482,7 +509,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // 1. Napięcie (3.5s bicia serca) dla R1, R2 i R3
+    // 1. Napięcie (3.5s bicia serca) dla R1, R3 i R4
     if (currentState.status && currentState.status.startsWith("results_pending_")) {
         let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
         if (lastHandledStatus !== stateKey) {
@@ -497,7 +524,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     let player = currentState.fastest;
                     
                     let ptsChange = 0;
-                    if (r === 3) {
+                    if (r === 4) {
                         let isSelfPlay = (player === currentState.controller && currentState.nominated === currentState.controller);
                         let stake = isSelfPlay ? 20 : 10;
                         ptsChange = isCorrect ? stake : -stake;
@@ -511,8 +538,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     await setDoc(scoreRef, { points: currentPts + ptsChange }, { merge: true });
 
                     if (isCorrect) {
-                        if (r === 3) {
-                            r3Controller = player;
+                        if (r === 4) {
+                            r4Controller = player;
                             let sel = document.getElementById('controllerSel');
                             for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === player) sel.selectedIndex = i; }
                         }
@@ -522,7 +549,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     } else {
                         let newBlocked = [...(currentState.blocked || []), player];
                         let newUsedOpts = [...(currentState.usedOptions || [])];
-                        if ((r === 1 || r === 3) && currentState.selectedIndex !== undefined) {
+                        if ((r === 1 || r === 4) && currentState.selectedIndex !== undefined) {
                             newUsedOpts.push(currentState.selectedIndex);
                         }
 
@@ -547,7 +574,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (lastHandledStatus !== wrongKey) {
             lastHandledStatus = wrongKey;
             clearTimeout(autoFlowTimer);
-            if (currentState.round === 3) {
+            if (currentState.round === 4) {
                 statusEl.innerText = `Status: Błąd gracza ${currentState.loser}! Za 3.5s ${currentState.controller} wybiera kolejną osobę...`;
                 autoFlowTimer = setTimeout(async () => {
                     await updateDoc(doc(db, "quizGame", "state"), {
@@ -565,16 +592,16 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // 3. Auto-przejście do następnego pytania
-    if (currentState.status === "results" || currentState.status === "timeout") {
+    // 3. Auto-przejście do następnego pytania (w tym po zakończeniu Koła Fortuny `wheel_results`)
+    if (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "wheel_results") {
         let endKey = "end_" + currentState.answerTick;
         if (lastHandledStatus !== endKey) {
             lastHandledStatus = endKey;
-            statusEl.innerText = `Status: Pytanie zakończone! Automatyczne przejście do kolejnego za 5 sekund...`;
+            statusEl.innerText = `Status: Zadanie zakończone! Automatyczne przejście do kolejnego za 6 sekund...`;
             clearTimeout(autoFlowTimer);
             autoFlowTimer = setTimeout(() => {
                 nextQuestion();
-            }, 5000);
+            }, 6000);
         }
     }
 });
@@ -583,7 +610,7 @@ async function resetScoresOnly() {
     if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom?")) return;
     try {
         clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
-        r3Controller = "";
+        r4Controller = "";
         const players = ["Lila", "Kaja", "Darek", "Jas"];
         for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
         await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], pool: currentPool });
@@ -595,8 +622,8 @@ async function sendPoolChoice() {
     try {
         clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
         currentPool = parseInt(document.getElementById('poolSel').value);
-        currentQIndex = { 1: -1, 2: -1, 3: -1 };
-        r3Controller = "";
+        currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1 };
+        r4Controller = "";
         await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], pool: currentPool });
         statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
     } catch (err) { showError(err.message); }
@@ -615,30 +642,43 @@ async function nextQuestion() {
             return alert(`Koniec pytań w Rundzie ${r} z Puli ${currentPool}! Wybierz kolejną rundę z listy.`);
         }
 
-        statusEl.innerText = `Status: Grane pytanie #${currentQIndex[r] + 1} (Runda ${r}, Pula ${currentPool})`;
+        statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} (Runda ${r}, Pula ${currentPool})`;
 
-        if (r === 3) {
+        if (r === 2) {
+            // RUNDA 2: KOŁO FORTUNY (60s)
+            let phraseClean = qData.phrase.replace(/ /g, "");
+            let indices = [];
+            for (let i = 0; i < phraseClean.length; i++) indices.push(i);
+            indices.sort(() => Math.random() - 0.5);
+
+            await setDoc(doc(db, "quizGame", "state"), {
+                status: "wheel_reading", round: 2, category: qData.cat, question: qData.phrase,
+                wheelOrder: indices, wheelWinners: [], tick: Date.now(), pool: currentPool
+            });
+        } else if (r === 4) {
+            // RUNDA 4: RYZYKO
             let tieBanner = "";
-            if (currentQIndex[r] === 0 || !r3Controller) {
-                let initRes = await determineInitialR3Controller();
-                r3Controller = initRes.player;
+            if (currentQIndex[r] === 0 || !r4Controller) {
+                let initRes = await determineInitialR4Controller();
+                r4Controller = initRes.player;
                 tieBanner = initRes.tieMsg;
             }
             let sel = document.getElementById('controllerSel');
-            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === r3Controller) sel.selectedIndex = i; }
+            for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === r4Controller) sel.selectedIndex = i; }
 
             await setDoc(doc(db, "quizGame", "state"), { 
-                status: "nominating", round: 3, controller: r3Controller, tieMsg: tieBanner,
+                status: "nominating", round: 4, controller: r4Controller, tieMsg: tieBanner,
                 category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c, 
                 blocked: [], usedOptions: [], nominated: "", pool: currentPool 
             });
         } else {
+            // RUNDA 1 (ABCD) lub RUNDA 3 (Szybkie pisanie)
             let payload = { 
                 status: "reading", round: r, question: qData.q, blocked: [], usedOptions: [], 
                 fastest: "", winner: "", loser: "", givenAnswer: "", tick: Date.now(), pool: currentPool 
             };
             if (r === 1) { payload.options = qData.o; payload.correctIndex = qData.c; }
-            if (r === 2) { payload.correctText = qData.c; }
+            if (r === 3) { payload.correctText = qData.c; }
             await setDoc(doc(db, "quizGame", "state"), payload);
         }
     } catch (err) { showError(err.message); }
@@ -646,8 +686,8 @@ async function nextQuestion() {
 
 async function startNominationPhase() {
     try {
-        r3Controller = document.getElementById('controllerSel').value;
-        await updateDoc(doc(db, "quizGame", "state"), { status: "nominating", controller: r3Controller });
+        r4Controller = document.getElementById('controllerSel').value;
+        await updateDoc(doc(db, "quizGame", "state"), { status: "nominating", controller: r4Controller });
     } catch (err) { showError(err.message); }
 }
 
@@ -655,11 +695,10 @@ async function judgeAnswer(isCorrect) {
     try {
         let player = currentState.fastest;
         let ans = currentState.givenAnswer; 
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r2", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: player, givenAnswer: ans, isAnswerCorrect: isCorrect });
     } catch (err) { showError(err.message); }
 }
 
-// Bezpośrednie podpięcie wszystkich przycisków (gwarancja działania)
 document.getElementById('btnResetScores').addEventListener('click', resetScoresOnly);
 document.getElementById('btnSendPool').addEventListener('click', sendPoolChoice);
 document.getElementById('btnStartRound').addEventListener('click', nextQuestion);
