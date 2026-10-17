@@ -10,6 +10,9 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
+    /* CANVAS FAJERWERKÓW */
+    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; }
+
     @keyframes pulseTimer {
       0% { transform: translateX(-50%) scale(1); }
       50% { transform: translateX(-50%) scale(1.12); }
@@ -54,6 +57,21 @@
     .wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
     .wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
     .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
+
+    /* WIELKIE PODIUM FINAŁOWE */
+    #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
+    .podium-title { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.4vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2.5vw; animation: pulse 1.2s infinite; }
+    .podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 2vw; height: 28vw; width: 100%; }
+    .podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 11vw; }
+    .podium-avatar { font-size: 3vw; margin-bottom: 0.5vw; }
+    .podium-pname { font-size: 1.8vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.4vw; }
+    .podium-pts { font-size: 1.5vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
+    .podium-pedestal { width: 100%; border-radius: 1vw 1vw 0 0; display: flex; align-items: center; justify-content: center; font-size: 3.5vw; font-weight: 900; color: #000; box-shadow: 0 0 2.5vw rgba(255,255,255,0.2); animation: growUp 1s ease-out forwards; transform-origin: bottom; }
+    .ped-1 { height: 16vw; background: linear-gradient(180deg, #ffd700, #b8860b); border: 0.25vw solid #fff; box-shadow: 0 0 3.5vw rgba(255, 215, 0, 0.8); }
+    .ped-2 { height: 12vw; background: linear-gradient(180deg, #e2e8f0, #64748b); border: 0.2vw solid #fff; }
+    .ped-3 { height: 9vw; background: linear-gradient(180deg, #d97706, #78350f); border: 0.2vw solid #fbd38d; }
+    .ped-4 { height: 6vw; background: linear-gradient(180deg, #334155, #0f172a); color: #fff; border: 0.15vw solid #64748b; font-size: 2.2vw; }
+    @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
     
     #tv-qr-container { display: none; margin-top: 1.5vw; }
     #tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
@@ -76,6 +94,8 @@
   <div id="audio-overlay">
     <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN I DŹWIĘK TV</button>
   </div>
+
+  <canvas id="fireworks-canvas"></canvas>
 
   <div class="timer-box" id="tv-timer">10</div>
 
@@ -110,6 +130,12 @@
     <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
     <div class="wheel-winners-list" id="tv-wheel-winners"></div>
 
+    <!-- PODIUM FINAŁOWE -->
+    <div id="podium-view">
+      <div class="podium-title">🏆 WIELKI FINAŁ - WYNIKI KOŃCOWE 🏆</div>
+      <div class="podium-bars" id="podium-bars-container"></div>
+    </div>
+
     <div id="tv-qr-container">
         <p>Zeskanuj, aby wejść do gry</p>
         <img id="qrGraczTv" src="" alt="QR">
@@ -141,8 +167,10 @@ const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/200
 winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
+const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
+fanfareSound.volume = 1.0;
 
-// --- PANCERNY SYNTEZATOR MUZYKI W TLE (BEZ ZAWIESZANIA RAMPY GŁOŚNOŚCI) ---
+// --- PANCERNY SYNTEZATOR MUZYKI W TLE + FANFARY FINAŁOWE ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -154,7 +182,7 @@ function createUpbeatGameMusic() {
     audioCtx = new AudioContext();
     
     bgMasterGain = audioCtx.createGain();
-    bgMasterGain.gain.value = 0.25; // Stała głośność główna - brak psujących się ramp!
+    bgMasterGain.gain.value = 0.25;
     bgMasterGain.connect(audioCtx.destination);
 
     const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
@@ -196,6 +224,39 @@ function createUpbeatGameMusic() {
     }, 220);
 }
 
+// Syntezator uroczystych fanfar na podium (gdy wjeżdża finał)
+function playVictoryFanfare() {
+    fanfareSound.currentTime = 0;
+    fanfareSound.play().catch(()=>{});
+    winSound.currentTime = 0;
+    winSound.play().catch(()=>{});
+    if (!audioCtx) return;
+    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+    
+    const notes = [
+        { f: 523.25, t: 0.0, d: 0.2 },
+        { f: 523.25, t: 0.22, d: 0.2 },
+        { f: 523.25, t: 0.44, d: 0.2 },
+        { f: 659.25, t: 0.68, d: 0.5 },
+        { f: 587.33, t: 1.25, d: 0.4 },
+        { f: 659.25, t: 1.70, d: 0.4 },
+        { f: 783.99, t: 2.15, d: 1.2 }
+    ];
+    const now = audioCtx.currentTime;
+    notes.forEach(n => {
+        const osc = audioCtx.createOscillator();
+        const g = audioCtx.createGain();
+        osc.type = "triangle";
+        osc.frequency.setValueAtTime(n.f, now + n.t);
+        g.gain.setValueAtTime(0.25, now + n.t);
+        g.gain.exponentialRampToValueAtTime(0.001, now + n.t + n.d);
+        osc.connect(g);
+        g.connect(audioCtx.destination);
+        osc.start(now + n.t);
+        osc.stop(now + n.t + n.d);
+    });
+}
+
 function setBgMusicActive(active) {
     isBgMusicPlaying = active;
     if (audioCtx && active && audioCtx.state === 'suspended') {
@@ -207,10 +268,76 @@ window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
     createUpbeatGameMusic();
     setBgMusicActive(true);
-    [tickSound, suspenseSound, winSound, loseSound].forEach(s => {
+    [tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
     });
 };
+
+// --- SILNIK FAJERWERKÓW NA ŻYWO (CANVAS) ---
+const fwCanvas = document.getElementById('fireworks-canvas');
+const fwCtx = fwCanvas.getContext('2d');
+let fwParticles = [];
+let fwActive = false;
+let fwLoopId = null;
+
+function startFireworks() {
+    if (fwActive) return;
+    fwActive = true;
+    fwCanvas.style.display = 'block';
+    fwCanvas.width = window.innerWidth;
+    fwCanvas.height = window.innerHeight;
+    fwParticles = [];
+
+    function spawnBurst() {
+        if (!fwActive) return;
+        const x = Math.random() * fwCanvas.width * 0.8 + fwCanvas.width * 0.1;
+        const y = Math.random() * fwCanvas.height * 0.5 + fwCanvas.height * 0.1;
+        const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ffffff'];
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        for (let i = 0; i < 45; i++) {
+            const angle = (Math.PI * 2 * i) / 45;
+            const speed = Math.random() * 5 + 2;
+            fwParticles.push({
+                x, y,
+                vx: Math.cos(angle) * speed,
+                vy: Math.sin(angle) * speed,
+                alpha: 1,
+                color
+            });
+        }
+        setTimeout(spawnBurst, 650);
+    }
+    spawnBurst();
+
+    function animateFw() {
+        if (!fwActive) return;
+        fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+        for (let i = fwParticles.length - 1; i >= 0; i--) {
+            const p = fwParticles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+            p.vy += 0.06; // Grawitacja
+            p.alpha -= 0.016;
+            if (p.alpha <= 0) {
+                fwParticles.splice(i, 1);
+            } else {
+                fwCtx.globalAlpha = p.alpha;
+                fwCtx.fillStyle = p.color;
+                fwCtx.beginPath();
+                fwCtx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+                fwCtx.fill();
+            }
+        }
+        fwLoopId = requestAnimationFrame(animateFw);
+    }
+    animateFw();
+}
+
+function stopFireworks() {
+    fwActive = false;
+    if (fwLoopId) cancelAnimationFrame(fwLoopId);
+    fwCanvas.style.display = 'none';
+}
 
 let currentTick = null;
 let timerInterval = null;
@@ -219,7 +346,7 @@ let revealedWheelCount = 0;
 let lastWheelWinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
-let pendingScores = {}; 
+let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; 
 
 window.onload = () => {
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -252,6 +379,37 @@ function renderWheelBoard(phrase, order, count) {
     });
 }
 
+function renderPodium() {
+    const container = document.getElementById('podium-bars-container');
+    container.innerHTML = "";
+    const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
+    
+    let sorted = Object.keys(displayNames).map(id => ({
+        id,
+        name: displayNames[id],
+        pts: pendingScores[id] || 0
+    })).sort((a, b) => b.pts - a.pts);
+
+    // Kolejność wizualna słupków na scenie: 2. miejsce (lewo), 1. miejsce (środek), 3. miejsce (prawo), 4. miejsce (skrajnie prawo)
+    const visualOrder = [1, 0, 2, 3];
+    const medals = ["🥇", "🥈", "🥉", "🏅"];
+    const pedClasses = ["ped-1", "ped-2", "ped-3", "ped-4"];
+
+    visualOrder.forEach(rankIdx => {
+        const p = sorted[rankIdx];
+        if (!p) return;
+        const col = document.createElement('div');
+        col.className = "podium-col";
+        col.innerHTML = `
+            <div class="podium-avatar">${medals[rankIdx]}</div>
+            <div class="podium-pname">${p.name}</div>
+            <div class="podium-pts">${p.pts} PKT</div>
+            <div class="podium-pedestal ${pedClasses[rankIdx]}">${rankIdx + 1}</div>
+        `;
+        container.appendChild(col);
+    });
+}
+
 onSnapshot(collection(db, "quizScores"), (snap) => {
     snap.forEach(doc => { 
         pendingScores[doc.id] = doc.data().points; 
@@ -270,9 +428,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 
         2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
         3: "RUNDA 3: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 
-        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)"
+        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ / DOBITKA: ±10 PKT)"
     };
-    document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
+    document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
     
     const stage = document.getElementById('stage-box');
     const catEl = document.getElementById('tv-cat');
@@ -288,13 +446,19 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const wheelBoard = document.getElementById('tv-wheel-board');
     const wheelCat = document.getElementById('tv-wheel-cat');
     const wheelWinnersEl = document.getElementById('tv-wheel-winners');
+    const podiumView = document.getElementById('podium-view');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; 
     statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
     wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
+    podiumView.style.display = "none";
     qEl.style.display = "block";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
     stage.classList.remove("success-glow", "error-glow");
+
+    if (data.status !== "podium") {
+        stopFireworks();
+    }
 
     const players = ["Lila", "Kaja", "Darek", "Jas"];
     players.forEach(p => {
@@ -304,6 +468,27 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     });
 
     const letters = ["A", "B", "C", "D"];
+
+    if (data.status === "podium") {
+        // --- WIELKI FINAŁ: PODIUM, FAJERWERKI I FANFARY ---
+        isSuspense = false;
+        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+        timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        setBgMusicActive(false);
+
+        qEl.style.display = "none";
+        stage.classList.add("success-glow");
+        podiumView.style.display = "flex";
+        renderPodium();
+        startFireworks();
+
+        if (lastPlayedResult !== "podium_" + data.answerTick) {
+            playVictoryFanfare();
+            lastPlayedResult = "podium_" + data.answerTick;
+        }
+        return;
+    }
 
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
         isSuspense = false;
@@ -452,7 +637,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
                 winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} [${stawkTxt}]`;
             } else {
-                winnerEl.innerText = `DOBIJAJĄ POZOSTALI GRACZE! (±10 PKT)`;
+                winnerEl.innerText = `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
             }
         }
 
@@ -575,7 +760,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             winnerEl.style.color = "#ff4757"; 
             winnerEl.innerText = data.timeoutPenalty ? `${data.loser.toUpperCase()} - CZAS MINĄŁ!` : `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; 
-            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ PRÓBUJĄ POZOSTALI!)`;
+            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
             
             if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
         }
