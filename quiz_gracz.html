@@ -29,6 +29,8 @@
     .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
     
     .locked-msg { font-size: 22px; color: #ff4757; font-weight: bold; margin-top: 30px; display: none; border: 2px dashed #ff4757; padding: 25px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+    .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
+    #padFeedback { font-size: 14px; color: #ff4757; font-weight: bold; min-height: 20px; }
   </style>
 </head>
 <body>
@@ -55,6 +57,7 @@
     
     <div class="input-area" id="ui-input">
       <input type="text" id="typeAnswer" placeholder="Wpisz odpowiedź...">
+      <div id="padFeedback"></div>
       <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ</button>
     </div>
     
@@ -72,13 +75,17 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let currentState = null;
+
+function cleanPhrase(str) {
+    return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
+}
 
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
@@ -98,16 +105,37 @@ function updatePadUI() {
     document.getElementById('ui-abcd').style.display = 'none';
     document.getElementById('ui-input').style.display = 'none';
     document.getElementById('ui-nominate').style.display = 'none';
-    document.getElementById('ui-locked').style.display = 'none';
+    const lockedEl = document.getElementById('ui-locked');
+    lockedEl.style.display = 'none';
+    lockedEl.classList.remove('win-msg');
+    document.getElementById('padFeedback').innerText = "";
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout" || currentState.status === "nominated_timeout") {
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
+        return;
+    }
+
+    // OBSŁUGA RUNDY 2: KOŁO FORTUNY
+    if (currentState.status === "wheel_reading" && currentState.round === 2) {
+        const winners = currentState.wheelWinners || [];
+        const myRank = winners.indexOf(myName);
+        const ptsMap = [20, 15, 10, 5];
+
+        if (myRank !== -1) {
+            document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
+            lockedEl.classList.add('win-msg');
+            lockedEl.style.display = 'block';
+            lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
+        } else {
+            document.getElementById('padStatus').innerText = `KOŁO FORTUNY (${ currentState.category }) - WPISZ PEŁNE HASŁO!`;
+            document.getElementById('ui-input').style.display = 'flex';
+        }
         return;
     }
     
     if (currentState.status === "nominating") {
         if (currentState.controller === myName) {
-            document.getElementById('padStatus').innerText = "DECZYJA NALEŻY DO CIEBIE!";
+            document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
             document.getElementById('pad-cat').innerText = currentState.category || "";
             
             const allPlayers = [
@@ -139,8 +167,8 @@ function updatePadUI() {
     if (currentState.status === "reading") {
         if (currentState.blocked && currentState.blocked.includes(myName)) {
             document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
-            document.getElementById('ui-locked').style.display = 'block';
-            document.getElementById('ui-locked').innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
+            lockedEl.style.display = 'block';
+            lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
             return;
         }
 
@@ -152,26 +180,26 @@ function updatePadUI() {
         if (currentState.round === 1) {
             document.getElementById('padStatus').innerText = "SZYBKO WYBIERZ ODPOWIEDŹ!";
             document.getElementById('ui-abcd').style.display = 'grid';
-        } else if (currentState.round === 2) {
+        } else if (currentState.round === 3) {
             document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISUJ!";
             document.getElementById('ui-input').style.display = 'flex';
-        } else if (currentState.round === 3) {
+        } else if (currentState.round === 4) {
             if (!currentState.nominated || currentState.nominated === myName) {
                 let msg = (currentState.nominated === currentState.controller) ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "TWOJA SZANSA (±10 PKT)! ODPOWIADAJ!";
                 document.getElementById('padStatus').innerText = msg;
                 document.getElementById('ui-abcd').style.display = 'grid';
             } else {
                 document.getElementById('padStatus').innerText = "KIBICUJ!";
-                document.getElementById('ui-locked').style.display = 'block';
-                document.getElementById('ui-locked').innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
+                lockedEl.style.display = 'block';
+                lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
             }
         }
     }
     
     if (currentState.status.startsWith("results_pending") || currentState.status === "verifying") {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
-        document.getElementById('ui-locked').style.display = 'block';
-        document.getElementById('ui-locked').innerText = "PATRZ NA TELEWIZOR!";
+        lockedEl.style.display = 'block';
+        lockedEl.innerText = "PATRZ NA TELEWIZOR!";
     }
 }
 
@@ -181,16 +209,53 @@ window.sendAnswer = async (index) => {
     
     if (currentState.round === 1) {
         await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-    } else if (currentState.round === 3) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r3", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
+    } else if (currentState.round === 4) {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
     }
 };
 
 window.sendTypedAnswer = async () => {
-    const ans = document.getElementById('typeAnswer').value.trim();
-    if (!ans || currentState.status !== "reading" || currentState.round !== 2) return;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
-    document.getElementById('typeAnswer').value = ""; 
+    const inputEl = document.getElementById('typeAnswer');
+    const ans = inputEl.value.trim();
+    if (!ans) return;
+
+    // RUNDA 2: KOŁO FORTUNY - automatyczne sprawdzanie hasła
+    if (currentState.round === 2 && currentState.status === "wheel_reading") {
+        if (cleanPhrase(ans) === cleanPhrase(currentState.question)) {
+            inputEl.value = "";
+            const stateRef = doc(db, "quizGame", "state");
+            const snap = await getDoc(stateRef);
+            const data = snap.data();
+            let winners = data.wheelWinners || [];
+
+            if (!winners.includes(myName)) {
+                const ptsMap = [20, 15, 10, 5];
+                let myPts = ptsMap[winners.length] || 5;
+                winners.push(myName);
+
+                const scoreRef = doc(db, "quizScores", myName);
+                const scoreSnap = await getDoc(scoreRef);
+                let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+                await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+
+                if (winners.length >= 4) {
+                    await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
+                } else {
+                    await updateDoc(stateRef, { wheelWinners: winners });
+                }
+            }
+        } else {
+            document.getElementById('padFeedback').innerText = "❌ BŁĘDNE HASŁO! PRÓBUJ DALEJ!";
+            inputEl.value = "";
+        }
+        return;
+    }
+
+    // RUNDA 3: SZYBKIE PISANIE (do weryfikacji przez Admina)
+    if (currentState.status === "reading" && currentState.round === 3) {
+        await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
+        inputEl.value = ""; 
+    }
 };
 
 window.nominatePlayer = async (targetPlayer) => {
