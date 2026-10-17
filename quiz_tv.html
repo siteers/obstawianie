@@ -35,7 +35,7 @@
     .score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
     .score-corner.blocked .blocked-tag { display: inline-block; }
 
-    .center-stage { width: 46vw; max-width: 46vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2.2vw 2.5vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+    .center-stage { width: 48vw; max-width: 48vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2.2vw 2.5vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
     .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
     .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
@@ -46,6 +46,14 @@
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
     .option { background: #111; border: 0.18vw solid #444; padding: 1.2vw; font-size: 1.6vw; border-radius: 0.8vw; font-weight: bold; transition: 0.3s; }
     .option.used-wrong { background: rgba(255, 0, 0, 0.15); border-color: #ff4757; color: #ff4757; text-decoration: line-through; opacity: 0.45; }
+
+    /* TABLICA KOŁA FORTUNY (RUNDA 2) */
+    .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
+    .wheel-word { display: flex; gap: 0.4vw; }
+    .wheel-letter { width: 3.1vw; height: 4.2vw; background: #111; border: 0.18vw solid #444; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; font-size: 2.2vw; font-weight: 900; color: #fff; transition: 0.3s; }
+    .wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
+    .wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
+    .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
     
     #tv-qr-container { display: none; margin-top: 1.5vw; }
     #tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
@@ -97,6 +105,11 @@
     <div class="category-text" id="tv-cat">KATEGORIA</div>
     <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
     
+    <!-- KOŁO FORTUNY (Runda 2) -->
+    <div class="wheel-board" id="tv-wheel-board"></div>
+    <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
+    <div class="wheel-winners-list" id="tv-wheel-winners"></div>
+
     <div id="tv-qr-container">
         <p>Zeskanuj, aby wejść do gry</p>
         <img id="qrGraczTv" src="" alt="QR">
@@ -129,8 +142,7 @@ winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
 
-// --- DYNAMICZNY, ŻYWY I PRZYJAZNY DLA DZIECI SYNTEZATOR MUZYKI W TLE ---
-// Generuje wesoły, skoczny elektroniczny podkład (retro arcade / teleturniej) w pamięci przeglądarki
+// --- DYNAMICZNY, ŻYWY SYNTEZATOR MUZYKI W TLE ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -144,7 +156,6 @@ function createUpbeatGameMusic() {
     bgMasterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
     bgMasterGain.connect(audioCtx.destination);
 
-    // Wesoła pentatoniczna skala (C, D, E, G, A) w skocznym tempie
     const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
     const bassNotes = [130.81, 146.83, 164.81, 196.00];
 
@@ -155,7 +166,6 @@ function createUpbeatGameMusic() {
 
         const now = audioCtx.currentTime;
 
-        // 1. Skoczny bas co krok
         const bassOsc = audioCtx.createOscillator();
         const bassGain = audioCtx.createGain();
         bassOsc.type = "triangle";
@@ -167,7 +177,6 @@ function createUpbeatGameMusic() {
         bassOsc.start(now);
         bassOsc.stop(now + 0.25);
 
-        // 2. Wesołe, skaczące melodyjki
         if (step % 2 === 0) {
             const leadOsc = audioCtx.createOscillator();
             const leadGain = audioCtx.createGain();
@@ -183,7 +192,7 @@ function createUpbeatGameMusic() {
         }
 
         step++;
-    }, 220); // Szybkie, radosne tempo
+    }, 220);
 }
 
 function setBgMusicActive(active) {
@@ -212,6 +221,9 @@ window.initAudio = function() {
 
 let currentTick = null;
 let timerInterval = null;
+let wheelRevealInterval = null;
+let revealedWheelCount = 0;
+let lastWheelWinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = {}; 
@@ -221,6 +233,31 @@ window.onload = () => {
     const graczUrl = encodeURIComponent(baseHref + 'quiz_gracz.html');
     document.getElementById('qrGraczTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${graczUrl}&color=000000&bgcolor=ffffff`;
 };
+
+function renderWheelBoard(phrase, order, count) {
+    const board = document.getElementById('tv-wheel-board');
+    board.innerHTML = "";
+    const unlocked = (order || []).slice(0, count);
+    let letterIdx = 0;
+
+    phrase.split(" ").forEach(word => {
+        const wDiv = document.createElement('div');
+        wDiv.className = "wheel-word";
+        for (let ch of word) {
+            const lDiv = document.createElement('div');
+            if (unlocked.includes(letterIdx)) {
+                lDiv.className = "wheel-letter revealed";
+                lDiv.innerText = ch;
+            } else {
+                lDiv.className = "wheel-letter";
+                lDiv.innerText = "";
+            }
+            wDiv.appendChild(lDiv);
+            letterIdx++;
+        }
+        board.appendChild(wDiv);
+    });
+}
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
     snap.forEach(doc => { 
@@ -238,8 +275,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     
     let roundNames = {
         1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 
-        2: "RUNDA 2: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 
-        3: "RUNDA 3: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)"
+        2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
+        3: "RUNDA 3: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 
+        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)"
     };
     document.getElementById('tv-round').innerText = roundNames[data.round] || "CZEKANIE NA START";
     
@@ -254,9 +292,14 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const typedAnsEl = document.getElementById('tv-typed-answer');
     const correctBanner = document.getElementById('tv-correct-banner');
     const correctVal = document.getElementById('tv-correct-val');
+    const wheelBoard = document.getElementById('tv-wheel-board');
+    const wheelCat = document.getElementById('tv-wheel-cat');
+    const wheelWinnersEl = document.getElementById('tv-wheel-winners');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; 
     statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
+    wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
+    qEl.style.display = "block";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
     stage.classList.remove("success-glow", "error-glow");
 
@@ -271,10 +314,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
         isSuspense = false;
-        clearInterval(timerInterval); timerEl.style.display = 'none';
+        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+        timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         
-        // Włączamy żywą, wesołą muzykę w tle
         setBgMusicActive(true);
         
         if (data.status === "setup_nomination" || data.status === "nominating") {
@@ -289,18 +332,121 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
         }
         
-    } else if (data.status === "reading") {
+    } else if (data.status === "wheel_reading") {
+        // --- RUNDA 2: KOŁO FORTUNY (60 SEKUND) ---
         isSuspense = false;
         suspenseSound.pause(); suspenseSound.currentTime = 0;
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+        qEl.style.display = "none";
+        wheelBoard.style.display = "flex";
+        wheelCat.style.display = "block";
+        wheelCat.innerText = "KATEGORIA: " + data.category;
+        wheelWinnersEl.style.display = "flex";
+
+        const winners = data.wheelWinners || [];
+        const ptsMap = [20, 15, 10, 5];
+        const medals = ["🥇", "🥈", "🥉", "🏅"];
+        wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+
+        if (winners.length > lastWheelWinnersCount) {
+            lastWheelWinnersCount = winners.length;
+            winSound.currentTime = 0;
+            winSound.play().catch(()=>{});
+        }
+
+        if (data.tick !== currentTick) {
+            currentTick = data.tick;
+            lastWheelWinnersCount = winners.length;
+            clearInterval(timerInterval);
+            clearInterval(wheelRevealInterval);
+            tickSound.pause(); tickSound.currentTime = 0;
+            setBgMusicActive(true);
+
+            let totalLetters = (data.wheelOrder || []).length;
+            revealedWheelCount = 0;
+            renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+
+            // Odsłanianie kolejnej litery co X sekund (tak, aby całe słowo odsłoniło się w ~52 sekundy)
+            let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+            wheelRevealInterval = setInterval(() => {
+                if (revealedWheelCount < totalLetters) {
+                    revealedWheelCount++;
+                    renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+                }
+            }, intervalMs);
+
+            let timeLeft = 60;
+            timerEl.style.display = 'flex';
+            timerEl.classList.remove('timer-alert');
+            timerEl.innerText = timeLeft;
+
+            timerInterval = setInterval(async () => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    clearInterval(wheelRevealInterval);
+                    tickSound.pause(); tickSound.currentTime = 0;
+                    setBgMusicActive(false);
+                    timerEl.innerText = "0";
+                    await updateDoc(doc(db, "quizGame", "state"), { status: "wheel_results", answerTick: Date.now() });
+                } else {
+                    timerEl.innerText = timeLeft;
+                    if (timeLeft <= 5) {
+                        timerEl.classList.add('timer-alert');
+                        setBgMusicActive(false);
+                        tickSound.play().catch(()=>{});
+                    }
+                }
+            }, 1000);
+        } else {
+            renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+        }
+
+    } else if (data.status === "wheel_results") {
+        // --- PODSUMOWANIE KOŁA FORTUNY ---
+        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+        timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        setBgMusicActive(false);
+
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+        qEl.style.display = "none";
+        wheelBoard.style.display = "flex";
+        wheelCat.style.display = "block";
+        wheelCat.innerText = "KATEGORIA: " + data.category;
+        wheelWinnersEl.style.display = "flex";
+
+        // Odsłoń wszystkie litery na koniec
+        renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
+
+        const winners = data.wheelWinners || [];
+        const ptsMap = [20, 15, 10, 5];
+        const medals = ["🥇", "🥈", "🥉", "🏅"];
+        wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+
+        stage.classList.add("success-glow");
+        winnerEl.style.display = "block";
+        winnerEl.style.color = "var(--gold)";
+        winnerEl.innerText = winners.length === 4 ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
+        if (lastPlayedResult !== "wheel_end_" + data.answerTick) {
+            winSound.play().catch(()=>{});
+            lastPlayedResult = "wheel_end_" + data.answerTick;
+        }
+
+    } else if (data.status === "reading") {
+        isSuspense = false;
+        clearInterval(wheelRevealInterval);
+        suspenseSound.pause(); suspenseSound.currentTime = 0;
         
-        // Podczas czytania pytania gra wesoła muzyka
         setBgMusicActive(true);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
         qEl.innerText = data.question;
         
-        if ((data.round === 1 || data.round === 3) && data.options) {
+        if ((data.round === 1 || data.round === 4) && data.options) {
             for(let i=0; i<4; i++) {
                 let optEl = document.getElementById(`opt-${i}`);
                 optEl.innerText = `${letters[i]}: ${data.options[i]}`;
@@ -311,7 +457,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
             opts.style.display = "grid";
         }
-        if (data.round === 3) {
+        if (data.round === 4) {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
             if (data.nominated) {
                 let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
@@ -325,7 +471,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             currentTick = data.tick;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = data.round === 2 ? 15 : 10;
+            let timeLeft = data.round === 3 ? 15 : 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
@@ -335,14 +481,18 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 if (timeLeft <= 0) {
                     clearInterval(timerInterval);
                     tickSound.pause(); tickSound.currentTime = 0;
-                    setBgMusicActive(false); // Wyłączamy muzykę na czas końca czasu
+                    setBgMusicActive(false);
                     timerEl.innerText = "0";
-                    await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
+                    if (data.round === 4 && data.nominated) {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
+                    } else {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
+                    }
                 } else {
                     timerEl.innerText = timeLeft;
                     if (timeLeft <= 3) {
                         timerEl.classList.add('timer-alert');
-                        setBgMusicActive(false); // Wyciszamy muzykę gdy leci tykanie zegara
+                        setBgMusicActive(false);
                         tickSound.play().catch(()=>{});
                     }
                 }
@@ -354,16 +504,15 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
         
-        // Wyciszenie muzyki na czas bicia serca
         setBgMusicActive(false);
         suspenseSound.play().catch(()=>{}); 
         
         qEl.innerText = data.question;
         
-        if (data.round === 2 && data.givenAnswer) {
+        if (data.round === 3 && data.givenAnswer) {
             typedAnsEl.style.display = "block";
             typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-        } else if ((data.round === 1 || data.round === 3) && data.selectedIndex !== undefined && data.options) {
+        } else if ((data.round === 1 || data.round === 4) && data.selectedIndex !== undefined && data.options) {
             typedAnsEl.style.display = "block";
             typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
         }
@@ -378,7 +527,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         winnerEl.style.animation = "none";
         isSuspense = false;
         
-        // Wyciszenie muzyki podczas fanfar
         setBgMusicActive(false);
         
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -396,9 +544,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
             
             correctBanner.style.display = "block";
-            if ((data.round === 1 || data.round === 3) && data.options) {
+            if ((data.round === 1 || data.round === 4) && data.options) {
                 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            } else if (data.round === 2 && data.correctText) {
+            } else if (data.round === 3 && data.correctText) {
                 correctVal.innerText = data.correctText;
             }
             if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
@@ -412,9 +560,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             statusEl.innerText = `+${data.pointsChange} PKT`;
             
             correctBanner.style.display = "block";
-            if ((data.round === 1 || data.round === 3) && data.options) {
+            if ((data.round === 1 || data.round === 4) && data.options) {
                 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            } else if (data.round === 2) {
+            } else if (data.round === 3) {
                 correctVal.innerText = `${data.givenAnswer.toUpperCase()} (${data.correctText || ""})`;
             }
 
@@ -427,10 +575,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (data.timeoutPenalty) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
-            } else if (data.round === 2 && data.givenAnswer) {
+            } else if (data.round === 3 && data.givenAnswer) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-            } else if ((data.round === 1 || data.round === 3) && data.selectedIndex !== undefined && data.options) {
+            } else if ((data.round === 1 || data.round === 4) && data.selectedIndex !== undefined && data.options) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
             }
