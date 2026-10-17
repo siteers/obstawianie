@@ -356,7 +356,7 @@ let fwSpawnTimer = null;
 
 function createExplosion(x, y, mainColor) {
     playFireworkBoom();
-    const count = 15;
+    const count = 12;
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
         const speed = Math.random() * 8 + 2.5;
@@ -367,7 +367,7 @@ function createExplosion(x, y, mainColor) {
             alpha: 1,
             size: Math.random() * 3.5 + 2,
             color: i % 3 === 0 ? '#ffffff' : mainColor,
-            decay: Math.random() * 0.012 + 0.010
+            decay: Math.random() * 0.012 + 0.035
         });
     }
 }
