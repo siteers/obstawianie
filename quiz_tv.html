@@ -142,10 +142,11 @@ winSound.volume = 0.9;
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
 loseSound.volume = 0.9;
 
-// --- DYNAMICZNY, ŻYWY SYNTEZATOR MUZYKI W TLE ---
+// --- PANCERNY SYNTEZATOR MUZYKI W TLE (BEZ ZAWIESZANIA RAMPY GŁOŚNOŚCI) ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
+let isBgMusicPlaying = false;
 
 function createUpbeatGameMusic() {
     if (audioCtx) return;
@@ -153,7 +154,7 @@ function createUpbeatGameMusic() {
     audioCtx = new AudioContext();
     
     bgMasterGain = audioCtx.createGain();
-    bgMasterGain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+    bgMasterGain.gain.value = 0.25; // Stała głośność główna - brak psujących się ramp!
     bgMasterGain.connect(audioCtx.destination);
 
     const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
@@ -161,8 +162,8 @@ function createUpbeatGameMusic() {
 
     let step = 0;
     musicInterval = setInterval(() => {
-        if (!audioCtx || bgMasterGain.gain.value <= 0.001) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume();
+        if (!audioCtx || !isBgMusicPlaying) return;
+        if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
         const now = audioCtx.currentTime;
 
@@ -171,7 +172,7 @@ function createUpbeatGameMusic() {
         bassOsc.type = "triangle";
         bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
         bassGain.gain.setValueAtTime(0.12, now);
-        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
         bassOsc.connect(bassGain);
         bassGain.connect(bgMasterGain);
         bassOsc.start(now);
@@ -184,7 +185,7 @@ function createUpbeatGameMusic() {
             const note = scale[Math.floor(Math.random() * scale.length)];
             leadOsc.frequency.setValueAtTime(note, now);
             leadGain.gain.setValueAtTime(0.08, now);
-            leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+            leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
             leadOsc.connect(leadGain);
             leadGain.connect(bgMasterGain);
             leadOsc.start(now);
@@ -196,17 +197,9 @@ function createUpbeatGameMusic() {
 }
 
 function setBgMusicActive(active) {
-    if (!audioCtx || !bgMasterGain) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume();
-    
-    const now = audioCtx.currentTime;
-    bgMasterGain.gain.cancelScheduledValues(now);
-    bgMasterGain.gain.setValueAtTime(bgMasterGain.gain.value, now);
-    
-    if (active) {
-        bgMasterGain.gain.linearRampToValueAtTime(0.25, now + 0.5);
-    } else {
-        bgMasterGain.gain.linearRampToValueAtTime(0.0001, now + 0.1);
+    isBgMusicPlaying = active;
+    if (audioCtx && active && audioCtx.state === 'suspended') {
+        audioCtx.resume().catch(()=>{});
     }
 }
 
@@ -333,7 +326,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
         
     } else if (data.status === "wheel_reading") {
-        // --- RUNDA 2: KOŁO FORTUNY (60 SEKUND) ---
         isSuspense = false;
         suspenseSound.pause(); suspenseSound.currentTime = 0;
         for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -367,7 +359,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             revealedWheelCount = 0;
             renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
 
-            // Odsłanianie kolejnej litery co X sekund (tak, aby całe słowo odsłoniło się w ~52 sekundy)
             let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
             wheelRevealInterval = setInterval(() => {
                 if (revealedWheelCount < totalLetters) {
@@ -404,7 +395,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
 
     } else if (data.status === "wheel_results") {
-        // --- PODSUMOWANIE KOŁA FORTUNY ---
         clearInterval(timerInterval); clearInterval(wheelRevealInterval);
         timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
@@ -418,7 +408,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         wheelCat.innerText = "KATEGORIA: " + data.category;
         wheelWinnersEl.style.display = "flex";
 
-        // Odsłoń wszystkie litery na koniec
         renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
 
         const winners = data.wheelWinners || [];
