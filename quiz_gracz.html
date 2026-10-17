@@ -11,17 +11,23 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center; 
       min-height: 100vh; text-align: center; box-sizing: border-box;
     }
-    /* Gdy otwarta jest klawiatura w R2/R3, przypinamy interfejs do góry ekranu */
     body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
     
     .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
     select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
     
     #gamePad { display: none; width: 94%; max-width: 420px; }
-    .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; }
+    .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
     
-    .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; display: none; }
-    .btn-abcd { background: #111; border: 2px solid var(--cyan); color: #fff; font-size: 30px; font-weight: bold; padding: 35px 20px; border-radius: 15px; cursor: pointer; transition: 0.2s; }
+    /* KAFELKI ABCD Z PEŁNĄ TREŚCIĄ ODPOWIEDZI */
+    .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
+    .btn-abcd { 
+      background: #111; border: 2px solid var(--cyan); color: #fff; border-radius: 15px; 
+      padding: 18px 10px; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; 
+      align-items: center; justify-content: center; min-height: 95px; word-break: break-word;
+    }
+    .btn-abcd .opt-letter { font-size: 24px; font-weight: 900; color: var(--gold); margin-bottom: 6px; }
+    .btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
     .btn-abcd:active { background: var(--cyan); color: #000; transform: scale(0.95); }
     .btn-abcd:disabled { opacity: 0.2; border-color: #ff4757; color: #ff4757; text-decoration: line-through; pointer-events: none; }
     
@@ -69,14 +75,22 @@
   </div>
 
   <div id="gamePad">
-    <div class="status-top" id="padStatus">Oczekiwanie na pytanie...</div>
+    <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
     
-    <!-- RUNDA 1 i 4: ABCD -->
+    <!-- RUNDA 1 i 4: ABCD (Z PODPIĘTYMI TEKSTAMI ODPOWIEDZI) -->
     <div class="grid-abcd" id="ui-abcd">
-      <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">A</button>
-      <button class="btn-abcd" id="pad-btn-1" onclick="sendAnswer(1)">B</button>
-      <button class="btn-abcd" id="pad-btn-2" onclick="sendAnswer(2)">C</button>
-      <button class="btn-abcd" id="pad-btn-3" onclick="sendAnswer(3)">D</button>
+      <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">
+        <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
+      </button>
+      <button class="btn-abcd" id="pad-btn-1" onclick="sendAnswer(1)">
+        <span class="opt-letter">B</span><span class="opt-label" id="pad-lbl-1"></span>
+      </button>
+      <button class="btn-abcd" id="pad-btn-2" onclick="sendAnswer(2)">
+        <span class="opt-letter">C</span><span class="opt-label" id="pad-lbl-2"></span>
+      </button>
+      <button class="btn-abcd" id="pad-btn-3" onclick="sendAnswer(3)">
+        <span class="opt-letter">D</span><span class="opt-label" id="pad-lbl-3"></span>
+      </button>
     </div>
 
     <!-- RUNDA 2: INTERAKTYWNE KAFELKI KOŁA FORTUNY -->
@@ -89,7 +103,7 @@
     
     <!-- RUNDA 3: SZYBKIE PISANIE -->
     <div class="input-area" id="ui-input">
-      <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź...">
+      <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
       <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ</button>
     </div>
     
@@ -115,9 +129,12 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let currentState = null;
+let unsubscribeSnapshot = null;
+let watchdogInterval = null;
 
-// Zmienne dla Koła Fortuny na telefonie
+// Zmienne dla Koła Fortuny i inteligentnego czyszczenia Rundy 3
 let currentWheelTick = null;
+let lastR3Question = null; // Czyści pole TYLKO gdy zmieni się pytanie, a nie po czyimś błędzie!
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
@@ -127,6 +144,30 @@ function normalizeChar(str) {
     return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
 }
 
+// Funkcja awaryjnej synchronizacji (gdy przeglądarka telefonu uśpi kartę z powodu braku RAM)
+window.forceSyncState = async () => {
+    if (!myName) return;
+    try {
+        const snap = await getDoc(doc(db, "quizGame", "state"));
+        if (snap.exists()) {
+            currentState = snap.data();
+            updatePadUI();
+        }
+    } catch (e) {}
+};
+
+function startRealtimeListener() {
+    if (unsubscribeSnapshot) unsubscribeSnapshot();
+    unsubscribeSnapshot = onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
+        if (!docSnap.exists()) return;
+        currentState = docSnap.data();
+        updatePadUI();
+    }, () => {
+        // W razie zerwania strumienia WebSocket próbujemy odpytać ręcznie po 1.5s
+        setTimeout(window.forceSyncState, 1500);
+    });
+}
+
 window.joinGame = () => {
     myName = document.getElementById('agentSel').value;
     if(!myName) return alert("Musisz wybrać Agenta z listy!");
@@ -134,14 +175,23 @@ window.joinGame = () => {
     document.getElementById('loginUI').style.display = 'none';
     document.getElementById('gamePad').style.display = 'block';
     
-    onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
-        if (!docSnap.exists()) return;
-        currentState = docSnap.data();
-        updatePadUI();
-    });
+    startRealtimeListener();
+
+    // Strażnik połączenia: co 2.5s weryfikuje, czy telefon nie zaspał przez uśpienie karty
+    clearInterval(watchdogInterval);
+    watchdogInterval = setInterval(window.forceSyncState, 2500);
 };
 
-// Budowanie kafelków do wpisywania na telefonie
+// Automatyczne wybudzenie po powrocie do karty / odblokowaniu ekranu telefonu
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && myName) {
+        startRealtimeListener();
+        window.forceSyncState();
+    }
+});
+window.addEventListener("focus", () => { if (myName) window.forceSyncState(); });
+window.addEventListener("online", () => { if (myName) { startRealtimeListener(); window.forceSyncState(); } });
+
 function buildWheelPadTiles(phrase) {
     const board = document.getElementById('wheelPadBoard');
     board.innerHTML = "";
@@ -165,11 +215,20 @@ function buildWheelPadTiles(phrase) {
             const idxCopy = globalIdx;
             targetLetters.push(ch);
 
-            // Gdy gracz kliknie w kafelek, zaznacz zawartość by łatwo ją nadpisać
-            inp.addEventListener('focus', () => { inp.select(); });
+            inp.addEventListener('focus', () => {
+                if (inp.readOnly || inp.classList.contains('revealed')) {
+                    focusNextEditableTile(idxCopy + 1);
+                    return;
+                }
+                inp.select();
+            });
 
-            // Automatyczny przeskok do następnego wolnego pola po wpisaniu litery
             inp.addEventListener('input', (e) => {
+                if (inp.readOnly || inp.classList.contains('revealed')) {
+                    inp.value = targetLetters[idxCopy];
+                    focusNextEditableTile(idxCopy + 1);
+                    return;
+                }
                 document.getElementById('wheelFeedback').innerText = "";
                 let val = e.target.value.trim().slice(-1).toUpperCase();
                 e.target.value = val;
@@ -181,11 +240,15 @@ function buildWheelPadTiles(phrase) {
                 }
             });
 
-            // Obsługa Backspace (cofanie do poprzedniego edytowalnego kafelka) oraz Enter
             inp.addEventListener('keydown', (e) => {
                 if (e.key === 'Backspace') {
+                    e.preventDefault();
+                    if (inp.readOnly || inp.classList.contains('revealed')) {
+                        inp.value = targetLetters[idxCopy];
+                        focusPrevEditableTile(idxCopy - 1);
+                        return;
+                    }
                     if (inp.value === "") {
-                        e.preventDefault();
                         focusPrevEditableTile(idxCopy - 1);
                     } else {
                         inp.value = "";
@@ -207,7 +270,7 @@ function buildWheelPadTiles(phrase) {
 
 function focusNextEditableTile(startIdx) {
     for (let i = startIdx; i < tileInputs.length; i++) {
-        if (!tileInputs[i].readOnly) {
+        if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
             tileInputs[i].focus();
             return;
         }
@@ -216,7 +279,7 @@ function focusNextEditableTile(startIdx) {
 
 function focusPrevEditableTile(startIdx) {
     for (let i = startIdx; i >= 0; i--) {
-        if (!tileInputs[i].readOnly) {
+        if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
             tileInputs[i].focus();
             tileInputs[i].value = "";
             tileInputs[i].classList.remove('filled');
@@ -225,19 +288,17 @@ function focusPrevEditableTile(startIdx) {
     }
 }
 
-// Synchronizacja odsłanianych liter z TV
 function updateRevealedTilesOnPad() {
     if (!currentState || !currentState.wheelOrder) return;
     const unlocked = currentState.wheelOrder.slice(0, padRevealedCount);
     unlocked.forEach(idx => {
         const inp = tileInputs[idx];
-        if (inp && !inp.readOnly) {
+        if (inp) {
             const wasFocused = (document.activeElement === inp);
             inp.value = targetLetters[idx];
             inp.readOnly = true;
             inp.classList.remove('filled');
             inp.classList.add('revealed');
-            // Jeśli gracz akurat miał kursor w polu, które odsłonił system -> przeskocz dalej!
             if (wasFocused) focusNextEditableTile(idx + 1);
         }
     });
@@ -253,9 +314,22 @@ function updatePadUI() {
     lockedEl.classList.remove('win-msg');
     document.body.classList.remove('keyboard-mode');
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "results_wrong" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
+    // Gdy przechodzimy do podsumowania pytania (koniec pytania lub ktoś już wygrał) -> resetujemy pamięć pytania R3
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
         clearInterval(padWheelInterval);
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
+        if (currentState && (currentState.status === "results" || currentState.status === "timeout")) {
+            document.getElementById('typeAnswer').value = "";
+            lastR3Question = null;
+        }
+        return;
+    }
+
+    // Gdy ktoś pomylił się i na TV trwa 3.5s czerwonego komunikatu -> NIE kasujemy pola tekstowego R3 pozostałym graczom!
+    if (currentState.status === "results_wrong") {
+        document.getElementById('padStatus').innerText = "KTOŚ SIĘ POMYLIŁ! ZA CHWILĘ WZNOWIENIE...";
+        lockedEl.style.display = 'block';
+        lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT WRACAMY DO PYTANIA!";
         return;
     }
 
@@ -274,7 +348,6 @@ function updatePadUI() {
             return;
         }
 
-        // Układ na górze ekranu, aby klawiatura telefonu nie zasłaniała kafelków
         document.body.classList.add('keyboard-mode');
         document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
         document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
@@ -296,7 +369,6 @@ function updatePadUI() {
                 }
             }, intervalMs);
 
-            // Ustaw kursor w pierwszym kafelku
             setTimeout(() => focusNextEditableTile(0), 100);
         }
         return;
@@ -334,6 +406,12 @@ function updatePadUI() {
     }
 
     if (currentState.status === "reading") {
+        // Czyścimy pole w R3 TYLKO wtedy, gdy zmieniła się treść pytania! Jeśli to wznowienie po czyimś błędzie, Twój tekst zostaje!
+        if (currentState.round === 3 && currentState.question !== lastR3Question) {
+            lastR3Question = currentState.question;
+            document.getElementById('typeAnswer').value = "";
+        }
+
         if (currentState.blocked && currentState.blocked.includes(myName)) {
             document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
             lockedEl.style.display = 'block';
@@ -343,7 +421,9 @@ function updatePadUI() {
 
         for(let i=0; i<4; i++) {
             let btn = document.getElementById(`pad-btn-${i}`);
+            let lbl = document.getElementById(`pad-lbl-${i}`);
             btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
+            lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
         }
 
         if (currentState.round === 1) {
@@ -366,17 +446,18 @@ function updatePadUI() {
         }
     }
     
-    if (currentState.status.startsWith("results_pending") || currentState.status === "verifying") {
+    if (currentState.status && (currentState.status.startsWith("results_pending") || currentState.status === "verifying")) {
         document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
         lockedEl.style.display = 'block';
         lockedEl.innerText = "PATRZ NA TELEWIZOR!";
     }
 }
 
-// Zatwierdzenie hasła z kafelków w Rundzie 2
 window.submitWheelTiles = async () => {
     if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
     
+    updateRevealedTilesOnPad();
+
     const userBuilt = tileInputs.map(inp => inp.value).join("");
     const targetBuilt = targetLetters.join("");
 
@@ -410,9 +491,8 @@ window.submitWheelTiles = async () => {
         }
     } else {
         document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! POPRAW LITERY!";
-        // Czyścimy tylko ręcznie wpisane (błędne) kafelki, zostawiając złote!
         tileInputs.forEach(inp => {
-            if (!inp.readOnly) {
+            if (!inp.readOnly && !inp.classList.contains('revealed')) {
                 inp.value = "";
                 inp.classList.remove('filled');
             }
