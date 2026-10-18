@@ -795,7 +795,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                             wasRandomDraw = true;
                         } else {
                             // URUCHAMIAMY DOGRYWKĘ 12 SEKUND TYLKO DLA OSÓB Z REMISEM!
-                            let now Tie = Date.now();
+                            let nowTie = Date.now();
                             await updateDoc(doc(db, "quizGame", "state"), {
                                 r5TiedBidders: topPlayers,
                                 r5OvertimeMax: maxBid,
@@ -818,17 +818,24 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                         await setDoc(ref, { points: cur - (bids[p] || 5) }, { merge: true });
                     }
 
-                    // Ogłoś SPRZEDANE (lub WYLOSOWANO) - przejście do pytania wywoła sam telewizor po tym, jak lektor skończy mówić!
+                    // Ogłoś SPRZEDANE (lub WYLOSOWANO), a po 7.5s (gdy lektor spokojnie przeczyta komunikat) włącz czytanie pytania!
                     await updateDoc(doc(db, "quizGame", "state"), {
                         status: "r5_sold",
                         nominated: winnerPlayer,
                         r5HighestBidder: winnerPlayer,
                         r5HighestBid: maxBid,
-                        r5WasRandomDraw: wasRandomDraw,
+                        r5RandomDrawn: wasRandomDraw,
+                        r5TiedBidders: [],
                         r5MainSec: 0,
                         r5Countdown: 0,
                         speechTick: Date.now()
                     });
+                  setTimeout(async () => {
+                        await updateDoc(doc(db, "quizGame", "state"), {
+                            status: "speaking",
+                            speechTick: Date.now()
+                        });
+                    }, 7500);
                 }
             }, 350);
         }
