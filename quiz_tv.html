@@ -10,8 +10,7 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    /* Selektor głosu lektora (dyskretnie na dole ekranu) */
-    #voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 300; opacity: 0.35; transition: 0.3s; font-size: 0.9vw; background: rgba(0,0,0,0.7); padding: 0.3vw 0.8vw; border-radius: 0.5vw; }
+    #voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 300; opacity: 0.45; transition: 0.3s; font-size: 0.9vw; background: rgba(0,0,0,0.75); padding: 0.3vw 0.8vw; border-radius: 0.5vw; }
     #voice-bar:hover { opacity: 1; }
     #voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.85vw; padding: 2px 6px; }
 
@@ -68,10 +67,10 @@
     .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
     .wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
 
-    /* RUNDA 5: OBROTOWE KOŁO KATEGORII + LICYTACJA "AWANTURA O PUNKTY" */
+    /* RUNDA 5: OBROTOWE KOŁO KATEGORII + LICYTACJA */
     #r5-wheel-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.5vw 0; position: relative; }
     .wheel-pointer { width: 0; height: 0; border-left: 1.2vw solid transparent; border-right: 1.2vw solid transparent; border-top: 2.2vw solid #fff; filter: drop-shadow(0 0 0.6vw var(--gold)); z-index: 30; margin-bottom: -0.6vw; }
-    #r5-wheel-canvas { width: 21vw; height: 21vw; border-radius: 50%; border: 0.35vw solid var(--gold); box-shadow: 0 0 2.5vw rgba(212,175,55,0.5); transition: transform 4.3s cubic-bezier(0.12, 0.8, 0.18, 1); }
+    #r5-wheel-canvas { width: 21vw; height: 21vw; border-radius: 50%; border: 0.35vw solid var(--gold); box-shadow: 0 0 2.5vw rgba(212,175,55,0.5); transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.18, 1); }
 
     #r5-auction-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.5vw; }
     .pot-banner { background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(0,0,0,0.8)); border: 0.25vw solid var(--gold); border-radius: 1.2vw; padding: 0.8vw 2vw; margin-bottom: 1vw; box-shadow: 0 0 2vw rgba(212,175,55,0.4); }
@@ -82,7 +81,7 @@
     .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
     .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
     .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
-    .auction-call { font-size: 2.2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
+    .auction-call { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
 
     /* WIELKIE PODIUM FINAŁOWE */
     #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
@@ -122,12 +121,12 @@
   </div>
 
   <div id="voice-bar">
-    🗣️ Głos lektora: <select id="voiceSelect"></select>
+    🗣️ Głos lektora (wybierz damski Natural/Zofia/Google): <select id="voiceSelect"></select>
   </div>
 
   <canvas id="fireworks-canvas"></canvas>
 
-  <div class="timer-box" id="tv-timer">10</div>
+  <div class="timer-box" id="tv-timer">12</div>
 
   <div class="score-corner top-left" id="score-Lila">
     <div class="player-name">Lila</div>
@@ -223,7 +222,7 @@ loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- INTELIGENTNY WYBÓR PRZYJEMNEGO GŁOSU LEKTORA PL-PL + NAPRAWIONY DWUKROPEK ---
+// --- WYBÓR PRZYJEMNEGO DAMSKIEGO GŁOSU LEKTORA PL-PL (SPOKOJNIEJSZE TEMPO 0.88 + PAUZY) ---
 let selectedPlVoice = null;
 let lastSpokenKey = "";
 let speechSafetyTimer = null;
@@ -235,15 +234,16 @@ function initPolishVoices() {
     if (!voices.length) return;
 
     sel.innerHTML = "";
-    // Sortujemy tak, aby miękkie głosy neuronowe (Online / Natural / Zofia / Maja / Google) były pierwsze, a twarda Paulina na końcu
+    // Priorytet dla przyjemnych damskich głosów (Zofia Natural, Maja Online, Agnieszka, Google Polski) - męski Marek niżej
     voices.sort((a, b) => {
         const score = (v) => {
             const n = v.name.toLowerCase();
+            if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
+            if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
+            if (n.includes('google')) return 12;
             if (n.includes('natural') || n.includes('online')) return 10;
-            if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) return 8;
-            if (n.includes('google')) return 7;
-            if (n.includes('marek')) return 5;
-            if (n.includes('paulina')) return 1;
+            if (n.includes('paulina')) return 4;
+            if (n.includes('marek') || n.includes('adam')) return 2;
             return 3;
         };
         return score(b) - score(a);
@@ -259,7 +259,7 @@ function initPolishVoices() {
     selectedPlVoice = voices[0];
     sel.onchange = () => {
         selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
-        speakPolishText("Zmieniono głos lektora.");
+        speakPolishText("Cześć! Teraz ja będę czytać pytania.");
     };
 }
 if ('speechSynthesis' in window) {
@@ -275,35 +275,35 @@ function speakPolishText(textToRead, onDoneCallback) {
     }
     window.speechSynthesis.cancel();
 
-    // POPRAWKA: Dwukropek zamieniamy na "podzielić przez" TYLKO gdy stoi między cyframi!
     let cleanText = textToRead
         .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
-        .replace(/:\s*$/, "") // Usuwa dwukropek na samym końcu zdania
-        .replace(/:/g, ", ")  // W napisie "Kategoria: Chemia" robi naturalną pauzę przecinkową!
+        .replace(/:\s*$/, "")
+        .replace(/:/g, "... ") // Dłuższa, wyraźna pauza po słowie "Kategoria"
         .replace(/\bx\b/gi, " razy ")
         .replace(/\+/g, " dodać ")
         .replace(/ - /g, " odjąć ")
         .replace(/=/g, " równa się ")
-        .replace(/\?/g, "");
+        .replace(/\?/g, ".");
 
     const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = "pl-PL";
     if (selectedPlVoice) utter.voice = selectedPlVoice;
-    utter.rate = 1.02;
-    utter.pitch = 1.05; // Odrobinę cieplejszy, przyjazny ton
+    utter.rate = 0.88;  // Spokojniejsze, wyraźne tempo (nie za szybkie, nie za wolne)
+    utter.pitch = 1.08; // Łagodny, ciepły damski ton
 
     let finished = false;
     const finishOnce = () => {
         if (finished) return;
         finished = true;
         clearTimeout(speechSafetyTimer);
-        if (onDoneCallback) onDoneCallback();
+        // Dodatkowe 650ms oddechu po zakończeniu mówienia zanim wyskoczą odpowiedzi!
+        if (onDoneCallback) setTimeout(onDoneCallback, 650);
     };
 
     utter.onend = finishOnce;
     utter.onerror = finishOnce;
 
-    const estMs = Math.max(2500, Math.min(8500, cleanText.length * 90 + 1000));
+    const estMs = Math.max(3200, Math.min(10000, cleanText.length * 105 + 1400));
     speechSafetyTimer = setTimeout(finishOnce, estMs);
 
     window.speechSynthesis.speak(utter);
@@ -325,7 +325,6 @@ function drawR5Wheel() {
 
     ctx.clearRect(0, 0, 500, 500);
     r5Categories.forEach((cat, i) => {
-        // Segment 0 zaczyna się u góry pod wskaźnikiem (-90 stopni)
         const startAngle = i * arc - Math.PI / 2 - arc / 2;
         const endAngle = startAngle + arc;
 
@@ -351,7 +350,6 @@ function drawR5Wheel() {
         ctx.restore();
     });
 
-    // Środek koła
     ctx.beginPath();
     ctx.arc(cx, cy, 35, 0, Math.PI * 2);
     ctx.fillStyle = "#d4af37";
@@ -362,12 +360,11 @@ function drawR5Wheel() {
 }
 drawR5Wheel();
 
-// Dźwięk terkotania obracającego się koła fortuny
 function playWheelTicks() {
     if (!audioCtx) return;
     let ticks = 28;
     for (let i = 0; i < ticks; i++) {
-        let delay = (i / ticks) * (i / ticks) * 4.1; // Zwalniające terkotanie
+        let delay = (i / ticks) * (i / ticks) * 4.2;
         setTimeout(() => {
             if (!audioCtx) return;
             const now = audioCtx.currentTime;
@@ -757,10 +754,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const data = docSnap.data();
     
     let roundNames = {
-        1: "RUNDA 1: WYŚCIG ABCD (10s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
+        1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
         2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
-        3: "RUNDA 3: SZYBKIE PISANIE (15s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
-        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ / DOBITKA: ±10 PKT)",
+        3: "RUNDA 3: SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
+        4: "RUNDA 4: WYBIERANIE (12s PO LEKTORZE | NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
         5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
     };
     document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
@@ -835,11 +832,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (data.status === "r5_wait_spin") {
             setBgMusicActive(true);
             let carryTxt = data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : "";
-            qEl.innerText = `🎡 ${data.controller.toUpperCase()} KRĘCI KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
+            qEl.innerText = `🎡 ${data.controller.toUpperCase()} KRĘCI PALCEM KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
             let waitKey = "r5_wait_" + data.speechTick;
             if (data.speechTick && lastSpokenKey !== waitKey) {
                 lastSpokenKey = waitKey;
-                speakPolishText(`${data.controller} kręci kołem fortuny!`);
+                speakPolishText(`${data.controller}... zakręć kołem na telefonie.`);
             }
         } else {
             setBgMusicActive(false);
@@ -848,7 +845,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 lastR5SpinHandled = data.spinTick;
                 playWheelTicks();
                 const segAngle = 360 / r5Categories.length;
-                const extraSpins = (data.spinPower || 6) * 360;
+                const extraSpins = (data.spinPower || 7) * 360;
                 const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
                 const curMod = currentWheelRotation % 360;
                 let diff = targetMod - curMod;
@@ -860,7 +857,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         return;
     }
 
-    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" ---
+    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" (12 SEKUND LICYTACJI + 5 SEKUND DOGRYWKI) ---
     if (data.status === "r5_bidding" || data.status === "r5_sold") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         qEl.style.display = "none";
@@ -891,13 +888,14 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (lastSpokenKey !== soldKey) {
                 lastSpokenKey = soldKey;
                 winSound.currentTime = 0; winSound.play().catch(()=>{});
-                speakPolishText(`Sprzedane! Za ${data.r5HighestBid} punktów odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów!`);
+                // Wyraźne przerwy wielokropkiem między częściami zdania
+                speakPolishText(`Sprzedane! ... Za ${data.r5HighestBid} punktów... odpowiada ${data.r5HighestBidder}. ... W puli jest ${data.r5Pot} punktów.`);
             }
         } else {
             let aucStartKey = "r5_auc_start_" + data.speechTick;
             if (data.speechTick && lastSpokenKey !== aucStartKey) {
                 lastSpokenKey = aucStartKey;
-                speakPolishText(`Kategoria ${data.category}! Rozpoczynamy licytację!`);
+                speakPolishText(`Wylosowana kategoria to... ${data.category}. ... Rozpoczynamy licytację!`);
             }
 
             if (data.r5Countdown && data.r5Countdown > 0) {
@@ -907,9 +905,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     lastR5CountdownSpoken = data.bidTick;
                     speakPolishText("Czy ktoś jeszcze licytuje?");
                 }
+            } else if (data.r5MainSec && data.r5MainSec > 0) {
+                callEl.style.color = "#2ed573";
+                callEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${data.r5MainSec}s | PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT)`;
             } else {
                 callEl.style.color = "var(--gold)";
-                callEl.innerText = `PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT) - PODBIJAJCIE NA TELEFONACH!`;
+                callEl.innerText = `🔥 PRZEBICIE! PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT)`;
             }
         }
         return;
@@ -938,7 +939,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
                 lastSpokenKey = nomSpeechKey;
                 setBgMusicActive(false);
-                speakPolishText(`Kategoria ${data.category}. ${data.controller} wybiera, kto odpowie.`, () => {
+                speakPolishText(`Kategoria... ${data.category}. ... ${data.controller} wybiera, kto odpowie.`, () => {
                     setBgMusicActive(true);
                 });
             }
@@ -986,7 +987,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         let wSpeechKey = "wheel_cat_" + data.speechTick;
         if (data.speechTick && lastSpokenKey !== wSpeechKey) {
             lastSpokenKey = wSpeechKey;
-            speakPolishText(`Kategoria ${data.category}`);
+            speakPolishText(`Kategoria... ${data.category}`);
         }
 
         const winners = data.wheelWinners || [];
@@ -1133,7 +1134,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             lastR3WinnersCount = (data.r3Winners || []).length;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = data.round === 3 ? 15 : 10;
+            // NOWE CZASY: 20 sekund w R3 (pisanie), 12 sekund we wszystkich pozostałych rundach!
+            let timeLeft = data.round === 3 ? 20 : 12;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
