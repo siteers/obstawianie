@@ -813,12 +813,6 @@ r5MainSec: 0,
 r5Countdown: 0,
 speechTick: Date.now()
 });
-setTimeout(async () => {
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "speaking",
-speechTick: Date.now()
-});
-}, 8000);
 }
 }, 350);
 }
