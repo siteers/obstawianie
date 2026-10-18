@@ -62,10 +62,10 @@
     .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
     .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
 
-    /* RUNDA 5: KRĘCENIE KOŁEM PALCEM NA TELEFONIE + LICYTACJA (+2, +5, +10, +20) */
-    #ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 12px; touch-action: none; }
-    .pad-wheel-pointer { width: 0; height: 0; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 22px solid #fff; margin-bottom: -8px; z-index: 20; }
-    #pad-wheel-canvas { width: 260px; height: 260px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; transition: transform 4.2s cubic-bezier(0.12, 0.8, 0.18, 1); }
+    /* RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (BEZ PRZYCISKU!) */
+    #ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
+    .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
+    #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
 
     #ui-r5-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
     .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
@@ -74,7 +74,7 @@
     .bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
     .btn-bid:active { transform: scale(0.93); }
-    .auction-pad-timer { font-size: 18px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
+    .auction-pad-timer { font-size: 17px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
     
     .locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
     .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
@@ -121,7 +121,7 @@
       <button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
     </div>
     
-    <!-- RUNDA 3: SZYBKIE PISANIE -->
+    <!-- RUNDA 3: SZYBKIE PISANIE (20s) -->
     <div class="input-area" id="ui-input">
       <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
       <div class="feedback-msg" id="r3Feedback"></div>
@@ -138,12 +138,12 @@
       <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
     </div>
 
-    <!-- RUNDA 5: KRĘCENIE KOŁEM NA TELEFONIE -->
+    <!-- RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (BEZ PRZYCISKU!) -->
     <div id="ui-r5-spin">
-      <p style="font-size:14px; color:var(--gold); font-weight:bold; margin:0;">PRZESUŃ DYNAMICZNIE PALCEM PO KOLE LUB KLIKNIJ PONIŻEJ!</p>
+      <p style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
       <div class="pad-wheel-pointer"></div>
       <canvas id="pad-wheel-canvas" width="400" height="400"></canvas>
-      <button class="btn-submit" onclick="triggerWheelSpin(8)">🎡 ZAKRĘĆ KOŁEM!</button>
+      <div class="feedback-msg" id="spinFeedback"></div>
     </div>
 
     <!-- RUNDA 5: LICYTACJA (+2, +5, +10, +20) -->
@@ -186,7 +186,7 @@ let padRevealedCount = 0;
 let tileInputs = [];
 let targetLetters = [];
 
-// Rysowanie koła Rundy 5 na telefonie + obsługa gestu Swipe palcem
+// Rysowanie koła Rundy 5 na telefonie + FIZYCZNE KRĘCENIE PALCEM Z BLOKADĄ SŁABEGO PRZESUNIĘCIA
 const r5Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let padWheelRot = 0;
@@ -225,31 +225,103 @@ function drawPadWheel() {
 }
 drawPadWheel();
 
-// Obsługa dynamicznego zakręcenia palcem po kole na ekranie telefonu
+// Fizyka obracania koła palcem na ekranie telefonu (śledzi kąt wokół środka koła!)
 const padWheelEl = document.getElementById('pad-wheel-canvas');
-let touchStartY = 0, touchStartX = 0, touchStartTime = 0;
+let isDraggingWheel = false;
+let lastTouchAngle = 0;
+let dragAccumulatedAngle = 0;
+let lastMoveTime = 0;
+let angularVelocity = 0;
+
+function getAngleFromCenter(clientX, clientY) {
+    const rect = padWheelEl.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
+}
+
+function onWheelStart(clientX, clientY) {
+    if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+    isDraggingWheel = true;
+    document.getElementById('spinFeedback').innerText = "";
+    padWheelEl.style.transition = "none"; // Podąża na żywo za palcem!
+    lastTouchAngle = getAngleFromCenter(clientX, clientY);
+    dragAccumulatedAngle = 0;
+    angularVelocity = 0;
+    lastMoveTime = Date.now();
+}
+
+function onWheelMove(clientX, clientY) {
+    if (!isDraggingWheel || isSpinningLocally) return;
+    const curAngle = getAngleFromCenter(clientX, clientY);
+    let delta = curAngle - lastTouchAngle;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+
+    const now = Date.now();
+    const dt = Math.max(8, now - lastMoveTime);
+    angularVelocity = Math.abs(delta) / dt; // stopnie na milisekundę
+
+    padWheelRot += delta;
+    dragAccumulatedAngle += Math.abs(delta);
+    padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+
+    lastTouchAngle = curAngle;
+    lastMoveTime = now;
+}
+
+function onWheelEnd() {
+    if (!isDraggingWheel || isSpinningLocally) return;
+    isDraggingWheel = false;
+
+    // Zabezpieczenie przed "lekkim przesunięciem o jedno pole": wymagamy szybkiego zamachu palcem lub dużego obrotu!
+    if (dragAccumulatedAngle < 55 || angularVelocity < 0.32) {
+        document.getElementById('spinFeedback').innerText = "⚠️ ZA SŁABO! ZAMACHNIJ SIĘ I ZAKRĘĆ MOCNIEJ!";
+        padWheelEl.style.transition = "transform 0.4s ease-out";
+        padWheelRot = Math.round(padWheelRot / 360) * 360;
+        padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+        return;
+    }
+
+    // Mocny rzut zaliczony! Koło wykonuje minimum 6-11 pełnych obrotów
+    const power = Math.min(11, Math.max(6, Math.round(angularVelocity * 10)));
+    window.triggerWheelSpin(power);
+}
+
 padWheelEl.addEventListener('touchstart', (e) => {
+    e.preventDefault();
     const t = e.touches[0];
-    touchStartX = t.clientX; touchStartY = t.clientY;
-    touchStartTime = Date.now();
-}, { passive: true });
+    onWheelStart(t.clientX, t.clientY);
+}, { passive: false });
+
+padWheelEl.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const t = e.touches[0];
+    onWheelMove(t.clientX, t.clientY);
+}, { passive: false });
 
 padWheelEl.addEventListener('touchend', (e) => {
-    const t = e.changedTouches[0];
-    const dist = Math.hypot(t.clientX - touchStartX, t.clientY - touchStartY);
-    const dt = Math.max(30, Date.now() - touchStartTime);
-    if (dist > 20) {
-        const power = Math.min(12, Math.max(5, Math.round((dist / dt) * 6)));
-        window.triggerWheelSpin(power);
-    }
-}, { passive: true });
+    e.preventDefault();
+    onWheelEnd();
+}, { passive: false });
+
+// Wsparcie myszki (gdyby ktoś testował na komputerze)
+padWheelEl.addEventListener('mousedown', (e) => onWheelStart(e.clientX, e.clientY));
+window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
+window.addEventListener('mouseup', () => onWheelEnd());
 
 window.triggerWheelSpin = async (power = 7) => {
     if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
     isSpinningLocally = true;
+    padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
     const segAngle = 360 / r5Categories.length;
-    padWheelRot += power * 360 + (360 - (currentState.wheelSegment * segAngle));
+    const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
+    const curMod = ((padWheelRot % 360) + 360) % 360;
+    let diff = targetMod - curMod;
+    if (diff < 0) diff += 360;
+    padWheelRot += power * 360 + diff;
     padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+
     await updateDoc(doc(db, "quizGame", "state"), {
         status: "r5_spinning",
         spinPower: power,
@@ -269,7 +341,7 @@ window.placeBid = async (addAmount) => {
     let myNewBid = (bids[myName] || 5) + addAmount;
 
     if (myNewBid <= (data.r5HighestBid || 5)) {
-        document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ PRZEBIĆ LIDERÓW (MIN. ${(data.r5HighestBid || 5) + 1} PKT)!`;
+        document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ PRZEBIĆ LIDERA (MIN. ${(data.r5HighestBid || 5) + 1} PKT)!`;
         return;
     }
     document.getElementById('r5BidFeedback').innerText = "";
@@ -471,7 +543,7 @@ function updatePadUI() {
     if (currentState && currentState.round === 5 && (currentState.status === "r5_wait_spin" || currentState.status === "r5_spinning")) {
         if (currentState.status === "r5_wait_spin") isSpinningLocally = false;
         if (currentState.controller === myName && currentState.status === "r5_wait_spin") {
-            document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
+            document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM PALCEM!";
             document.getElementById('ui-r5-spin').style.display = 'flex';
         } else {
             document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
@@ -500,9 +572,17 @@ function updatePadUI() {
         document.getElementById('pad-r5-leader').innerText = `${currentState.r5HighestBidder.toUpperCase()} (${currentState.r5HighestBid} PKT)`;
         const myBid = (currentState.r5Bids || {})[myName] || 5;
         document.getElementById('pad-r5-mybid').innerText = `${myBid} PKT`;
-        document.getElementById('pad-r5-countdown').innerText = currentState.r5Countdown > 0 
-            ? `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r5Countdown}s)` 
-            : "";
+        const cdEl = document.getElementById('pad-r5-countdown');
+        if (currentState.r5Countdown > 0) {
+            cdEl.style.color = "#ff4757";
+            cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r5Countdown}s)`;
+        } else if (currentState.r5MainSec > 0) {
+            cdEl.style.color = "#2ed573";
+            cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r5MainSec}s`;
+        } else {
+            cdEl.style.color = "var(--gold)";
+            cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
+        }
         return;
     }
 
@@ -632,7 +712,7 @@ function updatePadUI() {
                 btn.disabled = false;
                 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
             }
-            document.getElementById('padStatus').innerText = "WYBIERZ ODPOWIEDŹ (15 / 12 / 10 / 8 PKT):";
+            document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
             document.getElementById('ui-abcd').style.display = 'grid';
             return;
         }
@@ -649,7 +729,7 @@ function updatePadUI() {
                 return;
             }
             document.body.classList.add('keyboard-mode');
-            document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISZ ODPOWIEDŹ:";
+            document.getElementById('padStatus').innerText = "MASZ 20 SEKUND - WPISZ ODPOWIEDŹ:";
             document.getElementById('ui-input').style.display = 'flex';
             return;
         }
