@@ -1,209 +1,201 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Cyber-Quiz | TV</title>
-  <style>
-    :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
-    body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
-    
-    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
-    #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
+<meta charset="UTF-8">
+<title>Cyber-Quiz | TV</title>
+<style>
+:root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
+body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
 
-    #voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 300; opacity: 0.45; transition: 0.3s; font-size: 0.9vw; background: rgba(0,0,0,0.75); padding: 0.3vw 0.8vw; border-radius: 0.5vw; }
-    #voice-bar:hover { opacity: 1; }
-    #voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.85vw; padding: 2px 6px; }
+#audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
+#audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; background: transparent; }
+#voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 300; opacity: 0.45; transition: 0.3s; font-size: 0.9vw; background: rgba(0,0,0,0.75); padding: 0.3vw 0.8vw; border-radius: 0.5vw; }
+#voice-bar:hover { opacity: 1; }
+#voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.85vw; padding: 2px 6px; }
 
-    @keyframes pulseTimer {
-      0% { transform: translateX(-50%) scale(1); }
-      50% { transform: translateX(-50%) scale(1.12); }
-      100% { transform: translateX(-50%) scale(1); }
-    }
+#fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; background: transparent; }
 
-    @keyframes blockedFlash {
-      0%, 100% { border-color: #ff0000; background: rgba(255, 0, 0, 0.35); box-shadow: 0 0 2.5vw #ff0000; }
-      50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
-    }
+@keyframes pulseTimer {
+0% { transform: translateX(-50%) scale(1); }
+50% { transform: translateX(-50%) scale(1.12); }
+100% { transform: translateX(-50%) scale(1); }
+}
 
-    .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 6.5vw; height: 6.5vw; display: none; align-items: center; justify-content: center; font-size: 3.2vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
-    .timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
+@keyframes blockedFlash {
+0%, 100% { border-color: #ff0000; background: rgba(255, 0, 0, 0.35); box-shadow: 0 0 2.5vw #ff0000; }
+50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
+}
 
-    .score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
-    .top-left { top: 1.5vw; left: 1.5vw; } .top-right { top: 1.5vw; right: 1.5vw; }
-    .bottom-left { bottom: 1.5vw; left: 1.5vw; } .bottom-right { bottom: 1.5vw; right: 1.5vw; }
-    .player-name { font-size: 1.7vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; }
-    .player-score { font-size: 3vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.3vw; }
-    .blocked-tag { display: none; font-size: 0.9vw; color: #fff; background: #ff0000; padding: 0.2vw 0.5vw; border-radius: 0.4vw; margin-top: 0.4vw; font-weight: 900; letter-spacing: 0.1vw; }
+.timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 6.5vw; height: 6.5vw; display: none; align-items: center; justify-content: center; font-size: 3.2vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
+.timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
 
-    .score-corner.blocked { animation: blockedFlash 0.8s infinite !important; }
-    .score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
-    .score-corner.blocked .blocked-tag { display: inline-block; }
+.score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
+.top-left { top: 1.5vw; left: 1.5vw; } .top-right { top: 1.5vw; right: 1.5vw; }
+.bottom-left { bottom: 1.5vw; left: 1.5vw; } .bottom-right { bottom: 1.5vw; right: 1.5vw; }
+.player-name { font-size: 1.7vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; }
+.player-score { font-size: 3vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.3vw; }
+.blocked-tag { display: none; font-size: 0.9vw; color: #fff; background: #ff0000; padding: 0.2vw 0.5vw; border-radius: 0.4vw; margin-top: 0.4vw; font-weight: 900; letter-spacing: 0.1vw; }
 
-    .center-stage { width: 48vw; max-width: 48vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2vw 2.4vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
-    .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
-    .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
+.score-corner.blocked { animation: blockedFlash 0.8s infinite !important; }
+.score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
+.score-corner.blocked .blocked-tag { display: inline-block; }
 
-    .round-title { font-size: 1.15vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 0.6vw; font-weight: bold; }
-    .question-text { font-size: 2.2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.4vw; color: #fff; }
-    .category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
-    
-    /* KOLOROWE KAFELKI ODPOWIEDZI ABCD NA TV */
-    .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
-    .option { padding: 1.2vw; font-size: 1.6vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-    .opt-color-0 { background: rgba(241, 196, 15, 0.22); border: 0.25vw solid #f1c40f; color: #fff; box-shadow: 0 0 1vw rgba(241, 196, 15, 0.3); }
-    .opt-color-1 { background: rgba(0, 212, 255, 0.22); border: 0.25vw solid #00d4ff; color: #fff; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.3); }
-    .opt-color-2 { background: rgba(46, 213, 115, 0.22); border: 0.25vw solid #2ed573; color: #fff; box-shadow: 0 0 1vw rgba(46, 213, 115, 0.3); }
-    .opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
-    .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
+.center-stage { width: 48vw; max-width: 48vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2vw 2.4vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+.center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
+.center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
-    /* TABLICA KOŁA FORTUNY - HASŁA (RUNDA 2) */
-    .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
-    .wheel-word { display: flex; gap: 0.4vw; }
-    .wheel-letter { width: 3.1vw; height: 4.2vw; background: #111; border: 0.18vw solid #444; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; font-size: 2.2vw; font-weight: 900; color: #fff; transition: 0.3s; }
-    .wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
-    .wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
-    .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
-    .wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
+.round-title { font-size: 1.15vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 0.6vw; font-weight: bold; }
+.question-text { font-size: 2.2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.4vw; color: #fff; }
+.category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
 
-    /* RUNDA 5: OBROTOWE KOŁO KATEGORII + LICYTACJA */
-    #r5-wheel-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.5vw 0; position: relative; }
-    .wheel-pointer { width: 0; height: 0; border-left: 1.2vw solid transparent; border-right: 1.2vw solid transparent; border-top: 2.2vw solid #fff; filter: drop-shadow(0 0 0.6vw var(--gold)); z-index: 30; margin-bottom: -0.6vw; }
-    #r5-wheel-canvas { width: 21vw; height: 21vw; border-radius: 50%; border: 0.35vw solid var(--gold); box-shadow: 0 0 2.5vw rgba(212,175,55,0.5); transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.18, 1); }
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
+.option { padding: 1.2vw; font-size: 1.6vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+.opt-color-0 { background: rgba(241, 196, 15, 0.22); border: 0.25vw solid #f1c40f; color: #fff; box-shadow: 0 0 1vw rgba(241, 196, 15, 0.3); }
+.opt-color-1 { background: rgba(0, 212, 255, 0.22); border: 0.25vw solid #00d4ff; color: #fff; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.3); }
+.opt-color-2 { background: rgba(46, 213, 115, 0.22); border: 0.25vw solid #2ed573; color: #fff; box-shadow: 0 0 1vw rgba(46, 213, 115, 0.3); }
+.opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
+.option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
-    #r5-auction-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.5vw; }
-    .pot-banner { background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(0,0,0,0.8)); border: 0.25vw solid var(--gold); border-radius: 1.2vw; padding: 0.8vw 2vw; margin-bottom: 1vw; box-shadow: 0 0 2vw rgba(212,175,55,0.4); }
-    .pot-label { font-size: 1.1vw; color: #cbd5e1; letter-spacing: 0.2vw; text-transform: uppercase; font-weight: bold; }
-    .pot-val { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-shadow: 0 0 1.5vw var(--gold); }
-    .bids-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8vw; width: 100%; margin-bottom: 0.8vw; }
-    .bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw; text-align: center; transition: 0.2s; }
-    .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
-    .bid-card.tied-high { border-color: var(--gold); background: rgba(212, 175, 55, 0.22); box-shadow: 0 0 1.5vw rgba(212,175,55,0.6); transform: scale(1.05); }
-    .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
-    .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
-    .auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
+.wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
+.wheel-word { display: flex; gap: 0.4vw; }
+.wheel-letter { width: 3.1vw; height: 4.2vw; background: #111; border: 0.18vw solid #444; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; font-size: 2.2vw; font-weight: 900; color: #fff; transition: 0.3s; }
+.wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
+.wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
+.wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
+.wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
 
-    /* WIELKIE PODIUM FINAŁOWE */
-    #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
-    .podium-title { font-size: 2.8vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.3vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2vw; animation: pulse 1.2s infinite; }
-    .podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 1.8vw; height: 27vw; width: 100%; }
-    .podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 10vw; }
-    .podium-avatar { font-size: 2.8vw; margin-bottom: 0.4vw; filter: drop-shadow(0 0 0.8vw rgba(255,255,255,0.5)); }
-    .podium-pname { font-size: 1.7vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.3vw; }
-    .podium-pts { font-size: 1.4vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
-    .podium-pedestal { width: 100%; border-radius: 1vw 1vw 0 0; display: flex; align-items: center; justify-content: center; font-size: 3.5vw; font-weight: 900; color: #000; box-shadow: 0 0 2.5vw rgba(255,255,255,0.2); animation: growUp 1s ease-out forwards; transform-origin: bottom; }
-    .ped-1 { height: 16vw; background: linear-gradient(180deg, #ffd700, #b8860b); border: 0.25vw solid #fff; box-shadow: 0 0 3.5vw rgba(255, 215, 0, 0.8); }
-    .ped-2 { height: 12vw; background: linear-gradient(180deg, #e2e8f0, #64748b); border: 0.2vw solid #fff; box-shadow: 0 0 2vw rgba(226, 232, 240, 0.5); }
-    .ped-3 { height: 9vw; background: linear-gradient(180deg, #d97706, #78350f); border: 0.2vw solid #fbd38d; }
-    .ped-4 { height: 6vw; background: linear-gradient(180deg, #334155, #0f172a); color: #fff; border: 0.15vw solid #64748b; font-size: 2.2vw; }
-    @keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
-    
-    #tv-qr-container { display: none; margin-top: 1.5vw; }
-    #tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
-    #tv-qr-container img { width: 10vw; height: 10vw; border: 0.25vw solid var(--cyan); border-radius: 0.8vw; padding: 0.4vw; background: #fff; }
+#r5-wheel-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.5vw 0; position: relative; }
+.wheel-pointer { width: 0; height: 0; border-left: 1.2vw solid transparent; border-right: 1.2vw solid transparent; border-top: 2.2vw solid #fff; filter: drop-shadow(0 0 0.6vw var(--gold)); z-index: 30; margin-bottom: -0.6vw; }
+#r5-wheel-canvas { width: 21vw; height: 21vw; border-radius: 50%; border: 0.35vw solid var(--gold); box-shadow: 0 0 2.5vw rgba(212,175,55,0.5); transition: transform 4.5s cubic-bezier(0.12, 0.8, 0.18, 1); }
 
-    #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
-    #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
+#r5-auction-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.5vw; }
+.pot-banner { background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(0,0,0,0.8)); border: 0.25vw solid var(--gold); border-radius: 1.2vw; padding: 0.8vw 2vw; margin-bottom: 1vw; box-shadow: 0 0 2vw rgba(212,175,55,0.4); }
+.pot-label { font-size: 1.1vw; color: #cbd5e1; letter-spacing: 0.2vw; text-transform: uppercase; font-weight: bold; }
+.pot-val { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-shadow: 0 0 1.5vw var(--gold); }
+.bids-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8vw; width: 100%; margin-bottom: 0.8vw; }
+.bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw; text-align: center; transition: 0.2s; }
+.bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
+.bid-card.tied-high { border-color: var(--gold); background: rgba(212, 175, 55, 0.22); box-shadow: 0 0 1.5vw rgba(212,175,55,0.6); transform: scale(1.05); }
+.bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
+.bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
+.auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
 
-    .winner-announcement { font-size: 2.1vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
-    .status-msg { font-size: 2.4vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
-    
-    .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
-    .correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
+#podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
+.podium-title { font-size: 2.8vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.3vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2vw; animation: pulse 1.2s infinite; }
+.podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 1.8vw; height: 27vw; width: 100%; }
+.podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 10vw; }
+.podium-avatar { font-size: 2.8vw; margin-bottom: 0.4vw; filter: drop-shadow(0 0 0.8vw rgba(255,255,255,0.5)); }
+.podium-pname { font-size: 1.7vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.3vw; }
+.podium-pts { font-size: 1.4vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
+.podium-pedestal { width: 100%; border-radius: 1vw 1vw 0 0; display: flex; align-items: center; justify-content: center; font-size: 3.5vw; font-weight: 900; color: #000; box-shadow: 0 0 2.5vw rgba(255,255,255,0.2); animation: growUp 1s ease-out forwards; transform-origin: bottom; }
+.ped-1 { height: 16vw; background: linear-gradient(180deg, #ffd700, #b8860b); border: 0.25vw solid #fff; box-shadow: 0 0 3.5vw rgba(255, 215, 0, 0.8); }
+.ped-2 { height: 12vw; background: linear-gradient(180deg, #e2e8f0, #64748b); border: 0.2vw solid #fff; box-shadow: 0 0 2vw rgba(226, 232, 240, 0.5); }
+.ped-3 { height: 9vw; background: linear-gradient(180deg, #d97706, #78350f); border: 0.2vw solid #fbd38d; }
+.ped-4 { height: 6vw; background: linear-gradient(180deg, #334155, #0f172a); color: #fff; border: 0.15vw solid #64748b; font-size: 2.2vw; }
+@keyframes growUp { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
-  </style>
+#tv-qr-container { display: none; margin-top: 1.5vw; }
+#tv-qr-container p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
+#tv-qr-container img { width: 10vw; height: 10vw; border: 0.25vw solid var(--cyan); border-radius: 0.8vw; padding: 0.4vw; background: #fff; }
+
+#tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
+#tv-typed-answer span { color: var(--cyan); font-weight: 900; }
+
+.winner-announcement { font-size: 2.1vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+.status-msg { font-size: 2.4vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
+
+.correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
+.correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
+
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+</style>
 </head>
 <body>
 
-  <div id="audio-overlay">
-    <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, DŹWIĘK I LEKTORA TV</button>
-  </div>
+<div id="audio-overlay">
+<button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, DŹWIĘK I LEKTORA TV</button>
+</div>
 
-  <div id="voice-bar">
-    🗣️ Głos lektora (wybierz damski Natural/Zofia/Google): <select id="voiceSelect"></select>
-  </div>
+<div id="voice-bar">
+🗣️ Głos lektora (wybierz damski Natural/Zofia/Google): <select id="voiceSelect"></select>
+</div>
 
-  <canvas id="fireworks-canvas"></canvas>
+<canvas id="fireworks-canvas"></canvas>
 
-  <div class="timer-box" id="tv-timer">12</div>
+<div class="timer-box" id="tv-timer">12</div>
 
-  <div class="score-corner top-left" id="score-Lila">
-    <div class="player-name">Lila</div>
-    <div class="player-score" id="pts-Lila">0</div>
-    <div class="blocked-tag">ZABLOKOWANA</div>
-  </div>
-  <div class="score-corner top-right" id="score-Kaja">
-    <div class="player-name">Kaja</div>
-    <div class="player-score" id="pts-Kaja">0</div>
-    <div class="blocked-tag">ZABLOKOWANA</div>
-  </div>
-  <div class="score-corner bottom-left" id="score-Darek">
-    <div class="player-name">Darek</div>
-    <div class="player-score" id="pts-Darek">0</div>
-    <div class="blocked-tag">ZABLOKOWANY</div>
-  </div>
-  <div class="score-corner bottom-right" id="score-Jas">
-    <div class="player-name">Jaś</div>
-    <div class="player-score" id="pts-Jas">0</div>
-    <div class="blocked-tag">ZABLOKOWANY</div>
-  </div>
+<div class="score-corner top-left" id="score-Lila">
+<div class="player-name">Lila</div>
+<div class="player-score" id="pts-Lila">0</div>
+<div class="blocked-tag">ZABLOKOWANA</div>
+</div>
+<div class="score-corner top-right" id="score-Kaja">
+<div class="player-name">Kaja</div>
+<div class="player-score" id="pts-Kaja">0</div>
+<div class="blocked-tag">ZABLOKOWANA</div>
+</div>
+<div class="score-corner bottom-left" id="score-Darek">
+<div class="player-name">Darek</div>
+<div class="player-score" id="pts-Darek">0</div>
+<div class="blocked-tag">ZABLOKOWANY</div>
+</div>
+<div class="score-corner bottom-right" id="score-Jas">
+<div class="player-name">Jaś</div>
+<div class="player-score" id="pts-Jas">0</div>
+<div class="blocked-tag">ZABLOKOWANY</div>
+</div>
 
-  <div class="center-stage" id="stage-box">
-    <div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
-    <div class="category-text" id="tv-cat">KATEGORIA</div>
-    <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
-    
-    <!-- KOŁO FORTUNY - HASŁA (Runda 2) -->
-    <div class="wheel-board" id="tv-wheel-board"></div>
-    <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
-    <div class="wheel-winners-list" id="tv-wheel-winners"></div>
+<div class="center-stage" id="stage-box">
+<div class="round-title" id="tv-round">CZEKANIE NA ADMINA...</div>
+<div class="category-text" id="tv-cat">KATEGORIA</div>
+<div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
 
-    <!-- RUNDA 5: OBROTOWE KOŁO KATEGORII -->
-    <div id="r5-wheel-wrap">
-      <div class="wheel-pointer"></div>
-      <canvas id="r5-wheel-canvas" width="500" height="500"></canvas>
-    </div>
+<div class="wheel-board" id="tv-wheel-board"></div>
+<div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
+<div class="wheel-winners-list" id="tv-wheel-winners"></div>
 
-    <!-- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" -->
-    <div id="r5-auction-box">
-      <div class="pot-banner">
-        <div class="pot-label" id="r5-pot-label">AKTUALNA PULA DO WYGRANIA</div>
-        <div class="pot-val" id="r5-pot-val">20 PKT</div>
-      </div>
-      <div class="bids-grid">
-        <div class="bid-card" id="bid-card-Lila"><div class="bid-pname">LILA</div><div class="bid-pval" id="bid-val-Lila">5</div></div>
-        <div class="bid-card" id="bid-card-Kaja"><div class="bid-pname">KAJA</div><div class="bid-pval" id="bid-val-Kaja">5</div></div>
-        <div class="bid-card" id="bid-card-Darek"><div class="bid-pname">DAREK</div><div class="bid-pval" id="bid-val-Darek">5</div></div>
-        <div class="bid-card" id="bid-card-Jas"><div class="bid-pname">JAŚ</div><div class="bid-pval" id="bid-val-Jas">5</div></div>
-      </div>
-      <div class="auction-call" id="r5-auction-call">LICYTACJA TRWA!</div>
-    </div>
+<div id="r5-wheel-wrap">
+<div class="wheel-pointer"></div>
+<canvas id="r5-wheel-canvas" width="500" height="500"></canvas>
+</div>
 
-    <!-- PODIUM FINAŁOWE -->
-    <div id="podium-view">
-      <div class="podium-title">🏆 WIELKI FINAŁ - WYNIKI KOŃCOWE 🏆</div>
-      <div class="podium-bars" id="podium-bars-container"></div>
-    </div>
+<div id="r5-auction-box">
+<div class="pot-banner">
+<div class="pot-label" id="r5-pot-label">AKTUALNA PULA DO WYGRANIA</div>
+<div class="pot-val" id="r5-pot-val">20 PKT</div>
+</div>
+<div class="bids-grid">
+<div class="bid-card" id="bid-card-Lila"><div class="bid-pname">LILA</div><div class="bid-pval" id="bid-val-Lila">5</div></div>
+<div class="bid-card" id="bid-card-Kaja"><div class="bid-pname">KAJA</div><div class="bid-pval" id="bid-val-Kaja">5</div></div>
+<div class="bid-card" id="bid-card-Darek"><div class="bid-pname">DAREK</div><div class="bid-pval" id="bid-val-Darek">5</div></div>
+<div class="bid-card" id="bid-card-Jas"><div class="bid-pname">JAŚ</div><div class="bid-pval" id="bid-val-Jas">5</div></div>
+</div>
+<div class="auction-call" id="r5-auction-call">LICYTACJA TRWA!</div>
+</div>
 
-    <div id="tv-qr-container">
-        <p>Zeskanuj, aby wejść do gry</p>
-        <img id="qrGraczTv" src="" alt="QR">
-    </div>
-    
-    <div class="options-grid" id="tv-options">
-      <div class="option opt-color-0" id="opt-0">A: ...</div>
-      <div class="option opt-color-1" id="opt-1">B: ...</div>
-      <div class="option opt-color-2" id="opt-2">C: ...</div>
-      <div class="option opt-color-3" id="opt-3">D: ...</div>
-    </div>
-    
-    <div id="tv-typed-answer"></div>
-    <div class="winner-announcement" id="tv-winner"></div>
-    <div class="status-msg" id="tv-status"></div>
-    <div class="correct-answer-banner" id="tv-correct-banner">Prawidłowa odpowiedź: <span id="tv-correct-val"></span></div>
-  </div>
+<div id="podium-view">
+<div class="podium-title">🏆 WIELKI FINAŁ - WYNIKI KOŃCOWE 🏆</div>
+<div class="podium-bars" id="podium-bars-container"></div>
+</div>
+
+<div id="tv-qr-container">
+<p>Zeskanuj, aby wejść do gry</p>
+<img id="qrGraczTv" src="" alt="QR">
+</div>
+
+<div class="options-grid" id="tv-options">
+<div class="option opt-color-0" id="opt-0">A: ...</div>
+<div class="option opt-color-1" id="opt-1">B: ...</div>
+<div class="option opt-color-2" id="opt-2">C: ...</div>
+<div class="option opt-color-3" id="opt-3">D: ...</div>
+</div>
+
+<div id="tv-typed-answer"></div>
+<div class="winner-announcement" id="tv-winner"></div>
+<div class="status-msg" id="tv-status"></div>
+<div class="correct-answer-banner" id="tv-correct-banner">Prawidłowa odpowiedź: <span id="tv-correct-val"></span></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -212,182 +204,181 @@ import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3"); 
+const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
 tickSound.loop = true; tickSound.volume = 0.5;
-const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3"); 
+const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3");
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
-const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3"); 
+const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
 winSound.volume = 1.0;
-const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3"); 
+const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3");
 loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- WOLNIEJSZY, SPOKOJNY GŁOS LEKTORA PL-PL (TEMPO 0.78 + BRAK UCINANIA SŁÓW NA KOŃCU!) ---
+// --- PŁYNNY GŁOS LEKTORA PL-PL (TEMPO 0.93 + ZABEZPIECZENIE PRZED UCINANIEM SŁOWA "PUNKTÓW") ---
 let selectedPlVoice = null;
 let lastSpokenKey = "";
 let speechSafetyTimer = null;
-let currentUtterance = null; // Zapobiega usunięciu obiektu przez Garbage Collector w połowie zdania!
+let utteranceQueue = []; // Przechowuje referencje, by przeglądarka nigdy nie urwała końcówki zdania!
 
 function initPolishVoices() {
-    if (!('speechSynthesis' in window)) return;
-    const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
-    const sel = document.getElementById('voiceSelect');
-    if (!voices.length) return;
+if (!('speechSynthesis' in window)) return;
+const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
+const sel = document.getElementById('voiceSelect');
+if (!voices.length) return;
 
-    sel.innerHTML = "";
-    voices.sort((a, b) => {
-        const score = (v) => {
-            const n = v.name.toLowerCase();
-            if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
-            if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
-            if (n.includes('google')) return 12;
-            if (n.includes('natural') || n.includes('online')) return 10;
-            if (n.includes('paulina')) return 4;
-            if (n.includes('marek') || n.includes('adam')) return 2;
-            return 3;
-        };
-        return score(b) - score(a);
-    });
+sel.innerHTML = "";
+voices.sort((a, b) => {
+const score = (v) => {
+const n = v.name.toLowerCase();
+if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
+if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
+if (n.includes('google')) return 12;
+if (n.includes('natural') || n.includes('online')) return 10;
+if (n.includes('paulina')) return 4;
+if (n.includes('marek') || n.includes('adam')) return 2;
+return 3;
+};
+return score(b) - score(a);
+});
 
-    voices.forEach((v, idx) => {
-        const opt = document.createElement('option');
-        opt.value = idx;
-        opt.innerText = v.name;
-        sel.appendChild(opt);
-    });
+voices.forEach((v, idx) => {
+const opt = document.createElement('option');
+opt.value = idx;
+opt.innerText = v.name;
+sel.appendChild(opt);
+});
 
-    selectedPlVoice = voices[0];
-    sel.onchange = () => {
-        selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
-        speakPolishText("Cześć! Teraz ja będę spokojnie czytać pytania.");
-    };
+selectedPlVoice = voices[0];
+sel.onchange = () => {
+selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
+speakPolishText("Cześć! Teraz ja będę czytać pytania.");
+};
 }
 if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = initPolishVoices;
-    setTimeout(initPolishVoices, 300);
+window.speechSynthesis.onvoiceschanged = initPolishVoices;
+setTimeout(initPolishVoices, 300);
 }
 
 function speakPolishText(textToRead, onDoneCallback) {
-    clearTimeout(speechSafetyTimer);
-    if (!('speechSynthesis' in window)) {
-        if (onDoneCallback) setTimeout(onDoneCallback, 3000);
-        return;
-    }
-    window.speechSynthesis.cancel();
+clearTimeout(speechSafetyTimer);
+if (!('speechSynthesis' in window)) {
+if (onDoneCallback) setTimeout(onDoneCallback, 2500);
+return;
+}
+window.speechSynthesis.cancel();
 
-    let cleanText = textToRead
-        .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
-        .replace(/:\s*$/, "")
-        .replace(/:/g, ". ... ") // Długa, wyraźna pauza po dwukropku
-        .replace(/\bpkt\b/gi, "punktów")
-        .replace(/\bx\b/gi, " razy ")
-        .replace(/\+/g, " dodać ")
-        .replace(/ - /g, " odjąć ")
-        .replace(/=/g, " równa się ")
-        .replace(/\?/g, ".") + " ."; // Kropka ze spacją na końcu gwarantuje doczytanie ostatniego słowa do końca!
+// Zabezpieczenie końcówki: dodajemy na końcu wielokropek i przecinek, co zmusza silnik TTS Chrome/Edge do pełnego wybrzmienia ostatniego słowa (np. "punktów")!
+let cleanText = textToRead
+.replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
+.replace(/:\s*$/, "")
+.replace(/:/g, ", ")
+.replace(/\bpkt\b/gi, "punktów")
+.replace(/\bx\b/gi, " razy ")
+.replace(/\+/g, " dodać ")
+.replace(/ - /g, " odjąć ")
+.replace(/=/g, " równa się ")
+.replace(/\?/g, ".") + " ... ,";
 
-    currentUtterance = new SpeechSynthesisUtterance(cleanText);
-    currentUtterance.lang = "pl-PL";
-    if (selectedPlVoice) currentUtterance.voice = selectedPlVoice;
-    currentUtterance.rate = 0.78;  // Wyraźnie wolniejsze, spokojne tempo czytania
-    currentUtterance.pitch = 1.05;
+const utter = new SpeechSynthesisUtterance(cleanText);
+utter.lang = "pl-PL";
+if (selectedPlVoice) utter.voice = selectedPlVoice;
+utter.rate = 0.93; // Naturalne, płynne tempo (nie za wolne, nie za szybkie!)
+utter.pitch = 1.04;
 
-    let finished = false;
-    const finishOnce = () => {
-        if (finished) return;
-        finished = true;
-        clearTimeout(speechSafetyTimer);
-        // Pełne 1.4 sekundy spokojnej przerwy po ostatnim słowie lektora!
-        if (onDoneCallback) setTimeout(onDoneCallback, 1400);
-    };
+utteranceQueue.push(utter);
+if (utteranceQueue.length > 10) utteranceQueue.shift();
 
-    currentUtterance.onend = finishOnce;
-    currentUtterance.onerror = finishOnce;
+let finished = false;
+const finishOnce = () => {
+if (finished) return;
+finished = true;
+clearTimeout(speechSafetyTimer);
+if (onDoneCallback) setTimeout(onDoneCallback, 900);
+};
 
-    // Długi bufor bezpieczeństwa (do 16 sekund), żeby nigdy nie ucięło końcówki zdania
-    const estMs = Math.max(5500, Math.min(16000, cleanText.length * 145 + 2500));
-    speechSafetyTimer = setTimeout(finishOnce, estMs);
+utter.onend = finishOnce;
+utter.onerror = finishOnce;
 
-    window.speechSynthesis.speak(currentUtterance);
+const estMs = Math.max(4500, Math.min(15000, cleanText.length * 115 + 2200));
+speechSafetyTimer = setTimeout(finishOnce, estMs);
+
+window.speechSynthesis.speak(utter);
 }
 
-// --- RYSOWANIE KOŁA FORTUNY DO RUNDY 5 ---
 const r5Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let currentWheelRotation = 0;
 let lastR5SpinHandled = 0;
 let lastR5CountdownSpoken = 0;
-let tvAuctionEngineInterval = null; // Silnik licytacji na TV (obsługuje dogrywki przy remisie i losowanie przy 5 pkt!)
 
 function drawR5Wheel() {
-    const canvas = document.getElementById('r5-wheel-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const cx = 250, cy = 250, r = 240;
-    const arc = (Math.PI * 2) / r5Categories.length;
+const canvas = document.getElementById('r5-wheel-canvas');
+if (!canvas) return;
+const ctx = canvas.getContext('2d');
+const cx = 250, cy = 250, r = 240;
+const arc = (Math.PI * 2) / r5Categories.length;
 
-    ctx.clearRect(0, 0, 500, 500);
-    r5Categories.forEach((cat, i) => {
-        const startAngle = i * arc - Math.PI / 2 - arc / 2;
-        const endAngle = startAngle + arc;
+ctx.clearRect(0, 0, 500, 500);
+r5Categories.forEach((cat, i) => {
+const startAngle = i * arc - Math.PI / 2 - arc / 2;
+const endAngle = startAngle + arc;
 
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = r5Colors[i % r5Colors.length];
-        ctx.fill();
-        ctx.lineWidth = 4;
-        ctx.strokeStyle = "#050b14";
-        ctx.stroke();
+ctx.beginPath();
+ctx.moveTo(cx, cy);
+ctx.arc(cx, cy, r, startAngle, endAngle);
+ctx.closePath();
+ctx.fillStyle = r5Colors[i % r5Colors.length];
+ctx.fill();
+ctx.lineWidth = 4;
+ctx.strokeStyle = "#050b14";
+ctx.stroke();
 
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(startAngle + arc / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#fff";
-        ctx.font = "900 22px sans-serif";
-        ctx.shadowColor = "rgba(0,0,0,0.8)";
-        ctx.shadowBlur = 4;
-        ctx.fillText(cat, r - 20, 8);
-        ctx.restore();
-    });
+ctx.save();
+ctx.translate(cx, cy);
+ctx.rotate(startAngle + arc / 2);
+ctx.textAlign = "right";
+ctx.fillStyle = "#fff";
+ctx.font = "900 22px sans-serif";
+ctx.shadowColor = "rgba(0,0,0,0.8)";
+ctx.shadowBlur = 4;
+ctx.fillText(cat, r - 20, 8);
+ctx.restore();
+});
 
-    ctx.beginPath();
-    ctx.arc(cx, cy, 35, 0, Math.PI * 2);
-    ctx.fillStyle = "#d4af37";
-    ctx.fill();
-    ctx.lineWidth = 5;
-    ctx.strokeStyle = "#fff";
-    ctx.stroke();
+ctx.beginPath();
+ctx.arc(cx, cy, 35, 0, Math.PI * 2);
+ctx.fillStyle = "#d4af37";
+ctx.fill();
+ctx.lineWidth = 5;
+ctx.strokeStyle = "#fff";
+ctx.stroke();
 }
 drawR5Wheel();
 
 function playWheelTicks() {
-    if (!audioCtx) return;
-    let ticks = 28;
-    for (let i = 0; i < ticks; i++) {
-        let delay = (i / ticks) * (i / ticks) * 4.2;
-        setTimeout(() => {
-            if (!audioCtx) return;
-            const now = audioCtx.currentTime;
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = "triangle";
-            osc.frequency.setValueAtTime(650, now);
-            osc.frequency.exponentialRampToValueAtTime(180, now + 0.03);
-            g.gain.setValueAtTime(0.25, now);
-            g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-            osc.connect(g);
-            g.connect(audioCtx.destination);
-            osc.start(now);
-            osc.stop(now + 0.035);
-        }, delay * 1000);
-    }
+if (!audioCtx) return;
+let ticks = 28;
+for (let i = 0; i < ticks; i++) {
+let delay = (i / ticks) * (i / ticks) * 4.2;
+setTimeout(() => {
+if (!audioCtx) return;
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "triangle";
+osc.frequency.setValueAtTime(650, now);
+osc.frequency.exponentialRampToValueAtTime(180, now + 0.03);
+g.gain.setValueAtTime(0.25, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.035);
+}, delay * 1000);
+}
 }
 
-// --- SYNTEZATOR MUZYKI W TLE ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -395,158 +386,157 @@ let fanfareLoopInterval = null;
 let isBgMusicPlaying = false;
 
 function createUpbeatGameMusic() {
-    if (audioCtx) return;
-    const AudioContext = window.AudioContext || window.webkitAudioContext;
-    audioCtx = new AudioContext();
-    
-    bgMasterGain = audioCtx.createGain();
-    bgMasterGain.gain.value = 0.22;
-    bgMasterGain.connect(audioCtx.destination);
+if (audioCtx) return;
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+audioCtx = new AudioContext();
 
-    const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
-    const bassNotes = [130.81, 146.83, 164.81, 196.00];
+bgMasterGain = audioCtx.createGain();
+bgMasterGain.gain.value = 0.22;
+bgMasterGain.connect(audioCtx.destination);
 
-    let step = 0;
-    musicInterval = setInterval(() => {
-        if (!audioCtx || !isBgMusicPlaying) return;
-        if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+const bassNotes = [130.81, 146.83, 164.81, 196.00];
 
-        const now = audioCtx.currentTime;
+let step = 0;
+musicInterval = setInterval(() => {
+if (!audioCtx || !isBgMusicPlaying) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-        const bassOsc = audioCtx.createOscillator();
-        const bassGain = audioCtx.createGain();
-        bassOsc.type = "triangle";
-        bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
-        bassGain.gain.setValueAtTime(0.11, now);
-        bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-        bassOsc.connect(bassGain);
-        bassGain.connect(bgMasterGain);
-        bassOsc.start(now);
-        bassOsc.stop(now + 0.25);
+const now = audioCtx.currentTime;
 
-        if (step % 2 === 0) {
-            const leadOsc = audioCtx.createOscillator();
-            const leadGain = audioCtx.createGain();
-            leadOsc.type = "sine";
-            const note = scale[Math.floor(Math.random() * scale.length)];
-            leadOsc.frequency.setValueAtTime(note, now);
-            leadGain.gain.setValueAtTime(0.07, now);
-            leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
-            leadOsc.connect(leadGain);
-            leadGain.connect(bgMasterGain);
-            leadOsc.start(now);
-            leadOsc.stop(now + 0.18);
-        }
+const bassOsc = audioCtx.createOscillator();
+const bassGain = audioCtx.createGain();
+bassOsc.type = "triangle";
+bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
+bassGain.gain.setValueAtTime(0.11, now);
+bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+bassOsc.connect(bassGain);
+bassGain.connect(bgMasterGain);
+bassOsc.start(now);
+bassOsc.stop(now + 0.25);
 
-        step++;
-    }, 220);
+if (step % 2 === 0) {
+const leadOsc = audioCtx.createOscillator();
+const leadGain = audioCtx.createGain();
+leadOsc.type = "sine";
+const note = scale[Math.floor(Math.random() * scale.length)];
+leadOsc.frequency.setValueAtTime(note, now);
+leadGain.gain.setValueAtTime(0.07, now);
+leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+leadOsc.connect(leadGain);
+leadGain.connect(bgMasterGain);
+leadOsc.start(now);
+leadOsc.stop(now + 0.18);
+}
+
+step++;
+}, 220);
 }
 
 function playFireworkBoom() {
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-    const now = audioCtx.currentTime;
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
 
-    const bufferSize = audioCtx.sampleRate * 0.35;
-    const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-    const output = noiseBuffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.1));
-    }
-    const whiteNoise = audioCtx.createBufferSource();
-    whiteNoise.buffer = noiseBuffer;
+const bufferSize = audioCtx.sampleRate * 0.35;
+const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+const output = noiseBuffer.getChannelData(0);
+for (let i = 0; i < bufferSize; i++) {
+output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.1));
+}
+const whiteNoise = audioCtx.createBufferSource();
+whiteNoise.buffer = noiseBuffer;
 
-    const filter = audioCtx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(700, now);
-    filter.frequency.exponentialRampToValueAtTime(100, now + 0.35);
+const filter = audioCtx.createBiquadFilter();
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(700, now);
+filter.frequency.exponentialRampToValueAtTime(100, now + 0.35);
 
-    const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.35, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+const gain = audioCtx.createGain();
+gain.gain.setValueAtTime(0.35, now);
+gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
-    whiteNoise.connect(filter);
-    filter.connect(gain);
-    gain.connect(audioCtx.destination);
-    whiteNoise.start(now);
+whiteNoise.connect(filter);
+filter.connect(gain);
+gain.connect(audioCtx.destination);
+whiteNoise.start(now);
 }
 
 function playGrandFanfareSequence() {
-    fanfareSound.currentTime = 0;
-    fanfareSound.play().catch(()=>{});
-    winSound.currentTime = 0;
-    winSound.play().catch(()=>{});
+fanfareSound.currentTime = 0;
+fanfareSound.play().catch(()=>{});
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
 
-    if (!audioCtx) return;
-    if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-    const playBrassChord = (freqs, startOffset, duration, vol = 0.22) => {
-        const now = audioCtx.currentTime + startOffset;
-        freqs.forEach((f, idx) => {
-            const osc = audioCtx.createOscillator();
-            const filter = audioCtx.createBiquadFilter();
-            const g = audioCtx.createGain();
+const playBrassChord = (freqs, startOffset, duration, vol = 0.22) => {
+const now = audioCtx.currentTime + startOffset;
+freqs.forEach((f, idx) => {
+const osc = audioCtx.createOscillator();
+const filter = audioCtx.createBiquadFilter();
+const g = audioCtx.createGain();
 
-            osc.type = "sawtooth";
-            osc.frequency.setValueAtTime(f, now);
-            osc.detune.setValueAtTime((idx - 1) * 6, now);
+osc.type = "sawtooth";
+osc.frequency.setValueAtTime(f, now);
+osc.detune.setValueAtTime((idx - 1) * 6, now);
 
-            filter.type = "lowpass";
-            filter.frequency.setValueAtTime(2400, now);
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(2400, now);
 
-            g.gain.setValueAtTime(0.001, now);
-            g.gain.linearRampToValueAtTime(vol, now + 0.03);
-            g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+g.gain.setValueAtTime(0.001, now);
+g.gain.linearRampToValueAtTime(vol, now + 0.03);
+g.gain.exponentialRampToValueAtTime(0.001, now + duration);
 
-            osc.connect(filter);
-            filter.connect(g);
-            g.connect(audioCtx.destination);
+osc.connect(filter);
+filter.connect(g);
+g.connect(audioCtx.destination);
 
-            osc.start(now);
-            osc.stop(now + duration + 0.02);
-        });
-    };
+osc.start(now);
+osc.stop(now + duration + 0.02);
+});
+};
 
-    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
-    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
-    playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
-    playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
-    playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
-    playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
-    playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.35);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
+playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
+playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.35);
 }
 
 function startVictoryFanfareLoop() {
-    clearInterval(fanfareLoopInterval);
-    playGrandFanfareSequence();
-    fanfareLoopInterval = setInterval(() => {
-        if (fwActive) playGrandFanfareSequence();
-    }, 6500);
+clearInterval(fanfareLoopInterval);
+playGrandFanfareSequence();
+fanfareLoopInterval = setInterval(() => {
+if (fwActive) playGrandFanfareSequence();
+}, 6500);
 }
 
 function stopVictoryFanfareLoop() {
-    clearInterval(fanfareLoopInterval);
+clearInterval(fanfareLoopInterval);
 }
 
 function setBgMusicActive(active) {
-    isBgMusicPlaying = active;
-    if (audioCtx && active && audioCtx.state === 'suspended') {
-        audioCtx.resume().catch(()=>{});
-    }
+isBgMusicPlaying = active;
+if (audioCtx && active && audioCtx.state === 'suspended') {
+audioCtx.resume().catch(()=>{});
+}
 }
 
 window.initAudio = function() {
-    document.getElementById('audio-overlay').style.display = 'none';
-    createUpbeatGameMusic();
-    setBgMusicActive(true);
-    initPolishVoices();
-    speakPolishText("Witamy w teleturnieju!");
-    [tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
-        s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
-    });
+document.getElementById('audio-overlay').style.display = 'none';
+createUpbeatGameMusic();
+setBgMusicActive(true);
+initPolishVoices();
+speakPolishText("Witamy w teleturnieju!");
+[tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
+s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
+});
 };
 
-// --- ZOPTYMALIZOWANY SILNIK FAJERWERKÓW ---
 const fwCanvas = document.getElementById('fireworks-canvas');
 const fwCtx = fwCanvas.getContext('2d');
 let fwParticles = [];
@@ -556,105 +546,105 @@ let fwLoopId = null;
 let fwSpawnTimer = null;
 
 function createExplosion(x, y, mainColor) {
-    playFireworkBoom();
-    const count = 15;
-    for (let i = 0; i < count; i++) {
-        const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
-        const speed = Math.random() * 5 + 2;
-        fwParticles.push({
-            x, y,
-            vx: Math.cos(angle) * speed,
-            vy: Math.sin(angle) * speed,
-            alpha: 1,
-            size: Math.random() * 3 + 1.5,
-            color: i % 2 === 0 ? '#ffffff' : mainColor,
-            decay: Math.random() * 0.02 + 0.035
-        });
-    }
+playFireworkBoom();
+const count = 15;
+for (let i = 0; i < count; i++) {
+const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
+const speed = Math.random() * 5 + 2;
+fwParticles.push({
+x, y,
+vx: Math.cos(angle) * speed,
+vy: Math.sin(angle) * speed,
+alpha: 1,
+size: Math.random() * 3 + 1.5,
+color: i % 2 === 0 ? '#ffffff' : mainColor,
+decay: Math.random() * 0.02 + 0.035
+});
+}
 }
 
 function startFireworks() {
-    if (fwActive) return;
-    fwActive = true;
-    fwCanvas.style.display = 'block';
-    fwCanvas.width = window.innerWidth;
-    fwCanvas.height = window.innerHeight;
-    fwParticles = [];
-    fwRockets = [];
+if (fwActive) return;
+fwActive = true;
+fwCanvas.style.display = 'block';
+fwCanvas.width = window.innerWidth;
+fwCanvas.height = window.innerHeight;
+fwParticles = [];
+fwRockets = [];
 
-    const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43'];
+const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43'];
 
-    function launchWave() {
-        if (!fwActive) return;
-        const startX = fwCanvas.width * (0.2 + Math.random() * 0.6);
-        const targetY = fwCanvas.height * (0.15 + Math.random() * 0.3);
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        fwRockets.push({
-            x: startX,
-            y: fwCanvas.height,
-            vx: (Math.random() - 0.5) * 1.5,
-            vy: -(Math.random() * 4 + 9),
-            targetY,
-            color
-        });
-        fwSpawnTimer = setTimeout(launchWave, 1500);
-    }
-    launchWave();
+function launchWave() {
+if (!fwActive) return;
+const startX = fwCanvas.width * (0.2 + Math.random() * 0.6);
+const targetY = fwCanvas.height * (0.15 + Math.random() * 0.3);
+const color = colors[Math.floor(Math.random() * colors.length)];
+fwRockets.push({
+x: startX,
+y: fwCanvas.height,
+vx: (Math.random() - 0.5) * 1.5,
+vy: -(Math.random() * 4 + 9),
+targetY,
+color
+});
+fwSpawnTimer = setTimeout(launchWave, 1500);
+}
+launchWave();
 
-    function animateFw() {
-        if (!fwActive) return;
-        fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+function animateFw() {
+if (!fwActive) return;
+fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
 
-        if (fwParticles.length > 35) {
-            fwParticles.splice(0, fwParticles.length - 35);
-        }
+if (fwParticles.length > 35) {
+fwParticles.splice(0, fwParticles.length - 35);
+}
 
-        for (let i = fwRockets.length - 1; i >= 0; i--) {
-            const r = fwRockets[i];
-            r.x += r.vx;
-            r.y += r.vy;
-            r.vy += 0.1;
+for (let i = fwRockets.length - 1; i >= 0; i--) {
+const r = fwRockets[i];
+r.x += r.vx;
+r.y += r.vy;
+r.vy += 0.1;
 
-            fwCtx.globalAlpha = 1;
-            fwCtx.fillStyle = '#ffffff';
-            fwCtx.beginPath();
-            fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2);
-            fwCtx.fill();
+fwCtx.globalAlpha = 1;
+fwCtx.fillStyle = '#ffffff';
+fwCtx.beginPath();
+fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2);
+fwCtx.fill();
 
-            if (r.y <= r.targetY || r.vy >= 0) {
-                createExplosion(r.x, r.y, r.color);
-                fwRockets.splice(i, 1);
-            }
-        }
+if (r.y <= r.targetY || r.vy >= 0) {
+createExplosion(r.x, r.y, r.color);
+fwRockets.splice(i, 1);
+}
+}
 
-        for (let i = fwParticles.length - 1; i >= 0; i--) {
-            const p = fwParticles[i];
-            p.x += p.vx;
-            p.y += p.vy;
-            p.vy += 0.07;
-            p.alpha -= p.decay;
+for (let i = fwParticles.length - 1; i >= 0; i--) {
+const p = fwParticles[i];
+p.x += p.vx;
+p.y += p.vy;
+p.vy += 0.07;
+p.alpha -= p.decay;
 
-            if (p.alpha <= 0) {
-                fwParticles.splice(i, 1);
-            } else {
-                fwCtx.globalAlpha = p.alpha;
-                fwCtx.fillStyle = p.color;
-                fwCtx.beginPath();
-                fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                fwCtx.fill();
-            }
-        }
-        fwLoopId = requestAnimationFrame(animateFw);
-    }
-    animateFw();
+if (p.alpha <= 0) {
+fwParticles.splice(i, 1);
+} else {
+fwCtx.globalAlpha = p.alpha;
+fwCtx.fillStyle = p.color;
+fwCtx.beginPath();
+fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+fwCtx.fill();
+}
+}
+fwLoopId = requestAnimationFrame(animateFw);
+}
+animateFw();
 }
 
 function stopFireworks() {
-    fwActive = false;
-    clearTimeout(fwSpawnTimer);
-    if (fwLoopId) cancelAnimationFrame(fwLoopId);
-    fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-    fwCanvas.style.display = 'none';
+fwActive = false;
+clearTimeout(fwSpawnTimer);
+if (fwLoopId) cancelAnimationFrame(fwLoopId);
+fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+fwCanvas.style.display = 'none';
 }
 
 let currentTick = null;
@@ -665,794 +655,689 @@ let lastWheelWinnersCount = 0;
 let lastR3WinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
-let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; 
-let latestGameState = null;
+let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 window.onload = () => {
-    const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const graczUrl = encodeURIComponent(baseHref + 'quiz_gracz.html');
-    document.getElementById('qrGraczTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${graczUrl}&color=000000&bgcolor=ffffff`;
+const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+const graczUrl = encodeURIComponent(baseHref + 'quiz_gracz.html');
+document.getElementById('qrGraczTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${graczUrl}&color=000000&bgcolor=ffffff`;
 };
 
 function renderWheelBoard(phrase, order, count) {
-    const board = document.getElementById('tv-wheel-board');
-    board.innerHTML = "";
-    const unlocked = (order || []).slice(0, count);
-    let letterIdx = 0;
+const board = document.getElementById('tv-wheel-board');
+board.innerHTML = "";
+const unlocked = (order || []).slice(0, count);
+let letterIdx = 0;
 
-    phrase.split(" ").forEach(word => {
-        const wDiv = document.createElement('div');
-        wDiv.className = "wheel-word";
-        for (let ch of word) {
-            const lDiv = document.createElement('div');
-            if (unlocked.includes(letterIdx)) {
-                lDiv.className = "wheel-letter revealed";
-                lDiv.innerText = ch;
-            } else {
-                lDiv.className = "wheel-letter";
-                lDiv.innerText = "";
-            }
-            wDiv.appendChild(lDiv);
-            letterIdx++;
-        }
-        board.appendChild(wDiv);
-    });
+phrase.split(" ").forEach(word => {
+const wDiv = document.createElement('div');
+wDiv.className = "wheel-word";
+for (let ch of word) {
+const lDiv = document.createElement('div');
+if (unlocked.includes(letterIdx)) {
+lDiv.className = "wheel-letter revealed";
+lDiv.innerText = ch;
+} else {
+lDiv.className = "wheel-letter";
+lDiv.innerText = "";
+}
+wDiv.appendChild(lDiv);
+letterIdx++;
+}
+board.appendChild(wDiv);
+});
 }
 
 function renderPodium() {
-    const container = document.getElementById('podium-bars-container');
-    container.innerHTML = "";
-    const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
-    
-    let sorted = Object.keys(displayNames).map(id => ({
-        id,
-        name: displayNames[id],
-        pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
-    })).sort((a, b) => b.pts - a.pts);
+const container = document.getElementById('podium-bars-container');
+container.innerHTML = "";
+const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
 
-    let currentRank = 1;
-    for (let i = 0; i < sorted.length; i++) {
-        if (i > 0 && sorted[i].pts < sorted[i - 1].pts) {
-            currentRank = currentRank + 1;
-        }
-        sorted[i].rank = currentRank;
-    }
+let sorted = Object.keys(displayNames).map(id => ({
+id,
+name: displayNames[id],
+pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
+})).sort((a, b) => b.pts - a.pts);
 
-    const visualArrangement = [];
-    sorted.forEach((player, idx) => {
-        if (idx % 2 === 0) visualArrangement.push(player);
-        else visualArrangement.unshift(player);
-    });
-
-    const medalsMap = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
-    const pedClassMap = { 1: "ped-1", 2: "ped-2", 3: "ped-3", 4: "ped-4" };
-
-    visualArrangement.forEach(p => {
-        const r = Math.min(4, p.rank);
-        const col = document.createElement('div');
-        col.className = "podium-col";
-        col.innerHTML = `
-            <div class="podium-avatar">${medalsMap[r]}</div>
-            <div class="podium-pname">${p.name}</div>
-            <div class="podium-pts">${p.pts} PKT</div>
-            <div class="podium-pedestal ${pedClassMap[r]}">${r}</div>
-        `;
-        container.appendChild(col);
-    });
+let currentRank = 1;
+for (let i = 0; i < sorted.length; i++) {
+if (i > 0 && sorted[i].pts < sorted[i - 1].pts) {
+currentRank = currentRank + 1;
+}
+sorted[i].rank = currentRank;
 }
 
-// --- AUTONOMICZNY STRAŻNIK LICYTACJI NA TV (Losowanie przy 5 pkt + Dogrywki przy remisie!) ---
-function startTvAuctionSupervisor() {
-// Sterowanie czasem licytacji i dogrywkami wykonuje bezpośrednio quiz_admin.html
-}
+const visualArrangement = [];
+sorted.forEach((player, idx) => {
+if (idx % 2 === 0) visualArrangement.push(player);
+else visualArrangement.unshift(player);
+});
 
-        const now = Date.now();
-        // Jeśli admin nie podał auctionStartTime, tworzymy go od momentu wejścia w licytację (5s na lektora + 12s licytacji)
-        if (!latestGameState.auctionStartTime) {
-            await updateDoc(doc(db, "quizGame", "state"), {
-                auctionStartTime: now + 4500,
-                bidTick: now + 4500,
-                r5MainSec: 12,
-                r5Countdown: 0
-            });
-            return;
-        }
+const medalsMap = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
+const pedClassMap = { 1: "ped-1", 2: "ped-2", 3: "ped-3", 4: "ped-4" };
 
-        const startT = latestGameState.auctionStartTime;
-        const mainEndT = startT + 12000; // 12 sekund spokojnej licytacji podstawowej
-        const effectiveCloseT = Math.max(mainEndT + 5000, (latestGameState.bidTick || startT) + 7500);
-        const remTotalMs = effectiveCloseT - now;
-
-        // Gdy czas licytacji dobiega końca (lub admin przedwcześnie ustawił r5_sold przy remisie), sprawdzamy wynik!
-        if (remTotalMs <= 600) {
-            clearInterval(tvAuctionEngineInterval);
-            tvAuctionEngineInterval = null;
-
-            const bids = latestGameState.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-            const allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
-            let maxBid = Math.max(...allPlayers.map(p => bids[p] || 5));
-            let topBidders = allPlayers.filter(p => (bids[p] || 5) === maxBid);
-
-            // PRZYPADEK 1: Nikt nie licytował (wszyscy dali tylko wejściowe 5 pkt) -> LOSOWANIE!
-            if (maxBid === 5) {
-                const randomWinner = allPlayers[Math.floor(Math.random() * allPlayers.length)];
-                for (let p of allPlayers) {
-                    let ref = doc(db, "quizScores", p);
-                    let snap = await getDoc(ref);
-                    let cur = snap.exists() ? snap.data().points : 0;
-                    await setDoc(ref, { points: cur - 5 }, { merge: true });
-                }
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "r5_sold",
-                    r5HighestBidder: randomWinner,
-                    r5HighestBid: 5,
-                    nominated: randomWinner,
-                    r5RandomDrawn: true,
-                    r5TiedBidders: [],
-                    r5MainSec: 0,
-                    r5Countdown: 0,
-                    speechTick: Date.now()
-                });
-                setTimeout(async () => {
-                    const checkSnap = await getDoc(doc(db, "quizGame", "state"));
-                    if (checkSnap.exists() && checkSnap.data().status === "r5_sold") {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", speechTick: Date.now() });
-                    }
-                }, 8000);
-                return;
-            }
-
-            // PRZYPADEK 2: REMIS NA NAJWYŻSZEJ STAWCE (> 5 pkt) -> DOGRYWKA 12 SEKUND TYLKO DLA REMISUJĄCYCH!
-            if (topBidders.length > 1) {
-                const newStart = Date.now() + 4000;
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "r5_bidding",
-                    r5TiedBidders: topBidders,
-                    auctionStartTime: newStart,
-                    bidTick: newStart,
-                    r5MainSec: 12,
-                    r5Countdown: 0,
-                    tieBreakTick: Date.now()
-                });
-                return;
-            }
-
-            // PRZYPADEK 3: Mamy jednego zwycięzcę licytacji!
-            const winner = topBidders[0];
-            for (let p of allPlayers) {
-                let ref = doc(db, "quizScores", p);
-                let snap = await getDoc(ref);
-                let cur = snap.exists() ? snap.data().points : 0;
-                await setDoc(ref, { points: cur - (bids[p] || 5) }, { merge: true });
-            }
-            await updateDoc(doc(db, "quizGame", "state"), {
-                status: "r5_sold",
-                r5HighestBidder: winner,
-                r5HighestBid: maxBid,
-                nominated: winner,
-                r5RandomDrawn: false,
-                r5TiedBidders: [],
-                r5MainSec: 0,
-                r5Countdown: 0,
-                speechTick: Date.now()
-            });
-            setTimeout(async () => {
-                const checkSnap = await getDoc(doc(db, "quizGame", "state"));
-                if (checkSnap.exists() && checkSnap.data().status === "r5_sold") {
-                    await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", speechTick: Date.now() });
-                }
-            }, 8000);
-        }
-    }, 250);
+visualArrangement.forEach(p => {
+const r = Math.min(4, p.rank);
+const col = document.createElement('div');
+col.className = "podium-col";
+col.innerHTML = `
+<div class="podium-avatar">${medalsMap[r]}</div>
+<div class="podium-pname">${p.name}</div>
+<div class="podium-pts">${p.pts} PKT</div>
+<div class="podium-pedestal ${pedClassMap[r]}">${r}</div>
+`;
+container.appendChild(col);
+});
 }
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
-    snap.forEach(doc => { 
-        pendingScores[doc.id] = doc.data().points; 
-        if(!isSuspense) {
-            let el = document.getElementById(`pts-${doc.id}`); 
-            if(el) el.innerText = doc.data().points; 
-        }
-    });
-    if (document.getElementById('podium-view').style.display === 'flex') {
-        renderPodium();
-    }
+snap.forEach(doc => {
+pendingScores[doc.id] = doc.data().points;
+if(!isSuspense) {
+let el = document.getElementById(`pts-${doc.id}`);
+if(el) el.innerText = doc.data().points;
+}
+});
+if (document.getElementById('podium-view').style.display === 'flex') {
+renderPodium();
+}
 });
 
 let lastTieBreakSpoken = 0;
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
-    if (!docSnap.exists()) return;
-    const data = docSnap.data();
-    latestGameState = data;
-    
-    let roundNames = {
-        1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
-        2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
-        3: "RUNDA 3: SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
-        4: "RUNDA 4: WYBIERANIE (12s PO LEKTORZE | NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
-        5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
-    };
-    document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
-    
-    const stage = document.getElementById('stage-box');
-    const catEl = document.getElementById('tv-cat');
-    const qEl = document.getElementById('tv-question');
-    const opts = document.getElementById('tv-options');
-    const winnerEl = document.getElementById('tv-winner');
-    const statusEl = document.getElementById('tv-status');
-    const timerEl = document.getElementById('tv-timer');
-    const qrContainer = document.getElementById('tv-qr-container');
-    const typedAnsEl = document.getElementById('tv-typed-answer');
-    const correctBanner = document.getElementById('tv-correct-banner');
-    const correctVal = document.getElementById('tv-correct-val');
-    const wheelBoard = document.getElementById('tv-wheel-board');
-    const wheelCat = document.getElementById('tv-wheel-cat');
-    const wheelWinnersEl = document.getElementById('tv-wheel-winners');
-    const r5WheelWrap = document.getElementById('r5-wheel-wrap');
-    const r5AuctionBox = document.getElementById('r5-auction-box');
-    const podiumView = document.getElementById('podium-view');
-    
-    catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; 
-    statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
-    wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
-    r5WheelWrap.style.display = "none"; r5AuctionBox.style.display = "none";
-    podiumView.style.display = "none";
-    qEl.style.display = "block";
-    qrContainer.style.display = (data.status === "idle") ? "block" : "none";
-    stage.classList.remove("success-glow", "error-glow");
+if (!docSnap.exists()) return;
+const data = docSnap.data();
 
-    if (data.status !== "podium") {
-        stopFireworks();
-        stopVictoryFanfareLoop();
-    }
+let roundNames = {
+1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
+2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
+3: "RUNDA 3: SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
+4: "RUNDA 4: WYBIERANIE (12s PO LEKTORZE | NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
+5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
+};
+document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
 
-    const players = ["Lila", "Kaja", "Darek", "Jas"];
-    players.forEach(p => {
-        let el = document.getElementById(`score-${p}`);
-        if(data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
-        else el.classList.remove('blocked');
-    });
+const stage = document.getElementById('stage-box');
+const catEl = document.getElementById('tv-cat');
+const qEl = document.getElementById('tv-question');
+const opts = document.getElementById('tv-options');
+const winnerEl = document.getElementById('tv-winner');
+const statusEl = document.getElementById('tv-status');
+const timerEl = document.getElementById('tv-timer');
+const qrContainer = document.getElementById('tv-qr-container');
+const typedAnsEl = document.getElementById('tv-typed-answer');
+const correctBanner = document.getElementById('tv-correct-banner');
+const correctVal = document.getElementById('tv-correct-val');
+const wheelBoard = document.getElementById('tv-wheel-board');
+const wheelCat = document.getElementById('tv-wheel-cat');
+const wheelWinnersEl = document.getElementById('tv-wheel-winners');
+const r5WheelWrap = document.getElementById('r5-wheel-wrap');
+const r5AuctionBox = document.getElementById('r5-auction-box');
+const podiumView = document.getElementById('podium-view');
 
-    const letters = ["A", "B", "C", "D"];
+catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none";
+statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
+wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
+r5WheelWrap.style.display = "none"; r5AuctionBox.style.display = "none";
+podiumView.style.display = "none";
+qEl.style.display = "block";
+qrContainer.style.display = (data.status === "idle") ? "block" : "none";
+stage.classList.remove("success-glow", "error-glow");
 
-    if (data.status === "podium") {
-        isSuspense = false;
-        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-        timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        setBgMusicActive(false);
+if (data.status !== "podium") {
+stopFireworks();
+stopVictoryFanfareLoop();
+}
 
-        qEl.style.display = "none";
-        stage.classList.add("success-glow");
-        podiumView.style.display = "flex";
-        renderPodium();
-        startFireworks();
+const players = ["Lila", "Kaja", "Darek", "Jas"];
+players.forEach(p => {
+let el = document.getElementById(`score-${p}`);
+if(data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
+else el.classList.remove('blocked');
+});
 
-        if (lastPlayedResult !== "podium_" + data.answerTick) {
-            startVictoryFanfareLoop();
-            lastPlayedResult = "podium_" + data.answerTick;
-        }
-        return;
-    }
+const letters = ["A", "B", "C", "D"];
 
-    // --- RUNDA 5: OCZEKIWANIE NA ZAKRĘCENIE KOŁEM PRZEZ GRACZA ---
-    if (data.status === "r5_wait_spin" || data.status === "r5_spinning") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        r5WheelWrap.style.display = "flex";
-        qEl.style.fontSize = "1.8vw";
+if (data.status === "podium") {
+isSuspense = false;
+clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+setBgMusicActive(false);
 
-        if (data.status === "r5_wait_spin") {
-            setBgMusicActive(true);
-            let carryTxt = data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : "";
-            qEl.innerText = `🎡 ${data.controller.toUpperCase()} KRĘCI PALCEM KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
-            let waitKey = "r5_wait_" + data.speechTick;
-            if (data.speechTick && lastSpokenKey !== waitKey) {
-                lastSpokenKey = waitKey;
-                speakPolishText(`${data.controller}... zakręć kołem na telefonie.`);
-            }
-        } else {
-            setBgMusicActive(false);
-            qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
-            if (data.spinTick && data.spinTick !== lastR5SpinHandled) {
-                lastR5SpinHandled = data.spinTick;
-                playWheelTicks();
-                const segAngle = 360 / r5Categories.length;
-                const extraSpins = (data.spinPower || 7) * 360;
-                const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
-                const curMod = currentWheelRotation % 360;
-                let diff = targetMod - curMod;
-                if (diff < 0) diff += 360;
-                currentWheelRotation += extraSpins + diff;
-                document.getElementById('r5-wheel-canvas').style.transform = `rotate(${currentWheelRotation}deg)`;
-            }
-        }
-        return;
-    }
+qEl.style.display = "none";
+stage.classList.add("success-glow");
+podiumView.style.display = "flex";
+renderPodium();
+startFireworks();
 
-    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" ---
-    if (data.status === "r5_bidding" || data.status === "r5_sold") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        qEl.style.display = "none";
-        catEl.style.display = "block";
-        catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
-        r5AuctionBox.style.display = "flex";
+if (lastPlayedResult !== "podium_" + data.answerTick) {
+startVictoryFanfareLoop();
+lastPlayedResult = "podium_" + data.answerTick;
+}
+return;
+}
 
-        if (data.status === "r5_bidding") {
-            startTvAuctionSupervisor();
-        }
+if (data.status === "r5_wait_spin" || data.status === "r5_spinning") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+r5WheelWrap.style.display = "flex";
+qEl.style.fontSize = "1.8vw";
 
-        document.getElementById('r5-pot-label').innerText = data.carryOver > 0 
-            ? `PULA DO WYGRANIA (W TYM KUMULACJA ${data.carryOver} PKT!)` 
-            : `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
-        document.getElementById('r5-pot-val').innerText = `${data.r5Pot || 20} PKT`;
+if (data.status === "r5_wait_spin") {
+setBgMusicActive(true);
+let carryTxt = data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : "";
+qEl.innerText = `🎡 ${data.controller.toUpperCase()} KRĘCI PALCEM KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
+let waitKey = "r5_wait_" + data.speechTick;
+if (data.speechTick && lastSpokenKey !== waitKey) {
+lastSpokenKey = waitKey;
+speakPolishText(`${data.controller}, zakręć kołem na telefonie.`);
+}
+} else {
+setBgMusicActive(false);
+qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
+if (data.spinTick && data.spinTick !== lastR5SpinHandled) {
+lastR5SpinHandled = data.spinTick;
+playWheelTicks();
+const segAngle = 360 / r5Categories.length;
+const extraSpins = (data.spinPower || 7) * 360;
+const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
+const curMod = currentWheelRotation % 360;
+let diff = targetMod - curMod;
+if (diff < 0) diff += 360;
+currentWheelRotation += extraSpins + diff;
+document.getElementById('r5-wheel-canvas').style.transform = `rotate(${currentWheelRotation}deg)`;
+}
+}
+return;
+}
 
-        const bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-        const maxBidVal = Math.max(...players.map(p => bids[p] || 5));
-        const topBidders = players.filter(p => (bids[p] || 5) === maxBidVal);
+// --- RUNDA 5: LICYTACJA (Zegar prowadzony wyłącznie przez Admina - zero konfliktów i pełne 5 sekund!) ---
+if (data.status === "r5_bidding" || data.status === "r5_sold") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+qEl.style.display = "none";
+catEl.style.display = "block";
+catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
+r5AuctionBox.style.display = "flex";
 
-        players.forEach(p => {
-            document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
-            const card = document.getElementById(`bid-card-${p}`);
-            card.classList.remove('highest', 'tied-high');
-            if (maxBidVal > 5 && topBidders.includes(p)) {
-                card.classList.add(topBidders.length > 1 ? 'tied-high' : 'highest');
-            }
-        });
+document.getElementById('r5-pot-label').innerText = data.carryOver > 0
+? `PULA DO WYGRANIA (W TYM KUMULACJA ${data.carryOver} PKT!)`
+: `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
+document.getElementById('r5-pot-val').innerText = `${data.r5Pot || 20} PKT`;
 
-        const callEl = document.getElementById('r5-auction-call');
-        if (data.status === "r5_sold") {
-            setBgMusicActive(false);
-            stage.classList.add("success-glow");
-            callEl.style.color = "#00ff00";
-            if (data.r5RandomDrawn) {
-                callEl.innerText = `🎲 BRAK PRZEBIĆ (PO 5 PKT)! WYLOSOWANO: ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
-            } else {
-                callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r5HighestBid} PKT ODPOWIADA ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
-            }
-            let soldKey = "r5_sold_" + data.speechTick;
-            if (lastSpokenKey !== soldKey) {
-                lastSpokenKey = soldKey;
-                winSound.currentTime = 0; winSound.play().catch(()=>{});
-                let spokenMsg = data.r5RandomDrawn
-                    ? `Nikt nie przebił stawki. ... W drodze losowania odpowiada ${data.r5HighestBidder}. ... Pula wynosi ${data.r5Pot} punktów.`
-                    : `Sprzedane! ... Za ${data.r5HighestBid} punktów... odpowiada ${data.r5HighestBidder}. ... Pula wynosi ${data.r5Pot} punktów.`;
-                speakPolishText(spokenMsg);
-            }
-        } else {
-            let aucStartKey = "r5_auc_start_" + data.speechTick;
-            if (data.speechTick && lastSpokenKey !== aucStartKey) {
-                lastSpokenKey = aucStartKey;
-                speakPolishText(`Wylosowana kategoria to... ${data.category}. ... Rozpoczynamy licytację!`);
-            }
+const bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+const maxBidVal = Math.max(...players.map(p => bids[p] || 5));
+const topBidders = players.filter(p => (bids[p] || 5) === maxBidVal);
 
-            if (data.tieBreakTick && lastTieBreakSpoken !== data.tieBreakTick) {
-                lastTieBreakSpoken = data.tieBreakTick;
-                speakPolishText(`Mamy remis w licytacji! ... Dogrywka tylko dla remisujących graczy!`);
-            }
+players.forEach(p => {
+document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
+const card = document.getElementById(`bid-card-${p}`);
+card.classList.remove('highest', 'tied-high');
+if (maxBidVal > 5 && topBidders.includes(p)) {
+card.classList.add(topBidders.length > 1 ? 'tied-high' : 'highest');
+}
+});
 
-            const tiedList = data.r5TiedBidders || [];
-            const tiePrefix = tiedList.length > 1 ? `🔥 DOGRYWKA (${tiedList.join(", ").toUpperCase()})! ` : "";
+const callEl = document.getElementById('r5-auction-call');
+if (data.status === "r5_sold") {
+setBgMusicActive(false);
+stage.classList.add("success-glow");
+callEl.style.color = "#00ff00";
+if (data.r5RandomDrawn) {
+callEl.innerText = `🎲 BRAK PRZEBIĆ (PO 5 PKT)! WYLOSOWANO: ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+} else {
+callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r5HighestBid} PKT ODPOWIADA ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+}
+let soldKey = "r5_sold_" + data.speechTick;
+if (lastSpokenKey !== soldKey) {
+lastSpokenKey = soldKey;
+winSound.currentTime = 0; winSound.play().catch(()=>{});
+let spokenMsg = data.r5RandomDrawn
+? `Nikt nie przebił stawki, więc w drodze losowania odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów`
+: `Sprzedane! Za ${data.r5HighestBid} punktów odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów`;
 
-            if (data.r5Countdown && data.r5Countdown > 0) {
-                callEl.style.color = "#ff4757";
-                let leaderTxt = topBidders.length > 1 ? `REMIS PO ${maxBidVal} PKT` : `PROWADZI ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`;
-                callEl.innerText = `${tiePrefix}⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r5Countdown}s) - ${leaderTxt}`;
-                if (data.r5Countdown === 5 && lastR5CountdownSpoken !== data.bidTick) {
-                    lastR5CountdownSpoken = data.bidTick;
-                    speakPolishText("Czy ktoś jeszcze licytuje?");
-                }
-            } else if (data.r5MainSec && data.r5MainSec > 0) {
-                callEl.style.color = "#2ed573";
-                let leaderTxt = maxBidVal === 5 ? "STAWKA WEJŚCIOWA: PO 5 PKT" : (topBidders.length > 1 ? `REMIS: ${topBidders.join(" i ").toUpperCase()} (${maxBidVal} PKT)` : `PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`);
-                callEl.innerText = `${tiePrefix}⏱️ CZAS NA LICYTACJĘ: ${data.r5MainSec}s | ${leaderTxt}`;
-            } else {
-                callEl.style.color = "var(--gold)";
-                callEl.innerText = `${tiePrefix}🔥 PODBIJAJCIE STAWKĘ NA TELEFONACH!`;
-            }
-        }
-        return;
-    }
+// TV sam przełącza na pytanie dopiero PO TYM, jak lektor doczyta słowo "punktów" do końca!
+speakPolishText(spokenMsg, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "speaking",
+speechTick: Date.now()
+});
+});
+}
+} else {
+let aucStartKey = "r5_auc_start_" + data.speechTick;
+if (data.speechTick && lastSpokenKey !== aucStartKey) {
+lastSpokenKey = aucStartKey;
+speakPolishText(`Kategoria ${data.category}. Rozpoczynamy licytację!`);
+}
 
-    qEl.style.fontSize = "2.2vw";
+let tieTickVal = data.tieBreakTick || data.overtimeSpeechTick;
+if (tieTickVal && lastTieBreakSpoken !== tieTickVal) {
+lastTieBreakSpoken = tieTickVal;
+speakPolishText(`Mamy remis! Dogrywka tylko dla remisujących graczy!`);
+}
 
-    if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
-        isSuspense = false;
-        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-        timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        
-        setBgMusicActive(true);
-        
-        if (data.status === "setup_nomination" || data.status === "nominating") {
-            catEl.style.display = "block";
-            catEl.innerText = "KATEGORIA: " + data.category;
-            if (data.tieMsg) {
-                winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-                winnerEl.innerText = data.tieMsg;
-            }
-            qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
-            
-            let nomSpeechKey = "nom_cat_" + data.speechTick;
-            if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
-                lastSpokenKey = nomSpeechKey;
-                setBgMusicActive(false);
-                speakPolishText(`Kategoria... ${data.category}. ... ${data.controller} wybiera, kto odpowie.`, () => {
-                    setBgMusicActive(true);
-                });
-            }
-        } else {
-            qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
-        }
-        
-    } else if (data.status === "speaking") {
-        isSuspense = false;
-        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-        timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        setBgMusicActive(false);
+const tiedList = data.r5TiedBidders || [];
+const tiePrefix = tiedList.length > 1 ? `🔥 DOGRYWKA (${tiedList.join(", ").toUpperCase()})! ` : "";
 
-        if ((data.round === 4 || data.round === 5) && data.category) {
-            catEl.style.display = "block";
-            catEl.innerText = "KATEGORIA: " + data.category;
-        }
-        qEl.innerText = data.question;
-        winnerEl.style.display = "block";
-        winnerEl.style.color = "var(--cyan)";
-        winnerEl.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
+if (data.r5Countdown && data.r5Countdown > 0) {
+callEl.style.color = "#ff4757";
+let leaderTxt = topBidders.length > 1 ? `REMIS PO ${maxBidVal} PKT` : `PROWADZI ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`;
+callEl.innerText = `${tiePrefix}⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r5Countdown}s) - ${leaderTxt}`;
+if (data.r5Countdown === 5 && lastR5CountdownSpoken !== data.bidTick) {
+lastR5CountdownSpoken = data.bidTick;
+speakPolishText("Czy ktoś jeszcze licytuje?");
+}
+} else if (data.r5MainSec && data.r5MainSec > 0) {
+callEl.style.color = "#2ed573";
+let leaderTxt = maxBidVal === 5 ? "STAWKA WEJŚCIOWA: PO 5 PKT" : (topBidders.length > 1 ? `REMIS: ${topBidders.join(" i ").toUpperCase()} (${maxBidVal} PKT)` : `PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`);
+callEl.innerText = `${tiePrefix}⏱️ CZAS NA LICYTACJĘ: ${data.r5MainSec}s | ${leaderTxt}`;
+} else {
+callEl.style.color = "var(--gold)";
+callEl.innerText = `${tiePrefix}🔥 PODBIJAJCIE STAWKĘ NA TELEFONACH!`;
+}
+}
+return;
+}
 
-        let spKey = "q_speak_" + data.speechTick;
-        if (lastSpokenKey !== spKey) {
-            lastSpokenKey = spKey;
-            speakPolishText(data.question, async () => {
-                await updateDoc(doc(db, "quizGame", "state"), {
-                    status: "reading", tick: Date.now()
-                });
-            });
-        }
+qEl.style.fontSize = "2.2vw";
 
-    } else if (data.status === "wheel_reading") {
-        isSuspense = false;
-        suspenseSound.pause(); suspenseSound.currentTime = 0;
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
+isSuspense = false;
+clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
 
-        qEl.style.display = "none";
-        wheelBoard.style.display = "flex";
-        wheelCat.style.display = "block";
-        wheelCat.innerText = "KATEGORIA: " + data.category;
-        wheelWinnersEl.style.display = "flex";
+setBgMusicActive(true);
 
-        let wSpeechKey = "wheel_cat_" + data.speechTick;
-        if (data.speechTick && lastSpokenKey !== wSpeechKey) {
-            lastSpokenKey = wSpeechKey;
-            speakPolishText(`Kategoria... ${data.category}`);
-        }
+if (data.status === "setup_nomination" || data.status === "nominating") {
+catEl.style.display = "block";
+catEl.innerText = "KATEGORIA: " + data.category;
+if (data.tieMsg) {
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = data.tieMsg;
+}
+qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
 
-        const winners = data.wheelWinners || [];
-        const ptsMap = [20, 15, 10, 5];
-        const medals = ["🥇", "🥈", "🥉", "🏅"];
-        wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+let nomSpeechKey = "nom_cat_" + data.speechTick;
+if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
+lastSpokenKey = nomSpeechKey;
+setBgMusicActive(false);
+speakPolishText(`Kategoria ${data.category}. ${data.controller} wybiera, kto odpowie.`, () => {
+setBgMusicActive(true);
+});
+}
+} else {
+qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
+}
 
-        if (winners.length > lastWheelWinnersCount) {
-            lastWheelWinnersCount = winners.length;
-            winSound.currentTime = 0;
-            winSound.play().catch(()=>{});
-        }
+} else if (data.status === "speaking") {
+isSuspense = false;
+clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+setBgMusicActive(false);
 
-        if (data.tick !== currentTick) {
-            currentTick = data.tick;
-            lastWheelWinnersCount = winners.length;
-            clearInterval(timerInterval);
-            clearInterval(wheelRevealInterval);
-            tickSound.pause(); tickSound.currentTime = 0;
-            setBgMusicActive(true);
+if ((data.round === 4 || data.round === 5) && data.category) {
+catEl.style.display = "block";
+catEl.innerText = "KATEGORIA: " + data.category;
+}
+qEl.innerText = data.question;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
 
-            let totalLetters = (data.wheelOrder || []).length;
-            revealedWheelCount = 0;
-            renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+let spKey = "q_speak_" + data.speechTick;
+if (lastSpokenKey !== spKey) {
+lastSpokenKey = spKey;
+speakPolishText(data.question, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "reading", tick: Date.now()
+});
+});
+}
 
-            let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
-            wheelRevealInterval = setInterval(() => {
-                if (revealedWheelCount < totalLetters) {
-                    revealedWheelCount++;
-                    renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
-                }
-            }, intervalMs);
+} else if (data.status === "wheel_reading") {
+isSuspense = false;
+suspenseSound.pause(); suspenseSound.currentTime = 0;
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-            let timeLeft = 60;
-            timerEl.style.display = 'flex';
-            timerEl.classList.remove('timer-alert');
-            timerEl.innerText = timeLeft;
+qEl.style.display = "none";
+wheelBoard.style.display = "flex";
+wheelCat.style.display = "block";
+wheelCat.innerText = "KATEGORIA: " + data.category;
+wheelWinnersEl.style.display = "flex";
 
-            timerInterval = setInterval(async () => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    clearInterval(wheelRevealInterval);
-                    tickSound.pause(); tickSound.currentTime = 0;
-                    setBgMusicActive(false);
-                    timerEl.innerText = "0";
-                    await updateDoc(doc(db, "quizGame", "state"), { status: "wheel_results", answerTick: Date.now() });
-                } else {
-                    timerEl.innerText = timeLeft;
-                    if (timeLeft <= 5) {
-                        timerEl.classList.add('timer-alert');
-                        setBgMusicActive(false);
-                        tickSound.play().catch(()=>{});
-                    }
-                }
-            }, 1000);
-        } else {
-            renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
-        }
+let wSpeechKey = "wheel_cat_" + data.speechTick;
+if (data.speechTick && lastSpokenKey !== wSpeechKey) {
+lastSpokenKey = wSpeechKey;
+speakPolishText(`Kategoria ${data.category}`);
+}
 
-    } else if (data.status === "wheel_results") {
-        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-        timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
-        setBgMusicActive(false);
+const winners = data.wheelWinners || [];
+const ptsMap = [20, 15, 10, 5];
+const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
 
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+if (winners.length > lastWheelWinnersCount) {
+lastWheelWinnersCount = winners.length;
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+}
 
-        qEl.style.display = "none";
-        wheelBoard.style.display = "flex";
-        wheelCat.style.display = "block";
-        wheelCat.innerText = "KATEGORIA: " + data.category;
-        wheelWinnersEl.style.display = "flex";
+if (data.tick !== currentTick) {
+currentTick = data.tick;
+lastWheelWinnersCount = winners.length;
+clearInterval(timerInterval);
+clearInterval(wheelRevealInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(true);
 
-        renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
+let totalLetters = (data.wheelOrder || []).length;
+revealedWheelCount = 0;
+renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
 
-        const winners = data.wheelWinners || [];
-        const ptsMap = [20, 15, 10, 5];
-        const medals = ["🥇", "🥈", "🥉", "🏅"];
-        wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+wheelRevealInterval = setInterval(() => {
+if (revealedWheelCount < totalLetters) {
+revealedWheelCount++;
+renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+}
+}, intervalMs);
 
-        stage.classList.add("success-glow");
-        winnerEl.style.display = "block";
-        winnerEl.style.color = "var(--gold)";
-        winnerEl.innerText = winners.length === 4 ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
-        if (lastPlayedResult !== "wheel_end_" + data.answerTick) {
-            winSound.play().catch(()=>{});
-            lastPlayedResult = "wheel_end_" + data.answerTick;
-        }
+let timeLeft = 60;
+timerEl.style.display = 'flex';
+timerEl.classList.remove('timer-alert');
+timerEl.innerText = timeLeft;
 
-    } else if (data.status === "reading") {
-        isSuspense = false;
-        clearInterval(wheelRevealInterval);
-        suspenseSound.pause(); suspenseSound.currentTime = 0;
-        
-        setBgMusicActive(true);
-        
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+timerInterval = setInterval(async () => {
+timeLeft--;
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+clearInterval(wheelRevealInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+timerEl.innerText = "0";
+await updateDoc(doc(db, "quizGame", "state"), { status: "wheel_results", answerTick: Date.now() });
+} else {
+timerEl.innerText = timeLeft;
+if (timeLeft <= 5) {
+timerEl.classList.add('timer-alert');
+setBgMusicActive(false);
+tickSound.play().catch(()=>{});
+}
+}
+}, 1000);
+} else {
+renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
+}
 
-        qEl.innerText = data.question;
-        
-        if ((data.round === 1 || data.round === 4 || data.round === 5) && data.options) {
-            for(let i=0; i<4; i++) {
-                let optEl = document.getElementById(`opt-${i}`);
-                optEl.innerText = `${letters[i]}: ${data.options[i]}`;
-                optEl.classList.remove('used-wrong');
-                if (data.usedOptions && data.usedOptions.includes(i)) {
-                    optEl.classList.add('used-wrong');
-                }
-            }
-            opts.style.display = "grid";
-        }
+} else if (data.status === "wheel_results") {
+clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
 
-        if (data.round === 1) {
-            let ansCount = Object.keys(data.r1Answers || {}).length;
-            winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-            winnerEl.innerText = `ODPOWIEDZIAŁO: ${ansCount} / 4 GRACZY`;
-        } else if (data.round === 3) {
-            wheelWinnersEl.style.display = "flex";
-            const winners = data.r3Winners || [];
-            const ptsMap = [15, 12, 10, 8];
-            const medals = ["🥇", "🥈", "🥉", "🏅"];
-            wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
-            if (winners.length > lastR3WinnersCount) {
-                lastR3WinnersCount = winners.length;
-                winSound.currentTime = 0;
-                winSound.play().catch(()=>{});
-            }
-        } else if (data.round === 4) {
-            winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-            if (data.nominated) {
-                let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
-                winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} [${stawkTxt}]`;
-            } else {
-                winnerEl.innerText = `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
-            }
-        } else if (data.round === 5) {
-            winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
-            winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} | GRA O PULĘ: ${data.r5Pot} PKT!`;
-        }
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-        if (data.tick !== currentTick) {
-            currentTick = data.tick;
-            lastR3WinnersCount = (data.r3Winners || []).length;
-            clearInterval(timerInterval);
-            tickSound.pause(); tickSound.currentTime = 0;
-            // NOWE CZASY: 20 sekund w R3 (pisanie), 12 sekund we wszystkich pozostałych rundach!
-            let timeLeft = data.round === 3 ? 20 : 12;
-            timerEl.style.display = 'flex';
-            timerEl.classList.remove('timer-alert');
-            timerEl.innerText = timeLeft;
-            
-            timerInterval = setInterval(async () => {
-                timeLeft--;
-                if (timeLeft <= 0) {
-                    clearInterval(timerInterval);
-                    tickSound.pause(); tickSound.currentTime = 0;
-                    setBgMusicActive(false);
-                    timerEl.innerText = "0";
-                    if (data.round === 1) {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "r1_results", answerTick: Date.now() });
-                    } else if (data.round === 3) {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "r3_results", answerTick: Date.now() });
-                    } else if ((data.round === 4 || data.round === 5) && data.nominated) {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
-                    } else {
-                        await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
-                    }
-                } else {
-                    timerEl.innerText = timeLeft;
-                    if (timeLeft <= 3) {
-                        timerEl.classList.add('timer-alert');
-                        setBgMusicActive(false);
-                        tickSound.play().catch(()=>{});
-                    }
-                }
-            }, 1000);
-        }
+qEl.style.display = "none";
+wheelBoard.style.display = "flex";
+wheelCat.style.display = "block";
+wheelCat.innerText = "KATEGORIA: " + data.category;
+wheelWinnersEl.style.display = "flex";
 
-    } else if (data.status === "r1_results") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
-        setBgMusicActive(false);
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
 
-        qEl.innerText = data.question;
-        correctBanner.style.display = "block";
-        correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+const winners = data.wheelWinners || [];
+const ptsMap = [20, 15, 10, 5];
+const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
 
-        wheelWinnersEl.style.display = "flex";
-        const winners = data.r1Winners || [];
-        const answers = data.r1Answers || {};
-        const ptsMap = [15, 12, 10, 8];
-        const medals = ["🥇", "🥈", "🥉", "🏅"];
+stage.classList.add("success-glow");
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = winners.length === 4 ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
+if (lastPlayedResult !== "wheel_end_" + data.answerTick) {
+winSound.play().catch(()=>{});
+lastPlayedResult = "wheel_end_" + data.answerTick;
+}
 
-        let badgesHtml = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
-        Object.keys(answers).forEach(p => {
-            if (!answers[p].isCorrect) {
-                badgesHtml += `<div class="wheel-badge wrong-badge">❌ ${p.toUpperCase()} (0 PKT)</div>`;
-            }
-        });
-        wheelWinnersEl.innerHTML = badgesHtml || `<div class="wheel-badge wrong-badge">NIKT NIE ZDOBYŁ PUNKTÓW!</div>`;
+} else if (data.status === "reading") {
+isSuspense = false;
+clearInterval(wheelRevealInterval);
+suspenseSound.pause(); suspenseSound.currentTime = 0;
 
-        stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
-        if (lastPlayedResult !== "r1_end_" + data.answerTick) {
-            if (winners.length > 0) winSound.play().catch(()=>{});
-            else loseSound.play().catch(()=>{});
-            lastPlayedResult = "r1_end_" + data.answerTick;
-        }
+setBgMusicActive(true);
 
-    } else if (data.status === "r3_results") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
-        setBgMusicActive(false);
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-        qEl.innerText = data.question;
-        correctBanner.style.display = "block";
-        correctVal.innerText = data.correctText;
+qEl.innerText = data.question;
 
-        wheelWinnersEl.style.display = "flex";
-        const winners = data.r3Winners || [];
-        const ptsMap = [15, 12, 10, 8];
-        const medals = ["🥇", "🥈", "🥉", "🏅"];
-        wheelWinnersEl.innerHTML = winners.length > 0
-            ? winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("")
-            : `<div class="wheel-badge wrong-badge">NIKT NIE WPISAŁ POPRAWNEJ ODPOWIEDZI!</div>`;
+if ((data.round === 1 || data.round === 4 || data.round === 5) && data.options) {
+for(let i=0; i<4; i++) {
+let optEl = document.getElementById(`opt-${i}`);
+optEl.innerText = `${letters[i]}: ${data.options[i]}`;
+optEl.classList.remove('used-wrong');
+if (data.usedOptions && data.usedOptions.includes(i)) {
+optEl.classList.add('used-wrong');
+}
+}
+opts.style.display = "grid";
+}
 
-        stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
-        if (lastPlayedResult !== "r3_end_" + data.answerTick) {
-            if (winners.length > 0) winSound.play().catch(()=>{});
-            else loseSound.play().catch(()=>{});
-            lastPlayedResult = "r3_end_" + data.answerTick;
-        }
+if (data.round === 1) {
+let ansCount = Object.keys(data.r1Answers || {}).length;
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = `ODPOWIEDZIAŁO: ${ansCount} / 4 GRACZY`;
+} else if (data.round === 3) {
+wheelWinnersEl.style.display = "flex";
+const winners = data.r3Winners || [];
+const ptsMap = [15, 12, 10, 8];
+const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+if (winners.length > lastR3WinnersCount) {
+lastR3WinnersCount = winners.length;
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+}
+} else if (data.round === 4) {
+winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
+if (data.nominated) {
+let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
+winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} [${stawkTxt}]`;
+} else {
+winnerEl.innerText = `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
+}
+} else if (data.round === 5) {
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} | GRA O PULĘ: ${data.r5Pot} PKT!`;
+}
 
-    } else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
-        isSuspense = true;
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0;
-        
-        setBgMusicActive(false);
-        suspenseSound.play().catch(()=>{}); 
-        
-        qEl.innerText = data.question;
-        
-        if (data.selectedIndex !== undefined && data.options) {
-            typedAnsEl.style.display = "block";
-            typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
-        }
+if (data.tick !== currentTick) {
+currentTick = data.tick;
+lastR3WinnersCount = (data.r3Winners || []).length;
+clearInterval(timerInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+let timeLeft = data.round === 3 ? 20 : 12;
+timerEl.style.display = 'flex';
+timerEl.classList.remove('timer-alert');
+timerEl.innerText = timeLeft;
 
-        winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-        winnerEl.style.animation = "pulse 0.5s infinite";
-        winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
-        
-    } else if (data.status === "results" || data.status === "results_wrong" || data.status === "timeout") {
-        clearInterval(timerInterval); timerEl.style.display = 'none';
-        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-        winnerEl.style.animation = "none";
-        isSuspense = false;
-        
-        setBgMusicActive(false);
-        
-        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-        
-        qEl.innerText = data.question;
-        winnerEl.style.display = "block";
+timerInterval = setInterval(async () => {
+timeLeft--;
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+timerEl.innerText = "0";
+if (data.round === 1) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "r1_results", answerTick: Date.now() });
+} else if (data.round === 3) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "r3_results", answerTick: Date.now() });
+} else if ((data.round === 4 || data.round === 5) && data.nominated) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
+} else {
+await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
+}
+} else {
+timerEl.innerText = timeLeft;
+if (timeLeft <= 3) {
+timerEl.classList.add('timer-alert');
+setBgMusicActive(false);
+tickSound.play().catch(()=>{});
+}
+}
+}, 1000);
+}
 
-        if (data.status === "timeout") {
-            stage.classList.add("error-glow");
-            winnerEl.style.color = "var(--error)";
-            if (data.round === 5) {
-                winnerEl.innerText = `BRAK ODPOWIEDZI! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
-            } else if (data.loser) {
-                winnerEl.innerText = `${data.loser.toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)`;
-            } else {
-                winnerEl.innerText = "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.";
-            }
-            
-            correctBanner.style.display = "block";
-            if (data.options) {
-                correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            }
-            if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
+} else if (data.status === "r1_results") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-        } else if (data.winner) {
-            stage.classList.add("success-glow");
-            statusEl.style.display = "block";
-            winnerEl.style.color = "#00ff00"; 
-            winnerEl.innerText = data.round === 5 
-                ? `${data.winner.toUpperCase()} ZGARNIA CAŁĄ PULĘ!` 
-                : `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-            statusEl.style.color = "#00ff00"; 
-            statusEl.innerText = `+${data.pointsChange} PKT`;
-            
-            correctBanner.style.display = "block";
-            if (data.options) {
-                correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            }
+qEl.innerText = data.question;
+correctBanner.style.display = "block";
+correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
 
-            if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
+wheelWinnersEl.style.display = "flex";
+const winners = data.r1Winners || [];
+const answers = data.r1Answers || {};
+const ptsMap = [15, 12, 10, 8];
+const medals = ["🥇", "🥈", "🥉", "🏅"];
 
-        } else if (data.loser) {
-            stage.classList.add("error-glow");
-            statusEl.style.display = "block";
-            
-            if (data.timeoutPenalty) {
-                typedAnsEl.style.display = "block";
-                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
-            } else if (data.selectedIndex !== undefined && data.options) {
-                typedAnsEl.style.display = "block";
-                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
-            }
+let badgesHtml = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+Object.keys(answers).forEach(p => {
+if (!answers[p].isCorrect) {
+badgesHtml += `<div class="wheel-badge wrong-badge">❌ ${p.toUpperCase()} (0 PKT)</div>`;
+}
+});
+wheelWinnersEl.innerHTML = badgesHtml || `<div class="wheel-badge wrong-badge">NIKT NIE ZDOBYŁ PUNKTÓW!</div>`;
 
-            winnerEl.style.color = "#ff4757"; 
-            winnerEl.innerText = `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
-            statusEl.style.color = "#ff4757"; 
-            if (data.round === 5) {
-                statusEl.innerText = `KUMULACJA! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
-                correctBanner.style.display = "block";
-                if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            } else {
-                statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
-            }
-            
-            if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
-        }
-    }
+stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
+if (lastPlayedResult !== "r1_end_" + data.answerTick) {
+if (winners.length > 0) winSound.play().catch(()=>{});
+else loseSound.play().catch(()=>{});
+lastPlayedResult = "r1_end_" + data.answerTick;
+}
+
+} else if (data.status === "r3_results") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+qEl.innerText = data.question;
+correctBanner.style.display = "block";
+correctVal.innerText = data.correctText;
+
+wheelWinnersEl.style.display = "flex";
+const winners = data.r3Winners || [];
+const ptsMap = [15, 12, 10, 8];
+const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.length > 0
+? winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("")
+: `<div class="wheel-badge wrong-badge">NIKT NIE WPISAŁ POPRAWNEJ ODPOWIEDZI!</div>`;
+
+stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
+if (lastPlayedResult !== "r3_end_" + data.answerTick) {
+if (winners.length > 0) winSound.play().catch(()=>{});
+else loseSound.play().catch(()=>{});
+lastPlayedResult = "r3_end_" + data.answerTick;
+}
+
+} else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
+isSuspense = true;
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+
+setBgMusicActive(false);
+suspenseSound.play().catch(()=>{});
+
+qEl.innerText = data.question;
+
+if (data.selectedIndex !== undefined && data.options) {
+typedAnsEl.style.display = "block";
+typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
+}
+
+winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
+winnerEl.style.animation = "pulse 0.5s infinite";
+winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${data.fastest.toUpperCase()}...`;
+
+} else if (data.status === "results" || data.status === "results_wrong" || data.status === "timeout") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+winnerEl.style.animation = "none";
+isSuspense = false;
+
+setBgMusicActive(false);
+
+for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+qEl.innerText = data.question;
+winnerEl.style.display = "block";
+
+if (data.status === "timeout") {
+stage.classList.add("error-glow");
+winnerEl.style.color = "var(--error)";
+if (data.round === 5) {
+winnerEl.innerText = `BRAK ODPOWIEDZI! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
+} else if (data.loser) {
+winnerEl.innerText = `${data.loser.toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)`;
+} else {
+winnerEl.innerText = "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.";
+}
+
+correctBanner.style.display = "block";
+if (data.options) {
+correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+}
+if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
+
+} else if (data.winner) {
+stage.classList.add("success-glow");
+statusEl.style.display = "block";
+winnerEl.style.color = "#00ff00";
+winnerEl.innerText = data.round === 5
+? `${data.winner.toUpperCase()} ZGARNIA CAŁĄ PULĘ!`
+: `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+statusEl.style.color = "#00ff00";
+statusEl.innerText = `+${data.pointsChange} PKT`;
+
+correctBanner.style.display = "block";
+if (data.options) {
+correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+}
+
+if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
+
+} else if (data.loser) {
+stage.classList.add("error-glow");
+statusEl.style.display = "block";
+
+if (data.timeoutPenalty) {
+typedAnsEl.style.display = "block";
+typedAnsEl.innerHTML = `${data.loser.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
+} else if (data.selectedIndex !== undefined && data.options) {
+typedAnsEl.style.display = "block";
+typedAnsEl.innerHTML = `${data.loser.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
+}
+
+winnerEl.style.color = "#ff4757";
+winnerEl.innerText = `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
+statusEl.style.color = "#ff4757";
+if (data.round === 5) {
+statusEl.innerText = `KUMULACJA! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
+correctBanner.style.display = "block";
+if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+} else {
+statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
+}
+
+if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
+}
+}
 });
 </script>
 </body>
