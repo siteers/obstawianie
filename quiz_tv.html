@@ -79,9 +79,10 @@
     .bids-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8vw; width: 100%; margin-bottom: 0.8vw; }
     .bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw; text-align: center; transition: 0.2s; }
     .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
+    .bid-card.tied-high { border-color: var(--gold); background: rgba(212, 175, 55, 0.22); box-shadow: 0 0 1.5vw rgba(212,175,55,0.6); transform: scale(1.05); }
     .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
     .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
-    .auction-call { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
+    .auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
 
     /* WIELKIE PODIUM FINAŁOWE */
     #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
@@ -206,7 +207,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc, collection } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
@@ -222,10 +223,11 @@ loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- WYBÓR PRZYJEMNEGO DAMSKIEGO GŁOSU LEKTORA PL-PL (SPOKOJNIEJSZE TEMPO 0.88 + PAUZY) ---
+// --- WOLNIEJSZY, SPOKOJNY GŁOS LEKTORA PL-PL (TEMPO 0.78 + BRAK UCINANIA SŁÓW NA KOŃCU!) ---
 let selectedPlVoice = null;
 let lastSpokenKey = "";
 let speechSafetyTimer = null;
+let currentUtterance = null; // Zapobiega usunięciu obiektu przez Garbage Collector w połowie zdania!
 
 function initPolishVoices() {
     if (!('speechSynthesis' in window)) return;
@@ -234,7 +236,6 @@ function initPolishVoices() {
     if (!voices.length) return;
 
     sel.innerHTML = "";
-    // Priorytet dla przyjemnych damskich głosów (Zofia Natural, Maja Online, Agnieszka, Google Polski) - męski Marek niżej
     voices.sort((a, b) => {
         const score = (v) => {
             const n = v.name.toLowerCase();
@@ -259,7 +260,7 @@ function initPolishVoices() {
     selectedPlVoice = voices[0];
     sel.onchange = () => {
         selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
-        speakPolishText("Cześć! Teraz ja będę czytać pytania.");
+        speakPolishText("Cześć! Teraz ja będę spokojnie czytać pytania.");
     };
 }
 if ('speechSynthesis' in window) {
@@ -270,7 +271,7 @@ if ('speechSynthesis' in window) {
 function speakPolishText(textToRead, onDoneCallback) {
     clearTimeout(speechSafetyTimer);
     if (!('speechSynthesis' in window)) {
-        if (onDoneCallback) setTimeout(onDoneCallback, 2500);
+        if (onDoneCallback) setTimeout(onDoneCallback, 3000);
         return;
     }
     window.speechSynthesis.cancel();
@@ -278,35 +279,37 @@ function speakPolishText(textToRead, onDoneCallback) {
     let cleanText = textToRead
         .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
         .replace(/:\s*$/, "")
-        .replace(/:/g, "... ") // Dłuższa, wyraźna pauza po słowie "Kategoria"
+        .replace(/:/g, ". ... ") // Długa, wyraźna pauza po dwukropku
+        .replace(/\bpkt\b/gi, "punktów")
         .replace(/\bx\b/gi, " razy ")
         .replace(/\+/g, " dodać ")
         .replace(/ - /g, " odjąć ")
         .replace(/=/g, " równa się ")
-        .replace(/\?/g, ".");
+        .replace(/\?/g, ".") + " ."; // Kropka ze spacją na końcu gwarantuje doczytanie ostatniego słowa do końca!
 
-    const utter = new SpeechSynthesisUtterance(cleanText);
-    utter.lang = "pl-PL";
-    if (selectedPlVoice) utter.voice = selectedPlVoice;
-    utter.rate = 0.88;  // Spokojniejsze, wyraźne tempo (nie za szybkie, nie za wolne)
-    utter.pitch = 1.08; // Łagodny, ciepły damski ton
+    currentUtterance = new SpeechSynthesisUtterance(cleanText);
+    currentUtterance.lang = "pl-PL";
+    if (selectedPlVoice) currentUtterance.voice = selectedPlVoice;
+    currentUtterance.rate = 0.78;  // Wyraźnie wolniejsze, spokojne tempo czytania
+    currentUtterance.pitch = 1.05;
 
     let finished = false;
     const finishOnce = () => {
         if (finished) return;
         finished = true;
         clearTimeout(speechSafetyTimer);
-        // Dodatkowe 650ms oddechu po zakończeniu mówienia zanim wyskoczą odpowiedzi!
-        if (onDoneCallback) setTimeout(onDoneCallback, 650);
+        // Pełne 1.4 sekundy spokojnej przerwy po ostatnim słowie lektora!
+        if (onDoneCallback) setTimeout(onDoneCallback, 1400);
     };
 
-    utter.onend = finishOnce;
-    utter.onerror = finishOnce;
+    currentUtterance.onend = finishOnce;
+    currentUtterance.onerror = finishOnce;
 
-    const estMs = Math.max(3200, Math.min(10000, cleanText.length * 105 + 1400));
+    // Długi bufor bezpieczeństwa (do 16 sekund), żeby nigdy nie ucięło końcówki zdania
+    const estMs = Math.max(5500, Math.min(16000, cleanText.length * 145 + 2500));
     speechSafetyTimer = setTimeout(finishOnce, estMs);
 
-    window.speechSynthesis.speak(utter);
+    window.speechSynthesis.speak(currentUtterance);
 }
 
 // --- RYSOWANIE KOŁA FORTUNY DO RUNDY 5 ---
@@ -315,6 +318,7 @@ const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e2
 let currentWheelRotation = 0;
 let lastR5SpinHandled = 0;
 let lastR5CountdownSpoken = 0;
+let tvAuctionEngineInterval = null; // Silnik licytacji na TV (obsługuje dogrywki przy remisie i losowanie przy 5 pkt!)
 
 function drawR5Wheel() {
     const canvas = document.getElementById('r5-wheel-canvas');
@@ -662,6 +666,7 @@ let lastR3WinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; 
+let latestGameState = null;
 
 window.onload = () => {
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -736,6 +741,116 @@ function renderPodium() {
     });
 }
 
+// --- AUTONOMICZNY STRAŻNIK LICYTACJI NA TV (Losowanie przy 5 pkt + Dogrywki przy remisie!) ---
+function startTvAuctionSupervisor() {
+    if (tvAuctionEngineInterval) return;
+    tvAuctionEngineInterval = setInterval(async () => {
+        if (!latestGameState || latestGameState.round !== 5 || latestGameState.status !== "r5_bidding") {
+            clearInterval(tvAuctionEngineInterval);
+            tvAuctionEngineInterval = null;
+            return;
+        }
+
+        const now = Date.now();
+        // Jeśli admin nie podał auctionStartTime, tworzymy go od momentu wejścia w licytację (5s na lektora + 12s licytacji)
+        if (!latestGameState.auctionStartTime) {
+            await updateDoc(doc(db, "quizGame", "state"), {
+                auctionStartTime: now + 4500,
+                bidTick: now + 4500,
+                r5MainSec: 12,
+                r5Countdown: 0
+            });
+            return;
+        }
+
+        const startT = latestGameState.auctionStartTime;
+        const mainEndT = startT + 12000; // 12 sekund spokojnej licytacji podstawowej
+        const effectiveCloseT = Math.max(mainEndT + 5000, (latestGameState.bidTick || startT) + 7500);
+        const remTotalMs = effectiveCloseT - now;
+
+        // Gdy czas licytacji dobiega końca (lub admin przedwcześnie ustawił r5_sold przy remisie), sprawdzamy wynik!
+        if (remTotalMs <= 600) {
+            clearInterval(tvAuctionEngineInterval);
+            tvAuctionEngineInterval = null;
+
+            const bids = latestGameState.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+            const allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
+            let maxBid = Math.max(...allPlayers.map(p => bids[p] || 5));
+            let topBidders = allPlayers.filter(p => (bids[p] || 5) === maxBid);
+
+            // PRZYPADEK 1: Nikt nie licytował (wszyscy dali tylko wejściowe 5 pkt) -> LOSOWANIE!
+            if (maxBid === 5) {
+                const randomWinner = allPlayers[Math.floor(Math.random() * allPlayers.length)];
+                for (let p of allPlayers) {
+                    let ref = doc(db, "quizScores", p);
+                    let snap = await getDoc(ref);
+                    let cur = snap.exists() ? snap.data().points : 0;
+                    await setDoc(ref, { points: cur - 5 }, { merge: true });
+                }
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "r5_sold",
+                    r5HighestBidder: randomWinner,
+                    r5HighestBid: 5,
+                    nominated: randomWinner,
+                    r5RandomDrawn: true,
+                    r5TiedBidders: [],
+                    r5MainSec: 0,
+                    r5Countdown: 0,
+                    speechTick: Date.now()
+                });
+                setTimeout(async () => {
+                    const checkSnap = await getDoc(doc(db, "quizGame", "state"));
+                    if (checkSnap.exists() && checkSnap.data().status === "r5_sold") {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", speechTick: Date.now() });
+                    }
+                }, 8000);
+                return;
+            }
+
+            // PRZYPADEK 2: REMIS NA NAJWYŻSZEJ STAWCE (> 5 pkt) -> DOGRYWKA 12 SEKUND TYLKO DLA REMISUJĄCYCH!
+            if (topBidders.length > 1) {
+                const newStart = Date.now() + 4000;
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "r5_bidding",
+                    r5TiedBidders: topBidders,
+                    auctionStartTime: newStart,
+                    bidTick: newStart,
+                    r5MainSec: 12,
+                    r5Countdown: 0,
+                    tieBreakTick: Date.now()
+                });
+                return;
+            }
+
+            // PRZYPADEK 3: Mamy jednego zwycięzcę licytacji!
+            const winner = topBidders[0];
+            for (let p of allPlayers) {
+                let ref = doc(db, "quizScores", p);
+                let snap = await getDoc(ref);
+                let cur = snap.exists() ? snap.data().points : 0;
+                await setDoc(ref, { points: cur - (bids[p] || 5) }, { merge: true });
+            }
+            await updateDoc(doc(db, "quizGame", "state"), {
+                status: "r5_sold",
+                r5HighestBidder: winner,
+                r5HighestBid: maxBid,
+                nominated: winner,
+                r5RandomDrawn: false,
+                r5TiedBidders: [],
+                r5MainSec: 0,
+                r5Countdown: 0,
+                speechTick: Date.now()
+            });
+            setTimeout(async () => {
+                const checkSnap = await getDoc(doc(db, "quizGame", "state"));
+                if (checkSnap.exists() && checkSnap.data().status === "r5_sold") {
+                    await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", speechTick: Date.now() });
+                }
+            }, 8000);
+        }
+    }, 250);
+}
+
 onSnapshot(collection(db, "quizScores"), (snap) => {
     snap.forEach(doc => { 
         pendingScores[doc.id] = doc.data().points; 
@@ -749,9 +864,12 @@ onSnapshot(collection(db, "quizScores"), (snap) => {
     }
 });
 
+let lastTieBreakSpoken = 0;
+
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     if (!docSnap.exists()) return;
     const data = docSnap.data();
+    latestGameState = data;
     
     let roundNames = {
         1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
@@ -857,7 +975,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         return;
     }
 
-    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" (12 SEKUND LICYTACJI + 5 SEKUND DOGRYWKI) ---
+    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" ---
     if (data.status === "r5_bidding" || data.status === "r5_sold") {
         clearInterval(timerInterval); timerEl.style.display = 'none';
         qEl.style.display = "none";
@@ -865,17 +983,26 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
         r5AuctionBox.style.display = "flex";
 
+        if (data.status === "r5_bidding") {
+            startTvAuctionSupervisor();
+        }
+
         document.getElementById('r5-pot-label').innerText = data.carryOver > 0 
             ? `PULA DO WYGRANIA (W TYM KUMULACJA ${data.carryOver} PKT!)` 
             : `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
         document.getElementById('r5-pot-val').innerText = `${data.r5Pot || 20} PKT`;
 
         const bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-        ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
+        const maxBidVal = Math.max(...players.map(p => bids[p] || 5));
+        const topBidders = players.filter(p => (bids[p] || 5) === maxBidVal);
+
+        players.forEach(p => {
             document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
             const card = document.getElementById(`bid-card-${p}`);
-            if (data.r5HighestBidder === p) card.classList.add('highest');
-            else card.classList.remove('highest');
+            card.classList.remove('highest', 'tied-high');
+            if (maxBidVal > 5 && topBidders.includes(p)) {
+                card.classList.add(topBidders.length > 1 ? 'tied-high' : 'highest');
+            }
         });
 
         const callEl = document.getElementById('r5-auction-call');
@@ -883,13 +1010,19 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             setBgMusicActive(false);
             stage.classList.add("success-glow");
             callEl.style.color = "#00ff00";
-            callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r5HighestBid} PKT ODPOWIADA ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+            if (data.r5RandomDrawn) {
+                callEl.innerText = `🎲 BRAK PRZEBIĆ (PO 5 PKT)! WYLOSOWANO: ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+            } else {
+                callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r5HighestBid} PKT ODPOWIADA ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+            }
             let soldKey = "r5_sold_" + data.speechTick;
             if (lastSpokenKey !== soldKey) {
                 lastSpokenKey = soldKey;
                 winSound.currentTime = 0; winSound.play().catch(()=>{});
-                // Wyraźne przerwy wielokropkiem między częściami zdania
-                speakPolishText(`Sprzedane! ... Za ${data.r5HighestBid} punktów... odpowiada ${data.r5HighestBidder}. ... W puli jest ${data.r5Pot} punktów.`);
+                let spokenMsg = data.r5RandomDrawn
+                    ? `Nikt nie przebił stawki. ... W drodze losowania odpowiada ${data.r5HighestBidder}. ... Pula wynosi ${data.r5Pot} punktów.`
+                    : `Sprzedane! ... Za ${data.r5HighestBid} punktów... odpowiada ${data.r5HighestBidder}. ... Pula wynosi ${data.r5Pot} punktów.`;
+                speakPolishText(spokenMsg);
             }
         } else {
             let aucStartKey = "r5_auc_start_" + data.speechTick;
@@ -898,19 +1031,29 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 speakPolishText(`Wylosowana kategoria to... ${data.category}. ... Rozpoczynamy licytację!`);
             }
 
+            if (data.tieBreakTick && lastTieBreakSpoken !== data.tieBreakTick) {
+                lastTieBreakSpoken = data.tieBreakTick;
+                speakPolishText(`Mamy remis w licytacji! ... Dogrywka tylko dla remisujących graczy!`);
+            }
+
+            const tiedList = data.r5TiedBidders || [];
+            const tiePrefix = tiedList.length > 1 ? `🔥 DOGRYWKA (${tiedList.join(", ").toUpperCase()})! ` : "";
+
             if (data.r5Countdown && data.r5Countdown > 0) {
                 callEl.style.color = "#ff4757";
-                callEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r5Countdown}s) - PROWADZI ${data.r5HighestBidder.toUpperCase()}`;
+                let leaderTxt = topBidders.length > 1 ? `REMIS PO ${maxBidVal} PKT` : `PROWADZI ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`;
+                callEl.innerText = `${tiePrefix}⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r5Countdown}s) - ${leaderTxt}`;
                 if (data.r5Countdown === 5 && lastR5CountdownSpoken !== data.bidTick) {
                     lastR5CountdownSpoken = data.bidTick;
                     speakPolishText("Czy ktoś jeszcze licytuje?");
                 }
             } else if (data.r5MainSec && data.r5MainSec > 0) {
                 callEl.style.color = "#2ed573";
-                callEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${data.r5MainSec}s | PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT)`;
+                let leaderTxt = maxBidVal === 5 ? "STAWKA WEJŚCIOWA: PO 5 PKT" : (topBidders.length > 1 ? `REMIS: ${topBidders.join(" i ").toUpperCase()} (${maxBidVal} PKT)` : `PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${maxBidVal} PKT)`);
+                callEl.innerText = `${tiePrefix}⏱️ CZAS NA LICYTACJĘ: ${data.r5MainSec}s | ${leaderTxt}`;
             } else {
                 callEl.style.color = "var(--gold)";
-                callEl.innerText = `🔥 PRZEBICIE! PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT)`;
+                callEl.innerText = `${tiePrefix}🔥 PODBIJAJCIE STAWKĘ NA TELEFONACH!`;
             }
         }
         return;
