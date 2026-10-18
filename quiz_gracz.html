@@ -19,17 +19,22 @@
     #gamePad { display: none; width: 94%; max-width: 420px; }
     .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
     
-    /* KAFELKI ABCD Z PEŁNĄ TREŚCIĄ ODPOWIEDZI */
+    /* KOLOROWE KAFELKI ABCD ZGODNE Z EKRANEM TV */
     .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
     .btn-abcd { 
-      background: #111; border: 2px solid var(--cyan); color: #fff; border-radius: 15px; 
-      padding: 18px 10px; cursor: pointer; transition: 0.15s; display: flex; flex-direction: column; 
-      align-items: center; justify-content: center; min-height: 95px; word-break: break-word;
+      color: #fff; border-radius: 16px; padding: 18px 10px; cursor: pointer; transition: 0.15s; 
+      display: flex; flex-direction: column; align-items: center; justify-content: center; 
+      min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
     }
-    .btn-abcd .opt-letter { font-size: 24px; font-weight: 900; color: var(--gold); margin-bottom: 6px; }
+    .btn-color-0 { background: rgba(241, 196, 15, 0.28); border: 3px solid #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+    .btn-color-1 { background: rgba(0, 212, 255, 0.28); border: 3px solid #00d4ff; box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+    .btn-color-2 { background: rgba(46, 213, 115, 0.28); border: 3px solid #2ed573; box-shadow: 0 0 15px rgba(46, 213, 115, 0.3); }
+    .btn-color-3 { background: rgba(255, 71, 87, 0.28); border: 3px solid #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.3); }
+
+    .btn-abcd .opt-letter { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
     .btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
-    .btn-abcd:active { background: var(--cyan); color: #000; transform: scale(0.95); }
-    .btn-abcd:disabled { opacity: 0.2; border-color: #ff4757; color: #ff4757; text-decoration: line-through; pointer-events: none; }
+    .btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
+    .btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
     
     /* KAFELKI KOŁA FORTUNY NA TELEFONIE (RUNDA 2) */
     .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
@@ -47,7 +52,7 @@
     .wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
 
     /* RUNDA 3: SZYBKIE PISANIE */
-    .input-area { display: none; flex-direction: column; gap: 12px; }
+    .input-area { display: none; flex-direction: column; gap: 10px; }
     input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
     .btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
     .btn-submit:active { transform: scale(0.97); }
@@ -57,8 +62,9 @@
     .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
     .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
     
-    .locked-msg { font-size: 20px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+    .locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
     .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
+    .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
     .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
   </style>
 </head>
@@ -77,18 +83,18 @@
   <div id="gamePad">
     <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
     
-    <!-- RUNDA 1 i 4: ABCD -->
+    <!-- RUNDA 1 i 4: KOLOROWE KAFELKI ABCD -->
     <div class="grid-abcd" id="ui-abcd">
-      <button class="btn-abcd" id="pad-btn-0" onclick="sendAnswer(0)">
+      <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
         <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
       </button>
-      <button class="btn-abcd" id="pad-btn-1" onclick="sendAnswer(1)">
+      <button class="btn-abcd btn-color-1" id="pad-btn-1" onclick="sendAnswer(1)">
         <span class="opt-letter">B</span><span class="opt-label" id="pad-lbl-1"></span>
       </button>
-      <button class="btn-abcd" id="pad-btn-2" onclick="sendAnswer(2)">
+      <button class="btn-abcd btn-color-2" id="pad-btn-2" onclick="sendAnswer(2)">
         <span class="opt-letter">C</span><span class="opt-label" id="pad-lbl-2"></span>
       </button>
-      <button class="btn-abcd" id="pad-btn-3" onclick="sendAnswer(3)">
+      <button class="btn-abcd btn-color-3" id="pad-btn-3" onclick="sendAnswer(3)">
         <span class="opt-letter">D</span><span class="opt-label" id="pad-lbl-3"></span>
       </button>
     </div>
@@ -104,7 +110,8 @@
     <!-- RUNDA 3: SZYBKIE PISANIE -->
     <div class="input-area" id="ui-input">
       <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
-      <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ</button>
+      <div class="feedback-msg" id="r3Feedback"></div>
+      <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
     </div>
     
     <!-- RUNDA 4: WYBIERANIE -->
@@ -306,7 +313,7 @@ function updatePadUI() {
     document.getElementById('ui-nominate').style.display = 'none';
     const lockedEl = document.getElementById('ui-locked');
     lockedEl.style.display = 'none';
-    lockedEl.classList.remove('win-msg');
+    lockedEl.classList.remove('win-msg', 'speak-msg');
     document.body.classList.remove('keyboard-mode');
 
     if (currentState && currentState.status === "podium") {
@@ -317,12 +324,27 @@ function updatePadUI() {
         lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
         return;
     }
+
+    // FAZA LEKTORA: Dopóki lektor czyta pytanie na TV, odpowiedzi są ukryte
+    if (currentState && currentState.status === "speaking") {
+        if (currentState.round === 3 && currentState.question !== lastR3Question) {
+            lastR3Question = currentState.question;
+            document.getElementById('typeAnswer').value = "";
+            document.getElementById('r3Feedback').innerText = "";
+        }
+        document.getElementById('padStatus').innerText = "🗣️ SŁUCHAJ LEKTORA NA TV!";
+        lockedEl.classList.add('speak-msg');
+        lockedEl.style.display = 'block';
+        lockedEl.innerText = "LEKTOR CZYTA PYTANIE...\nZA CHWILĘ ODBLOKUJĄ SIĘ ODPOWIEDZI!";
+        return;
+    }
     
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results") {
+    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
         clearInterval(padWheelInterval);
         document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
-        if (currentState && (currentState.status === "results" || currentState.status === "timeout")) {
+        if (currentState && (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results")) {
             document.getElementById('typeAnswer').value = "";
+            document.getElementById('r3Feedback').innerText = "";
             lastR3Question = null;
         }
         return;
@@ -410,30 +432,66 @@ function updatePadUI() {
         if (currentState.round === 3 && currentState.question !== lastR3Question) {
             lastR3Question = currentState.question;
             document.getElementById('typeAnswer').value = "";
+            document.getElementById('r3Feedback').innerText = "";
         }
 
-        if (currentState.blocked && currentState.blocked.includes(myName)) {
-            document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
-            lockedEl.style.display = 'block';
-            lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
+        // RUNDA 1: Wyścig dla każdego (15/12/10/8 pkt, błąd = 0 pkt)
+        if (currentState.round === 1) {
+            const myAns = (currentState.r1Answers || {})[myName];
+            if (myAns) {
+                document.getElementById('padStatus').innerText = "ODPOWIEDŹ ZAPISANA!";
+                if (myAns.pts > 0) lockedEl.classList.add('win-msg');
+                lockedEl.style.display = 'block';
+                lockedEl.innerText = myAns.pts > 0 
+                    ? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.` 
+                    : `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
+                return;
+            }
+            for(let i=0; i<4; i++) {
+                let btn = document.getElementById(`pad-btn-${i}`);
+                let lbl = document.getElementById(`pad-lbl-${i}`);
+                btn.disabled = false;
+                lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
+            }
+            document.getElementById('padStatus').innerText = "WYBIERZ ODPOWIEDŹ (15 / 12 / 10 / 8 PKT):";
+            document.getElementById('ui-abcd').style.display = 'grid';
             return;
         }
 
-        for(let i=0; i<4; i++) {
-            let btn = document.getElementById(`pad-btn-${i}`);
-            let lbl = document.getElementById(`pad-lbl-${i}`);
-            btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
-            lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
+        // RUNDA 3: Szybkie pisanie dla każdego (15/12/10/8 pkt)
+        if (currentState.round === 3) {
+            const winners = currentState.r3Winners || [];
+            const myRank = winners.indexOf(myName);
+            const ptsMap = [15, 12, 10, 8];
+            if (myRank !== -1) {
+                document.getElementById('padStatus').innerText = "BRAWO! ODPOWIEDŹ ZALICZONA!";
+                lockedEl.classList.add('win-msg');
+                lockedEl.style.display = 'block';
+                lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)!\nCZEKAJ NA POZOSTAŁYCH.`;
+                return;
+            }
+            document.body.classList.add('keyboard-mode');
+            document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISZ ODPOWIEDŹ:";
+            document.getElementById('ui-input').style.display = 'flex';
+            return;
         }
 
-        if (currentState.round === 1) {
-            document.getElementById('padStatus').innerText = "SZYBKO WYBIERZ ODPOWIEDŹ!";
-            document.getElementById('ui-abcd').style.display = 'grid';
-        } else if (currentState.round === 3) {
-            document.body.classList.add('keyboard-mode');
-            document.getElementById('padStatus').innerText = "MASZ 15 SEKUND - WPISUJ!";
-            document.getElementById('ui-input').style.display = 'flex';
-        } else if (currentState.round === 4) {
+        // RUNDA 4: Ryzyko
+        if (currentState.round === 4) {
+            if (currentState.blocked && currentState.blocked.includes(myName)) {
+                document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
+                lockedEl.style.display = 'block';
+                lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
+                return;
+            }
+
+            for(let i=0; i<4; i++) {
+                let btn = document.getElementById(`pad-btn-${i}`);
+                let lbl = document.getElementById(`pad-lbl-${i}`);
+                btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
+                lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
+            }
+
             if (!currentState.nominated || currentState.nominated === myName) {
                 let msg = !currentState.nominated 
                     ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" 
@@ -507,9 +565,38 @@ window.sendAnswer = async (index) => {
     if (currentState.status !== "reading") return;
     const isCorrect = (index === currentState.correctIndex);
     
+    // RUNDA 1: Punktacja 15 / 12 / 10 / 8 pkt dla poprawnych, 0 pkt dla błędnych (bez blokowania pozostałych)
     if (currentState.round === 1) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r1", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-    } else if (currentState.round === 4) {
+        const stateRef = doc(db, "quizGame", "state");
+        const snap = await getDoc(stateRef);
+        const data = snap.data();
+        let answers = data.r1Answers || {};
+        let winners = data.r1Winners || [];
+        if (answers[myName]) return;
+
+        let myPts = 0;
+        if (isCorrect) {
+            const ptsMap = [15, 12, 10, 8];
+            myPts = ptsMap[winners.length] || 8;
+            winners.push(myName);
+
+            const scoreRef = doc(db, "quizScores", myName);
+            const scoreSnap = await getDoc(scoreRef);
+            let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+            await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+        }
+        answers[myName] = { index, isCorrect, pts: myPts };
+
+        if (Object.keys(answers).length >= 4) {
+            await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners, status: "r1_results", answerTick: Date.now() });
+        } else {
+            await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners });
+        }
+        return;
+    }
+
+    // RUNDA 4: Ryzyko
+    if (currentState.round === 4) {
         await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
     }
 };
@@ -519,15 +606,47 @@ window.sendTypedAnswer = async () => {
     const ans = inputEl.value.trim();
     if (!ans) return;
 
+    // RUNDA 3: Automatyczna weryfikacja ze wsparciem synonimów (15 / 12 / 10 / 8 pkt)
     if (currentState.status === "reading" && currentState.round === 3) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "verifying", fastest: myName, givenAnswer: ans });
-        inputEl.value = ""; 
+        const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s));
+        const userNorm = normalizeChar(ans);
+
+        const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
+
+        if (isMatch) {
+            inputEl.value = "";
+            document.getElementById('r3Feedback').innerText = "";
+            const stateRef = doc(db, "quizGame", "state");
+            const snap = await getDoc(stateRef);
+            const data = snap.data();
+            let winners = data.r3Winners || [];
+
+            if (!winners.includes(myName)) {
+                const ptsMap = [15, 12, 10, 8];
+                let myPts = ptsMap[winners.length] || 8;
+                winners.push(myName);
+
+                const scoreRef = doc(db, "quizScores", myName);
+                const scoreSnap = await getDoc(scoreRef);
+                let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+                await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+
+                if (winners.length >= 4) {
+                    await updateDoc(stateRef, { r3Winners: winners, status: "r3_results", answerTick: Date.now() });
+                } else {
+                    await updateDoc(stateRef, { r3Winners: winners });
+                }
+            }
+        } else {
+            document.getElementById('r3Feedback').innerText = "❌ SPRAWDŹ PISOWNIĘ I SPRÓBUJ PONOWNIE!";
+        }
     }
 };
 
 window.nominatePlayer = async (targetPlayer) => {
     if (currentState.status !== "nominating" || currentState.controller !== myName) return;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "reading", nominated: targetPlayer, tieMsg: "", tick: Date.now() });
+    // Po wskazaniu gracza w R4 uruchamiamy najpierw lektora ("speaking")!
+    await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", nominated: targetPlayer, tieMsg: "", speechTick: Date.now() });
 };
 </script>
 </body>
