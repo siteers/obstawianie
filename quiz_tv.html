@@ -7,8 +7,13 @@
     :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
     body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
     
-    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+    #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
+
+    /* Selektor głosu lektora (dyskretnie na dole ekranu) */
+    #voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 300; opacity: 0.35; transition: 0.3s; font-size: 0.9vw; background: rgba(0,0,0,0.7); padding: 0.3vw 0.8vw; border-radius: 0.5vw; }
+    #voice-bar:hover { opacity: 1; }
+    #voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.85vw; padding: 2px 6px; }
 
     #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; background: transparent; }
 
@@ -37,24 +42,24 @@
     .score-corner.blocked .player-name { color: #ffcccc; text-decoration: line-through; }
     .score-corner.blocked .blocked-tag { display: inline-block; }
 
-    .center-stage { width: 48vw; max-width: 48vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2.2vw 2.5vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+    .center-stage { width: 48vw; max-width: 48vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2vw 2.4vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
     .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
     .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
-    .round-title { font-size: 1.2vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.25vw; margin-bottom: 0.8vw; font-weight: bold; }
-    .question-text { font-size: 2.3vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.5vw; color: #fff; }
-    .category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1.2vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
+    .round-title { font-size: 1.15vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.2vw; margin-bottom: 0.6vw; font-weight: bold; }
+    .question-text { font-size: 2.2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.4vw; color: #fff; }
+    .category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
     
-    /* KOLOROWE KAFELKI ODPOWIEDZI ABCD NA TV (IDENTYCZNE JAK NA TELEFONIE) */
+    /* KOLOROWE KAFELKI ODPOWIEDZI ABCD NA TV */
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
-    .option { padding: 1.3vw; font-size: 1.65vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+    .option { padding: 1.2vw; font-size: 1.6vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
     .opt-color-0 { background: rgba(241, 196, 15, 0.22); border: 0.25vw solid #f1c40f; color: #fff; box-shadow: 0 0 1vw rgba(241, 196, 15, 0.3); }
     .opt-color-1 { background: rgba(0, 212, 255, 0.22); border: 0.25vw solid #00d4ff; color: #fff; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.3); }
     .opt-color-2 { background: rgba(46, 213, 115, 0.22); border: 0.25vw solid #2ed573; color: #fff; box-shadow: 0 0 1vw rgba(46, 213, 115, 0.3); }
     .opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
     .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
-    /* TABLICA KOŁA FORTUNY (RUNDA 2) */
+    /* TABLICA KOŁA FORTUNY - HASŁA (RUNDA 2) */
     .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
     .wheel-word { display: flex; gap: 0.4vw; }
     .wheel-letter { width: 3.1vw; height: 4.2vw; background: #111; border: 0.18vw solid #444; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; font-size: 2.2vw; font-weight: 900; color: #fff; transition: 0.3s; }
@@ -62,6 +67,22 @@
     .wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
     .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
     .wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
+
+    /* RUNDA 5: OBROTOWE KOŁO KATEGORII + LICYTACJA "AWANTURA O PUNKTY" */
+    #r5-wheel-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.5vw 0; position: relative; }
+    .wheel-pointer { width: 0; height: 0; border-left: 1.2vw solid transparent; border-right: 1.2vw solid transparent; border-top: 2.2vw solid #fff; filter: drop-shadow(0 0 0.6vw var(--gold)); z-index: 30; margin-bottom: -0.6vw; }
+    #r5-wheel-canvas { width: 21vw; height: 21vw; border-radius: 50%; border: 0.35vw solid var(--gold); box-shadow: 0 0 2.5vw rgba(212,175,55,0.5); transition: transform 4.3s cubic-bezier(0.12, 0.8, 0.18, 1); }
+
+    #r5-auction-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.5vw; }
+    .pot-banner { background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(0,0,0,0.8)); border: 0.25vw solid var(--gold); border-radius: 1.2vw; padding: 0.8vw 2vw; margin-bottom: 1vw; box-shadow: 0 0 2vw rgba(212,175,55,0.4); }
+    .pot-label { font-size: 1.1vw; color: #cbd5e1; letter-spacing: 0.2vw; text-transform: uppercase; font-weight: bold; }
+    .pot-val { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-shadow: 0 0 1.5vw var(--gold); }
+    .bids-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8vw; width: 100%; margin-bottom: 0.8vw; }
+    .bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw; text-align: center; transition: 0.2s; }
+    .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
+    .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
+    .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
+    .auction-call { font-size: 2.2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
 
     /* WIELKIE PODIUM FINAŁOWE */
     #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
@@ -100,6 +121,10 @@
     <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, DŹWIĘK I LEKTORA TV</button>
   </div>
 
+  <div id="voice-bar">
+    🗣️ Głos lektora: <select id="voiceSelect"></select>
+  </div>
+
   <canvas id="fireworks-canvas"></canvas>
 
   <div class="timer-box" id="tv-timer">10</div>
@@ -130,10 +155,31 @@
     <div class="category-text" id="tv-cat">KATEGORIA</div>
     <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
     
-    <!-- KOŁO FORTUNY (Runda 2) -->
+    <!-- KOŁO FORTUNY - HASŁA (Runda 2) -->
     <div class="wheel-board" id="tv-wheel-board"></div>
     <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
     <div class="wheel-winners-list" id="tv-wheel-winners"></div>
+
+    <!-- RUNDA 5: OBROTOWE KOŁO KATEGORII -->
+    <div id="r5-wheel-wrap">
+      <div class="wheel-pointer"></div>
+      <canvas id="r5-wheel-canvas" width="500" height="500"></canvas>
+    </div>
+
+    <!-- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" -->
+    <div id="r5-auction-box">
+      <div class="pot-banner">
+        <div class="pot-label" id="r5-pot-label">AKTUALNA PULA DO WYGRANIA</div>
+        <div class="pot-val" id="r5-pot-val">20 PKT</div>
+      </div>
+      <div class="bids-grid">
+        <div class="bid-card" id="bid-card-Lila"><div class="bid-pname">LILA</div><div class="bid-pval" id="bid-val-Lila">5</div></div>
+        <div class="bid-card" id="bid-card-Kaja"><div class="bid-pname">KAJA</div><div class="bid-pval" id="bid-val-Kaja">5</div></div>
+        <div class="bid-card" id="bid-card-Darek"><div class="bid-pname">DAREK</div><div class="bid-pval" id="bid-val-Darek">5</div></div>
+        <div class="bid-card" id="bid-card-Jas"><div class="bid-pname">JAŚ</div><div class="bid-pval" id="bid-val-Jas">5</div></div>
+      </div>
+      <div class="auction-call" id="r5-auction-call">LICYTACJA TRWA!</div>
+    </div>
 
     <!-- PODIUM FINAŁOWE -->
     <div id="podium-view">
@@ -177,9 +223,49 @@ loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- SYNTEZATOR MOWY (LEKTOR PL-PL) ---
+// --- INTELIGENTNY WYBÓR PRZYJEMNEGO GŁOSU LEKTORA PL-PL + NAPRAWIONY DWUKROPEK ---
+let selectedPlVoice = null;
 let lastSpokenKey = "";
 let speechSafetyTimer = null;
+
+function initPolishVoices() {
+    if (!('speechSynthesis' in window)) return;
+    const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
+    const sel = document.getElementById('voiceSelect');
+    if (!voices.length) return;
+
+    sel.innerHTML = "";
+    // Sortujemy tak, aby miękkie głosy neuronowe (Online / Natural / Zofia / Maja / Google) były pierwsze, a twarda Paulina na końcu
+    voices.sort((a, b) => {
+        const score = (v) => {
+            const n = v.name.toLowerCase();
+            if (n.includes('natural') || n.includes('online')) return 10;
+            if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) return 8;
+            if (n.includes('google')) return 7;
+            if (n.includes('marek')) return 5;
+            if (n.includes('paulina')) return 1;
+            return 3;
+        };
+        return score(b) - score(a);
+    });
+
+    voices.forEach((v, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        opt.innerText = v.name;
+        sel.appendChild(opt);
+    });
+
+    selectedPlVoice = voices[0];
+    sel.onchange = () => {
+        selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
+        speakPolishText("Zmieniono głos lektora.");
+    };
+}
+if ('speechSynthesis' in window) {
+    window.speechSynthesis.onvoiceschanged = initPolishVoices;
+    setTimeout(initPolishVoices, 300);
+}
 
 function speakPolishText(textToRead, onDoneCallback) {
     clearTimeout(speechSafetyTimer);
@@ -189,10 +275,12 @@ function speakPolishText(textToRead, onDoneCallback) {
     }
     window.speechSynthesis.cancel();
 
-    // Przygotowanie tekstu, aby lektor naturalnie czytał znaki matematyczne
+    // POPRAWKA: Dwukropek zamieniamy na "podzielić przez" TYLKO gdy stoi między cyframi!
     let cleanText = textToRead
+        .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
+        .replace(/:\s*$/, "") // Usuwa dwukropek na samym końcu zdania
+        .replace(/:/g, ", ")  // W napisie "Kategoria: Chemia" robi naturalną pauzę przecinkową!
         .replace(/\bx\b/gi, " razy ")
-        .replace(/:/g, " podzielić przez ")
         .replace(/\+/g, " dodać ")
         .replace(/ - /g, " odjąć ")
         .replace(/=/g, " równa się ")
@@ -200,8 +288,9 @@ function speakPolishText(textToRead, onDoneCallback) {
 
     const utter = new SpeechSynthesisUtterance(cleanText);
     utter.lang = "pl-PL";
-    utter.rate = 0.98;
-    utter.pitch = 1.0;
+    if (selectedPlVoice) utter.voice = selectedPlVoice;
+    utter.rate = 1.02;
+    utter.pitch = 1.05; // Odrobinę cieplejszy, przyjazny ton
 
     let finished = false;
     const finishOnce = () => {
@@ -214,11 +303,87 @@ function speakPolishText(textToRead, onDoneCallback) {
     utter.onend = finishOnce;
     utter.onerror = finishOnce;
 
-    // Zabezpieczenie czasowe, gdyby przeglądarka nie wywołała onend
-    const estMs = Math.max(2800, Math.min(9000, cleanText.length * 95 + 1200));
+    const estMs = Math.max(2500, Math.min(8500, cleanText.length * 90 + 1000));
     speechSafetyTimer = setTimeout(finishOnce, estMs);
 
     window.speechSynthesis.speak(utter);
+}
+
+// --- RYSOWANIE KOŁA FORTUNY DO RUNDY 5 ---
+const r5Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
+const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
+let currentWheelRotation = 0;
+let lastR5SpinHandled = 0;
+let lastR5CountdownSpoken = 0;
+
+function drawR5Wheel() {
+    const canvas = document.getElementById('r5-wheel-canvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const cx = 250, cy = 250, r = 240;
+    const arc = (Math.PI * 2) / r5Categories.length;
+
+    ctx.clearRect(0, 0, 500, 500);
+    r5Categories.forEach((cat, i) => {
+        // Segment 0 zaczyna się u góry pod wskaźnikiem (-90 stopni)
+        const startAngle = i * arc - Math.PI / 2 - arc / 2;
+        const endAngle = startAngle + arc;
+
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.arc(cx, cy, r, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = r5Colors[i % r5Colors.length];
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = "#050b14";
+        ctx.stroke();
+
+        ctx.save();
+        ctx.translate(cx, cy);
+        ctx.rotate(startAngle + arc / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#fff";
+        ctx.font = "900 22px sans-serif";
+        ctx.shadowColor = "rgba(0,0,0,0.8)";
+        ctx.shadowBlur = 4;
+        ctx.fillText(cat, r - 20, 8);
+        ctx.restore();
+    });
+
+    // Środek koła
+    ctx.beginPath();
+    ctx.arc(cx, cy, 35, 0, Math.PI * 2);
+    ctx.fillStyle = "#d4af37";
+    ctx.fill();
+    ctx.lineWidth = 5;
+    ctx.strokeStyle = "#fff";
+    ctx.stroke();
+}
+drawR5Wheel();
+
+// Dźwięk terkotania obracającego się koła fortuny
+function playWheelTicks() {
+    if (!audioCtx) return;
+    let ticks = 28;
+    for (let i = 0; i < ticks; i++) {
+        let delay = (i / ticks) * (i / ticks) * 4.1; // Zwalniające terkotanie
+        setTimeout(() => {
+            if (!audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const g = audioCtx.createGain();
+            osc.type = "triangle";
+            osc.frequency.setValueAtTime(650, now);
+            osc.frequency.exponentialRampToValueAtTime(180, now + 0.03);
+            g.gain.setValueAtTime(0.25, now);
+            g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+            osc.connect(g);
+            g.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.035);
+        }, delay * 1000);
+    }
 }
 
 // --- SYNTEZATOR MUZYKI W TLE ---
@@ -373,12 +538,8 @@ window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
     createUpbeatGameMusic();
     setBgMusicActive(true);
-    if ('speechSynthesis' in window) {
-        const initUtter = new SpeechSynthesisUtterance("System gotowy");
-        initUtter.lang = "pl-PL";
-        initUtter.volume = 0.8;
-        window.speechSynthesis.speak(initUtter);
-    }
+    initPolishVoices();
+    speakPolishText("Witamy w teleturnieju!");
     [tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
     });
@@ -599,7 +760,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         1: "RUNDA 1: WYŚCIG ABCD (10s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
         2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
         3: "RUNDA 3: SZYBKIE PISANIE (15s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
-        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ / DOBITKA: ±10 PKT)"
+        4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ / DOBITKA: ±10 PKT)",
+        5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
     };
     document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
     
@@ -617,11 +779,14 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const wheelBoard = document.getElementById('tv-wheel-board');
     const wheelCat = document.getElementById('tv-wheel-cat');
     const wheelWinnersEl = document.getElementById('tv-wheel-winners');
+    const r5WheelWrap = document.getElementById('r5-wheel-wrap');
+    const r5AuctionBox = document.getElementById('r5-auction-box');
     const podiumView = document.getElementById('podium-view');
     
     catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none"; 
     statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
     wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
+    r5WheelWrap.style.display = "none"; r5AuctionBox.style.display = "none";
     podiumView.style.display = "none";
     qEl.style.display = "block";
     qrContainer.style.display = (data.status === "idle") ? "block" : "none";
@@ -661,6 +826,97 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         return;
     }
 
+    // --- RUNDA 5: OCZEKIWANIE NA ZAKRĘCENIE KOŁEM PRZEZ GRACZA ---
+    if (data.status === "r5_wait_spin" || data.status === "r5_spinning") {
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        r5WheelWrap.style.display = "flex";
+        qEl.style.fontSize = "1.8vw";
+
+        if (data.status === "r5_wait_spin") {
+            setBgMusicActive(true);
+            let carryTxt = data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : "";
+            qEl.innerText = `🎡 ${data.controller.toUpperCase()} KRĘCI KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
+            let waitKey = "r5_wait_" + data.speechTick;
+            if (data.speechTick && lastSpokenKey !== waitKey) {
+                lastSpokenKey = waitKey;
+                speakPolishText(`${data.controller} kręci kołem fortuny!`);
+            }
+        } else {
+            setBgMusicActive(false);
+            qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
+            if (data.spinTick && data.spinTick !== lastR5SpinHandled) {
+                lastR5SpinHandled = data.spinTick;
+                playWheelTicks();
+                const segAngle = 360 / r5Categories.length;
+                const extraSpins = (data.spinPower || 6) * 360;
+                const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
+                const curMod = currentWheelRotation % 360;
+                let diff = targetMod - curMod;
+                if (diff < 0) diff += 360;
+                currentWheelRotation += extraSpins + diff;
+                document.getElementById('r5-wheel-canvas').style.transform = `rotate(${currentWheelRotation}deg)`;
+            }
+        }
+        return;
+    }
+
+    // --- RUNDA 5: LICYTACJA "AWANTURA O PUNKTY" ---
+    if (data.status === "r5_bidding" || data.status === "r5_sold") {
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        qEl.style.display = "none";
+        catEl.style.display = "block";
+        catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
+        r5AuctionBox.style.display = "flex";
+
+        document.getElementById('r5-pot-label').innerText = data.carryOver > 0 
+            ? `PULA DO WYGRANIA (W TYM KUMULACJA ${data.carryOver} PKT!)` 
+            : `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
+        document.getElementById('r5-pot-val').innerText = `${data.r5Pot || 20} PKT`;
+
+        const bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+        ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
+            document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
+            const card = document.getElementById(`bid-card-${p}`);
+            if (data.r5HighestBidder === p) card.classList.add('highest');
+            else card.classList.remove('highest');
+        });
+
+        const callEl = document.getElementById('r5-auction-call');
+        if (data.status === "r5_sold") {
+            setBgMusicActive(false);
+            stage.classList.add("success-glow");
+            callEl.style.color = "#00ff00";
+            callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r5HighestBid} PKT ODPOWIADA ${data.r5HighestBidder.toUpperCase()} (PULA: ${data.r5Pot} PKT)!`;
+            let soldKey = "r5_sold_" + data.speechTick;
+            if (lastSpokenKey !== soldKey) {
+                lastSpokenKey = soldKey;
+                winSound.currentTime = 0; winSound.play().catch(()=>{});
+                speakPolishText(`Sprzedane! Za ${data.r5HighestBid} punktów odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów!`);
+            }
+        } else {
+            let aucStartKey = "r5_auc_start_" + data.speechTick;
+            if (data.speechTick && lastSpokenKey !== aucStartKey) {
+                lastSpokenKey = aucStartKey;
+                speakPolishText(`Kategoria ${data.category}! Rozpoczynamy licytację!`);
+            }
+
+            if (data.r5Countdown && data.r5Countdown > 0) {
+                callEl.style.color = "#ff4757";
+                callEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r5Countdown}s) - PROWADZI ${data.r5HighestBidder.toUpperCase()}`;
+                if (data.r5Countdown === 5 && lastR5CountdownSpoken !== data.bidTick) {
+                    lastR5CountdownSpoken = data.bidTick;
+                    speakPolishText("Czy ktoś jeszcze licytuje?");
+                }
+            } else {
+                callEl.style.color = "var(--gold)";
+                callEl.innerText = `PROWADZI: ${data.r5HighestBidder.toUpperCase()} (${data.r5HighestBid} PKT) - PODBIJAJCIE NA TELEFONACH!`;
+            }
+        }
+        return;
+    }
+
+    qEl.style.fontSize = "2.2vw";
+
     if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
         isSuspense = false;
         clearInterval(timerInterval); clearInterval(wheelRevealInterval);
@@ -678,12 +934,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
             qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
             
-            // Lektor czyta kategorię w Rundzie 4
             let nomSpeechKey = "nom_cat_" + data.speechTick;
             if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
                 lastSpokenKey = nomSpeechKey;
                 setBgMusicActive(false);
-                speakPolishText(`Kategoria: ${data.category}. ${data.controller} wybiera, kto odpowie.`, () => {
+                speakPolishText(`Kategoria ${data.category}. ${data.controller} wybiera, kto odpowie.`, () => {
                     setBgMusicActive(true);
                 });
             }
@@ -692,14 +947,13 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
         
     } else if (data.status === "speaking") {
-        // --- FAZA LEKTORA: CZYTA PYTANIE PRZED POKAZANIEM ODPOWIEDZI I ZEGARA ---
         isSuspense = false;
         clearInterval(timerInterval); clearInterval(wheelRevealInterval);
         timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
         setBgMusicActive(false);
 
-        if (data.round === 4 && data.category) {
+        if ((data.round === 4 || data.round === 5) && data.category) {
             catEl.style.display = "block";
             catEl.innerText = "KATEGORIA: " + data.category;
         }
@@ -729,11 +983,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         wheelCat.innerText = "KATEGORIA: " + data.category;
         wheelWinnersEl.style.display = "flex";
 
-        // Lektor czyta kategorię w Kole Fortuny (Runda 2)
         let wSpeechKey = "wheel_cat_" + data.speechTick;
         if (data.speechTick && lastSpokenKey !== wSpeechKey) {
             lastSpokenKey = wSpeechKey;
-            speakPolishText(`Kategoria: ${data.category}`);
+            speakPolishText(`Kategoria ${data.category}`);
         }
 
         const winners = data.wheelWinners || [];
@@ -835,7 +1088,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
         qEl.innerText = data.question;
         
-        if ((data.round === 1 || data.round === 4) && data.options) {
+        if ((data.round === 1 || data.round === 4 || data.round === 5) && data.options) {
             for(let i=0; i<4; i++) {
                 let optEl = document.getElementById(`opt-${i}`);
                 optEl.innerText = `${letters[i]}: ${data.options[i]}`;
@@ -870,6 +1123,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             } else {
                 winnerEl.innerText = `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
             }
+        } else if (data.round === 5) {
+            winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
+            winnerEl.innerText = `ODPOWIADA: ${data.nominated.toUpperCase()} | GRA O PULĘ: ${data.r5Pot} PKT!`;
         }
 
         if (data.tick !== currentTick) {
@@ -877,7 +1133,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             lastR3WinnersCount = (data.r3Winners || []).length;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = data.round === 3 ? 15 : 10; // 10 sekund w R1 i R4, 15 sekund w R3
+            let timeLeft = data.round === 3 ? 15 : 10;
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
@@ -893,7 +1149,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "r1_results", answerTick: Date.now() });
                     } else if (data.round === 3) {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "r3_results", answerTick: Date.now() });
-                    } else if (data.round === 4 && data.nominated) {
+                    } else if ((data.round === 4 || data.round === 5) && data.nominated) {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
                     } else {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
@@ -910,7 +1166,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
 
     } else if (data.status === "r1_results") {
-        // --- PODSUMOWANIE RUNDY 1 (15 / 12 / 10 / 8 PKT, BŁĄD = 0 PKT) ---
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
         setBgMusicActive(false);
@@ -942,7 +1197,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
 
     } else if (data.status === "r3_results") {
-        // --- PODSUMOWANIE RUNDY 3 (15 / 12 / 10 / 8 PKT) ---
         clearInterval(timerInterval); timerEl.style.display = 'none';
         tickSound.pause(); tickSound.currentTime = 0;
         setBgMusicActive(false);
@@ -1002,7 +1256,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         if (data.status === "timeout") {
             stage.classList.add("error-glow");
             winnerEl.style.color = "var(--error)";
-            if (data.loser) {
+            if (data.round === 5) {
+                winnerEl.innerText = `BRAK ODPOWIEDZI! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
+            } else if (data.loser) {
                 winnerEl.innerText = `${data.loser.toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)`;
             } else {
                 winnerEl.innerText = "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.";
@@ -1018,7 +1274,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             stage.classList.add("success-glow");
             statusEl.style.display = "block";
             winnerEl.style.color = "#00ff00"; 
-            winnerEl.innerText = `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+            winnerEl.innerText = data.round === 5 
+                ? `${data.winner.toUpperCase()} ZGARNIA CAŁĄ PULĘ!` 
+                : `${data.winner.toUpperCase()} ODPOWIADA POPRAWNIE!`;
             statusEl.style.color = "#00ff00"; 
             statusEl.innerText = `+${data.pointsChange} PKT`;
             
@@ -1042,9 +1300,15 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
 
             winnerEl.style.color = "#ff4757"; 
-            winnerEl.innerText = data.timeoutPenalty ? `${data.loser.toUpperCase()} - CZAS MINĄŁ!` : `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
+            winnerEl.innerText = `${data.loser.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
             statusEl.style.color = "#ff4757"; 
-            statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
+            if (data.round === 5) {
+                statusEl.innerText = `KUMULACJA! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
+                correctBanner.style.display = "block";
+                if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+            } else {
+                statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
+            }
             
             if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
         }
