@@ -10,8 +10,7 @@
     #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; align-items: center; justify-content: center; }
     #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
 
-    /* CANVAS FAJERWERKÓW NA PIERWSZYM PLANIE */
-    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 800; display: none; }
+    #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; background: transparent; }
 
     @keyframes pulseTimer {
       0% { transform: translateX(-50%) scale(1); }
@@ -46,9 +45,14 @@
     .question-text { font-size: 2.3vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.5vw; color: #fff; }
     .category-text { font-size: 2vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.4vw; margin-bottom: 1.2vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
     
+    /* KOLOROWE KAFELKI ODPOWIEDZI ABCD NA TV (IDENTYCZNE JAK NA TELEFONIE) */
     .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
-    .option { background: #111; border: 0.18vw solid #444; padding: 1.2vw; font-size: 1.6vw; border-radius: 0.8vw; font-weight: bold; transition: 0.3s; }
-    .option.used-wrong { background: rgba(255, 0, 0, 0.15); border-color: #ff4757; color: #ff4757; text-decoration: line-through; opacity: 0.45; }
+    .option { padding: 1.3vw; font-size: 1.65vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+    .opt-color-0 { background: rgba(241, 196, 15, 0.22); border: 0.25vw solid #f1c40f; color: #fff; box-shadow: 0 0 1vw rgba(241, 196, 15, 0.3); }
+    .opt-color-1 { background: rgba(0, 212, 255, 0.22); border: 0.25vw solid #00d4ff; color: #fff; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.3); }
+    .opt-color-2 { background: rgba(46, 213, 115, 0.22); border: 0.25vw solid #2ed573; color: #fff; box-shadow: 0 0 1vw rgba(46, 213, 115, 0.3); }
+    .opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
+    .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
     /* TABLICA KOŁA FORTUNY (RUNDA 2) */
     .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
@@ -57,6 +61,7 @@
     .wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
     .wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
     .wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
+    .wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
 
     /* WIELKIE PODIUM FINAŁOWE */
     #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
@@ -80,7 +85,7 @@
     #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
     #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-    .winner-announcement { font-size: 2.3vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+    .winner-announcement { font-size: 2.1vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
     .status-msg { font-size: 2.4vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
     
     .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
@@ -92,7 +97,7 @@
 <body>
 
   <div id="audio-overlay">
-    <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN I DŹWIĘK TV</button>
+    <button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, DŹWIĘK I LEKTORA TV</button>
   </div>
 
   <canvas id="fireworks-canvas"></canvas>
@@ -142,8 +147,10 @@
     </div>
     
     <div class="options-grid" id="tv-options">
-      <div class="option" id="opt-0">A: ...</div><div class="option" id="opt-1">B: ...</div>
-      <div class="option" id="opt-2">C: ...</div><div class="option" id="opt-3">D: ...</div>
+      <div class="option opt-color-0" id="opt-0">A: ...</div>
+      <div class="option opt-color-1" id="opt-1">B: ...</div>
+      <div class="option opt-color-2" id="opt-2">C: ...</div>
+      <div class="option opt-color-3" id="opt-3">D: ...</div>
     </div>
     
     <div id="tv-typed-answer"></div>
@@ -170,7 +177,51 @@ loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- SYNTEZATOR MUZYKI W TLE ORAZ POTĘŻNYCH FANFAR I HUKU FAJERWERKÓW ---
+// --- SYNTEZATOR MOWY (LEKTOR PL-PL) ---
+let lastSpokenKey = "";
+let speechSafetyTimer = null;
+
+function speakPolishText(textToRead, onDoneCallback) {
+    clearTimeout(speechSafetyTimer);
+    if (!('speechSynthesis' in window)) {
+        if (onDoneCallback) setTimeout(onDoneCallback, 2500);
+        return;
+    }
+    window.speechSynthesis.cancel();
+
+    // Przygotowanie tekstu, aby lektor naturalnie czytał znaki matematyczne
+    let cleanText = textToRead
+        .replace(/\bx\b/gi, " razy ")
+        .replace(/:/g, " podzielić przez ")
+        .replace(/\+/g, " dodać ")
+        .replace(/ - /g, " odjąć ")
+        .replace(/=/g, " równa się ")
+        .replace(/\?/g, "");
+
+    const utter = new SpeechSynthesisUtterance(cleanText);
+    utter.lang = "pl-PL";
+    utter.rate = 0.98;
+    utter.pitch = 1.0;
+
+    let finished = false;
+    const finishOnce = () => {
+        if (finished) return;
+        finished = true;
+        clearTimeout(speechSafetyTimer);
+        if (onDoneCallback) onDoneCallback();
+    };
+
+    utter.onend = finishOnce;
+    utter.onerror = finishOnce;
+
+    // Zabezpieczenie czasowe, gdyby przeglądarka nie wywołała onend
+    const estMs = Math.max(2800, Math.min(9000, cleanText.length * 95 + 1200));
+    speechSafetyTimer = setTimeout(finishOnce, estMs);
+
+    window.speechSynthesis.speak(utter);
+}
+
+// --- SYNTEZATOR MUZYKI W TLE ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -183,7 +234,7 @@ function createUpbeatGameMusic() {
     audioCtx = new AudioContext();
     
     bgMasterGain = audioCtx.createGain();
-    bgMasterGain.gain.value = 0.25;
+    bgMasterGain.gain.value = 0.22;
     bgMasterGain.connect(audioCtx.destination);
 
     const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
@@ -200,7 +251,7 @@ function createUpbeatGameMusic() {
         const bassGain = audioCtx.createGain();
         bassOsc.type = "triangle";
         bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
-        bassGain.gain.setValueAtTime(0.12, now);
+        bassGain.gain.setValueAtTime(0.11, now);
         bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
         bassOsc.connect(bassGain);
         bassGain.connect(bgMasterGain);
@@ -213,7 +264,7 @@ function createUpbeatGameMusic() {
             leadOsc.type = "sine";
             const note = scale[Math.floor(Math.random() * scale.length)];
             leadOsc.frequency.setValueAtTime(note, now);
-            leadGain.gain.setValueAtTime(0.08, now);
+            leadGain.gain.setValueAtTime(0.07, now);
             leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
             leadOsc.connect(leadGain);
             leadGain.connect(bgMasterGain);
@@ -225,51 +276,35 @@ function createUpbeatGameMusic() {
     }, 220);
 }
 
-// Dźwięk wybuchu fajerwerku (syntezator huku petardy)
 function playFireworkBoom() {
     if (!audioCtx) return;
     if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
     const now = audioCtx.currentTime;
 
-    // 1. Szum eksplozji
-    const bufferSize = audioCtx.sampleRate * 0.45;
+    const bufferSize = audioCtx.sampleRate * 0.35;
     const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
     const output = noiseBuffer.getChannelData(0);
     for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.12));
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.1));
     }
     const whiteNoise = audioCtx.createBufferSource();
     whiteNoise.buffer = noiseBuffer;
 
     const filter = audioCtx.createBiquadFilter();
     filter.type = "lowpass";
-    filter.frequency.setValueAtTime(900, now);
-    filter.frequency.exponentialRampToValueAtTime(120, now + 0.4);
+    filter.frequency.setValueAtTime(700, now);
+    filter.frequency.exponentialRampToValueAtTime(100, now + 0.35);
 
     const gain = audioCtx.createGain();
-    gain.gain.setValueAtTime(0.45, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.44);
+    gain.gain.setValueAtTime(0.35, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
 
     whiteNoise.connect(filter);
     filter.connect(gain);
     gain.connect(audioCtx.destination);
     whiteNoise.start(now);
-
-    // 2. Niskie uderzenie basowe ("Thump")
-    const punchOsc = audioCtx.createOscillator();
-    const punchGain = audioCtx.createGain();
-    punchOsc.type = "sine";
-    punchOsc.frequency.setValueAtTime(130, now);
-    punchOsc.frequency.exponentialRampToValueAtTime(35, now + 0.25);
-    punchGain.gain.setValueAtTime(0.5, now);
-    punchGain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
-    punchOsc.connect(punchGain);
-    punchGain.connect(audioCtx.destination);
-    punchOsc.start(now);
-    punchOsc.stop(now + 0.26);
 }
 
-// Potężne, wielogłosowe fanfary orkiestrowe (akordy trąbek sawtooth)
 function playGrandFanfareSequence() {
     fanfareSound.currentTime = 0;
     fanfareSound.play().catch(()=>{});
@@ -286,9 +321,9 @@ function playGrandFanfareSequence() {
             const filter = audioCtx.createBiquadFilter();
             const g = audioCtx.createGain();
 
-            osc.type = "sawtooth"; // Brzmienie sekcji dętej (trąbki/puzony)
+            osc.type = "sawtooth";
             osc.frequency.setValueAtTime(f, now);
-            osc.detune.setValueAtTime((idx - 1) * 6, now); // Szerokie brzmienie orkiestry
+            osc.detune.setValueAtTime((idx - 1) * 6, now);
 
             filter.type = "lowpass";
             filter.frequency.setValueAtTime(2400, now);
@@ -306,7 +341,6 @@ function playGrandFanfareSequence() {
         });
     };
 
-    // Triumfalna sekwencja akordowa (C-dur -> G-dur -> A-dur -> F-dur -> G-dur -> C-dur Wielki Finał)
     playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
     playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
     playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
@@ -319,7 +353,6 @@ function playGrandFanfareSequence() {
 function startVictoryFanfareLoop() {
     clearInterval(fanfareLoopInterval);
     playGrandFanfareSequence();
-    // Powtarzaj uroczyste fanfary co 6.5 sekundy podczas trwania pokazu na podium
     fanfareLoopInterval = setInterval(() => {
         if (fwActive) playGrandFanfareSequence();
     }, 6500);
@@ -340,12 +373,18 @@ window.initAudio = function() {
     document.getElementById('audio-overlay').style.display = 'none';
     createUpbeatGameMusic();
     setBgMusicActive(true);
+    if ('speechSynthesis' in window) {
+        const initUtter = new SpeechSynthesisUtterance("System gotowy");
+        initUtter.lang = "pl-PL";
+        initUtter.volume = 0.8;
+        window.speechSynthesis.speak(initUtter);
+    }
     [tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
         s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
     });
 };
 
-// --- POTĘŻNY SILNIK FAJERWERKÓW NA ŻYWO (RAKIETY + PODWÓJNE EKSPLOZJE + BŁYSKI + DŹWIĘK) ---
+// --- ZOPTYMALIZOWANY SILNIK FAJERWERKÓW ---
 const fwCanvas = document.getElementById('fireworks-canvas');
 const fwCtx = fwCanvas.getContext('2d');
 let fwParticles = [];
@@ -356,18 +395,18 @@ let fwSpawnTimer = null;
 
 function createExplosion(x, y, mainColor) {
     playFireworkBoom();
-    const count = 12;
+    const count = 15;
     for (let i = 0; i < count; i++) {
         const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
-        const speed = Math.random() * 8 + 2.5;
+        const speed = Math.random() * 5 + 2;
         fwParticles.push({
             x, y,
             vx: Math.cos(angle) * speed,
             vy: Math.sin(angle) * speed,
             alpha: 1,
-            size: Math.random() * 3.5 + 2,
-            color: i % 3 === 0 ? '#ffffff' : mainColor,
-            decay: Math.random() * 0.012 + 0.035
+            size: Math.random() * 3 + 1.5,
+            color: i % 2 === 0 ? '#ffffff' : mainColor,
+            decay: Math.random() * 0.02 + 0.035
         });
     }
 }
@@ -381,47 +420,43 @@ function startFireworks() {
     fwParticles = [];
     fwRockets = [];
 
-    const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43', '#00ffcc'];
+    const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43'];
 
     function launchWave() {
         if (!fwActive) return;
-        // Wystrzel 2 lub 3 rakiety naraz
-        const rocketsCount = Math.random() > 0.4 ? 2 : 3;
-        for (let r = 0; r < rocketsCount; r++) {
-            const startX = fwCanvas.width * (0.15 + Math.random() * 0.7);
-            const targetY = fwCanvas.height * (0.12 + Math.random() * 0.38);
-            const color = colors[Math.floor(Math.random() * colors.length)];
-            fwRockets.push({
-                x: startX,
-                y: fwCanvas.height,
-                vx: (Math.random() - 0.5) * 2.5,
-                vy: -(Math.random() * 5 + 11),
-                targetY,
-                color
-            });
-        }
+        const startX = fwCanvas.width * (0.2 + Math.random() * 0.6);
+        const targetY = fwCanvas.height * (0.15 + Math.random() * 0.3);
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        fwRockets.push({
+            x: startX,
+            y: fwCanvas.height,
+            vx: (Math.random() - 0.5) * 1.5,
+            vy: -(Math.random() * 4 + 9),
+            targetY,
+            color
+        });
         fwSpawnTimer = setTimeout(launchWave, 1500);
     }
     launchWave();
 
     function animateFw() {
         if (!fwActive) return;
-        fwCtx.globalCompositeOperation = 'destination-out';
-        fwCtx.fillStyle = 'rgba(0, 0, 0, 0.22)'; // Efekt smugi świetlnej
-        fwCtx.fillRect(0, 0, fwCanvas.width, fwCanvas.height);
-        fwCtx.globalCompositeOperation = 'lighter';
+        fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
 
-        // Rysowanie lecących rakiet
+        if (fwParticles.length > 35) {
+            fwParticles.splice(0, fwParticles.length - 35);
+        }
+
         for (let i = fwRockets.length - 1; i >= 0; i--) {
             const r = fwRockets[i];
             r.x += r.vx;
             r.y += r.vy;
-            r.vy += 0.12;
+            r.vy += 0.1;
 
             fwCtx.globalAlpha = 1;
             fwCtx.fillStyle = '#ffffff';
             fwCtx.beginPath();
-            fwCtx.arc(r.x, r.y, 4, 0, Math.PI * 2);
+            fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2);
             fwCtx.fill();
 
             if (r.y <= r.targetY || r.vy >= 0) {
@@ -430,29 +465,23 @@ function startFireworks() {
             }
         }
 
-        // Rysowanie iskier eksplozji
         for (let i = fwParticles.length - 1; i >= 0; i--) {
             const p = fwParticles[i];
             p.x += p.vx;
             p.y += p.vy;
-            p.vx *= 0.97;
-            p.vy *= 0.97;
-            p.vy += 0.08; // Grawitacja
+            p.vy += 0.07;
             p.alpha -= p.decay;
 
             if (p.alpha <= 0) {
                 fwParticles.splice(i, 1);
             } else {
                 fwCtx.globalAlpha = p.alpha;
-                fwCtx.shadowBlur = 12;
-                fwCtx.shadowColor = p.color;
                 fwCtx.fillStyle = p.color;
                 fwCtx.beginPath();
                 fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
                 fwCtx.fill();
             }
         }
-        fwCtx.shadowBlur = 0;
         fwLoopId = requestAnimationFrame(animateFw);
     }
     animateFw();
@@ -471,6 +500,7 @@ let timerInterval = null;
 let wheelRevealInterval = null;
 let revealedWheelCount = 0;
 let lastWheelWinnersCount = 0;
+let lastR3WinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; 
@@ -506,29 +536,25 @@ function renderWheelBoard(phrase, order, count) {
     });
 }
 
-// SPRAWIEDLIWE PODIUM Z OBSŁUGĄ REMISÓW (EX AEQUO)
 function renderPodium() {
     const container = document.getElementById('podium-bars-container');
     container.innerHTML = "";
     const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
     
-    // 1. Sortujemy graczy malejąco po punktach
     let sorted = Object.keys(displayNames).map(id => ({
         id,
         name: displayNames[id],
         pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
     })).sort((a, b) => b.pts - a.pts);
 
-    // 2. Przypisujemy sprawiedliwe miejsca (jeśli mają tyle samo punktów -> mają to samo miejsce, ten sam medal i tę samą wysokość słupka!)
     let currentRank = 1;
     for (let i = 0; i < sorted.length; i++) {
         if (i > 0 && sorted[i].pts < sorted[i - 1].pts) {
-            currentRank = currentRank + 1; // Kolejny próg punktowy dostaje kolejne miejsce na podium (1 -> 2 -> 3 -> 4)
+            currentRank = currentRank + 1;
         }
         sorted[i].rank = currentRank;
     }
 
-    // 3. Układamy wizualnie tak, aby najwyższe miejsce (1.) było na środku sceny
     const visualArrangement = [];
     sorted.forEach((player, idx) => {
         if (idx % 2 === 0) visualArrangement.push(player);
@@ -560,7 +586,6 @@ onSnapshot(collection(db, "quizScores"), (snap) => {
             if(el) el.innerText = doc.data().points; 
         }
     });
-    // Jeśli jesteśmy na ekranie podium i zmienią się punkty (np. reset), odśwież słupki na żywo
     if (document.getElementById('podium-view').style.display === 'flex') {
         renderPodium();
     }
@@ -571,9 +596,9 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const data = docSnap.data();
     
     let roundNames = {
-        1: "RUNDA 1: KTO PIERWSZY (ABCD) | +10 / -10 PKT", 
+        1: "RUNDA 1: WYŚCIG ABCD (10s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
         2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
-        3: "RUNDA 3: SZYBKIE PISANIE (15s) | +10 / -10 PKT", 
+        3: "RUNDA 3: SZYBKIE PISANIE (15s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT", 
         4: "RUNDA 4: WYBIERANIE (NA SIEBIE: ±20 PKT | NA KOGOŚ / DOBITKA: ±10 PKT)"
     };
     document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
@@ -617,7 +642,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     const letters = ["A", "B", "C", "D"];
 
     if (data.status === "podium") {
-        // --- WIELKI FINAŁ: SPRAWIEDLIWE PODIUM, GĘSTE FAJERWERKI I GŁOŚNE FANFARY ---
         isSuspense = false;
         clearInterval(timerInterval); clearInterval(wheelRevealInterval);
         timerEl.style.display = 'none';
@@ -653,10 +677,47 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                 winnerEl.innerText = data.tieMsg;
             }
             qEl.innerText = data.status === "nominating" ? `${data.controller.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
+            
+            // Lektor czyta kategorię w Rundzie 4
+            let nomSpeechKey = "nom_cat_" + data.speechTick;
+            if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
+                lastSpokenKey = nomSpeechKey;
+                setBgMusicActive(false);
+                speakPolishText(`Kategoria: ${data.category}. ${data.controller} wybiera, kto odpowie.`, () => {
+                    setBgMusicActive(true);
+                });
+            }
         } else {
             qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
         }
         
+    } else if (data.status === "speaking") {
+        // --- FAZA LEKTORA: CZYTA PYTANIE PRZED POKAZANIEM ODPOWIEDZI I ZEGARA ---
+        isSuspense = false;
+        clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+        timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
+        setBgMusicActive(false);
+
+        if (data.round === 4 && data.category) {
+            catEl.style.display = "block";
+            catEl.innerText = "KATEGORIA: " + data.category;
+        }
+        qEl.innerText = data.question;
+        winnerEl.style.display = "block";
+        winnerEl.style.color = "var(--cyan)";
+        winnerEl.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
+
+        let spKey = "q_speak_" + data.speechTick;
+        if (lastSpokenKey !== spKey) {
+            lastSpokenKey = spKey;
+            speakPolishText(data.question, async () => {
+                await updateDoc(doc(db, "quizGame", "state"), {
+                    status: "reading", tick: Date.now()
+                });
+            });
+        }
+
     } else if (data.status === "wheel_reading") {
         isSuspense = false;
         suspenseSound.pause(); suspenseSound.currentTime = 0;
@@ -667,6 +728,13 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         wheelCat.style.display = "block";
         wheelCat.innerText = "KATEGORIA: " + data.category;
         wheelWinnersEl.style.display = "flex";
+
+        // Lektor czyta kategorię w Kole Fortuny (Runda 2)
+        let wSpeechKey = "wheel_cat_" + data.speechTick;
+        if (data.speechTick && lastSpokenKey !== wSpeechKey) {
+            lastSpokenKey = wSpeechKey;
+            speakPolishText(`Kategoria: ${data.category}`);
+        }
 
         const winners = data.wheelWinners || [];
         const ptsMap = [20, 15, 10, 5];
@@ -778,7 +846,23 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
             opts.style.display = "grid";
         }
-        if (data.round === 4) {
+
+        if (data.round === 1) {
+            let ansCount = Object.keys(data.r1Answers || {}).length;
+            winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+            winnerEl.innerText = `ODPOWIEDZIAŁO: ${ansCount} / 4 GRACZY`;
+        } else if (data.round === 3) {
+            wheelWinnersEl.style.display = "flex";
+            const winners = data.r3Winners || [];
+            const ptsMap = [15, 12, 10, 8];
+            const medals = ["🥇", "🥈", "🥉", "🏅"];
+            wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+            if (winners.length > lastR3WinnersCount) {
+                lastR3WinnersCount = winners.length;
+                winSound.currentTime = 0;
+                winSound.play().catch(()=>{});
+            }
+        } else if (data.round === 4) {
             winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
             if (data.nominated) {
                 let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
@@ -790,9 +874,10 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 
         if (data.tick !== currentTick) {
             currentTick = data.tick;
+            lastR3WinnersCount = (data.r3Winners || []).length;
             clearInterval(timerInterval);
             tickSound.pause(); tickSound.currentTime = 0;
-            let timeLeft = data.round === 3 ? 15 : 10;
+            let timeLeft = data.round === 3 ? 15 : 10; // 10 sekund w R1 i R4, 15 sekund w R3
             timerEl.style.display = 'flex';
             timerEl.classList.remove('timer-alert');
             timerEl.innerText = timeLeft;
@@ -804,7 +889,11 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     tickSound.pause(); tickSound.currentTime = 0;
                     setBgMusicActive(false);
                     timerEl.innerText = "0";
-                    if (data.round === 4 && data.nominated) {
+                    if (data.round === 1) {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "r1_results", answerTick: Date.now() });
+                    } else if (data.round === 3) {
+                        await updateDoc(doc(db, "quizGame", "state"), { status: "r3_results", answerTick: Date.now() });
+                    } else if (data.round === 4 && data.nominated) {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
                     } else {
                         await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
@@ -820,6 +909,64 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }, 1000);
         }
 
+    } else if (data.status === "r1_results") {
+        // --- PODSUMOWANIE RUNDY 1 (15 / 12 / 10 / 8 PKT, BŁĄD = 0 PKT) ---
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        setBgMusicActive(false);
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+        qEl.innerText = data.question;
+        correctBanner.style.display = "block";
+        correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
+
+        wheelWinnersEl.style.display = "flex";
+        const winners = data.r1Winners || [];
+        const answers = data.r1Answers || {};
+        const ptsMap = [15, 12, 10, 8];
+        const medals = ["🥇", "🥈", "🥉", "🏅"];
+
+        let badgesHtml = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("");
+        Object.keys(answers).forEach(p => {
+            if (!answers[p].isCorrect) {
+                badgesHtml += `<div class="wheel-badge wrong-badge">❌ ${p.toUpperCase()} (0 PKT)</div>`;
+            }
+        });
+        wheelWinnersEl.innerHTML = badgesHtml || `<div class="wheel-badge wrong-badge">NIKT NIE ZDOBYŁ PUNKTÓW!</div>`;
+
+        stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
+        if (lastPlayedResult !== "r1_end_" + data.answerTick) {
+            if (winners.length > 0) winSound.play().catch(()=>{});
+            else loseSound.play().catch(()=>{});
+            lastPlayedResult = "r1_end_" + data.answerTick;
+        }
+
+    } else if (data.status === "r3_results") {
+        // --- PODSUMOWANIE RUNDY 3 (15 / 12 / 10 / 8 PKT) ---
+        clearInterval(timerInterval); timerEl.style.display = 'none';
+        tickSound.pause(); tickSound.currentTime = 0;
+        setBgMusicActive(false);
+        for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
+
+        qEl.innerText = data.question;
+        correctBanner.style.display = "block";
+        correctVal.innerText = data.correctText;
+
+        wheelWinnersEl.style.display = "flex";
+        const winners = data.r3Winners || [];
+        const ptsMap = [15, 12, 10, 8];
+        const medals = ["🥇", "🥈", "🥉", "🏅"];
+        wheelWinnersEl.innerHTML = winners.length > 0
+            ? winners.map((w, idx) => `<div class="wheel-badge">${medals[idx]} ${idx+1}. ${w.toUpperCase()} (+${ptsMap[idx]} PKT)</div>`).join("")
+            : `<div class="wheel-badge wrong-badge">NIKT NIE WPISAŁ POPRAWNEJ ODPOWIEDZI!</div>`;
+
+        stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
+        if (lastPlayedResult !== "r3_end_" + data.answerTick) {
+            if (winners.length > 0) winSound.play().catch(()=>{});
+            else loseSound.play().catch(()=>{});
+            lastPlayedResult = "r3_end_" + data.answerTick;
+        }
+
     } else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
         isSuspense = true;
         clearInterval(timerInterval); timerEl.style.display = 'none';
@@ -830,10 +977,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         
         qEl.innerText = data.question;
         
-        if (data.round === 3 && data.givenAnswer) {
-            typedAnsEl.style.display = "block";
-            typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-        } else if ((data.round === 1 || data.round === 4) && data.selectedIndex !== undefined && data.options) {
+        if (data.selectedIndex !== undefined && data.options) {
             typedAnsEl.style.display = "block";
             typedAnsEl.innerHTML = `${data.fastest.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
         }
@@ -865,10 +1009,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             }
             
             correctBanner.style.display = "block";
-            if ((data.round === 1 || data.round === 4) && data.options) {
+            if (data.options) {
                 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            } else if (data.round === 3 && data.correctText) {
-                correctVal.innerText = data.correctText;
             }
             if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
 
@@ -881,10 +1023,8 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             statusEl.innerText = `+${data.pointsChange} PKT`;
             
             correctBanner.style.display = "block";
-            if ((data.round === 1 || data.round === 4) && data.options) {
+            if (data.options) {
                 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-            } else if (data.round === 3) {
-                correctVal.innerText = `${data.givenAnswer.toUpperCase()} (${data.correctText || ""})`;
             }
 
             if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
@@ -896,10 +1036,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             if (data.timeoutPenalty) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
-            } else if (data.round === 3 && data.givenAnswer) {
-                typedAnsEl.style.display = "block";
-                typedAnsEl.innerHTML = `${data.loser.toUpperCase()} WPISAŁ/A: <span>"${data.givenAnswer.toUpperCase()}"</span>`;
-            } else if ((data.round === 1 || data.round === 4) && data.selectedIndex !== undefined && data.options) {
+            } else if (data.selectedIndex !== undefined && data.options) {
                 typedAnsEl.style.display = "block";
                 typedAnsEl.innerHTML = `${data.loser.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
             }
