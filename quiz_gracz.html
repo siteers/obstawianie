@@ -62,7 +62,7 @@
     .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
     .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
 
-    /* RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (BEZ PRZYCISKU!) */
+    /* RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE */
     #ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
     .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
     #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
@@ -70,11 +70,12 @@
     #ui-r5-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
     .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
     .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
-    .bid-info-row b { color: var(--gold); font-size: 20px; }
+    .bid-info-row b { color: var(--gold); font-size: 19px; }
     .bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
     .btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
     .btn-bid:active { transform: scale(0.93); }
-    .auction-pad-timer { font-size: 17px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
+    .btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
+    .auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
     
     .locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
     .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
@@ -138,29 +139,29 @@
       <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
     </div>
 
-    <!-- RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (BEZ PRZYCISKU!) -->
+    <!-- RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (ZOSTAJE NA EKRANIE PODCZAS OBROTU!) -->
     <div id="ui-r5-spin">
-      <p style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
+      <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
       <div class="pad-wheel-pointer"></div>
       <canvas id="pad-wheel-canvas" width="400" height="400"></canvas>
       <div class="feedback-msg" id="spinFeedback"></div>
     </div>
 
-    <!-- RUNDA 5: LICYTACJA (+2, +5, +10, +20) -->
+    <!-- RUNDA 5: LICYTACJA (+2, +5, +10, +20) Z LIMITEM DO -100 PKT -->
     <div id="ui-r5-bid">
       <div class="bid-info-box">
         <div class="bid-info-row">KATEGORIA: <b id="pad-r5-cat" style="color:var(--cyan);">---</b></div>
         <div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r5-pot">20 PKT</b></div>
-        <div class="bid-info-row">PROWADZI: <b id="pad-r5-leader" style="color:#00ff00;">---</b></div>
-        <div class="bid-info-row">TWOJA STAWKA: <b id="pad-r5-mybid" style="color:#fff;">5 PKT</b></div>
+        <div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r5-leader" style="color:#00ff00;">---</b></div>
+        <div class="bid-info-row">TWOJA STAWKA: <b id="pad-r5-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r5-maxinfo" style="font-size:12px; color:#888;"></span></div>
       </div>
       <div class="auction-pad-timer" id="pad-r5-countdown"></div>
       <div class="feedback-msg" id="r5BidFeedback"></div>
       <div class="bid-btns-grid">
-        <button class="btn-bid" onclick="placeBid(2)">+2</button>
-        <button class="btn-bid" onclick="placeBid(5)">+5</button>
-        <button class="btn-bid" onclick="placeBid(10)">+10</button>
-        <button class="btn-bid" onclick="placeBid(20)">+20</button>
+        <button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
+        <button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
+        <button class="btn-bid" id="btn-bid-10" onclick="placeBid(10)">+10</button>
+        <button class="btn-bid" id="btn-bid-20" onclick="placeBid(20)">+20</button>
       </div>
     </div>
     
@@ -175,6 +176,7 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
+let myCurrentPoints = 0; // Śledzenie własnych punktów, aby pilnować limitu zadłużenia do -100 pkt!
 let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
@@ -186,11 +188,11 @@ let padRevealedCount = 0;
 let tileInputs = [];
 let targetLetters = [];
 
-// Rysowanie koła Rundy 5 na telefonie + FIZYCZNE KRĘCENIE PALCEM Z BLOKADĄ SŁABEGO PRZESUNIĘCIA
 const r5Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let padWheelRot = 0;
 let isSpinningLocally = false;
+let lastHandledSpinTickOnPad = 0;
 
 function drawPadWheel() {
     const canvas = document.getElementById('pad-wheel-canvas');
@@ -225,7 +227,6 @@ function drawPadWheel() {
 }
 drawPadWheel();
 
-// Fizyka obracania koła palcem na ekranie telefonu (śledzi kąt wokół środka koła!)
 const padWheelEl = document.getElementById('pad-wheel-canvas');
 let isDraggingWheel = false;
 let lastTouchAngle = 0;
@@ -244,7 +245,7 @@ function onWheelStart(clientX, clientY) {
     if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
     isDraggingWheel = true;
     document.getElementById('spinFeedback').innerText = "";
-    padWheelEl.style.transition = "none"; // Podąża na żywo za palcem!
+    padWheelEl.style.transition = "none";
     lastTouchAngle = getAngleFromCenter(clientX, clientY);
     dragAccumulatedAngle = 0;
     angularVelocity = 0;
@@ -260,7 +261,7 @@ function onWheelMove(clientX, clientY) {
 
     const now = Date.now();
     const dt = Math.max(8, now - lastMoveTime);
-    angularVelocity = Math.abs(delta) / dt; // stopnie na milisekundę
+    angularVelocity = Math.abs(delta) / dt;
 
     padWheelRot += delta;
     dragAccumulatedAngle += Math.abs(delta);
@@ -274,7 +275,6 @@ function onWheelEnd() {
     if (!isDraggingWheel || isSpinningLocally) return;
     isDraggingWheel = false;
 
-    // Zabezpieczenie przed "lekkim przesunięciem o jedno pole": wymagamy szybkiego zamachu palcem lub dużego obrotu!
     if (dragAccumulatedAngle < 55 || angularVelocity < 0.32) {
         document.getElementById('spinFeedback').innerText = "⚠️ ZA SŁABO! ZAMACHNIJ SIĘ I ZAKRĘĆ MOCNIEJ!";
         padWheelEl.style.transition = "transform 0.4s ease-out";
@@ -283,7 +283,6 @@ function onWheelEnd() {
         return;
     }
 
-    // Mocny rzut zaliczony! Koło wykonuje minimum 6-11 pełnych obrotów
     const power = Math.min(11, Math.max(6, Math.round(angularVelocity * 10)));
     window.triggerWheelSpin(power);
 }
@@ -305,7 +304,6 @@ padWheelEl.addEventListener('touchend', (e) => {
     onWheelEnd();
 }, { passive: false });
 
-// Wsparcie myszki (gdyby ktoś testował na komputerze)
 padWheelEl.addEventListener('mousedown', (e) => onWheelStart(e.clientX, e.clientY));
 window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => onWheelEnd());
@@ -313,6 +311,9 @@ window.addEventListener('mouseup', () => onWheelEnd());
 window.triggerWheelSpin = async (power = 7) => {
     if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
     isSpinningLocally = true;
+    const spinTickNow = Date.now();
+    lastHandledSpinTickOnPad = spinTickNow;
+
     padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
     const segAngle = 360 / r5Categories.length;
     const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
@@ -325,13 +326,18 @@ window.triggerWheelSpin = async (power = 7) => {
     await updateDoc(doc(db, "quizGame", "state"), {
         status: "r5_spinning",
         spinPower: power,
-        spinTick: Date.now()
+        spinTick: spinTickNow
     });
 };
 
-// Podbijanie stawki w Rundzie 5 (+2, +5, +10, +20)
+// Podbijanie stawki w Rundzie 5 (+2, +5, +10, +20) z obsługą wyrównania i limitem do -100 pkt!
 window.placeBid = async (addAmount) => {
     if (!currentState || currentState.round !== 5 || currentState.status !== "r5_bidding") return;
+
+    // Jeśli trwa dogrywka dla remisujących, sprawdź czy gracz bierze w niej udział
+    const tiedList = currentState.r5TiedBidders || [];
+    if (tiedList.length > 0 && !tiedList.includes(myName)) return;
+
     const stateRef = doc(db, "quizGame", "state");
     const snap = await getDoc(stateRef);
     const data = snap.data();
@@ -340,19 +346,30 @@ window.placeBid = async (addAmount) => {
     let bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
     let myNewBid = (bids[myName] || 5) + addAmount;
 
-    if (myNewBid <= (data.r5HighestBid || 5)) {
-        document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ PRZEBIĆ LIDERA (MIN. ${(data.r5HighestBid || 5) + 1} PKT)!`;
+    // Twardy limit zadłużenia: gracz nie może spaść poniżej -100 punktów po odjęciu wylicytowanej stawki!
+    const maxAllowedBid = myCurrentPoints + 100;
+    if (myNewBid > maxAllowedBid) {
+        document.getElementById('r5BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
         return;
     }
+
+    const currentMax = data.r5HighestBid || 5;
+    // Pozwalamy wyrównać najwyższą stawkę (>= currentMax) lub przebić!
+    if (myNewBid < currentMax) {
+        document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
+        return;
+    }
+
     document.getElementById('r5BidFeedback').innerText = "";
     bids[myName] = myNewBid;
     let newPot = (data.carryOver || 0) + Object.values(bids).reduce((a, b) => a + b, 0);
+    let newHighestBid = Math.max(currentMax, myNewBid);
 
     await updateDoc(stateRef, {
         r5Bids: bids,
         r5Pot: newPot,
         r5HighestBidder: myName,
-        r5HighestBid: myNewBid,
+        r5HighestBid: newHighestBid,
         r5Countdown: 0,
         bidTick: Date.now()
     });
@@ -391,6 +408,13 @@ window.joinGame = () => {
     document.getElementById('loginUI').style.display = 'none';
     document.getElementById('gamePad').style.display = 'block';
     
+    // Nasłuchuj własnych punktów z bazy, aby pilnować limitu -100 pkt w licytacji
+    onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
+        if (sSnap.exists()) {
+            myCurrentPoints = sSnap.data().points || 0;
+        }
+    });
+
     startRealtimeListener();
 
     clearInterval(watchdogInterval);
@@ -539,39 +563,81 @@ function updatePadUI() {
         return;
     }
 
-    // RUNDA 5: KRĘCENIE KOŁEM NA TELEFONIE
+    // RUNDA 5: KOŁO ZOSTAJE NA TELEFONIE PRZEZ CAŁY CZAS KRĘCENIA (TAK DŁUGO JAK NA TV)!
     if (currentState && currentState.round === 5 && (currentState.status === "r5_wait_spin" || currentState.status === "r5_spinning")) {
-        if (currentState.status === "r5_wait_spin") isSpinningLocally = false;
-        if (currentState.controller === myName && currentState.status === "r5_wait_spin") {
-            document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM PALCEM!";
-            document.getElementById('ui-r5-spin').style.display = 'flex';
+        if (currentState.status === "r5_wait_spin") {
+            isSpinningLocally = false;
+        }
+        // Pokazujemy koło na telefonie każdemu (lub kręcącemu przez pełny czas obrotu!)
+        document.getElementById('ui-r5-spin').style.display = 'flex';
+        const instrEl = document.getElementById('spinInstruction');
+
+        if (currentState.status === "r5_wait_spin") {
+            if (currentState.controller === myName) {
+                document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
+                instrEl.innerText = "ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!";
+            } else {
+                document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
+                instrEl.innerText = `CZEKAJ... TERAZ KOŁEM KRĘCI ${currentState.controller.toUpperCase()}!`;
+            }
         } else {
-            document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
-            lockedEl.classList.add('speak-msg');
-            lockedEl.style.display = 'block';
-            lockedEl.innerText = currentState.status === "r5_spinning" 
-                ? "🎡 KOŁO SIĘ KRĘCI! PATRZ NA TV!" 
-                : `TERAZ KOŁEM KRĘCI: ${currentState.controller.toUpperCase()}!`;
+            // Status: r5_spinning -> koło kręci się na wszystkich telefonach synchronicznie z TV!
+            document.getElementById('padStatus').innerText = "🎡 KOŁO SIĘ OBRACA!";
+            instrEl.innerText = "LOSOWANIE KATEGORII...";
+            if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
+                lastHandledSpinTickOnPad = currentState.spinTick;
+                padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
+                const segAngle = 360 / r5Categories.length;
+                const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
+                const curMod = ((padWheelRot % 360) + 360) % 360;
+                let diff = targetMod - curMod;
+                if (diff < 0) diff += 360;
+                padWheelRot += (currentState.spinPower || 7) * 360 + diff;
+                padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+            }
         }
         return;
     }
 
-    // RUNDA 5: LICYTACJA NA TELEFONACH (+2, +5, +10, +20)
+    // RUNDA 5: LICYTACJA NA TELEFONACH (+2, +5, +10, +20) Z DOGRYWKĄ DLA REMISUJĄCYCH I LIMITEM -100 PKT
     if (currentState && currentState.round === 5 && (currentState.status === "r5_bidding" || currentState.status === "r5_sold")) {
         if (currentState.status === "r5_sold") {
             document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
             lockedEl.classList.add('win-msg');
             lockedEl.style.display = 'block';
-            lockedEl.innerText = `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`;
+            lockedEl.innerText = currentState.r5RandomDrawn
+                ? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`
+                : `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`;
             return;
         }
-        document.getElementById('padStatus').innerText = "AWANTURA O PUNKTY - LICYTUJ!";
+
+        const tiedList = currentState.r5TiedBidders || [];
+        if (tiedList.length > 0 && !tiedList.includes(myName)) {
+            document.getElementById('padStatus').innerText = "DOGRYWKA LICYTACJI!";
+            lockedEl.style.display = 'block';
+            lockedEl.innerText = `DOGRYWKA POMIĘDZY:\n${tiedList.join(" i ").toUpperCase()}!`;
+            return;
+        }
+
+        document.getElementById('padStatus').innerText = tiedList.length > 0 
+            ? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!" 
+            : "AWANTURA O PUNKTY - LICYTUJ!";
         document.getElementById('ui-r5-bid').style.display = 'flex';
         document.getElementById('pad-r5-cat').innerText = currentState.category || "";
         document.getElementById('pad-r5-pot').innerText = `${currentState.r5Pot || 20} PKT`;
         document.getElementById('pad-r5-leader').innerText = `${currentState.r5HighestBidder.toUpperCase()} (${currentState.r5HighestBid} PKT)`;
+
         const myBid = (currentState.r5Bids || {})[myName] || 5;
+        const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
         document.getElementById('pad-r5-mybid').innerText = `${myBid} PKT`;
+        document.getElementById('pad-r5-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
+
+        // Wyłącz przyciski, które przekroczyłyby limit -100 pkt
+        [2, 5, 10, 20].forEach(inc => {
+            const btn = document.getElementById(`btn-bid-${inc}`);
+            if (btn) btn.disabled = (myBid + inc > maxAllowedBid);
+        });
+
         const cdEl = document.getElementById('pad-r5-countdown');
         if (currentState.r5Countdown > 0) {
             cdEl.style.color = "#ff4757";
