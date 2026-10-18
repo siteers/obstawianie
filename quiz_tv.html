@@ -743,13 +743,8 @@ function renderPodium() {
 
 // --- AUTONOMICZNY STRAŻNIK LICYTACJI NA TV (Losowanie przy 5 pkt + Dogrywki przy remisie!) ---
 function startTvAuctionSupervisor() {
-    if (tvAuctionEngineInterval) return;
-    tvAuctionEngineInterval = setInterval(async () => {
-        if (!latestGameState || latestGameState.round !== 5 || latestGameState.status !== "r5_bidding") {
-            clearInterval(tvAuctionEngineInterval);
-            tvAuctionEngineInterval = null;
-            return;
-        }
+// Sterowanie czasem licytacji i dogrywkami wykonuje bezpośrednio quiz_admin.html
+}
 
         const now = Date.now();
         // Jeśli admin nie podał auctionStartTime, tworzymy go od momentu wejścia w licytację (5s na lektora + 12s licytacji)
