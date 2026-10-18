@@ -46,10 +46,10 @@
     <h3>KROK 3: STEROWANIE RUNDAMI (LEKTOR + AUTO-PRZECHODZENIE)</h3>
     <label>Wybierz rundę:</label>
     <select id="roundSel">
-        <option value="1">Runda 1: ABCD Wyścig (10s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
+        <option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
         <option value="2">Runda 2: Koło Fortuny - Hasła (60s | 20/15/10/5 pkt | 5 haseł)</option>
-        <option value="3">Runda 3: Szybkie pisanie (15s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
-        <option value="4">Runda 4: Ryzyko - Wybieranie gracza (10s po lektorze | 60 pytań)</option>
+        <option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
+        <option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 60 pytań)</option>
         <option value="5">Runda 5: AWANTURA O PUNKTY - Kręcenie Kołem i Licytacja!</option>
     </select><br>
     <button type="button" class="green" id="btnStartRound">▶️ START GRY / RUNDY</button>
@@ -506,7 +506,6 @@ BAJKI|Jak nazywa się dżin z lampy w bajce Disneya?|Dżafar;Aladyn;Dżin;Abu|2
 MATEMATYKA|Ile kwadransów mieści się w jednej godzinie?|2;3;4;6|2
 HISTORIA|Co odkrył Mikołaj Kopernik?|Amerykę;Że Ziemia krąży wokół Słońca;Żarówkę;Grawitację|1`);
 
-// 8 Kategorii do Rundy 5 (Koło Fortuny na telefonie + Licytacja)
 const r5WheelCategories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 
 const allDBs = {
@@ -550,7 +549,7 @@ const allDBs = {
 let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1 };
 let usedR5Indices = [];
-let r5CarryOverPool = 0; // Kumulacja puli w Rundzie 5 po błędnej odpowiedzi!
+let r5CarryOverPool = 0;
 let currentState = null;
 let r4Controller = "";
 
@@ -559,8 +558,6 @@ let autoFlowTimer = null;
 let auctionMonitorInterval = null;
 let lastHandledStatus = "";
 let lastSpinHandled = 0;
-let lastBidTickHandled = 0;
-let auctionPhase = "waiting"; // waiting -> quiet -> countdown -> sold
 
 statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz pulę (1-5) lub kliknij START GRY.";
 
@@ -596,7 +593,6 @@ async function showGrandFinale() {
     } catch (err) { showError(err.message); }
 }
 
-// Losowanie pytania z wylosowanej na kole kategorii w Rundzie 5
 function pickR5QuestionByCategory(pool, catName) {
     const list = allDBs[pool][5] || allDBs[pool][4];
     let idx = list.findIndex((item, i) => item.cat === catName && !usedR5Indices.includes(i));
@@ -622,7 +618,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         document.getElementById('nominateUI').style.display = 'block';
         document.getElementById('n-curr').innerText = currentState.controller || r4Controller;
         statusEl.innerText = currentState.round === 5 
-            ? `Status: Runda 5 - ${currentState.controller} kręci kołem na swoim telefonie!`
+            ? `Status: Runda 5 - ${currentState.controller} kręci palcem kołem na swoim telefonie!`
             : `Status: Runda 4 - ${currentState.controller} wybiera na telefonie kto odpowiada!`;
     } 
     else if (currentState.status === "speaking") {
@@ -630,7 +626,7 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     }
     else if (currentState.status === "reading" && currentState.round === 1) {
         let count = Object.keys(currentState.r1Answers || {}).length;
-        statusEl.innerText = `Status: Runda 1 (Wyścig ABCD) - odpowiedziało już: ${count}/4 graczy.`;
+        statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedziało już: ${count}/4 graczy.`;
     }
     else if (currentState.status === "wheel_reading" && currentState.round === 2) {
         let winnersCount = (currentState.wheelWinners || []).length;
@@ -638,37 +634,38 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
     }
     else if (currentState.status === "reading" && currentState.round === 3) {
         let winners = currentState.r3Winners || [];
-        statusEl.innerText = `Status: Runda 3 (Szybkie Pisanie) - odgadło już: ${winners.length}/4 graczy (Prawidłowa: ${currentState.correctText}).`;
+        statusEl.innerText = `Status: Runda 3 (Szybkie Pisanie - 20s) - odgadło już: ${winners.length}/4 graczy (Prawidłowa: ${currentState.correctText}).`;
         r3LiveBox.style.display = 'block';
         r3LiveBox.innerHTML = `<b>Poprawna:</b> <span style="color:#d4af37">${currentState.correctText}</span> | <b>Trafili:</b> ${winners.join(", ") || "brak"}`;
     }
 
-    // --- OBSŁUGA RUNDY 5: KRĘCENIE KOŁEM NA TELEFONIE -> LICYTACJA -> ODLICZANIE 5s -> SPRZEDANE ---
+    // --- OBSŁUGA RUNDY 5: KRĘCENIE KOŁEM NA TELEFONIE -> 12 SEKUND LICYTACJI + 5 SEKUND DOGRYWKI ---
     if (currentState.round === 5 && currentState.status === "r5_spinning") {
         if (currentState.spinTick && currentState.spinTick !== lastSpinHandled) {
             lastSpinHandled = currentState.spinTick;
-            statusEl.innerText = `🎡 Koło się kręci! Za 4.5s zatrzyma się na kategorii i ruszy licytacja...`;
+            statusEl.innerText = `🎡 Koło się kręci! Za 4.8s zatrzyma się na kategorii i ruszy 12-sekundowa licytacja...`;
             setTimeout(async () => {
-                // Każdy gracz wchodzi do pytania dając 5 pkt wpisowego!
                 let initBids = { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
                 let totalPot = (currentState.carryOver || 0) + 20;
-                auctionPhase = "bidding";
-                lastBidTickHandled = Date.now();
+                // Dajemy 3.5s na przeczytanie kategorii przez lektora + 12 sekund spokojnej licytacji podstawowej!
+                let now = Date.now();
                 await updateDoc(doc(db, "quizGame", "state"), {
                     status: "r5_bidding",
                     r5Bids: initBids,
                     r5Pot: totalPot,
                     r5HighestBidder: currentState.controller,
                     r5HighestBid: 5,
+                    r5MainSec: 12,
                     r5Countdown: 0,
-                    bidTick: lastBidTickHandled,
-                    speechTick: Date.now()
+                    auctionStartTime: now + 3500, // 3.5s dla lektora na przeczytanie "Kategoria X, rozpoczynamy licytację!"
+                    bidTick: now,
+                    speechTick: now
                 });
-            }, 4600);
+            }, 4800);
         }
     }
 
-    // Monitorowanie licytacji w Rundzie 5 (Awantura o punkty)
+    // Monitorowanie licytacji w Rundzie 5: 12 sekund spokojnej licytacji -> potem 5 sekund "CZY KTOŚ JESZCZE LICYTUJE?" (resetowane przy przebiciu)
     if (currentState.round === 5 && currentState.status === "r5_bidding") {
         if (!auctionMonitorInterval) {
             auctionMonitorInterval = setInterval(async () => {
@@ -677,17 +674,34 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     auctionMonitorInterval = null;
                     return;
                 }
-                let elapsed = Date.now() - (currentState.bidTick || Date.now());
-                // Po 3.5 sekundy bez nowego podbicia włączamy 5-sekundowe odliczanie: "CZY KTOŚ JESZCZE LICYTUJE?"
-                if (elapsed >= 3500 && elapsed < 8500) {
-                    let secLeft = Math.ceil((8500 - elapsed) / 1000);
-                    if (currentState.r5Countdown !== secLeft) {
-                        await updateDoc(doc(db, "quizGame", "state"), { r5Countdown: secLeft });
+                const now = Date.now();
+                const startT = currentState.auctionStartTime || now;
+                const mainEndT = startT + 12000; // 12 sekund podstawowego czasu licytacji!
+                // Jeśli ktoś przebił pod koniec lub w dogrywce, dajemy 3s ciszy + 5s odliczania końcowego (razem 8s od ostatniego podbicia)
+                const effectiveCloseT = Math.max(mainEndT + 5000, (currentState.bidTick || startT) + 8000);
+                const remTotalMs = effectiveCloseT - now;
+
+                if (now < mainEndT) {
+                    // Trwa podstawowe 12 sekund spokojnej licytacji
+                    let mainSec = Math.min(12, Math.max(1, Math.ceil((mainEndT - now) / 1000)));
+                    if (currentState.r5MainSec !== mainSec || currentState.r5Countdown !== 0) {
+                        await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: mainSec, r5Countdown: 0 });
                     }
-                } else if (elapsed >= 8500) {
+                } else if (remTotalMs > 5000) {
+                    // Ktoś właśnie przebił w dogrywce -> 3 sekundy oddechu przed ponownym odliczaniem 5..1
+                    if (currentState.r5MainSec !== 0 || currentState.r5Countdown !== 0) {
+                        await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: 0, r5Countdown: 0 });
+                    }
+                } else if (remTotalMs > 0) {
+                    // Ostatnie 5 sekund: "CZY KTOŚ JESZCZE LICYTUJE? (5..4..3..2..1)"
+                    let finalSec = Math.ceil(remTotalMs / 1000);
+                    if (currentState.r5Countdown !== finalSec || currentState.r5MainSec !== 0) {
+                        await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: 0, r5Countdown: finalSec });
+                    }
+                } else {
+                    // SPRZEDANE!
                     clearInterval(auctionMonitorInterval);
                     auctionMonitorInterval = null;
-                    // SPRZEDANE! Odejmij wylicytowane punkty od wszystkich graczy i przejdź do pytania dla zwycięzcy licytacji!
                     let bids = currentState.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
                     for (let p of ["Lila", "Kaja", "Darek", "Jas"]) {
                         let ref = doc(db, "quizScores", p);
@@ -698,18 +712,19 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     await updateDoc(doc(db, "quizGame", "state"), {
                         status: "r5_sold",
                         nominated: currentState.r5HighestBidder,
+                        r5MainSec: 0,
                         r5Countdown: 0,
                         speechTick: Date.now()
                     });
-                    // Po 3.5s od ogłoszenia "SPRZEDANE!" włączamy lektora z pytaniem dla zwycięzcy licytacji
+                    // Wydłużona przerwa (6.5 sekundy!), aby lektor spokojnie powiedział "Sprzedane! Za X pkt odpowiada Lila" i zrobił pauzę przed pytaniem!
                     setTimeout(async () => {
                         await updateDoc(doc(db, "quizGame", "state"), {
                             status: "speaking",
                             speechTick: Date.now()
                         });
-                    }, 3800);
+                    }, 6500);
                 }
-            }, 400);
+            }, 350);
         }
     } else {
         if (auctionMonitorInterval) {
@@ -718,7 +733,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // Timeout w R4 lub R5
     if (currentState.status === "nominated_timeout" && (currentState.round === 4 || currentState.round === 5)) {
         let nomTimeKey = "nom_timeout_" + currentState.answerTick;
         if (lastHandledStatus !== nomTimeKey) {
@@ -726,7 +740,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
             let player = currentState.nominated;
 
             if (currentState.round === 5) {
-                // W Rundzie 5 jeśli nie odpowie w czasie -> Pula przechodzi na następne pytanie!
                 r5CarryOverPool = currentState.r5Pot || 20;
                 updateDoc(doc(db, "quizGame", "state"), {
                     status: "timeout", loser: player, winner: "", pointsChange: 0, carryOver: r5CarryOverPool, timeoutPenalty: true, answerTick: Date.now()
@@ -757,7 +770,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
         }
     }
 
-    // Weryfikacja z biciem serca dla Rundy 4 oraz Rundy 5
     if (currentState.status === "results_pending_r4" || currentState.status === "results_pending_r5") {
         let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
         if (lastHandledStatus !== stateKey) {
@@ -771,7 +783,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                     let player = currentState.fastest;
 
                     if (currentState.round === 5) {
-                        // Rozliczenie Rundy 5 (Awantura o punkty)
                         let pot = currentState.r5Pot || 20;
                         if (isCorrect) {
                             const scoreRef = doc(db, "quizScores", player);
@@ -779,13 +790,12 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                             let currentPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
                             await setDoc(scoreRef, { points: currentPts + pot }, { merge: true });
                             
-                            r5CarryOverPool = 0; // Pula zgarnięta!
-                            r4Controller = player; // Zwycięzca kręci kołem w następnym pytaniu!
+                            r5CarryOverPool = 0;
+                            r4Controller = player;
                             await updateDoc(doc(db, "quizGame", "state"), {
                                 status: "results", winner: player, loser: "", pointsChange: pot, carryOver: 0, answerTick: Date.now()
                             });
                         } else {
-                            // Błędna odpowiedź -> Cała pula przechodzi na następne pytanie jako KUMULACJA!
                             r5CarryOverPool = pot;
                             await updateDoc(doc(db, "quizGame", "state"), {
                                 status: "results", winner: "", loser: player, pointsChange: 0, carryOver: r5CarryOverPool, answerTick: Date.now()
@@ -794,7 +804,6 @@ onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
                         return;
                     }
 
-                    // Rozliczenie Rundy 4
                     let isSelfPlay = (player === currentState.controller && currentState.nominated === currentState.controller);
                     let stake = isSelfPlay ? 20 : 10;
                     let ptsChange = isCorrect ? stake : -stake;
@@ -891,7 +900,6 @@ async function nextQuestion() {
         
         currentQIndex[r]++;
 
-        // RUNDA 5: AWANTURA O PUNKTY (Koło Fortuny na telefonie + Licytacja)
         if (r === 5) {
             if (currentQIndex[5] >= 15) {
                 await showGrandFinale();
@@ -903,7 +911,6 @@ async function nextQuestion() {
                 r4Controller = initRes.player;
                 tieBanner = initRes.tieMsg;
             }
-            // Wylosuj z góry docelowy segment koła (0-7) i dobierz pytanie z tej kategorii
             let segIdx = Math.floor(Math.random() * r5WheelCategories.length);
             let chosenCat = r5WheelCategories[segIdx];
             let qData = pickR5QuestionByCategory(currentPool, chosenCat);
