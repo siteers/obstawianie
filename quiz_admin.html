@@ -41,18 +41,18 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 3: STEROWANIE RUNDAMI (PODSUMOWANIA RUND + AUTO-PRZECHODZENIE)</h3>
+<h3>KROK 3: STEROWANIE RUNDAMI (GOTOWOŚĆ GRACZY LUB ADMINA)</h3>
 <label>Wybierz rundę:</label>
 <select id="roundSel">
 <option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
-<option value="2">Runda 2: Koło Fortuny - Hasła (60s | 20/15/10/5 pkt | 5 haseł)</option>
+<option value="2">Runda 2: Rozsypanka Literowa - Zgadnij Hasło (60s | 20/15/10/5 pkt | 5 haseł)</option>
 <option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
 <option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 60 pytań)</option>
-<option value="5">Runda 5: AWANTURA O PUNKTY - Koło i Licytacja (15 pytań)</option>
-<option value="6">Runda 6: BŁYSKAWICA PRAWDA/FAŁSZ (Stoper 20s Start/Stop | Wiek: 11/10/10/8 lat)</option>
+<option value="5">Runda 5: BŁYSKAWICA PRAWDA/FAŁSZ (Stoper 20s Start/Stop | Wiek: 11/10/10/8 lat)</option>
+<option value="6">Runda 6: AWANTURA O PUNKTY - Koło Kategorii i Licytacja (15 pytań)</option>
 </select><br>
-<button type="button" class="green" id="btnStartRound" onclick="window.nextQuestion && window.nextQuestion()">▶️ START GRY / RUNDY</button>
-<button type="button" class="gold" id="btnNextQ" onclick="window.nextQuestion && window.nextQuestion()">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
+<button type="button" class="green" id="btnStartRound" onclick="window.nextQuestion && window.nextQuestion()">▶️ START RUNDY / NASTĘPNE PYTANIE</button>
+<button type="button" class="gold" id="btnNextQ" onclick="window.nextQuestion && window.nextQuestion()">⏭️ POMIŃ / WYMUSZ START (Awaryjnie)</button>
 <button type="button" class="purple" id="btnShowPodium" onclick="window.showGrandFinale && window.showGrandFinale()">🏆 POKAŻ PODIUM / FINAŁ</button>
 
 <div class="status-banner" id="adminStatus">⏳ Ładowanie skryptu i łączenie z Firebase...</div>
@@ -508,7 +508,7 @@ BAJKI|Jak nazywa się dżin z lampy w bajce Disneya?|Dżafar;Aladyn;Dżin;Abu|2
 MATEMATYKA|Ile kwadransów mieści się w jednej godzinie?|2;3;4;6|2
 HISTORIA|Co odkrył Mikołaj Kopernik?|Amerykę;Że Ziemia krąży wokół Słońca;Żarówkę;Grawitację|1`);
 
-const rawR5_Dedicated = parseR4(`
+const rawR6_Dedicated = parseR4(`
 KOSMOS|Jak nazywa się pas skał krążących między Marsem a Jowiszem?|Pas Oriona;Pas Planetoid (Asteroid);Droga Mleczna;Mgławica|1
 KOSMOS|Która planeta w Układzie Słonecznym jest najgorętsza przez gęste chmury?|Merkury;Wenus;Mars;Jowisz|1
 KOSMOS|Jak nazywał się pierwszy pies wysłany w kosmos?|Burek;Szarik;Łajka;Reksio|2
@@ -574,8 +574,8 @@ HISTORIA|W jakim kraju rządzili starożytni Faraonowie?|W Grecji;W Rzymie;W Egi
 HISTORIA|Jak nazywał się wielki statek pasażerski, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
 HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2`);
 
-// --- RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ SPERSONALIZOWANA POD WIEK (Po 20 pytań na osobę, 20.0s łącznie!) ---
-const r6QuestionsByPlayer = {
+// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ SPERSONALIZOWANA POD WIEK (Po 20 pytań na osobę, 20.0s łącznie!) ---
+const r5QuestionsByPlayer = {
 Lila: parseTF(`
 Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?|1
 Czy stolica Australii to Sydney?|0
@@ -662,17 +662,17 @@ Czy samoloty pływają pod wodą jak łodzie podwodne?|0
 Czy po lecie zawsze przychodzi jesień?|1`)
 };
 
-const r6Order = ["Lila", "Kaja", "Darek", "Jas"];
-const r6Ages = { Lila: 11, Kaja: 10, Darek: 10, Jas: 8 };
-const r5WheelCategories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
+const r5Order = ["Lila", "Kaja", "Darek", "Jas"];
+const r5Ages = { Lila: 11, Kaja: 10, Darek: 10, Jas: 8 };
+const r6WheelCategories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 
 const roundTitlesSpeech = {
 1: "Runda pierwsza: Wyścig A B C D",
-2: "Runda druga: Koło Fortuny",
+2: "Runda druga: Rozsypanka Literowa",
 3: "Runda trzecia: Szybkie pisanie",
 4: "Runda czwarta: Ryzyko i wybieranie gracza",
-5: "Runda piąta: Awantura o punkty",
-6: "Runda szósta: Błyskawica Prawda czy Fałsz"
+5: "Runda piąta: Błyskawica Prawda czy Fałsz",
+6: "Runda szósta: Awantura o punkty"
 };
 
 const allDBs = {
@@ -681,57 +681,58 @@ const allDBs = {
 2: parseWheel(`BAJKA|KRAINA LODU\nJEDZENIE|LODY WANILIOWE\nZWIERZĘTA|ZŁOTA RYBKA\nPOSTAĆ|MYSZKA MIKI\nBAJKA|KUBUŚ PUCHATEK`),
 3: rawR3_P1,
 4: [...rawR4_A, ...rawR4_B],
-5: rawR5_Dedicated
+6: rawR6_Dedicated
 },
 2: {
 1: rawR1_P2,
 2: parseWheel(`GEOGRAFIA|WIELKI MUR CHIŃSKI\nKOSMOS|UKŁAD SŁONECZNY\nHISTORIA|BITWA POD GRUNWALDEM\nZABYTKI|WIEŻA EIFFLA\nNAUKA|SZTUCZNA INTELIGENCJA`),
 3: rawR3_P2,
 4: [...rawR4_C, ...rawR4_A],
-5: rawR5_Dedicated
+6: rawR6_Dedicated
 },
 3: {
 1: rawR1_P3,
 2: parseWheel(`FILM|GWIEZDNE WOJNY\nLITERATURA|AKADEMIA PANA KLEKSA\nGEOGRAFIA|MORZE BAŁTYCKIE\nSPORT|PIŁKA NOŻNA\nBOHATER|HARRY POTTER`),
 3: rawR3_P3,
 4: [...rawR4_B, ...rawR4_D],
-5: rawR5_Dedicated
+6: rawR6_Dedicated
 },
 4: {
 1: rawR1_P4,
 2: parseWheel(`ZWIERZĘTA|NIEDŹWIEDŹ POLARNY\nBAJKA|KRÓL LEW\nGEOGRAFIA|KOPALNIA SOLI\nSPORT|SKOKI NARCIARSKIE\nGRY|MINECRAFT`),
 3: rawR3_P4,
 4: [...rawR4_D, ...rawR4_A],
-5: rawR5_Dedicated
+6: rawR6_Dedicated
 },
 5: {
 1: rawR1_P5,
 2: parseWheel(`KOSMOS|DROGA MLECZNA\nBAJKA|TOY STORY\nPRZYRODA|CZTERY PORY ROKU\nMIASTO|ZAMEK NA WAWELU\nSPORT|IGRZYSKA OLIMPIJSKIE`),
 3: rawR3_P5,
 4: [...rawR4_D, ...rawR4_C],
-5: rawR5_Dedicated
+6: rawR6_Dedicated
 }
 };
 
 let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
-let usedR5Indices = [];
-let r5CarryOverPool = 0;
+let usedR6Indices = [];
+let r6CarryOverPool = 0;
 let currentState = null;
 let r4Controller = "";
 
-// Zmienne dla Rundy 6 (Błyskawica Prawda/Fałsz)
-let r6PlayerIdx = 0;
-let r6QIdx = -1;
-let r6TimeLeftMs = 20000;
-let r6PlayerScoreChange = 0;
-let lastR6HandledKey = "";
+// Zmienne dla Rundy 5 (Błyskawica Prawda/Fałsz)
+let r5PlayerIdx = 0;
+let r5QIdx = -1;
+let r5TimeLeftMs = 20000;
+let r5PlayerScoreChange = 0;
+let lastR5HandledKey = "";
 
 let suspenseTimer = null;
 let autoFlowTimer = null;
 let auctionMonitorInterval = null;
 let lastHandledStatus = "";
 let lastSpinHandled = 0;
+let lastSummaryReadyHandled = 0;
 
 statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz pulę (1-5) lub kliknij START GRY.";
 
@@ -767,7 +768,7 @@ statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium
 } catch (err) { showError(err.message); }
 }
 
-// Funkcja uruchamiająca Ekran Podsumowania Rundy i zapowiadająca kolejną rundę!
+// Ekran Podsumowania Rundy -> czeka na kliknięcie gotowości przez wszystkich aktywnych graczy LUB kliknięcie przez Admina!
 async function triggerRoundSummary(completedRound) {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
 if (completedRound >= 6) {
@@ -776,7 +777,8 @@ return;
 }
 const nextR = completedRound + 1;
 document.getElementById('roundSel').value = String(nextR);
-statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Za 12 sekund automatyczny start Rundy ${nextR}...`;
+const existingActive = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
+statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Czekam aż gracze klikną GOTOWOŚĆ na telefonach (lub kliknij START RUNDY tutaj)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "round_summary",
@@ -784,98 +786,98 @@ round: completedRound,
 completedRound: completedRound,
 nextRound: nextR,
 nextRoundTitle: roundTitlesSpeech[nextR] || `Runda ${nextR}`,
+activePlayers: existingActive,
+readyPlayers: [],
 speechTick: Date.now(),
 pool: currentPool
 });
-
-autoFlowTimer = setTimeout(() => {
-nextQuestion();
-}, 12500);
 }
 
-// --- STEROWANIE RUNDĄ 6: BŁYSKAWICA PRAWDA / FAŁSZ (Stoper 20.0s Start/Stop) ---
-async function startR6ForPlayer(pIdx) {
-r6PlayerIdx = pIdx;
-if (r6PlayerIdx >= r6Order.length) {
-await showGrandFinale();
+// --- STEROWANIE RUNDĄ 5: BŁYSKAWICA PRAWDA / FAŁSZ (Stoper 20.0s Start/Stop + Gotowość przed startem!) ---
+async function startR5ForPlayer(pIdx) {
+r5PlayerIdx = pIdx;
+if (r5PlayerIdx >= r5Order.length) {
+await triggerRoundSummary(5);
 return;
 }
-const player = r6Order[r6PlayerIdx];
-const age = r6Ages[player];
-r6QIdx = -1;
-r6TimeLeftMs = 20000;
-r6PlayerScoreChange = 0;
+const player = r5Order[r5PlayerIdx];
+const age = r5Ages[player];
+r5QIdx = -1;
+r5TimeLeftMs = 20000;
+r5PlayerScoreChange = 0;
 
-statusEl.innerText = `⚡ Runda 6: Przygotowanie tury gracza ${player} (${age} lat) - 20 pytań, 20.0s na liczniku!`;
+const existingActive = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
+statusEl.innerText = `⚡ Runda 5 (Błyskawica): Czekamy aż ${player} (${age} lat) kliknie GOTOWOŚĆ na swoim telefonie!`;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r6_intro",
-round: 6,
+status: "r5_wait_ready",
+round: 5,
 nominated: player,
-r6Age: age,
-r6TimeLeftMs: 20000,
-r6QNum: 0,
-r6ScoreDelta: 0,
+r5Age: age,
+r5TimeLeftMs: 20000,
+r5QNum: 0,
+r5ScoreDelta: 0,
+activePlayers: existingActive,
 speechTick: Date.now(),
 pool: currentPool
 });
 }
 
-async function sendNextR6Question() {
-const player = r6Order[r6PlayerIdx];
-const qList = r6QuestionsByPlayer[player] || [];
-r6QIdx++;
+async function sendNextR5Question() {
+const player = r5Order[r5PlayerIdx];
+const qList = r5QuestionsByPlayer[player] || [];
+r5QIdx++;
 
-if (r6QIdx >= qList.length || r6TimeLeftMs <= 0) {
-await finishR6TurnForPlayer(r6TimeLeftMs <= 0 ? "KONIEC CZASU (0.0s)!" : "WSZYSTKIE 20 PYTAŃ UKOŃCZONE!");
+if (r5QIdx >= qList.length || r5TimeLeftMs <= 0) {
+await finishR5TurnForPlayer(r5TimeLeftMs <= 0 ? "KONIEC CZASU (0.0s)!" : "WSZYSTKIE 20 PYTAŃ UKOŃCZONE!");
 return;
 }
 
-const qItem = qList[r6QIdx];
-statusEl.innerText = `⚡ Runda 6 [${player}]: Pytanie #${r6QIdx + 1}/20 | Pozostało czasu: ${(r6TimeLeftMs / 1000).toFixed(1)}s`;
+const qItem = qList[r5QIdx];
+statusEl.innerText = `⚡ Runda 5 [${player}]: Pytanie #${r5QIdx + 1}/20 | Pozostało czasu: ${(r5TimeLeftMs / 1000).toFixed(1)}s`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_speaking",
-round: 6,
+status: "r5_speaking",
+round: 5,
 nominated: player,
-r6Age: r6Ages[player],
+r5Age: r5Ages[player],
 question: qItem.q,
-r6CorrectBool: qItem.a,
-r6QNum: r6QIdx + 1,
-r6TimeLeftMs: r6TimeLeftMs,
+r5CorrectBool: qItem.a,
+r5QNum: r5QIdx + 1,
+r5TimeLeftMs: r5TimeLeftMs,
 speechTick: Date.now()
 });
 }
 
-async function finishR6TurnForPlayer(reasonText) {
-const player = r6Order[r6PlayerIdx];
-statusEl.innerText = `⚡ Koniec tury gracza ${player} (${reasonText}). Bilans: ${r6PlayerScoreChange >= 0 ? "+" : ""}${r6PlayerScoreChange} pkt.`;
+async function finishR5TurnForPlayer(reasonText) {
+const player = r5Order[r5PlayerIdx];
+statusEl.innerText = `⚡ Koniec tury gracza ${player} (${reasonText}). Bilans: ${r5PlayerScoreChange >= 0 ? "+" : ""}${r5PlayerScoreChange} pkt.`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_player_summary",
+status: "r5_player_summary",
 nominated: player,
-r6EndReason: reasonText,
-r6ScoreDelta: r6PlayerScoreChange,
-r6TimeLeftMs: Math.max(0, r6TimeLeftMs),
+r5EndReason: reasonText,
+r5ScoreDelta: r5PlayerScoreChange,
+r5TimeLeftMs: Math.max(0, r5TimeLeftMs),
 speechTick: Date.now()
 });
 
 clearTimeout(autoFlowTimer);
 autoFlowTimer = setTimeout(() => {
-startR6ForPlayer(r6PlayerIdx + 1);
+startR5ForPlayer(r5PlayerIdx + 1);
 }, 7500);
 }
 
-function pickR5QuestionByCategory(pool, catName) {
-const list = allDBs[pool][5];
-let idx = list.findIndex((item, i) => item.cat === catName && !usedR5Indices.includes(i));
+function pickR6QuestionByCategory(pool, catName) {
+const list = allDBs[pool][6];
+let idx = list.findIndex((item, i) => item.cat === catName && !usedR6Indices.includes(i));
 if (idx === -1) {
-idx = list.findIndex((item, i) => !usedR5Indices.includes(i));
+idx = list.findIndex((item, i) => !usedR6Indices.includes(i));
 }
 if (idx === -1) {
-usedR5Indices = [];
+usedR6Indices = [];
 idx = 0;
 }
-usedR5Indices.push(idx);
+usedR6Indices.push(idx);
 return list[idx];
 }
 
@@ -886,11 +888,30 @@ currentState = docSnap.data();
 document.getElementById('nominateUI').style.display = 'none';
 r3LiveBox.style.display = 'none';
 
-if ((currentState.status === "setup_nomination" || currentState.status === "nominating" || currentState.status === "r5_wait_spin") && (currentState.round === 4 || currentState.round === 5)) {
+// Sprawdzenie, czy w podsumowaniu rundy wszyscy aktywni gracze kliknęli GOTOWOŚĆ na telefonach!
+if (currentState.status === "round_summary") {
+const readyList = currentState.readyPlayers || [];
+const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
+statusEl.innerText = `📊 Podsumowanie Rundy ${currentState.completedRound}: Gotowi gracze: ${readyList.length}/${activeList.length} (${readyList.join(", ") || "nikt"}). Kliknij START RUNDY lub poczekaj na graczy.`;
+
+if (readyList.length > 0 && activeList.every(p => readyList.includes(p))) {
+let rdyKey = currentState.readyTick || Date.now();
+if (lastSummaryReadyHandled !== rdyKey) {
+lastSummaryReadyHandled = rdyKey;
+statusEl.innerText = `🚀 Wszyscy gracze zgłosili gotowość! Uruchamiam Rundę ${currentState.nextRound}...`;
+clearTimeout(autoFlowTimer);
+autoFlowTimer = setTimeout(() => {
+nextQuestion();
+}, 1200);
+}
+}
+}
+
+if ((currentState.status === "setup_nomination" || currentState.status === "nominating" || currentState.status === "r6_wait_spin") && (currentState.round === 4 || currentState.round === 6)) {
 document.getElementById('nominateUI').style.display = 'block';
 document.getElementById('n-curr').innerText = currentState.controller || r4Controller;
-statusEl.innerText = currentState.round === 5
-? `Status: Runda 5 - ${currentState.controller} kręci palcem kołem na swoim telefonie!`
+statusEl.innerText = currentState.round === 6
+? `Status: Runda 6 (Awantura) - ${currentState.controller} kręci palcem kołem na swoim telefonie!`
 : `Status: Runda 4 - ${currentState.controller} wybiera na telefonie kto odpowiada!`;
 }
 else if (currentState.status === "speaking") {
@@ -902,7 +923,7 @@ statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedziało już
 }
 else if (currentState.status === "wheel_reading" && currentState.round === 2) {
 let winnersCount = (currentState.wheelWinners || []).length;
-statusEl.innerText = `Status: Runda 2 (Koło Fortuny) w toku! Odgadło już: ${winnersCount}/4 graczy.`;
+statusEl.innerText = `Status: Runda 2 (Rozsypanka Literowa) w toku! Odgadło już: ${winnersCount}/4 graczy.`;
 }
 else if (currentState.status === "reading" && currentState.round === 3) {
 let winners = currentState.r3Winners || [];
@@ -911,24 +932,24 @@ r3LiveBox.style.display = 'block';
 r3LiveBox.innerHTML = `<b>Poprawna:</b> <span style="color:#d4af37">${currentState.correctText}</span> | <b>Trafili:</b> ${winners.join(", ") || "brak"}`;
 }
 
-// --- OBSŁUGA RUNDY 6: ODBIÓR ODPOWIEDZI PRAWDA/FAŁSZ I ZATRZYMANIE STOPERA ---
-if (currentState.round === 6 && currentState.status === "r6_ready_first") {
-let readyKey = "r6_first_" + currentState.speechTick;
-if (lastR6HandledKey !== readyKey) {
-lastR6HandledKey = readyKey;
-sendNextR6Question();
+// --- OBSŁUGA RUNDY 5 (BŁYSKAWICA PRAWDA/FAŁSZ) ---
+if (currentState.round === 5 && currentState.status === "r5_ready_first") {
+let readyKey = "r5_first_" + currentState.speechTick;
+if (lastR5HandledKey !== readyKey) {
+lastR5HandledKey = readyKey;
+sendNextR5Question();
 }
 }
 
-if (currentState.round === 6 && currentState.status === "r6_answered") {
-let ansKey = "r6_ans_" + currentState.answerTick;
-if (lastR6HandledKey !== ansKey) {
-lastR6HandledKey = ansKey;
+if (currentState.round === 5 && currentState.status === "r5_answered") {
+let ansKey = "r5_ans_" + currentState.answerTick;
+if (lastR5HandledKey !== ansKey) {
+lastR5HandledKey = ansKey;
 const player = currentState.nominated;
-const isCorrect = (currentState.r6GivenBool === currentState.r6CorrectBool);
+const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
 const ptsDelta = isCorrect ? 5 : -5;
-r6PlayerScoreChange += ptsDelta;
-r6TimeLeftMs = Math.max(0, currentState.r6TimeLeftMs || 0);
+r5PlayerScoreChange += ptsDelta;
+r5TimeLeftMs = Math.max(0, currentState.r5TimeLeftMs || 0);
 
 (async () => {
 try {
@@ -938,32 +959,33 @@ let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: curPts + ptsDelta }, { merge: true });
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_feedback",
-r6LastCorrect: isCorrect,
-r6LastPts: ptsDelta,
-r6ScoreDelta: r6PlayerScoreChange,
-r6TimeLeftMs: r6TimeLeftMs
+status: "r5_feedback",
+r5LastCorrect: isCorrect,
+r5LastPts: ptsDelta,
+r5ScoreDelta: r5PlayerScoreChange,
+r5TimeLeftMs: r5TimeLeftMs
 });
 
 clearTimeout(autoFlowTimer);
 autoFlowTimer = setTimeout(() => {
-sendNextR6Question();
+sendNextR5Question();
 }, 1700);
 } catch (e) { showError(e.message); }
 })();
 }
 }
 
-if (currentState.round === 6 && currentState.status === "r6_timeout") {
-let toKey = "r6_to_" + currentState.answerTick;
-if (lastR6HandledKey !== toKey) {
-lastR6HandledKey = toKey;
-r6TimeLeftMs = 0;
-finishR6TurnForPlayer("CZAS 20.0s MINĄŁ!");
+if (currentState.round === 5 && currentState.status === "r5_timeout") {
+let toKey = "r5_to_" + currentState.answerTick;
+if (lastR5HandledKey !== toKey) {
+lastR5HandledKey = toKey;
+r5TimeLeftMs = 0;
+finishR5TurnForPlayer("CZAS 20.0s MINĄŁ!");
 }
 }
 
-if (currentState.round === 5 && currentState.status === "r5_spinning") {
+// --- OBSŁUGA RUNDY 6 (AWANTURA O PUNKTY): KOŁO I LICYTACJA ---
+if (currentState.round === 6 && currentState.status === "r6_spinning") {
 if (currentState.spinTick && currentState.spinTick !== lastSpinHandled) {
 lastSpinHandled = currentState.spinTick;
 statusEl.innerText = `🎡 Koło obraca się na TV i telefonie! Za 5s ruszy licytacja...`;
@@ -972,14 +994,14 @@ let initBids = { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
 let totalPot = (currentState.carryOver || 0) + 20;
 let now = Date.now();
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_bidding",
-r5Bids: initBids,
-r5Pot: totalPot,
-r5HighestBidder: "WSZYSCY (PO 5 PKT)",
-r5HighestBid: 5,
-r5TiedBidders: [],
-r5MainSec: 12,
-r5Countdown: 0,
+status: "r6_bidding",
+r6Bids: initBids,
+r6Pot: totalPot,
+r6HighestBidder: "WSZYSCY (PO 5 PKT)",
+r6HighestBid: 5,
+r6TiedBidders: [],
+r6MainSec: 12,
+r6Countdown: 0,
 auctionStartTime: now + 4500,
 bidTick: now,
 speechTick: now
@@ -988,10 +1010,10 @@ speechTick: now
 }
 }
 
-if (currentState.round === 5 && currentState.status === "r5_bidding") {
+if (currentState.round === 6 && currentState.status === "r6_bidding") {
 if (!auctionMonitorInterval) {
 auctionMonitorInterval = setInterval(async () => {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_bidding") {
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") {
 clearInterval(auctionMonitorInterval);
 auctionMonitorInterval = null;
 return;
@@ -1004,23 +1026,23 @@ const remTotalMs = effectiveCloseT - now;
 
 if (now < mainEndT) {
 let mainSec = Math.min(12, Math.max(1, Math.ceil((mainEndT - now) / 1000)));
-if (currentState.r5MainSec !== mainSec || currentState.r5Countdown !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: mainSec, r5Countdown: 0 });
+if (currentState.r6MainSec !== mainSec || currentState.r6Countdown !== 0) {
+await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: mainSec, r6Countdown: 0 });
 }
 } else if (remTotalMs > 5000) {
-if (currentState.r5MainSec !== 0 || currentState.r5Countdown !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: 0, r5Countdown: 0 });
+if (currentState.r6MainSec !== 0 || currentState.r6Countdown !== 0) {
+await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: 0, r6Countdown: 0 });
 }
 } else if (remTotalMs > 0) {
 let finalSec = Math.ceil(remTotalMs / 1000);
-if (currentState.r5Countdown !== finalSec || currentState.r5MainSec !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r5MainSec: 0, r5Countdown: finalSec });
+if (currentState.r6Countdown !== finalSec || currentState.r6MainSec !== 0) {
+await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: 0, r6Countdown: finalSec });
 }
 } else {
 clearInterval(auctionMonitorInterval);
 auctionMonitorInterval = null;
 
-let bids = currentState.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+let bids = currentState.r6Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
 let allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
 let maxBid = Math.max(...allPlayers.map(p => bids[p] || 5));
 let topPlayers = allPlayers.filter(p => (bids[p] || 5) === maxBid);
@@ -1036,18 +1058,18 @@ else if (topPlayers.length === 1) {
 winnerPlayer = topPlayers[0];
 }
 else {
-let prevTied = currentState.r5TiedBidders || [];
-if (prevTied.length > 0 && currentState.r5OvertimeMax === maxBid) {
+let prevTied = currentState.r6TiedBidders || [];
+if (prevTied.length > 0 && currentState.r6OvertimeMax === maxBid) {
 winnerPlayer = topPlayers[Math.floor(Math.random() * topPlayers.length)];
 wasRandomDraw = true;
 } else {
 let nowTie = Date.now();
 await updateDoc(doc(db, "quizGame", "state"), {
-r5TiedBidders: topPlayers,
-r5OvertimeMax: maxBid,
-r5HighestBidder: `REMIS: ${topPlayers.join(" / ").toUpperCase()}`,
-r5MainSec: 12,
-r5Countdown: 0,
+r6TiedBidders: topPlayers,
+r6OvertimeMax: maxBid,
+r6HighestBidder: `REMIS: ${topPlayers.join(" / ").toUpperCase()}`,
+r6MainSec: 12,
+r6Countdown: 0,
 auctionStartTime: nowTie + 3500,
 bidTick: nowTie,
 tieBreakTick: nowTie
@@ -1064,14 +1086,14 @@ await setDoc(ref, { points: cur - (bids[p] || 5) }, { merge: true });
 }
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_sold",
+status: "r6_sold",
 nominated: winnerPlayer,
-r5HighestBidder: winnerPlayer,
-r5HighestBid: maxBid,
-r5RandomDrawn: wasRandomDraw,
-r5TiedBidders: [],
-r5MainSec: 0,
-r5Countdown: 0,
+r6HighestBidder: winnerPlayer,
+r6HighestBid: maxBid,
+r6RandomDrawn: wasRandomDraw,
+r6TiedBidders: [],
+r6MainSec: 0,
+r6Countdown: 0,
 speechTick: Date.now()
 });
 }
@@ -1084,16 +1106,16 @@ auctionMonitorInterval = null;
 }
 }
 
-if (currentState.status === "nominated_timeout" && (currentState.round === 4 || currentState.round === 5)) {
+if (currentState.status === "nominated_timeout" && (currentState.round === 4 || currentState.round === 6)) {
 let nomTimeKey = "nom_timeout_" + currentState.answerTick;
 if (lastHandledStatus !== nomTimeKey) {
 lastHandledStatus = nomTimeKey;
 let player = currentState.nominated;
 
-if (currentState.round === 5) {
-r5CarryOverPool = currentState.r5Pot || 20;
+if (currentState.round === 6) {
+r6CarryOverPool = currentState.r6Pot || 20;
 updateDoc(doc(db, "quizGame", "state"), {
-status: "timeout", loser: player, winner: "", pointsChange: 0, carryOver: r5CarryOverPool, timeoutPenalty: true, answerTick: Date.now()
+status: "timeout", loser: player, winner: "", pointsChange: 0, carryOver: r6CarryOverPool, timeoutPenalty: true, answerTick: Date.now()
 });
 } else {
 let isSelf = (player === currentState.controller);
@@ -1121,7 +1143,7 @@ status: "results_wrong", loser: player, winner: "", pointsChange: ptsChange, blo
 }
 }
 
-if (currentState.status === "results_pending_r4" || currentState.status === "results_pending_r5") {
+if (currentState.status === "results_pending_r4" || currentState.status === "results_pending_r6") {
 let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
 if (lastHandledStatus !== stateKey) {
 lastHandledStatus = stateKey;
@@ -1133,23 +1155,23 @@ try {
 let isCorrect = currentState.isAnswerCorrect;
 let player = currentState.fastest;
 
-if (currentState.round === 5) {
-let pot = currentState.r5Pot || 20;
+if (currentState.round === 6) {
+let pot = currentState.r6Pot || 20;
 if (isCorrect) {
 const scoreRef = doc(db, "quizScores", player);
 const scoreSnap = await getDoc(scoreRef);
 let currentPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: currentPts + pot }, { merge: true });
 
-r5CarryOverPool = 0;
+r6CarryOverPool = 0;
 r4Controller = player;
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "results", winner: player, loser: "", pointsChange: pot, carryOver: 0, answerTick: Date.now()
 });
 } else {
-r5CarryOverPool = pot;
+r6CarryOverPool = pot;
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "results", winner: "", loser: player, pointsChange: 0, carryOver: r5CarryOverPool, answerTick: Date.now()
+status: "results", winner: "", loser: player, pointsChange: 0, carryOver: r6CarryOverPool, answerTick: Date.now()
 });
 }
 return;
@@ -1224,10 +1246,10 @@ async function resetScoresOnly() {
 if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom?")) return;
 try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
-r4Controller = ""; r5CarryOverPool = 0; usedR5Indices = [];
+r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], pool: currentPool });
+await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], activePlayers: [], pool: currentPool });
 statusEl.innerText = "Status: Punkty wszystkich graczy zostały wyzerowane.";
 } catch (err) { showError(err.message); }
 }
@@ -1237,8 +1259,9 @@ try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value);
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
-r4Controller = ""; r5CarryOverPool = 0; usedR5Indices = [];
-await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], pool: currentPool });
+r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
+const existingActive = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
+await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], activePlayers: existingActive, pool: currentPool });
 statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
 } catch (err) { showError(err.message); }
 }
@@ -1248,47 +1271,51 @@ try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value) || 1;
 let r = parseInt(document.getElementById('roundSel').value);
+const existingActive = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
 
-// Obsługa Rundy 6 (Błyskawica Prawda/Fałsz)
-if (r === 6) {
-if (currentQIndex[6] === -1) {
-currentQIndex[6] = 0;
-await startR6ForPlayer(0);
+// Obsługa Rundy 5 (Błyskawica Prawda/Fałsz - z oczekiwaniem na kliknięcie gotowości przez wywołanego gracza!)
+if (r === 5) {
+if (currentQIndex[5] === -1) {
+currentQIndex[5] = 0;
+await startR5ForPlayer(0);
+} else if (currentState && currentState.status === "r5_wait_ready") {
+// Jeśli Admin kliknie przycisk "Pomiń/Wymuś" podczas czekania na gotowość gracza -> wystartuj jego 1. pytanie
+await sendNextR5Question();
 } else {
-await sendNextR6Question();
+await sendNextR5Question();
 }
 return;
 }
 
 currentQIndex[r]++;
 
-if (r === 5) {
-if (currentQIndex[5] >= 15) {
-await triggerRoundSummary(5);
+// Obsługa Rundy 6 (Awantura o punkty - Koło Kategorii i Licytacja)
+if (r === 6) {
+if (currentQIndex[6] >= 15) {
+await showGrandFinale();
 return;
 }
 let tieBanner = "";
-if (currentQIndex[5] === 0 || !r4Controller) {
+if (currentQIndex[6] === 0 || !r4Controller) {
 let initRes = await determineInitialController();
 r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
 }
-let segIdx = Math.floor(Math.random() * r5WheelCategories.length);
-let chosenCat = r5WheelCategories[segIdx];
-let qData = pickR5QuestionByCategory(currentPool, chosenCat);
+let segIdx = Math.floor(Math.random() * r6WheelCategories.length);
+let chosenCat = r6WheelCategories[segIdx];
+let qData = pickR6QuestionByCategory(currentPool, chosenCat);
 
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r5_wait_spin", round: 5, controller: r4Controller, tieMsg: tieBanner,
+status: "r6_wait_spin", round: 6, controller: r4Controller, tieMsg: tieBanner,
 wheelSegment: segIdx, category: chosenCat, question: qData.q, options: qData.o, correctIndex: qData.c,
-carryOver: r5CarryOverPool, r5Pot: r5CarryOverPool, r5TiedBidders: [], blocked: [], usedOptions: [],
-speechTick: Date.now(), pool: currentPool
+carryOver: r6CarryOverPool, r6Pot: r6CarryOverPool, r6TiedBidders: [], blocked: [], usedOptions: [],
+activePlayers: existingActive, speechTick: Date.now(), pool: currentPool
 });
 return;
 }
 
 let qData = allDBs[currentPool][r][currentQIndex[r]];
 if (!qData) {
-// Koniec pytań w bieżącej rundzie -> włącz Ekran Podsumowania Rundy i zapowiedź kolejnej!
 await triggerRoundSummary(r);
 return;
 }
@@ -1298,7 +1325,7 @@ statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} / ${allDBs[
 if (r === 1) {
 await setDoc(doc(db, "quizGame", "state"), {
 status: "speaking", round: 1, question: qData.q, options: qData.o, correctIndex: qData.c,
-r1Answers: {}, r1Winners: [], speechTick: Date.now(), pool: currentPool
+r1Answers: {}, r1Winners: [], activePlayers: existingActive, speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 2) {
 let phraseClean = qData.phrase.replace(/ /g, "");
@@ -1308,12 +1335,12 @@ indices.sort(() => Math.random() - 0.5);
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "wheel_reading", round: 2, category: qData.cat, question: qData.phrase,
-wheelOrder: indices, wheelWinners: [], tick: Date.now(), speechTick: Date.now(), pool: currentPool
+wheelOrder: indices, wheelWinners: [], activePlayers: existingActive, tick: Date.now(), speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 3) {
 await setDoc(doc(db, "quizGame", "state"), {
 status: "speaking", round: 3, question: qData.q, correctText: qData.c,
-r3Winners: [], speechTick: Date.now(), pool: currentPool
+r3Winners: [], activePlayers: existingActive, speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 4) {
 let tieBanner = "";
@@ -1328,7 +1355,7 @@ for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === r4Controll
 await setDoc(doc(db, "quizGame", "state"), {
 status: "nominating", round: 4, controller: r4Controller, tieMsg: tieBanner,
 category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c,
-blocked: [], usedOptions: [], nominated: "", speechTick: Date.now(), pool: currentPool
+blocked: [], usedOptions: [], nominated: "", activePlayers: existingActive, speechTick: Date.now(), pool: currentPool
 });
 }
 } catch (err) { showError(err.message); }
@@ -1337,7 +1364,7 @@ blocked: [], usedOptions: [], nominated: "", speechTick: Date.now(), pool: curre
 async function startNominationPhase() {
 try {
 r4Controller = document.getElementById('controllerSel').value;
-let targetStatus = (currentState && currentState.round === 5) ? "r5_wait_spin" : "nominating";
+let targetStatus = (currentState && currentState.round === 6) ? "r6_wait_spin" : "nominating";
 await updateDoc(doc(db, "quizGame", "state"), { status: targetStatus, controller: r4Controller });
 } catch (err) { showError(err.message); }
 }
