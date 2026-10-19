@@ -73,15 +73,14 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .pot-banner { background: linear-gradient(135deg, rgba(212,175,55,0.28), rgba(0,0,0,0.8)); border: 0.25vw solid var(--gold); border-radius: 1.2vw; padding: 0.8vw 2vw; margin-bottom: 1vw; box-shadow: 0 0 2vw rgba(212,175,55,0.4); }
 .pot-label { font-size: 1.1vw; color: #cbd5e1; letter-spacing: 0.2vw; text-transform: uppercase; font-weight: bold; }
 .pot-val { font-size: 3.2vw; font-weight: 900; color: var(--gold); text-shadow: 0 0 1.5vw var(--gold); }
-.bids-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.8vw; width: 100%; margin-bottom: 0.8vw; }
-.bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw; text-align: center; transition: 0.2s; }
+.bids-grid { display: flex; justify-content: center; gap: 1vw; width: 100%; margin-bottom: 0.8vw; flex-wrap: wrap; }
+.bid-card { background: #111; border: 0.18vw solid #444; border-radius: 0.8vw; padding: 0.7vw 1.4vw; text-align: center; transition: 0.2s; min-width: 8vw; }
 .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
 .bid-card.tied-high { border-color: var(--gold); background: rgba(212, 175, 55, 0.22); box-shadow: 0 0 1.5vw rgba(212,175,55,0.6); transform: scale(1.05); }
 .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
 .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
 .auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
 
-/* EKRAN PODSUMOWANIA RUNDY (MIĘDZY RUNDAMI) */
 #round-summary-view { display: none; flex-direction: column; align-items: center; width: 100%; }
 .summary-list { display: flex; flex-direction: column; gap: 0.8vw; width: 90%; margin: 1vw 0; }
 .summary-row { display: flex; justify-content: space-between; align-items: center; background: #111; border: 0.2vw solid var(--cyan); border-radius: 0.9vw; padding: 0.8vw 1.8vw; font-size: 1.8vw; font-weight: 900; }
@@ -182,7 +181,6 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="auction-call" id="r6-auction-call">LICYTACJA TRWA!</div>
 </div>
 
-<!-- EKRAN PODSUMOWANIA RUNDY -->
 <div id="round-summary-view">
 <div class="podium-title" id="summary-header" style="font-size: 2.3vw; margin-bottom: 1vw;">📊 PODSUMOWANIE RUNDY 📊</div>
 <div class="summary-list" id="summary-list-container"></div>
@@ -190,7 +188,6 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="ready-status-bar" id="summary-ready-bar">KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!</div>
 </div>
 
-<!-- PODIUM FINAŁOWE -->
 <div id="podium-view">
 <div class="podium-title">🏆 WIELKI FINAŁ - WYNIKI KOŃCOWE 🏆</div>
 <div class="podium-bars" id="podium-bars-container"></div>
@@ -237,7 +234,6 @@ let lastSpokenKey = "";
 let speechSafetyTimer = null;
 let utteranceQueue = [];
 
-// Słownik poprawnej polskiej odmiany liczebników dla lektora!
 const roundOrdinalsFeminine = {
 1: "pierwszej",
 2: "drugiej",
@@ -682,6 +678,7 @@ let lastR3WinnersCount = 0;
 let lastPlayedResult = null;
 let isSuspense = false;
 let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
+let currentActivePlayers = ["Lila", "Kaja", "Darek", "Jas"];
 
 window.onload = () => {
 const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -714,9 +711,9 @@ board.appendChild(wDiv);
 });
 }
 
-function getSortedStandings() {
+function getSortedStandings(activeList = currentActivePlayers) {
 const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
-let sorted = Object.keys(displayNames).map(id => ({
+let sorted = Object.keys(displayNames).filter(id => activeList.includes(id)).map(id => ({
 id,
 name: displayNames[id],
 pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
@@ -741,7 +738,7 @@ readyBar.innerText = `GOTOWI GRACZE (${readyList.length}/${activeList.length}): 
 
 const listEl = document.getElementById('summary-list-container');
 listEl.innerHTML = "";
-const sorted = getSortedStandings();
+const sorted = getSortedStandings(activeList);
 const medals = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
 
 sorted.forEach(p => {
@@ -754,10 +751,10 @@ listEl.appendChild(row);
 return sorted;
 }
 
-function renderPodium() {
+function renderPodium(activeList = currentActivePlayers) {
 const container = document.getElementById('podium-bars-container');
 container.innerHTML = "";
-const sorted = getSortedStandings();
+const sorted = getSortedStandings(activeList);
 
 const visualArrangement = [];
 sorted.forEach((player, idx) => {
@@ -791,7 +788,7 @@ if(el) el.innerText = doc.data().points;
 }
 });
 if (document.getElementById('podium-view').style.display === 'flex') {
-renderPodium();
+renderPodium(currentActivePlayers);
 }
 });
 
@@ -800,6 +797,8 @@ let lastTieBreakSpoken = 0;
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
 const data = docSnap.data();
+
+currentActivePlayers = (data.activePlayers && data.activePlayers.length > 0) ? data.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 
 let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
@@ -848,16 +847,17 @@ stopFireworks();
 stopVictoryFanfareLoop();
 }
 
+// Ukryj narożniki wyłączonych graczy
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 players.forEach(p => {
 let el = document.getElementById(`score-${p}`);
+el.style.display = currentActivePlayers.includes(p) ? "block" : "none";
 if(data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
 else el.classList.remove('blocked');
 });
 
 const letters = ["A", "B", "C", "D"];
 
-// --- EKRAN PODSUMOWANIA RUNDY + POPRAWNA POLSKA ZAPOWIEDŹ LEKTORA ---
 if (data.status === "round_summary") {
 clearInterval(timerInterval); clearInterval(wheelRevealInterval);
 timerEl.style.display = 'none';
@@ -866,9 +866,8 @@ setBgMusicActive(false);
 
 qEl.style.display = "none";
 roundSummaryView.style.display = "flex";
-let activeList = (data.activePlayers && data.activePlayers.length > 0) ? data.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 let readyList = data.readyPlayers || [];
-const sorted = renderRoundSummaryBoard(data.completedRound, data.nextRoundTitle || `Runda ${data.nextRound}`, readyList, activeList);
+const sorted = renderRoundSummaryBoard(data.completedRound, data.nextRoundTitle || `Runda ${data.nextRound}`, readyList, currentActivePlayers);
 
 let sumSpeechKey = "round_sum_" + data.speechTick;
 if (lastSpokenKey !== sumSpeechKey) {
@@ -886,7 +885,6 @@ setBgMusicActive(true);
 return;
 }
 
-// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ (Najpierw potwierdzenie gotowości przez wywołanego gracza!) ---
 if (data.round === 5 && data.status && data.status.startsWith("r5_tf_")) {
 clearInterval(timerInterval);
 timerEl.style.display = 'flex';
@@ -1010,7 +1008,7 @@ setBgMusicActive(false);
 qEl.style.display = "none";
 stage.classList.add("success-glow");
 podiumView.style.display = "flex";
-renderPodium();
+renderPodium(currentActivePlayers);
 startFireworks();
 
 if (lastPlayedResult !== "podium_" + data.answerTick) {
@@ -1020,7 +1018,6 @@ lastPlayedResult = "podium_" + data.answerTick;
 return;
 }
 
-// --- RUNDA 6: AWANTURA O PUNKTY (KOŁO + LICYTACJA) ---
 if (data.status === "r6_wait_spin" || data.status === "r6_spinning") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 r6WheelWrap.style.display = "flex";
@@ -1066,13 +1063,14 @@ document.getElementById('r6-pot-label').innerText = data.carryOver > 0
 : `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
 document.getElementById('r6-pot-val').innerText = `${data.r6Pot || 20} PKT`;
 
-const bids = data.r6Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-const maxBidVal = Math.max(...players.map(p => bids[p] || 5));
-const topBidders = players.filter(p => (bids[p] || 5) === maxBidVal);
+const bids = data.r6Bids || {};
+const maxBidVal = Math.max(...currentActivePlayers.map(p => bids[p] || 5));
+const topBidders = currentActivePlayers.filter(p => (bids[p] || 5) === maxBidVal);
 
 players.forEach(p => {
-document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
 const card = document.getElementById(`bid-card-${p}`);
+card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
+document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
 card.classList.remove('highest', 'tied-high');
 if (maxBidVal > 5 && topBidders.includes(p)) {
 card.classList.add(topBidders.length > 1 ? 'tied-high' : 'highest');
@@ -1296,7 +1294,7 @@ wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${m
 stage.classList.add("success-glow");
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--gold)";
-winnerEl.innerText = winners.length === 4 ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
+winnerEl.innerText = winners.length >= currentActivePlayers.length ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
 if (lastPlayedResult !== "wheel_end_" + data.answerTick) {
 winSound.play().catch(()=>{});
 lastPlayedResult = "wheel_end_" + data.answerTick;
@@ -1328,7 +1326,7 @@ opts.style.display = "grid";
 if (data.round === 1) {
 let ansCount = Object.keys(data.r1Answers || {}).length;
 winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = `ODPOWIEDZIAŁO: ${ansCount} / 4 GRACZY`;
+winnerEl.innerText = `ODPOWIEDZIAŁO: ${ansCount} / ${currentActivePlayers.length} GRACZY`;
 } else if (data.round === 3) {
 wheelWinnersEl.style.display = "flex";
 const winners = data.r3Winners || [];
