@@ -19,13 +19,24 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .status-banner { background: #000; border-left: 4px solid #2ed573; padding: 12px; font-size: 14px; font-weight: bold; color: #2ed573; margin-top: 15px; border-radius: 5px; }
 .error-banner { background: #300; border-left: 4px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 5px; display: none; }
 .r3-live-box { background: #000; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; color: #cbd5e1; border: 1px dashed #555; display: none; }
+.player-cb-label { background: #111; padding: 10px 16px; border-radius: 8px; border: 2px solid #00d4ff; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
+.player-cb-label input { width: 18px; height: 18px; cursor: pointer; }
 </style>
 </head>
 <body>
 
 <div class="box">
-<h3>KROK 1: RESETOWANIE PUNKTÓW (Na początku gry)</h3>
+<h3>KROK 1: RESETOWANIE PUNKTÓW I WYBÓR KTO GRA</h3>
 <button type="button" class="red" id="btnResetScores" onclick="window.resetScoresOnly && window.resetScoresOnly()">🗑️ WYZERUJ PUNKTY WSZYSTKIM GRACZOM</button>
+<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
+<label style="color:#d4af37; font-weight:bold; font-size:14px; display:block; margin-bottom:10px;">👥 ZAZNACZ KTO DZIŚ GRA (odznacz osobę nieobecną):</label>
+<div style="display:flex; gap:12px; flex-wrap:wrap;">
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Lila" checked onchange="window.updateActivePlayersList()"> LILA</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Kaja" checked onchange="window.updateActivePlayersList()"> KAJA</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Darek" checked onchange="window.updateActivePlayersList()"> DAREK</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Jas" checked onchange="window.updateActivePlayersList()"> JAŚ</label>
+</div>
+</div>
 </div>
 
 <div class="box">
@@ -574,7 +585,6 @@ HISTORIA|W jakim kraju rządzili starożytni Faraonowie?|W Grecji;W Rzymie;W Egi
 HISTORIA|Jak nazywał się wielki statek pasażerski, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
 HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2`);
 
-// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ SPERSONALIZOWANA POD WIEK ---
 const r5TFQuestionsByPlayer = {
 Lila: parseTF(`
 Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?|1
@@ -720,7 +730,6 @@ let r6CarryOverPool = 0;
 let currentState = null;
 let r4Controller = "";
 
-// Zmienne dla Rundy 5 (Błyskawica Prawda/Fałsz)
 let r5PlayerIdx = 0;
 let r5QIdx = -1;
 let r5TimeLeftMs = 20000;
@@ -734,13 +743,38 @@ let lastHandledStatus = "";
 let lastSpinHandled = 0;
 let lastSummaryReadyKey = "";
 
-statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz pulę (1-5) lub kliknij START GRY.";
+statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz kto dziś gra i kliknij START GRY.";
+
+function getSelectedActivePlayers() {
+const cbs = document.querySelectorAll('.active-player-cb:checked');
+const arr = Array.from(cbs).map(cb => cb.value);
+return arr.length > 0 ? arr : ["Lila", "Kaja", "Darek", "Jas"];
+}
+
+async function updateActivePlayersList() {
+const activeList = getSelectedActivePlayers();
+const sel = document.getElementById('controllerSel');
+if (sel) {
+Array.from(sel.options).forEach(opt => {
+opt.disabled = !activeList.includes(opt.value);
+opt.hidden = !activeList.includes(opt.value);
+});
+if (!activeList.includes(sel.value)) sel.value = activeList[0];
+}
+try {
+await updateDoc(doc(db, "quizGame", "state"), { activePlayers: activeList });
+statusEl.innerText = `👥 Aktywni gracze (${activeList.length}): ${activeList.join(", ")}`;
+} catch (e) {}
+}
+window.updateActivePlayersList = updateActivePlayersList;
 
 async function determineInitialController() {
+const activeList = getSelectedActivePlayers();
 const snap = await getDocs(collection(db, "quizScores"));
 let maxPts = -999999;
 let leaders = [];
 snap.forEach(d => {
+if (!activeList.includes(d.id)) return;
 let pts = d.data().points || 0;
 if (pts > maxPts) {
 maxPts = pts;
@@ -749,7 +783,7 @@ leaders = [d.id];
 leaders.push(d.id);
 }
 });
-if (leaders.length === 0) return { player: "Lila", tieMsg: "" };
+if (leaders.length === 0) return { player: activeList[0], tieMsg: "" };
 if (leaders.length === 1) {
 return { player: leaders[0], tieMsg: `NAJWIĘCEJ PUNKTÓW (${maxPts}) MA: ${leaders[0].toUpperCase()}!` };
 } else {
@@ -762,13 +796,12 @@ async function showGrandFinale() {
 try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "podium", answerTick: Date.now()
+status: "podium", activePlayers: getSelectedActivePlayers(), answerTick: Date.now()
 });
 statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium i fajerwerki!";
 } catch (err) { showError(err.message); }
 }
 
-// Podsumowanie rundy - czeka na kliknięcie gotowości przez wszystkich aktywnych graczy LUB Admina!
 async function triggerRoundSummary(completedRound) {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
 if (completedRound >= 6) {
@@ -777,11 +810,9 @@ return;
 }
 const nextR = completedRound + 1;
 document.getElementById('roundSel').value = String(nextR);
-let activeList = (currentState && currentState.activePlayers && currentState.activePlayers.length > 0)
-? currentState.activePlayers
-: ["Lila", "Kaja", "Darek", "Jas"];
+let activeList = getSelectedActivePlayers();
 
-statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Czekam aż gracze klikną GOTOWOŚĆ na telefonach (lub kliknij START GRY tutaj)...`;
+statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Czekam aż gracze (${activeList.join(", ")}) klikną GOTOWOŚĆ na telefonach (lub kliknij START GRY tutaj)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "round_summary",
@@ -796,8 +827,11 @@ pool: currentPool
 });
 }
 
-// --- STEROWANIE RUNDĄ 5: BŁYSKAWICA PRAWDA / FAŁSZ (Najpierw ekran gotowości dla wywołanego gracza!) ---
 async function startR5TFForPlayer(pIdx) {
+const activeList = getSelectedActivePlayers();
+while (pIdx < r5Order.length && !activeList.includes(r5Order[pIdx])) {
+pIdx++;
+}
 r5PlayerIdx = pIdx;
 if (r5PlayerIdx >= r5Order.length) {
 await triggerRoundSummary(5);
@@ -808,8 +842,6 @@ const age = r5Ages[player];
 r5QIdx = -1;
 r5TimeLeftMs = 20000;
 r5PlayerScoreChange = 0;
-
-let activeList = (currentState && currentState.activePlayers) ? currentState.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 
 statusEl.innerText = `⚡ Runda 5 (Błyskawica): Czekam aż ${player} (${age} lat) kliknie GOTOWOŚĆ na swoim telefonie (lub kliknij START GRY tutaj)...`;
 await setDoc(doc(db, "quizGame", "state"), {
@@ -885,7 +917,6 @@ usedR6Indices.push(idx);
 return list[idx];
 }
 
-// Funkcja dla przycisku Admina: może wymusić start, gdy gra czeka na gotowość graczy!
 async function adminForceContinue() {
 if (currentState && currentState.status === "r5_tf_wait_ready" && currentState.round === 5) {
 await sendNextR5TFQuestion();
@@ -901,11 +932,10 @@ currentState = docSnap.data();
 document.getElementById('nominateUI').style.display = 'none';
 r3LiveBox.style.display = 'none';
 
-// Sprawdź czy w podsumowaniu rundy wszyscy aktywni gracze kliknęli "GOTOWY"
 if (currentState.status === "round_summary") {
 let activeList = (currentState.activePlayers && currentState.activePlayers.length > 0)
 ? currentState.activePlayers
-: ["Lila", "Kaja", "Darek", "Jas"];
+: getSelectedActivePlayers();
 let readyList = currentState.readyPlayers || [];
 statusEl.innerText = `📊 Podsumowanie Rundy ${currentState.completedRound} | Gotowi gracze: ${readyList.length}/${activeList.length} (${readyList.join(", ") || "brak"})`;
 
@@ -914,7 +944,7 @@ if (allReady && activeList.length > 0) {
 let rKey = "sum_ready_" + currentState.completedRound + "_" + currentState.speechTick;
 if (lastSummaryReadyKey !== rKey) {
 lastSummaryReadyKey = rKey;
-statusEl.innerText = `✅ Wszyscy gracze gotowi! Startuję Rundę ${currentState.nextRound}...`;
+statusEl.innerText = `✅ Wszyscy aktywni gracze gotowi! Startuję Rundę ${currentState.nextRound}...`;
 setTimeout(() => { nextQuestion(); }, 1200);
 }
 }
@@ -932,20 +962,22 @@ statusEl.innerText = `🗣️ Lektor na TV czyta teraz pytanie... Po zakończeni
 }
 else if (currentState.status === "reading" && currentState.round === 1) {
 let count = Object.keys(currentState.r1Answers || {}).length;
-statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedziało już: ${count}/4 graczy.`;
+let activeCount = getSelectedActivePlayers().length;
+statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedziało już: ${count}/${activeCount} graczy.`;
 }
 else if (currentState.status === "wheel_reading" && currentState.round === 2) {
 let winnersCount = (currentState.wheelWinners || []).length;
-statusEl.innerText = `Status: Runda 2 (Odsłanianie Hasła) w toku! Odgadło już: ${winnersCount}/4 graczy.`;
+let activeCount = getSelectedActivePlayers().length;
+statusEl.innerText = `Status: Runda 2 (Odsłanianie Hasła) w toku! Odgadło już: ${winnersCount}/${activeCount} graczy.`;
 }
 else if (currentState.status === "reading" && currentState.round === 3) {
 let winners = currentState.r3Winners || [];
-statusEl.innerText = `Status: Runda 3 (Szybkie Pisanie - 20s) - odgadło już: ${winners.length}/4 graczy (Prawidłowa: ${currentState.correctText}).`;
+let activeCount = getSelectedActivePlayers().length;
+statusEl.innerText = `Status: Runda 3 (Szybkie Pisanie - 20s) - odgadło już: ${winners.length}/${activeCount} graczy (Prawidłowa: ${currentState.correctText}).`;
 r3LiveBox.style.display = 'block';
 r3LiveBox.innerHTML = `<b>Poprawna:</b> <span style="color:#d4af37">${currentState.correctText}</span> | <b>Trafili:</b> ${winners.join(", ") || "brak"}`;
 }
 
-// --- OBSŁUGA RUNDY 5: BŁYSKAWICA PRAWDA/FAŁSZ (Gdy gracz kliknie "JESTEM GOTOWY" na telefonie!) ---
 if (currentState.round === 5 && currentState.status === "r5_tf_ready_first") {
 let readyKey = "r5_tf_first_" + currentState.speechTick;
 if (lastR5TFHandledKey !== readyKey) {
@@ -997,14 +1029,15 @@ finishR5TFTurnForPlayer("CZAS 20.0s MINĄŁ!");
 }
 }
 
-// --- OBSŁUGA RUNDY 6: AWANTURA O PUNKTY (KOŁO + LICYTACJA) ---
 if (currentState.round === 6 && currentState.status === "r6_spinning") {
 if (currentState.spinTick && currentState.spinTick !== lastSpinHandled) {
 lastSpinHandled = currentState.spinTick;
 statusEl.innerText = `🎡 Koło obraca się na TV i telefonie! Za 5s ruszy licytacja...`;
 setTimeout(async () => {
-let initBids = { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-let totalPot = (currentState.carryOver || 0) + 20;
+let activeList = getSelectedActivePlayers();
+let initBids = {};
+activeList.forEach(p => { initBids[p] = 5; });
+let totalPot = (currentState.carryOver || 0) + (activeList.length * 5);
 let now = Date.now();
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r6_bidding",
@@ -1055,8 +1088,8 @@ await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: 0, r6Countdown: final
 clearInterval(auctionMonitorInterval);
 auctionMonitorInterval = null;
 
-let bids = currentState.r6Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-let allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
+let bids = currentState.r6Bids || {};
+let allPlayers = getSelectedActivePlayers();
 let maxBid = Math.max(...allPlayers.map(p => bids[p] || 5));
 let topPlayers = allPlayers.filter(p => (bids[p] || 5) === maxBid);
 
@@ -1141,7 +1174,8 @@ let currentPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: currentPts + ptsChange }, { merge: true });
 
 let newBlocked = [...(currentState.blocked || []), player];
-if (newBlocked.length >= 4) {
+let activeCount = getSelectedActivePlayers().length;
+if (newBlocked.length >= activeCount) {
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "timeout", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, timeoutPenalty: true, answerTick: Date.now()
 });
@@ -1213,7 +1247,8 @@ if (currentState.selectedIndex !== undefined) {
 newUsedOpts.push(currentState.selectedIndex);
 }
 
-if (newBlocked.length >= 4) {
+let activeCount = getSelectedActivePlayers().length;
+if (newBlocked.length >= activeCount) {
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "timeout", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, timeoutPenalty: false, answerTick: Date.now()
 });
@@ -1256,14 +1291,16 @@ nextQuestion();
 });
 
 async function resetScoresOnly() {
-if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom?")) return;
+if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom i przywrócić całą czwórkę do gry?")) return;
 try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
+document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
 r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Czekamy na start.", blocked: [], usedOptions: [], activePlayers: [], pool: currentPool });
-statusEl.innerText = "Status: Punkty wszystkich graczy zostały wyzerowane.";
+await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Wszyscy 4 gracze aktywni.", blocked: [], usedOptions: [], activePlayers: players, pool: currentPool });
+await updateActivePlayersList();
+statusEl.innerText = "Status: Punkty wyzerowane, wszyscy 4 gracze włączeni.";
 } catch (err) { showError(err.message); }
 }
 
@@ -1273,9 +1310,9 @@ clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value);
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
 r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
-let activeList = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
+let activeList = getSelectedActivePlayers();
 await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], activePlayers: activeList, pool: currentPool });
-statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
+statusEl.innerText = `Status: Załadowano PULĘ ${currentPool} (Grają: ${activeList.join(", ")}). Kliknij START GRY!`;
 } catch (err) { showError(err.message); }
 }
 
@@ -1284,9 +1321,8 @@ try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value) || 1;
 let r = parseInt(document.getElementById('roundSel').value);
-let activeList = (currentState && currentState.activePlayers) ? currentState.activePlayers : [];
+let activeList = getSelectedActivePlayers();
 
-// Obsługa Rundy 5 (Błyskawica Prawda/Fałsz)
 if (r === 5) {
 if (currentQIndex[5] === -1) {
 currentQIndex[5] = 0;
@@ -1299,14 +1335,13 @@ return;
 
 currentQIndex[r]++;
 
-// Obsługa Rundy 6 (Finałowa Awantura o Punkty)
 if (r === 6) {
 if (currentQIndex[6] >= 15) {
 await showGrandFinale();
 return;
 }
 let tieBanner = "";
-if (currentQIndex[6] === 0 || !r4Controller) {
+if (currentQIndex[6] === 0 || !r4Controller || !activeList.includes(r4Controller)) {
 let initRes = await determineInitialController();
 r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
@@ -1354,7 +1389,7 @@ r3Winners: [], activePlayers: activeList, speechTick: Date.now(), pool: currentP
 });
 } else if (r === 4) {
 let tieBanner = "";
-if (currentQIndex[r] === 0 || !r4Controller) {
+if (currentQIndex[r] === 0 || !r4Controller || !activeList.includes(r4Controller)) {
 let initRes = await determineInitialController();
 r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
