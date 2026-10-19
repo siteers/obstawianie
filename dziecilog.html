@@ -2,132 +2,122 @@
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
-  <title>Cyber-Agent | Logowanie</title>
+  <title>Świąteczna Misja | Logowanie</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
   <style>
     :root {
-      --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
-      --glass: rgba(15, 23, 42, 0.85); --error: #ff0000; --gray: #475569;
+      --gold: #ffd700;
+      --warm-gold: #f59e0b;
+      --xmas-red: #d62828;
+      --xmas-bright-red: #ff4d4d;
+      --xmas-green: #1b4332;
+      --bg: #040d0a;
+      --glass: rgba(20, 54, 38, 0.88);
+      --error: #ff4d4d;
     }
     body {
-      font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+      font-family: sans-serif;
+      background: radial-gradient(circle at center, #1b4332 0%, #081c15 65%, var(--bg) 100%);
+      color: #fff;
       margin: 0; overflow-x: hidden; display: flex; justify-content: center;
       align-items: center; min-height: 100vh; perspective: 1000px;
       touch-action: manipulation; padding: 20px 0; box-sizing: border-box;
     }
     
-    #bg-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
+    #snow-canvas { position: fixed; top: 0; left: 0; z-index: 1; pointer-events: none; }
     .tilt-box { z-index: 10; width: 100%; display: flex; justify-content: center; transform-style: preserve-3d; }
     
     .container {
       background: var(--glass); backdrop-filter: blur(25px); padding: 35px; border-radius: 40px;
-      width: 95vw; max-width: 440px; border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.6); text-align: center; position: relative; box-sizing: border-box;
+      width: 95vw; max-width: 440px; border: 2px solid rgba(255, 215, 0, 0.3);
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.7), inset 0 0 20px rgba(255, 215, 0, 0.1);
+      text-align: center; position: relative; box-sizing: border-box;
       transition: 0.2s;
     }
-    h2 { margin: 0 0 30px 0; font-size: 18px; color: var(--gold); text-transform: uppercase; letter-spacing: 3px; font-weight: 900; transition: 0.2s; }
+    h2 { margin: 0 0 25px 0; font-size: 20px; color: var(--gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 900; text-shadow: 0 2px 5px rgba(0,0,0,0.8); }
     
-    .input-box { margin-bottom: 25px; text-align: center; }
-    .input-box label { font-size: 10px; color: #64748b; font-weight: 800; text-transform: uppercase; margin-bottom: 10px; display: block; letter-spacing: 2px; }
+    .input-box { margin-bottom: 22px; text-align: center; }
+    .input-box label { font-size: 11px; color: #e2e8f0; font-weight: 800; text-transform: uppercase; margin-bottom: 8px; display: block; letter-spacing: 1.5px; }
     
     select, input {
       display: block; width: 100%; padding: 16px; font-size: 18px; border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.15); background: rgba(0,0,0,0.5); color: #fff; outline: none; box-sizing: border-box;
-      transition: 0.2s; text-align: center; font-family: 'JetBrains Mono', monospace;
+      border: 1px solid rgba(255,215,0,0.3); background: rgba(5, 20, 14, 0.85); color: #fff; outline: none; box-sizing: border-box;
+      transition: 0.2s; text-align: center; font-family: monospace;
       appearance: none; -webkit-appearance: none;
     }
-    select:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 212, 255, 0.25); background: rgba(0, 212, 255, 0.05); }
-    select option { background: #0f172a; color: #fff; }
+    select:focus, input:focus { border-color: var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); background: rgba(5, 20, 14, 0.95); }
+    select option { background: #081c15; color: #fff; }
 
     .btn-cyber {
-      width: 100%; padding: 20px; background: var(--cyan); color: #000; border: none; border-radius: 20px;
+      width: 100%; padding: 18px; background: linear-gradient(135deg, var(--xmas-red), #9b111e); color: #fff; border: 2px solid var(--gold); border-radius: 20px;
       font-size: 16px; font-weight: 900; cursor: pointer; text-transform: uppercase; margin-top: 15px;
-      box-shadow: 0 10px 25px rgba(0,212,255,0.3); transition: 0.3s;
+      box-shadow: 0 10px 25px rgba(214, 40, 40, 0.4); transition: 0.3s; text-shadow: 0 1px 3px rgba(0,0,0,0.8);
     }
     .btn-cyber:active { transform: scale(0.96); }
-    .btn-cyber:disabled { background: #1a1b26; color: #444; box-shadow: none; cursor: not-allowed; }
+    .btn-cyber:disabled { background: #1a1b26; color: #444; border-color: #333; box-shadow: none; cursor: not-allowed; }
     
     .btn-tv-link {
       background: linear-gradient(135deg, var(--gold), #b4912f);
-      color: #000; box-shadow: 0 10px 25px rgba(212,175,55,0.3);
+      color: #000; box-shadow: 0 10px 25px rgba(212,175,55,0.4); border: 2px solid #fff; text-shadow: none; font-weight: 900;
     }
     
     #msg { margin-top: 20px; font-size: 13px; font-weight: 900; min-height: 20px; text-transform: uppercase; letter-spacing: 1px; }
 
-    /* --- SEKCJE KODÓW QR --- */
+    /* SEKCJA KODÓW QR */
     .qr-grid {
-      display: flex;
-      gap: 15px;
-      margin-top: 25px;
-      padding-top: 20px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.15);
-      justify-content: space-between;
+      display: flex; gap: 15px; margin-top: 25px; padding-top: 20px;
+      border-top: 1px dashed rgba(255, 215, 0, 0.25); justify-content: space-between;
     }
-    .qr-box {
-      flex: 1;
-      text-align: center;
-    }
-    .qr-box p {
-      font-size: 9px; color: #64748b; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 0; min-height: 24px;
-    }
-    .qr-box img {
-      width: 110px; height: 110px; background: #fff; padding: 4px; border-radius: 8px; border: 2px solid var(--cyan);
-      box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
-    }
+    .qr-box { flex: 1; text-align: center; }
+    .qr-box p { font-size: 9px; color: #cbd5e1; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; margin-top: 0; min-height: 24px; }
+    .qr-box img { width: 110px; height: 110px; background: #fff; padding: 4px; border-radius: 8px; border: 2px solid var(--gold); box-shadow: 0 0 12px rgba(255, 215, 0, 0.3); }
 
-    /* --- SCARY ERROR MOTYW --- */
-    @keyframes systemError {
-      0%, 100% { box-shadow: 0 25px 50px rgba(255, 0, 0, 0.4); border-color: var(--error); }
-      50% { box-shadow: 0 25px 80px rgba(255, 0, 0, 0.9), inset 0 0 30px rgba(255, 0, 0, 0.4); border-color: #ff5555; background: rgba(255, 0, 0, 0.15); }
+    /* EFEKT BŁĘDU */
+    @keyframes xmasError {
+      0%, 100% { box-shadow: 0 25px 50px rgba(214, 40, 40, 0.5); border-color: var(--error); }
+      50% { box-shadow: 0 25px 80px rgba(214, 40, 40, 0.95), inset 0 0 30px rgba(214, 40, 40, 0.5); border-color: #ff8080; background: rgba(150, 10, 10, 0.25); }
     }
     @keyframes glitchShake {
       0% { transform: translate(0, 0); }
-      20% { transform: translate(-6px, 3px); }
-      40% { transform: translate(6px, -3px); }
-      60% { transform: translate(-6px, -3px); }
-      80% { transform: translate(6px, 3px); }
+      20% { transform: translate(-5px, 2px); }
+      40% { transform: translate(5px, -2px); }
+      60% { transform: translate(-5px, -2px); }
+      80% { transform: translate(5px, 2px); }
       100% { transform: translate(0, 0); }
     }
-    .scary-error {
-      animation: systemError 0.8s infinite, glitchShake 0.3s infinite !important;
-    }
-    .scary-text {
-      color: var(--error) !important;
-      text-shadow: 0 0 10px var(--error), 0 0 20px var(--error) !important;
-      animation: glitchShake 0.2s infinite !important;
-    }
+    .scary-error { animation: xmasError 0.8s infinite, glitchShake 0.3s infinite !important; }
+    .scary-text { color: var(--error) !important; text-shadow: 0 0 10px var(--error) !important; }
   </style>
 </head>
 <body>
 
-  <canvas id="bg-canvas"></canvas>
+  <canvas id="snow-canvas"></canvas>
 
   <div class="tilt-box" id="tiltCard">
     <div class="container" id="mainContainer">
-      <h2 id="mainTitle">Terminal Agentów</h2>
+      <h2 id="mainTitle">🎄 Terminal Pomocników Mikołaja 🎁</h2>
 
       <div class="input-box">
-        <label>Wybierz Agenta</label>
+        <label>Wybierz swojego Agenta</label>
         <select id="agentSelect">
           <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-          <option value="Lila">Lila</option>
-          <option value="Kaja">Kaja</option>
-          <option value="Darek">Darek</option>
-          <option value="Jaś">Jaś</option>
-          <option value="Wujek (admin)">Wujek (admin)</option>
+          <option value="Lila">Lila (🦌)</option>
+          <option value="Kaja">Kaja (⛄)</option>
+          <option value="Darek">Darek (🎄)</option>
+          <option value="Jaś">Jaś (🎅)</option>
+          <option value="Wujek (admin)">Wujek (Administrator)</option>
         </select>
       </div>
 
       <div class="input-box">
-        <label>Kod Dostępu</label>
+        <label>Tajny Kod Dostępu</label>
         <input type="password" id="agentPassword" placeholder="Wprowadź PIN" inputmode="numeric" maxlength="4" onkeydown="if(event.key === 'Enter') authorizeAgent()">
       </div>
 
-      <button class="btn-cyber" id="loginBtn" onclick="authorizeAgent()">Autoryzuj</button>
+      <button class="btn-cyber" id="loginBtn" onclick="authorizeAgent()">Rozpocznij Misję</button>
       
       <p id="msg"></p>
 
-      <!-- SEKCJA DWÓCH KODÓW QR -->
       <div class="qr-grid">
         <div class="qr-box">
           <p>Wejście z telefonu:</p>
@@ -139,7 +129,7 @@
         </div>
       </div>
 
-      <button class="btn-cyber btn-tv-link" onclick="window.open('tv.html', '_blank')">📺 Otwórz Widok TV</button>
+      <button class="btn-cyber btn-tv-link" onclick="window.open('tv.html', '_blank')">📺 Otwórz Świąteczny TV</button>
 
     </div>
   </div>
@@ -156,13 +146,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig); 
 const db = getFirestore(app);
 
-// GENEROWANIE KODÓW QR
 window.onload = () => {
-    // 1. Kod QR dla bieżącej strony logowania
     const currentUrl = encodeURIComponent(window.location.href);
     document.getElementById('qrLogin').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${currentUrl}&color=000000&bgcolor=ffffff`;
 
-    // 2. Kod QR prowadzący automatycznie do pliku tv.html
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
     const tvUrl = encodeURIComponent(baseHref + 'tv.html');
     document.getElementById('qrTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${tvUrl}&color=000000&bgcolor=ffffff`;
@@ -179,19 +166,19 @@ window.authorizeAgent = async function() {
     
     if (!agentName) {
         msg.style.color = "var(--error)";
-        msg.innerText = "WYBIERZ AGENTA Z LISTY!";
+        msg.innerText = "WYBIERZ SWOJE IMIĘ Z LISTY!";
         return;
     }
 
     if (agentPass.length === 0) {
         msg.style.color = "var(--error)";
-        msg.innerText = "WPROWADŹ KOD DOSTĘPU!";
+        msg.innerText = "WPROWADŹ TAJNY PIN!";
         return;
     }
 
     btn.disabled = true;
-    msg.style.color = "var(--cyan)";
-    msg.innerText = "WERYFIKACJA...";
+    msg.style.color = "var(--gold)";
+    msg.innerText = "SPRAWDZAM KOD...";
 
     try {
         const docRef = doc(db, "gracze", agentName);
@@ -200,8 +187,8 @@ window.authorizeAgent = async function() {
         if (docSnap.exists()) {
             const data = docSnap.data();
             if (data.haslo === agentPass) {
-                msg.style.color = "#00ff00";
-                msg.innerText = "DOSTĘP PRZYZNANY!";
+                msg.style.color = "#2ed573";
+                msg.innerText = "DOSTĘP PRZYZNANY! WESOŁYCH ŚWIĄT!";
                 
                 setTimeout(() => { 
                     if (agentName === "Wujek (admin)") {
@@ -219,12 +206,12 @@ window.authorizeAgent = async function() {
         }
     } catch (error) {
         msg.style.color = "var(--error)";
-        msg.innerText = "BŁĄD SIECI!";
+        msg.innerText = "BŁĄD POŁĄCZENIA Z BIEGUNEM!";
         btn.disabled = false;
     }
 
     function triggerScaryError() {
-        msg.innerText = "BŁĘDNY KOD DOSTĘPU!";
+        msg.innerText = "NIEPOPRAWNY KOD PIN!";
         container.classList.add('scary-error');
         title.classList.add('scary-text');
         msg.classList.add('scary-text');
@@ -235,7 +222,7 @@ window.authorizeAgent = async function() {
             container.classList.remove('scary-error');
             title.classList.remove('scary-text');
             msg.classList.remove('scary-text');
-            passInput.style.borderColor = "rgba(255,255,255,0.15)";
+            passInput.style.borderColor = "rgba(255,215,0,0.3)";
             passInput.style.color = "#fff";
             passInput.value = '';
             msg.innerText = "";
@@ -244,21 +231,41 @@ window.authorizeAgent = async function() {
     }
 }
 
-// Efekt tła
-const canvas = document.getElementById('bg-canvas'); const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-let pts = []; for (let i = 0; i < 40; i++) pts.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5 });
-function draw() {
+// Świąteczny efekt padającego śniegu w tle
+const canvas = document.getElementById('snow-canvas'); 
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; 
+canvas.height = window.innerHeight;
+
+let snowflakes = []; 
+for (let i = 0; i < 40; i++) {
+    snowflakes.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 3 + 1,
+        vy: Math.random() * 0.8 + 0.3,
+        vx: (Math.random() - 0.5) * 0.4,
+        alpha: Math.random() * 0.6 + 0.2
+    });
+}
+
+function drawSnow() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    pts.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; if(p.x<0 || p.x>canvas.width) p.vx*=-1; if(p.y<0 || p.y>canvas.height) p.vy*=-1;
-        ctx.fillStyle = 'rgba(0, 212, 255, 0.4)'; ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI*2); ctx.fill();
-        for (let j = i + 1; j < pts.length; j++) {
-            const p2 = pts[j]; const d = Math.hypot(p.x - p2.x, p.y - p2.y);
-            if (d < 120) { ctx.strokeStyle = `rgba(0, 212, 255, ${1 - d/120})`; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke(); }
-        }
-    }); requestAnimationFrame(draw);
-} draw();
+    snowflakes.forEach(f => {
+        f.y += f.vy;
+        f.x += f.vx;
+        if (f.y > canvas.height) { f.y = -5; f.x = Math.random() * canvas.width; }
+        if (f.x > canvas.width) f.x = 0;
+        if (f.x < 0) f.x = canvas.width;
+
+        ctx.fillStyle = `rgba(255, 255, 255, ${f.alpha})`;
+        ctx.beginPath();
+        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    requestAnimationFrame(drawSnow);
+}
+drawSnow();
 
 document.addEventListener('mousemove', (e) => {
     const x = (window.innerWidth / 2 - e.pageX) / 500, y = (window.innerHeight / 2 - e.pageY) / 500;
