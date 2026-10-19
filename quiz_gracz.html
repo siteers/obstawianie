@@ -12,13 +12,10 @@ display: flex; flex-direction: column; align-items: center; justify-content: cen
 min-height: 100vh; text-align: center; box-sizing: border-box; touch-action: manipulation;
 }
 body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
-
 .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
 select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
-
 #gamePad { display: none; width: 94%; max-width: 420px; }
 .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
-
 .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
 .btn-abcd {
 color: #fff; border-radius: 16px; padding: 18px 10px; cursor: pointer; transition: 0.15s;
@@ -29,29 +26,24 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 .btn-color-1 { background: rgba(0, 212, 255, 0.28); border: 3px solid #00d4ff; box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
 .btn-color-2 { background: rgba(46, 213, 115, 0.28); border: 3px solid #2ed573; box-shadow: 0 0 15px rgba(46, 213, 115, 0.3); }
 .btn-color-3 { background: rgba(255, 71, 87, 0.28); border: 3px solid #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.3); }
-
 .btn-abcd .opt-letter { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
 .btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
 .btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
 .btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
-
-/* RUNDA 5: PRZYCISKI PRAWDA / FAŁSZ NA TELEFONIE */
 .grid-tf { display: none; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 10px; }
 .btn-tf { border-radius: 18px; padding: 38px 10px; font-size: 24px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
 .btn-tf-true { background: rgba(46, 213, 115, 0.35); border: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
 .btn-tf-false { background: rgba(255, 71, 87, 0.35); border: 4px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.4); }
 .btn-tf:active { transform: scale(0.93); filter: brightness(1.3); }
-
-/* PRZYCISKI GOTOWOŚCI (MIĘDZY RUNDAMI ORAZ PRZED BŁYSKAWICĄ) */
-.ready-box { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 15px; }
-.btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 21px; font-weight: 900; padding: 24px 16px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulse 1s infinite; }
+.ready-area { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 10px; }
+.ready-info-box { background: rgba(0, 212, 255, 0.12); border: 2px solid var(--cyan); border-radius: 15px; padding: 18px; font-size: 17px; font-weight: bold; color: #fff; line-height: 1.4; width: 100%; box-sizing: border-box; }
+.btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 20px; font-weight: 900; padding: 22px 14px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulseBtn 1.1s infinite; }
 .btn-ready:active { transform: scale(0.95); }
-
+@keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 .wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 6px 0; width: 100%; }
 .wheel-pad-word { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
-
 .wheel-tile-input {
 width: 34px; height: 42px; background: #111; border: 2px solid #444; border-radius: 7px;
 color: #fff; font-size: 20px; font-weight: 900; text-align: center; text-transform: uppercase;
@@ -60,21 +52,17 @@ padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret
 .wheel-tile-input:focus { border-color: var(--cyan); background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); transform: translateY(-2px); }
 .wheel-tile-input.revealed { background: var(--gold) !important; color: #000 !important; border-color: #fff !important; pointer-events: none; }
 .wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
-
 .input-area { display: none; flex-direction: column; gap: 10px; }
 input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
 .btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
 .btn-submit:active { transform: scale(0.97); }
-
 .nominate-area { display: none; flex-direction: column; gap: 10px; }
 .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
 .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
 .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
-
 #ui-r6-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
 .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
 #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
-
 #ui-r6-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
 .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
 .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
@@ -83,13 +71,11 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 .btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
 .btn-bid:active { transform: scale(0.93); }
 .btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
-.auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
-
-.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); white-space: pre-line; }
+.auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; }
+.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
 .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
 .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
 .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
-@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 </style>
 </head>
 <body>
@@ -98,18 +84,15 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <h2>WYBIERZ AGENTA</h2>
 <select id="agentSel">
 <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-<option value="Lila">Lila</option>
-<option value="Kaja">Kaja</option>
-<option value="Darek">Darek</option>
-<option value="Jas">Jaś</option>
+<option value="Lila">Lila</option><option value="Kaja">Kaja</option>
+<option value="Darek">Darek</option><option value="Jas">Jaś</option>
 </select>
 <button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
 </div>
 
 <div id="gamePad">
-<div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
+<div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Łączenie z grą...</div>
 
-<!-- RUNDA 1, 4 i 6: KOLOROWE KAFELKI ABCD -->
 <div class="grid-abcd" id="ui-abcd">
 <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
 <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
@@ -125,19 +108,16 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 </button>
 </div>
 
-<!-- RUNDA 5: PRZYCISKI PRAWDA / FAŁSZ -->
+<div class="ready-area" id="ui-ready">
+<div class="ready-info-box" id="readyInfoText">Przygotuj się do kolejnego etapu!</div>
+<button class="btn-ready" id="btnReadyAction" onclick="confirmPlayerReady()">✅ JESTEM GOTOWY!</button>
+</div>
+
 <div class="grid-tf" id="ui-tf">
-<button class="btn-tf btn-tf-true" onclick="sendR5Answer(true)">✅ PRAWDA</button>
-<button class="btn-tf btn-tf-false" onclick="sendR5Answer(false)">❌ FAŁSZ</button>
+<button class="btn-tf btn-tf-true" onclick="sendR5TFAnswer(true)">✅ PRAWDA</button>
+<button class="btn-tf btn-tf-false" onclick="sendR5TFAnswer(false)">❌ FAŁSZ</button>
 </div>
 
-<!-- PRZYCISK GOTOWOŚCI GRACZA (PO PODSUMOWANIU RUNDY LUB PRZED SWOJĄ TURĄ BŁYSKAWICY) -->
-<div class="ready-box" id="ui-ready-box">
-<p id="readyPromptText" style="font-size: 16px; color: var(--gold); font-weight: bold; margin: 0;"></p>
-<button class="btn-ready" id="btnReadyAction" onclick="confirmPlayerReady()">🚀 JESTEM GOTOWY! ZACZYNAMY!</button>
-</div>
-
-<!-- RUNDA 2: INTERAKTYWNE KAFELKI ROZSYPANKI LITEROWEJ -->
 <div class="wheel-pad-area" id="ui-wheel">
 <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
 <div class="wheel-pad-board" id="wheelPadBoard"></div>
@@ -145,14 +125,12 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
 </div>
 
-<!-- RUNDA 3: SZYBKIE PISANIE (20s) -->
 <div class="input-area" id="ui-input">
 <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
 <div class="feedback-msg" id="r3Feedback"></div>
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
-<!-- RUNDA 4: WYBIERANIE -->
 <div class="nominate-area" id="ui-nominate">
 <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
 <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
@@ -162,7 +140,6 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
 </div>
 
-<!-- RUNDA 6 (AWANTURA): FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE -->
 <div id="ui-r6-spin">
 <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
 <div class="pad-wheel-pointer"></div>
@@ -170,7 +147,6 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <div class="feedback-msg" id="spinFeedback"></div>
 </div>
 
-<!-- RUNDA 6 (AWANTURA): LICYTACJA (+2, +5, +10, +20) Z LIMITEM DO -100 PKT -->
 <div id="ui-r6-bid">
 <div class="bid-info-box">
 <div class="bid-info-row">KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
@@ -218,20 +194,11 @@ let padWheelRot = 0;
 let isSpinningLocally = false;
 let lastHandledSpinTickOnPad = 0;
 
-// Zapisanie obecności gracza w aktywnej rozgrywce (aby system wiedział, ilu graczy ma kliknąć gotowość między rundami!)
-async function markPlayerActive() {
-if (!myName) return;
-try {
-const stateRef = doc(db, "quizGame", "state");
-const snap = await getDoc(stateRef);
-if (snap.exists()) {
-let active = snap.data().activePlayers || [];
-if (!active.includes(myName)) {
-active.push(myName);
-await updateDoc(stateRef, { activePlayers: active });
+function getActivePlayers(stateObj) {
+if (stateObj && stateObj.activePlayers && stateObj.activePlayers.length > 0) {
+return stateObj.activePlayers;
 }
-}
-} catch (e) {}
+return ["Lila", "Kaja", "Darek", "Jas"];
 }
 
 function drawPadWheel() {
@@ -240,7 +207,6 @@ if (!canvas) return;
 const ctx = canvas.getContext('2d');
 const cx = 200, cy = 200, r = 192;
 const arc = (Math.PI * 2) / r6Categories.length;
-
 ctx.clearRect(0, 0, 400, 400);
 r6Categories.forEach((cat, i) => {
 const startAngle = i * arc - Math.PI / 2 - arc / 2;
@@ -254,7 +220,6 @@ ctx.fill();
 ctx.lineWidth = 3;
 ctx.strokeStyle = "#050b14";
 ctx.stroke();
-
 ctx.save();
 ctx.translate(cx, cy);
 ctx.rotate(startAngle + arc / 2);
@@ -298,15 +263,12 @@ const curAngle = getAngleFromCenter(clientX, clientY);
 let delta = curAngle - lastTouchAngle;
 if (delta > 180) delta -= 360;
 if (delta < -180) delta += 360;
-
 const now = Date.now();
 const dt = Math.max(8, now - lastMoveTime);
 angularVelocity = Math.abs(delta) / dt;
-
 padWheelRot += delta;
 dragAccumulatedAngle += Math.abs(delta);
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
-
 lastTouchAngle = curAngle;
 lastMoveTime = now;
 }
@@ -314,7 +276,6 @@ lastMoveTime = now;
 function onWheelEnd() {
 if (!isDraggingWheel || isSpinningLocally) return;
 isDraggingWheel = false;
-
 if (dragAccumulatedAngle < 55 || angularVelocity < 0.32) {
 document.getElementById('spinFeedback').innerText = "⚠️ ZA SŁABO! ZAMACHNIJ SIĘ I ZAKRĘĆ MOCNIEJ!";
 padWheelEl.style.transition = "transform 0.4s ease-out";
@@ -322,28 +283,13 @@ padWheelRot = Math.round(padWheelRot / 360) * 360;
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 return;
 }
-
 const power = Math.min(11, Math.max(6, Math.round(angularVelocity * 10)));
 window.triggerWheelSpin(power);
 }
 
-padWheelEl.addEventListener('touchstart', (e) => {
-e.preventDefault();
-const t = e.touches[0];
-onWheelStart(t.clientX, t.clientY);
-}, { passive: false });
-
-padWheelEl.addEventListener('touchmove', (e) => {
-e.preventDefault();
-const t = e.touches[0];
-onWheelMove(t.clientX, t.clientY);
-}, { passive: false });
-
-padWheelEl.addEventListener('touchend', (e) => {
-e.preventDefault();
-onWheelEnd();
-}, { passive: false });
-
+padWheelEl.addEventListener('touchstart', (e) => { e.preventDefault(); const t = e.touches[0]; onWheelStart(t.clientX, t.clientY); }, { passive: false });
+padWheelEl.addEventListener('touchmove', (e) => { e.preventDefault(); const t = e.touches[0]; onWheelMove(t.clientX, t.clientY); }, { passive: false });
+padWheelEl.addEventListener('touchend', (e) => { e.preventDefault(); onWheelEnd(); }, { passive: false });
 padWheelEl.addEventListener('mousedown', (e) => onWheelStart(e.clientX, e.clientY));
 window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => onWheelEnd());
@@ -353,7 +299,6 @@ if (!currentState || currentState.round !== 6 || currentState.status !== "r6_wai
 isSpinningLocally = true;
 const spinTickNow = Date.now();
 lastHandledSpinTickOnPad = spinTickNow;
-
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
 const segAngle = 360 / r6Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
@@ -362,7 +307,6 @@ let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 padWheelRot += power * 360 + diff;
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
-
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r6_spinning",
 spinPower: power,
@@ -372,7 +316,6 @@ spinTick: spinTickNow
 
 window.placeBid = async (addAmount) => {
 if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") return;
-
 const tiedList = currentState.r6TiedBidders || [];
 if (tiedList.length > 0 && !tiedList.includes(myName)) return;
 
@@ -381,7 +324,8 @@ const snap = await getDoc(stateRef);
 const data = snap.data();
 if (data.status !== "r6_bidding") return;
 
-let bids = data.r6Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+const activeList = getActivePlayers(data);
+let bids = data.r6Bids || {};
 let myNewBid = (bids[myName] || 5) + addAmount;
 
 const maxAllowedBid = myCurrentPoints + 100;
@@ -398,7 +342,9 @@ return;
 
 document.getElementById('r6BidFeedback').innerText = "";
 bids[myName] = myNewBid;
-let newPot = (data.carryOver || 0) + Object.values(bids).reduce((a, b) => a + b, 0);
+let sumBids = 0;
+activeList.forEach(p => { sumBids += (bids[p] || 5); });
+let newPot = (data.carryOver || 0) + sumBids;
 let newHighestBid = Math.max(currentMax, myNewBid);
 
 await updateDoc(stateRef, {
@@ -411,50 +357,42 @@ bidTick: Date.now()
 });
 };
 
-// Wysłanie odpowiedzi Prawda / Fałsz w Rundzie 5 (natychmiast zatrzymuje stoper!)
-window.sendR5Answer = async (boolChoice) => {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_running" || currentState.nominated !== myName) return;
-const elapsedMs = Math.max(100, Date.now() - (r5LocalRunStart || Date.now()));
-const newRemainingMs = Math.max(0, (currentState.r5TimeLeftMs || 20000) - elapsedMs);
-
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_answered",
-r5GivenBool: boolChoice,
-r5TimeLeftMs: newRemainingMs,
-answerTick: Date.now()
-});
-};
-
-// Kliknięcie przycisku GOTOWOŚCI (po podsumowaniu rundy lub przed swoją serią w Błyskawicy R5!)
+// Przycisk gotowości: wyłącznie dla zalogowanego gracza!
 window.confirmPlayerReady = async () => {
-if (!currentState) return;
+if (!currentState || !myName) return;
 const stateRef = doc(db, "quizGame", "state");
 
-// 1. Gotowość przed swoją indywidualną serią 20 pytań w Błyskawicy (Runda 5)
-if (currentState.round === 5 && currentState.status === "r5_wait_ready" && currentState.nominated === myName) {
-await updateDoc(stateRef, {
-status: "r5_ready_first",
-speechTick: Date.now()
-});
-return;
-}
-
-// 2. Gotowość wszystkich aktywnych graczy po podsumowaniu rundy
 if (currentState.status === "round_summary") {
 const snap = await getDoc(stateRef);
 if (!snap.exists()) return;
 const data = snap.data();
 let readyList = data.readyPlayers || [];
-let activeList = data.activePlayers || [];
-if (!activeList.includes(myName)) activeList.push(myName);
-if (!readyList.includes(myName)) readyList.push(myName);
+if (!readyList.includes(myName)) {
+readyList.push(myName);
+await updateDoc(stateRef, { readyPlayers: readyList });
+}
+return;
+}
 
+// W Rundzie 5 (Błyskawica) TYLKO wywołany gracz (np. Lila) może kliknąć swoją gotowość!
+if (currentState.round === 5 && currentState.status === "r5_tf_wait_ready" && currentState.nominated === myName) {
 await updateDoc(stateRef, {
-activePlayers: activeList,
-readyPlayers: readyList,
-readyTick: Date.now()
+status: "r5_tf_ready_first",
+speechTick: Date.now()
 });
 }
+};
+
+window.sendR5TFAnswer = async (boolChoice) => {
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_tf_running" || currentState.nominated !== myName) return;
+const elapsedMs = Math.max(100, Date.now() - (r5LocalRunStart || Date.now()));
+const newRemainingMs = Math.max(0, (currentState.r5TimeLeftMs || 20000) - elapsedMs);
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r5_tf_answered",
+r5GivenBool: boolChoice,
+r5TimeLeftMs: newRemainingMs,
+answerTick: Date.now()
+});
 };
 
 function normalizeChar(str) {
@@ -486,11 +424,8 @@ setTimeout(window.forceSyncState, 1500);
 window.joinGame = async () => {
 myName = document.getElementById('agentSel').value;
 if(!myName) return alert("Musisz wybrać Agenta z listy!");
-
 document.getElementById('loginUI').style.display = 'none';
 document.getElementById('gamePad').style.display = 'block';
-
-await markPlayerActive();
 
 onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
 if (sSnap.exists()) {
@@ -499,9 +434,8 @@ myCurrentPoints = sSnap.data().points || 0;
 });
 
 startRealtimeListener();
-
 clearInterval(watchdogInterval);
-watchdogInterval = setInterval(window.forceSyncState, 2500);
+watchdogInterval = setInterval(window.forceSyncState, 2000);
 };
 
 document.addEventListener("visibilitychange", () => {
@@ -625,12 +559,12 @@ if (wasFocused) focusNextEditableTile(idx + 1);
 });
 }
 
-let lastR5TickSeen = 0;
+let lastR5TFTickSeen = 0;
 
 function updatePadUI() {
 document.getElementById('ui-abcd').style.display = 'none';
+document.getElementById('ui-ready').style.display = 'none';
 document.getElementById('ui-tf').style.display = 'none';
-document.getElementById('ui-ready-box').style.display = 'none';
 document.getElementById('ui-wheel').style.display = 'none';
 document.getElementById('ui-input').style.display = 'none';
 document.getElementById('ui-nominate').style.display = 'none';
@@ -641,11 +575,18 @@ lockedEl.style.display = 'none';
 lockedEl.classList.remove('win-msg', 'speak-msg');
 document.body.classList.remove('keyboard-mode');
 
-if (currentState && myName && !(currentState.activePlayers || []).includes(myName)) {
-markPlayerActive();
+if (!currentState) return;
+const activeList = getActivePlayers(currentState);
+
+// Jeśli gracz został wyłączony przez Admina w "KTO GRA"
+if (!activeList.includes(myName)) {
+document.getElementById('padStatus').innerText = "GRACZ WYŁĄCZONY W TEJ GRZE";
+lockedEl.style.display = 'block';
+lockedEl.innerText = "NIE BIERZESZ UDZIAŁU W TYM MECZU (WYŁĄCZONY W PANELU ADMINA).";
+return;
 }
 
-if (currentState && currentState.status === "podium") {
+if (currentState.status === "podium") {
 clearInterval(padWheelInterval);
 document.getElementById('padStatus').innerText = "🏆 WIELKI FINAŁ! 🏆";
 lockedEl.classList.add('win-msg');
@@ -654,61 +595,63 @@ lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
 return;
 }
 
-// --- PODSUMOWANIE RUNDY: PRZYCISK GOTOWOŚCI DLA GRACZY ---
-if (currentState && currentState.status === "round_summary") {
+if (currentState.status === "round_summary") {
 clearInterval(padWheelInterval);
 const readyList = currentState.readyPlayers || [];
-const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 document.getElementById('padStatus').innerText = `📊 PODSUMOWANIE RUNDY ${currentState.completedRound}`;
-
 if (readyList.includes(myName)) {
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `✅ JESTEŚ GOTOWY!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
 } else {
-document.getElementById('readyPromptText').innerText = `PRZED NAMI: ${(currentState.nextRoundTitle || "").toUpperCase()}`;
-document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY DO RUNDY ${currentState.nextRound}!`;
-document.getElementById('ui-ready-box').style.display = 'flex';
+document.getElementById('readyInfoText').innerHTML = `Koniec Rundy ${currentState.completedRound}!<br>Następna: <b style="color:var(--gold);">${(currentState.nextRoundTitle || "").toUpperCase()}</b>`;
+document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY NA RUNDĘ ${currentState.nextRound}!`;
+document.getElementById('ui-ready').style.display = 'flex';
 }
 return;
 }
 
-// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ NA TELEFONIE (Z POTWIERDZENIEM GOTOWOŚCI PRZED STARTEM!) ---
-if (currentState && currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_")) {
+// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ (TYLKO WYWOŁANA OSOBA MA PRZYCISK GOTOWOŚCI!) ---
+if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_tf_")) {
 if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `⚡ BŁYSKAWICA: GRA ${currentState.nominated.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.status === "r5_wait_ready"
-? `PRZYGOTOWUJE SIĘ: ${currentState.nominated.toUpperCase()}!\nCZEKAMY AŻ KLIKNIE GOTOWOŚĆ NA TELEFONIE.`
+lockedEl.innerText = currentState.status === "r5_tf_wait_ready"
+? `TERAZ KOLEJ NA GRACZA: ${currentState.nominated.toUpperCase()}!\nCZEKAMY AŻ KLIKNIE GOTOWOŚĆ...`
 : `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}!\nPOZOSTAŁO: ${((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1)}s`;
 return;
 }
 
 const secStr = ((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1);
-if (currentState.status === "r5_wait_ready") {
+if (currentState.status === "r5_tf_wait_ready") {
 document.getElementById('padStatus').innerText = "⚡ TWOJA KOLEJ W BŁYSKAWICY!";
-document.getElementById('readyPromptText').innerText = `MASZ 20.0 SEKUND NA 20 PYTAŃ PRAWDA / FAŁSZ!\nKLIKNIJ PONIŻEJ, GDY BĘDZIESZ GOTOWY:`;
-document.getElementById('btnReadyAction').innerText = `🚀 JESTEM GOTOWY - ZACZYNAMY!`;
-document.getElementById('ui-ready-box').style.display = 'flex';
-} else if (currentState.status === "r5_ready_first" || currentState.status === "r5_speaking") {
+document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej, <b style="color:var(--gold);">${myName.toUpperCase()}</b>!<br>Masz <b>20.0 sekund</b> na 20 pytań Prawda / Fałsz.<br>Zegar rusza dopiero po przeczytaniu pytania!`;
+document.getElementById('btnReadyAction').innerText = "⚡ JESTEM GOTOWY - ZACZYNAMY!";
+document.getElementById('ui-ready').style.display = 'flex';
+} else if (currentState.status === "r5_tf_ready_first") {
+document.getElementById('padStatus').innerText = "⚡ ZACZYNAMY!";
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT PIERWSZE PYTANIE!";
+} else if (currentState.status === "r5_tf_speaking") {
 document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI (${secStr}s) - SŁUCHAJ PYTANIA!`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `PYTANIE #${currentState.r5QNum || 1}/20\nLEKTOR CZYTA PYTANIE...`;
-} else if (currentState.status === "r5_running") {
-if (currentState.tick !== lastR5TickSeen) {
-lastR5TickSeen = currentState.tick;
+lockedEl.innerText = `PYTANIE #${currentState.r5QNum}/20\nLEKTOR CZYTA PYTANIE...`;
+} else if (currentState.status === "r5_tf_running") {
+if (currentState.tick !== lastR5TFTickSeen) {
+lastR5TFTickSeen = currentState.tick;
 r5LocalRunStart = Date.now();
 }
 document.getElementById('padStatus').innerText = `⏱️ CZAS LECI (${secStr}s) - PYTANIE #${currentState.r5QNum}/20!`;
 document.getElementById('ui-tf').style.display = 'grid';
-} else if (currentState.status === "r5_feedback") {
+} else if (currentState.status === "r5_tf_feedback") {
 document.getElementById('padStatus').innerText = `⏸️ ZEGAR ZATRZYMANY (${secStr}s)`;
 if (currentState.r5LastCorrect) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = currentState.r5LastCorrect ? `✅ DOBRZE! (+5 PKT)\nZOSTAŁO: ${secStr}s` : `❌ BŁĄD! (-5 PKT)\nZOSTAŁO: ${secStr}s`;
-} else if (currentState.status === "r5_player_summary") {
+} else if (currentState.status === "r5_tf_player_summary") {
 document.getElementById('padStatus').innerText = "KONIEC TWOJEJ SERII!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
@@ -717,14 +660,11 @@ lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r5ScoreDelta >=
 return;
 }
 
-// --- RUNDA 6 (AWANTURA O PUNKTY): KRĘCENIE KOŁEM NA TELEFONIE ---
-if (currentState && currentState.round === 6 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
-if (currentState.status === "r6_wait_spin") {
-isSpinningLocally = false;
-}
+// --- RUNDA 6: AWANTURA O PUNKTY (KOŁO + LICYTACJA) ---
+if (currentState.round === 6 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
+if (currentState.status === "r6_wait_spin") isSpinningLocally = false;
 document.getElementById('ui-r6-spin').style.display = 'flex';
 const instrEl = document.getElementById('spinInstruction');
-
 if (currentState.status === "r6_wait_spin") {
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
@@ -751,8 +691,7 @@ padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 return;
 }
 
-// --- RUNDA 6 (AWANTURA O PUNKTY): LICYTACJA ---
-if (currentState && currentState.round === 6 && (currentState.status === "r6_bidding" || currentState.status === "r6_sold")) {
+if (currentState.round === 6 && (currentState.status === "r6_bidding" || currentState.status === "r6_sold")) {
 if (currentState.status === "r6_sold") {
 document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
 lockedEl.classList.add('win-msg');
@@ -771,9 +710,7 @@ lockedEl.innerText = `DOGRYWKA POMIĘDZY:\n${tiedList.join(" i ").toUpperCase()}
 return;
 }
 
-document.getElementById('padStatus').innerText = tiedList.length > 0
-? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!"
-: "AWANTURA O PUNKTY - LICYTUJ!";
+document.getElementById('padStatus').innerText = tiedList.length > 0 ? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!" : "AWANTURA O PUNKTY - LICYTUJ!";
 document.getElementById('ui-r6-bid').style.display = 'flex';
 document.getElementById('pad-r6-cat').innerText = currentState.category || "";
 document.getElementById('pad-r6-pot').innerText = `${currentState.r6Pot || 20} PKT`;
@@ -803,7 +740,7 @@ cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
 return;
 }
 
-if (currentState && currentState.status === "speaking") {
+if (currentState.status === "speaking") {
 if (currentState.round === 3 && currentState.question !== lastR3Question) {
 lastR3Question = currentState.question;
 document.getElementById('typeAnswer').value = "";
@@ -816,10 +753,10 @@ lockedEl.innerText = "LEKTOR CZYTA PYTANIE...\nZA CHWILĘ ODBLOKUJĄ SIĘ ODPOWI
 return;
 }
 
-if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
+if (currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
 clearInterval(padWheelInterval);
 document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
-if (currentState && (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results")) {
+if (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results") {
 document.getElementById('typeAnswer').value = "";
 document.getElementById('r3Feedback').innerText = "";
 lastR3Question = null;
@@ -838,7 +775,6 @@ if (currentState.status === "wheel_reading" && currentState.round === 2) {
 const winners = currentState.wheelWinners || [];
 const myRank = winners.indexOf(myName);
 const ptsMap = [20, 15, 10, 5];
-
 if (myRank !== -1) {
 clearInterval(padWheelInterval);
 document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
@@ -847,9 +783,8 @@ lockedEl.style.display = 'block';
 lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
 return;
 }
-
 document.body.classList.add('keyboard-mode');
-document.getElementById('padStatus').innerText = "ROZSYPANKA LITEROWA - WPISUJ LITERY:";
+document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
 document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
 document.getElementById('ui-wheel').style.display = 'flex';
 
@@ -868,7 +803,6 @@ padRevealedCount++;
 updateRevealedTilesOnPad();
 }
 }, intervalMs);
-
 setTimeout(() => focusNextEditableTile(0), 100);
 }
 return;
@@ -878,7 +812,6 @@ if (currentState.status === "nominating") {
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
 document.getElementById('pad-cat').innerText = currentState.category || "";
-
 const allPlayers = [
 { id: "Lila", label: "LILA" },
 { id: "Kaja", label: "KAJA" },
@@ -887,6 +820,11 @@ const allPlayers = [
 ];
 allPlayers.forEach(p => {
 let btn = document.getElementById(`nom-${p.id}`);
+if (!activeList.includes(p.id)) {
+btn.style.display = 'none';
+return;
+}
+btn.style.display = 'block';
 let isBlocked = currentState.blocked && currentState.blocked.includes(p.id);
 btn.disabled = isBlocked;
 if (p.id === myName) {
@@ -897,7 +835,6 @@ btn.classList.remove('self-btn');
 btn.innerText = `${p.label} (±10 PKT)`;
 }
 });
-
 document.getElementById('ui-nominate').style.display = 'flex';
 } else {
 document.getElementById('padStatus').innerText = `${currentState.controller.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
@@ -918,9 +855,7 @@ if (myAns) {
 document.getElementById('padStatus').innerText = "ODPOWIEDŹ ZAPISANA!";
 if (myAns.pts > 0) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = myAns.pts > 0
-? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.`
-: `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
+lockedEl.innerText = myAns.pts > 0 ? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.` : `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
 return;
 }
 for(let i=0; i<4; i++) {
@@ -958,14 +893,12 @@ lockedEl.style.display = 'block';
 lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
 return;
 }
-
 for(let i=0; i<4; i++) {
 let btn = document.getElementById(`pad-btn-${i}`);
 let lbl = document.getElementById(`pad-lbl-${i}`);
 btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
 }
-
 if (!currentState.nominated || currentState.nominated === myName) {
 let msg = currentState.round === 6
 ? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r6Pot} PKT!`
@@ -989,35 +922,29 @@ lockedEl.innerText = "PATRZ NA TELEWIZOR!";
 
 window.submitWheelTiles = async () => {
 if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
-
 updateRevealedTilesOnPad();
-
 const userBuilt = tileInputs.map(inp => inp.value).join("");
 const targetBuilt = targetLetters.join("");
-
 if (normalizeChar(userBuilt).length < normalizeChar(targetBuilt).length) {
 document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI!";
 focusNextEditableTile(0);
 return;
 }
-
 if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
 const stateRef = doc(db, "quizGame", "state");
 const snap = await getDoc(stateRef);
 const data = snap.data();
+const activeCount = getActivePlayers(data).length;
 let winners = data.wheelWinners || [];
-
 if (!winners.includes(myName)) {
 const ptsMap = [20, 15, 10, 5];
 let myPts = ptsMap[winners.length] || 5;
 winners.push(myName);
-
 const scoreRef = doc(db, "quizScores", myName);
 const scoreSnap = await getDoc(scoreRef);
 let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-
-if (winners.length >= 4) {
+if (winners.length >= activeCount) {
 await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
 } else {
 await updateDoc(stateRef, { wheelWinners: winners });
@@ -1038,36 +965,32 @@ focusNextEditableTile(0);
 window.sendAnswer = async (index) => {
 if (currentState.status !== "reading") return;
 const isCorrect = (index === currentState.correctIndex);
-
 if (currentState.round === 1) {
 const stateRef = doc(db, "quizGame", "state");
 const snap = await getDoc(stateRef);
 const data = snap.data();
+const activeCount = getActivePlayers(data).length;
 let answers = data.r1Answers || {};
 let winners = data.r1Winners || [];
 if (answers[myName]) return;
-
 let myPts = 0;
 if (isCorrect) {
 const ptsMap = [15, 12, 10, 8];
 myPts = ptsMap[winners.length] || 8;
 winners.push(myName);
-
 const scoreRef = doc(db, "quizScores", myName);
 const scoreSnap = await getDoc(scoreRef);
 let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
 }
 answers[myName] = { index, isCorrect, pts: myPts };
-
-if (Object.keys(answers).length >= 4) {
+if (Object.keys(answers).length >= activeCount) {
 await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners, status: "r1_results", answerTick: Date.now() });
 } else {
 await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners });
 }
 return;
 }
-
 if (currentState.round === 4) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
 } else if (currentState.round === 6) {
@@ -1079,32 +1002,27 @@ window.sendTypedAnswer = async () => {
 const inputEl = document.getElementById('typeAnswer');
 const ans = inputEl.value.trim();
 if (!ans) return;
-
 if (currentState.status === "reading" && currentState.round === 3) {
 const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s));
 const userNorm = normalizeChar(ans);
-
 const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
-
 if (isMatch) {
 inputEl.value = "";
 document.getElementById('r3Feedback').innerText = "";
 const stateRef = doc(db, "quizGame", "state");
 const snap = await getDoc(stateRef);
 const data = snap.data();
+const activeCount = getActivePlayers(data).length;
 let winners = data.r3Winners || [];
-
 if (!winners.includes(myName)) {
 const ptsMap = [15, 12, 10, 8];
 let myPts = ptsMap[winners.length] || 8;
 winners.push(myName);
-
 const scoreRef = doc(db, "quizScores", myName);
 const scoreSnap = await getDoc(scoreRef);
 let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
 await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-
-if (winners.length >= 4) {
+if (winners.length >= activeCount) {
 await updateDoc(stateRef, { r3Winners: winners, status: "r3_results", answerTick: Date.now() });
 } else {
 await updateDoc(stateRef, { r3Winners: winners });
