@@ -27,7 +27,7 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
 }
 
-.timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 6.5vw; height: 6.5vw; display: none; align-items: center; justify-content: center; font-size: 3.2vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
+.timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 7.2vw; height: 7.2vw; display: none; align-items: center; justify-content: center; font-size: 2.7vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
 .timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
 
 .score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
@@ -80,6 +80,13 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
 .bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
 .auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
+
+/* EKRAN PODSUMOWANIA RUNDY (MIĘDZY RUNDAMI) */
+#round-summary-view { display: none; flex-direction: column; align-items: center; width: 100%; }
+.summary-list { display: flex; flex-direction: column; gap: 0.8vw; width: 90%; margin: 1vw 0; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; background: #111; border: 0.2vw solid var(--cyan); border-radius: 0.9vw; padding: 0.8vw 1.8vw; font-size: 1.8vw; font-weight: 900; }
+.summary-row.leader { border-color: var(--gold); background: rgba(212, 175, 55, 0.18); box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.4); }
+.next-round-banner { margin-top: 1vw; font-size: 1.5vw; color: #2ed573; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; animation: pulse 1s infinite; }
 
 #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
 .podium-title { font-size: 2.8vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.3vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2vw; animation: pulse 1.2s infinite; }
@@ -174,6 +181,14 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="auction-call" id="r5-auction-call">LICYTACJA TRWA!</div>
 </div>
 
+<!-- EKRAN PODSUMOWANIA RUNDY -->
+<div id="round-summary-view">
+<div class="podium-title" id="summary-header" style="font-size: 2.3vw; margin-bottom: 1vw;">📊 PODSUMOWANIE RUNDY 📊</div>
+<div class="summary-list" id="summary-list-container"></div>
+<div class="next-round-banner" id="summary-next-banner">PRZYGOTUJCIE SIĘ NA KOLEJNĄ RUNDĘ!</div>
+</div>
+
+<!-- PODIUM FINAŁOWE -->
 <div id="podium-view">
 <div class="podium-title">🏆 WIELKI FINAŁ - WYNIKI KOŃCOWE 🏆</div>
 <div class="podium-bars" id="podium-bars-container"></div>
@@ -215,11 +230,10 @@ loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
-// --- PŁYNNY GŁOS LEKTORA PL-PL (TEMPO 0.93 + ZABEZPIECZENIE PRZED UCINANIEM SŁOWA "PUNKTÓW") ---
 let selectedPlVoice = null;
 let lastSpokenKey = "";
 let speechSafetyTimer = null;
-let utteranceQueue = []; // Przechowuje referencje, by przeglądarka nigdy nie urwała końcówki zdania!
+let utteranceQueue = [];
 
 function initPolishVoices() {
 if (!('speechSynthesis' in window)) return;
@@ -268,7 +282,6 @@ return;
 }
 window.speechSynthesis.cancel();
 
-// Zabezpieczenie końcówki: dodajemy na końcu wielokropek i przecinek, co zmusza silnik TTS Chrome/Edge do pełnego wybrzmienia ostatniego słowa (np. "punktów")!
 let cleanText = textToRead
 .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
 .replace(/:\s*$/, "")
@@ -283,7 +296,7 @@ let cleanText = textToRead
 const utter = new SpeechSynthesisUtterance(cleanText);
 utter.lang = "pl-PL";
 if (selectedPlVoice) utter.voice = selectedPlVoice;
-utter.rate = 0.93; // Naturalne, płynne tempo (nie za wolne, nie za szybkie!)
+utter.rate = 0.93;
 utter.pitch = 1.04;
 
 utteranceQueue.push(utter);
@@ -294,13 +307,13 @@ const finishOnce = () => {
 if (finished) return;
 finished = true;
 clearTimeout(speechSafetyTimer);
-if (onDoneCallback) setTimeout(onDoneCallback, 900);
+if (onDoneCallback) setTimeout(onDoneCallback, 500);
 };
 
 utter.onend = finishOnce;
 utter.onerror = finishOnce;
 
-const estMs = Math.max(4500, Math.min(15000, cleanText.length * 115 + 2200));
+const estMs = Math.max(4000, Math.min(15000, cleanText.length * 110 + 1800));
 speechSafetyTimer = setTimeout(finishOnce, estMs);
 
 window.speechSynthesis.speak(utter);
@@ -649,6 +662,7 @@ fwCanvas.style.display = 'none';
 
 let currentTick = null;
 let timerInterval = null;
+let r6StopwatchInterval = null;
 let wheelRevealInterval = null;
 let revealedWheelCount = 0;
 let lastWheelWinnersCount = 0;
@@ -688,11 +702,8 @@ board.appendChild(wDiv);
 });
 }
 
-function renderPodium() {
-const container = document.getElementById('podium-bars-container');
-container.innerHTML = "";
+function getSortedStandings() {
 const displayNames = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
-
 let sorted = Object.keys(displayNames).map(id => ({
 id,
 name: displayNames[id],
@@ -706,6 +717,30 @@ currentRank = currentRank + 1;
 }
 sorted[i].rank = currentRank;
 }
+return sorted;
+}
+
+function renderRoundSummaryBoard(completedR, nextRTitle) {
+document.getElementById('summary-header').innerText = `📊 WYNIKI PO RUNDZIE ${completedR} 📊`;
+document.getElementById('summary-next-banner').innerText = `PRZYGOTUJCIE SIĘ! ZA CHWILĘ ${nextRTitle.toUpperCase()}!`;
+const listEl = document.getElementById('summary-list-container');
+listEl.innerHTML = "";
+const sorted = getSortedStandings();
+const medals = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
+
+sorted.forEach(p => {
+const row = document.createElement('div');
+row.className = "summary-row" + (p.rank === 1 ? " leader" : "");
+row.innerHTML = `<span>${medals[p.rank] || "🏅"} ${p.rank}. ${p.name.toUpperCase()}</span><span style="color:var(--gold);">${p.pts} PKT</span>`;
+listEl.appendChild(row);
+});
+return sorted;
+}
+
+function renderPodium() {
+const container = document.getElementById('podium-bars-container');
+container.innerHTML = "";
+const sorted = getSortedStandings();
 
 const visualArrangement = [];
 sorted.forEach((player, idx) => {
@@ -754,7 +789,8 @@ let roundNames = {
 2: "RUNDA 2: KOŁO FORTUNY (60s) | 20 / 15 / 10 / 5 PKT",
 3: "RUNDA 3: SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: WYBIERANIE (12s PO LEKTORZE | NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
-5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
+5: "RUNDA 5: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)",
+6: "RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ (STOPER 20.0s START/STOP | +5 / -5 PKT)"
 };
 document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
 
@@ -774,16 +810,21 @@ const wheelCat = document.getElementById('tv-wheel-cat');
 const wheelWinnersEl = document.getElementById('tv-wheel-winners');
 const r5WheelWrap = document.getElementById('r5-wheel-wrap');
 const r5AuctionBox = document.getElementById('r5-auction-box');
+const roundSummaryView = document.getElementById('round-summary-view');
 const podiumView = document.getElementById('podium-view');
 
 catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none";
 statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
 wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
 r5WheelWrap.style.display = "none"; r5AuctionBox.style.display = "none";
-podiumView.style.display = "none";
+roundSummaryView.style.display = "none"; podiumView.style.display = "none";
 qEl.style.display = "block";
 qrContainer.style.display = (data.status === "idle") ? "block" : "none";
 stage.classList.remove("success-glow", "error-glow");
+
+if (data.status !== "r6_running") {
+clearInterval(r6StopwatchInterval);
+}
 
 if (data.status !== "podium") {
 stopFireworks();
@@ -798,6 +839,151 @@ else el.classList.remove('blocked');
 });
 
 const letters = ["A", "B", "C", "D"];
+
+// --- EKRAN PODSUMOWANIA RUNDY + ZAPOWIEDŹ LEKTORA ---
+if (data.status === "round_summary") {
+clearInterval(timerInterval); clearInterval(wheelRevealInterval);
+timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+
+qEl.style.display = "none";
+roundSummaryView.style.display = "flex";
+const sorted = renderRoundSummaryBoard(data.completedRound, data.nextRoundTitle || `Runda ${data.nextRound}`);
+
+let sumSpeechKey = "round_sum_" + data.speechTick;
+if (lastSpokenKey !== sumSpeechKey) {
+lastSpokenKey = sumSpeechKey;
+winSound.currentTime = 0; winSound.play().catch(()=>{});
+const leaders = sorted.filter(p => p.rank === 1).map(p => p.name);
+const leaderSpeech = leaders.length > 1
+? `Na prowadzeniu remis: ${leaders.join(" oraz ")}, z wynikiem ${sorted[0].pts} punktów.`
+: `Na prowadzeniu ${leaders[0]}, z wynikiem ${sorted[0].pts} punktów.`;
+speakPolishText(`Koniec rundy ${data.completedRound}! ${leaderSpeech} Przygotujcie się, przed nami ${data.nextRoundTitle}!`, () => {
+setBgMusicActive(true);
+});
+}
+return;
+}
+
+// --- RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ (Stoper 20.0s Start/Stop) ---
+if (data.round === 6 && data.status && data.status.startsWith("r6_")) {
+clearInterval(timerInterval);
+timerEl.style.display = 'flex';
+let msLeft = data.r6TimeLeftMs !== undefined ? data.r6TimeLeftMs : 20000;
+timerEl.innerText = (msLeft / 1000).toFixed(1);
+if (msLeft <= 5000) timerEl.classList.add('timer-alert');
+else timerEl.classList.remove('timer-alert');
+
+catEl.style.display = "block";
+catEl.innerText = `⚡ BŁYSKAWICA: ${data.nominated.toUpperCase()} (${data.r6Age} LAT) | PYTANIE ${data.r6QNum || 1}/20`;
+
+if (data.status === "r6_intro") {
+setBgMusicActive(false);
+qEl.innerText = `PRZYGOTUJ SIĘ, ${data.nominated.toUpperCase()}! MASZ 20 SEKUND NA 20 PYTAŃ PRAWDA / FAŁSZ!`;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = "ZEGAR RUSZA DOPIERO PO PRZECZYTANIU KAŻDEGO PYTANIA!";
+let introKey = "r6_intro_" + data.speechTick;
+if (lastSpokenKey !== introKey) {
+lastSpokenKey = introKey;
+speakPolishText(`Teraz odpowiada ${data.nominated}! Przed Tobą dwadzieścia pytań Prawda czy Fałsz i dwadzieścia sekund na liczniku. Zaczynamy!`, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_ready_first",
+speechTick: Date.now()
+});
+});
+}
+} else if (data.status === "r6_speaking") {
+setBgMusicActive(false);
+tickSound.pause(); tickSound.currentTime = 0;
+qEl.innerText = data.question;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = "⏸️ ZEGAR ZATRZYMANY - SŁUCHAJ PYTANIA...";
+
+let r6SpKey = "r6_q_" + data.speechTick;
+if (lastSpokenKey !== r6SpKey) {
+lastSpokenKey = r6SpKey;
+speakPolishText(data.question, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_running",
+r6StartTimestamp: Date.now(),
+tick: Date.now()
+});
+});
+}
+} else if (data.status === "r6_running") {
+setBgMusicActive(true);
+qEl.innerText = data.question;
+winnerEl.style.display = "block";
+winnerEl.style.color = "#2ed573";
+winnerEl.innerText = `⏱️ CZAS START! ${data.nominated.toUpperCase()}, NACISKAJ PRAWDA LUB FAŁSZ!`;
+
+if (data.tick !== currentTick) {
+currentTick = data.tick;
+clearInterval(r6StopwatchInterval);
+const startBankMs = data.r6TimeLeftMs || 20000;
+const startedAt = Date.now();
+
+r6StopwatchInterval = setInterval(async () => {
+const elapsed = Date.now() - startedAt;
+const currentRem = Math.max(0, startBankMs - elapsed);
+timerEl.innerText = (currentRem / 1000).toFixed(1);
+if (currentRem <= 5000) {
+timerEl.classList.add('timer-alert');
+tickSound.play().catch(()=>{});
+}
+if (currentRem <= 0) {
+clearInterval(r6StopwatchInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_timeout",
+r6TimeLeftMs: 0,
+answerTick: Date.now()
+});
+}
+}, 80);
+}
+} else if (data.status === "r6_feedback") {
+clearInterval(r6StopwatchInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+qEl.innerText = data.question;
+winnerEl.style.display = "block";
+statusEl.style.display = "block";
+if (data.r6LastCorrect) {
+stage.classList.add("success-glow");
+winnerEl.style.color = "#00ff00";
+winnerEl.innerText = "⏸️ STOP ZEGARA! DOBRA ODPOWIEDŹ!";
+statusEl.style.color = "#00ff00";
+statusEl.innerText = "+5 PKT";
+winSound.currentTime = 0; winSound.play().catch(()=>{});
+} else {
+stage.classList.add("error-glow");
+winnerEl.style.color = "#ff4757";
+winnerEl.innerText = "⏸️ STOP ZEGARA! BŁĄD!";
+statusEl.style.color = "#ff4757";
+statusEl.innerText = "-5 PKT";
+loseSound.currentTime = 0; loseSound.play().catch(()=>{});
+}
+} else if (data.status === "r6_player_summary") {
+clearInterval(r6StopwatchInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+stage.classList.add("success-glow");
+qEl.innerText = `KONIEC TURY GRACZA: ${data.nominated.toUpperCase()}!`;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = `${data.r6EndReason || ""} | ZDOBYTE PUNKTY W BŁYSKAWICY: ${data.r6ScoreDelta >= 0 ? "+" : ""}${data.r6ScoreDelta} PKT`;
+let pSumKey = "r6_psum_" + data.speechTick;
+if (lastSpokenKey !== pSumKey) {
+lastSpokenKey = pSumKey;
+winSound.currentTime = 0; winSound.play().catch(()=>{});
+speakPolishText(`Koniec tury gracza ${data.nominated}! Bilans w tej rundzie to ${data.r6ScoreDelta} punktów.`);
+}
+}
+return;
+}
 
 if (data.status === "podium") {
 isSuspense = false;
@@ -852,7 +1038,6 @@ document.getElementById('r5-wheel-canvas').style.transform = `rotate(${currentWh
 return;
 }
 
-// --- RUNDA 5: LICYTACJA (Zegar prowadzony wyłącznie przez Admina - zero konfliktów i pełne 5 sekund!) ---
 if (data.status === "r5_bidding" || data.status === "r5_sold") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 qEl.style.display = "none";
@@ -896,7 +1081,6 @@ let spokenMsg = data.r5RandomDrawn
 ? `Nikt nie przebił stawki, więc w drodze losowania odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów`
 : `Sprzedane! Za ${data.r5HighestBid} punktów odpowiada ${data.r5HighestBidder}. Pula wynosi ${data.r5Pot} punktów`;
 
-// TV sam przełącza na pytanie dopiero PO TYM, jak lektor doczyta słowo "punktów" do końca!
 speakPolishText(spokenMsg, async () => {
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "speaking",
