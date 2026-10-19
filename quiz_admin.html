@@ -41,14 +41,15 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 3: STEROWANIE RUNDAMI (LEKTOR + AUTO-PRZECHODZENIE)</h3>
+<h3>KROK 3: STEROWANIE RUNDAMI (PODSUMOWANIA RUND + AUTO-PRZECHODZENIE)</h3>
 <label>Wybierz rundę:</label>
 <select id="roundSel">
 <option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
 <option value="2">Runda 2: Koło Fortuny - Hasła (60s | 20/15/10/5 pkt | 5 haseł)</option>
 <option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
 <option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 60 pytań)</option>
-<option value="5">Runda 5: AWANTURA O PUNKTY - Koło i Licytacja (64 unikalne pytania)</option>
+<option value="5">Runda 5: AWANTURA O PUNKTY - Koło i Licytacja (15 pytań)</option>
+<option value="6">Runda 6: BŁYSKAWICA PRAWDA/FAŁSZ (Stoper 20s Start/Stop | Wiek: 11/10/10/8 lat)</option>
 </select><br>
 <button type="button" class="green" id="btnStartRound" onclick="window.nextQuestion && window.nextQuestion()">▶️ START GRY / RUNDY</button>
 <button type="button" class="gold" id="btnNextQ" onclick="window.nextQuestion && window.nextQuestion()">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
@@ -103,6 +104,10 @@ return { q: q.trim(), c: c.trim() };
 const parseR4 = (str) => str.trim().split('\n').map(l => {
 let [cat, q, o, c] = l.split('|');
 return { cat: cat.trim(), q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
+});
+const parseTF = (str) => str.trim().split('\n').map(l => {
+let [q, ans] = l.split('|');
+return { q: q.trim(), a: ans.trim() === "1" };
 });
 
 const rawR1_P1 = parseR1(`
@@ -569,7 +574,106 @@ HISTORIA|W jakim kraju rządzili starożytni Faraonowie?|W Grecji;W Rzymie;W Egi
 HISTORIA|Jak nazywał się wielki statek pasażerski, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
 HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2`);
 
+// --- RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ SPERSONALIZOWANA POD WIEK (Po 20 pytań na osobę, 20.0s łącznie!) ---
+const r6QuestionsByPlayer = {
+Lila: parseTF(`
+Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?|1
+Czy stolica Australii to Sydney?|0
+Czy liczba 17 jest liczbą pierwszą?|1
+Czy ludzkie serce ma cztery komory i przedsionki łącznie?|1
+Czy fotosynteza u roślin zachodzi głównie w korzeniach?|0
+Czy Wielka Rafa Koralowa znajduje się u wybrzeży Australii?|1
+Czy kąt rozwarty ma mniej niż 90 stopni?|0
+Czy Krzysztof Kolumb odkrył Amerykę w 1492 roku?|1
+Czy diament jest najtwardszym naturalnym minerałem na Ziemi?|1
+Czy rzeka Nil przepływa przez Amerykę Południową?|0
+Czy ułamek jedna druga to tyle samo co pięć dziesiątych?|1
+Czy delfiny oddychają pod wodą za pomocą skrzeli?|0
+Czy Mount Everest leży w łańcuchu górskim Himalajów?|1
+Czy w języku angielskim słowo 'Library' oznacza księgarnię?|0
+Czy krew w naszym ciele rozprowadza tlen do komórek?|1
+Czy Wenus krąży wokół Słońca bliżej niż Ziemia?|1
+Czy w starożytnym Egipcie budowano Koloseum?|0
+Czy 25 procent z liczby 200 to 50?|1
+Czy pingwiny występują naturalnie na biegunie północnym (w Arktyce)?|0
+Czy Fryderyk Chopin był słynnym polskim kompozytorem?|1`),
+Kaja: parseTF(`
+Czy stolicą Hiszpanii jest Madryt?|1
+Czy nietoperze są ptakami?|0
+Czy godzina ma dokładnie 3600 sekund?|1
+Czy Morze Bałtyckie jest morzem ciepłym i bardzo słonym?|0
+Czy wynik mnożenia 7 razy 8 to 56?|1
+Czy kangury potrafią chodzić do tyłu?|0
+Czy Wieża Eiffla w Paryżu została zbudowana z żelaza (stali)?|1
+Czy kwadrat ma cztery równe boki i cztery kąty proste?|1
+Czy po angielsku słowo 'Breakfast' oznacza kolację?|0
+Czy bursztyn powstaje ze skamieniałej żywicy drzew?|1
+Czy wieloryb jest największą rybą na świecie?|0
+Czy Polska graniczy z siedmioma państwami?|1
+Czy woda zamarza w temperaturze 10 stopni Celsjusza?|0
+Czy kameleon potrafi poruszać każdym okiem niezależnie?|1
+Czy Wisła przepływa przez Kraków i Warszawę?|1
+Czy pająki mają sześć nóg tak jak owady?|0
+Czy 1000 gramów to dokładnie jeden kilogram?|1
+Czy Harry Potter mieszkał w szkole o nazwie Hogwart?|1
+Czy Słońce jest wielką planetą?|0
+Czy pszczoły produkują miód z nektaru kwiatów?|1`),
+Darek: parseTF(`
+Czy mecz piłki nożnej składa się z dwóch połów po 45 minut?|1
+Czy w grze Minecraft obsydian powstaje z połączenia wody i lawy?|1
+Czy gepard potrafi biec szybciej niż 100 kilometrów na godzinę?|1
+Czy stolicą Niemiec jest Monachium?|0
+Czy wynik działania 9 razy 6 to 54?|1
+Czy rekiny mają szkielet zbudowany z twardych kości?|0
+Czy Jowisz jest mniejszy od Ziemi?|0
+Czy w koszykówce za rzut zza linii trzech punktów dostaje się 3 punkty?|1
+Czy po angielsku słowo 'Wednesday' oznacza wtorek?|0
+Czy Giewont znajduje się w polskich Tatrach?|1
+Czy strusie potrafią latać nad drzewami?|0
+Czy metr ma dokładnie 1000 milimetrów?|1
+Czy Robert Lewandowski gra na pozycji bramkarza?|0
+Czy magnes przyciąga aluminiową puszkę?|0
+Czy na fladze olimpijskiej znajduje się pięć połączonych kół?|1
+Czy żółwie morskie składają jaja na piaszczystym lądzie?|1
+Czy w szachach najważniejszą figurą jest Król?|1
+Czy Sahara to największa lodowa pustynia świata?|0
+Czy 120 podzielone przez 10 daje 12?|1
+Czy kompas wskazuje kierunek północny?|1`),
+Jas: parseTF(`
+Czy krowa daje mleko, z którego robi się ser?|1
+Czy tydzień ma osiem dni?|0
+Czy lód jest zamarzniętą wodą?|1
+Czy psy potrafią miauczeć i chodzić po suficie?|0
+Czy banany rosną na drzewach (bylinach) w ciepłych krajach?|1
+Czy dwa dodać dwa równa się pięć?|0
+Czy strażak jeździ czerwonym wozem strażackim?|1
+Czy Słońce świeci na niebie w nocy?|0
+Czy ryby pływają w wodzie i mają płetwy?|1
+Czy pociąg jeździ po szynach (torach)?|1
+Czy zimą z drzew spadają zielone truskawki?|0
+Czy słonie mają długą trąbę i wielkie uszy?|1
+Czy trójkąt ma cztery rogi?|0
+Czy po angielsku słowo 'Cat' oznacza kota?|1
+Czy marchewka jest słodkim owocem rosnącym na krzaku?|0
+Czy bałwana lepi się z białego śniegu?|1
+Czy dziesięć odjąć trzy to siedem?|1
+Czy bocian ma długi czerwony dziób i nogi?|1
+Czy samoloty pływają pod wodą jak łodzie podwodne?|0
+Czy po lecie zawsze przychodzi jesień?|1`)
+};
+
+const r6Order = ["Lila", "Kaja", "Darek", "Jas"];
+const r6Ages = { Lila: 11, Kaja: 10, Darek: 10, Jas: 8 };
 const r5WheelCategories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
+
+const roundTitlesSpeech = {
+1: "Runda pierwsza: Wyścig A B C D",
+2: "Runda druga: Koło Fortuny",
+3: "Runda trzecia: Szybkie pisanie",
+4: "Runda czwarta: Ryzyko i wybieranie gracza",
+5: "Runda piąta: Awantura o punkty",
+6: "Runda szósta: Błyskawica Prawda czy Fałsz"
+};
 
 const allDBs = {
 1: {
@@ -610,11 +714,18 @@ const allDBs = {
 };
 
 let currentPool = 1;
-let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1 };
+let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
 let usedR5Indices = [];
 let r5CarryOverPool = 0;
 let currentState = null;
 let r4Controller = "";
+
+// Zmienne dla Rundy 6 (Błyskawica Prawda/Fałsz)
+let r6PlayerIdx = 0;
+let r6QIdx = -1;
+let r6TimeLeftMs = 20000;
+let r6PlayerScoreChange = 0;
+let lastR6HandledKey = "";
 
 let suspenseTimer = null;
 let autoFlowTimer = null;
@@ -654,6 +765,104 @@ status: "podium", answerTick: Date.now()
 });
 statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium i fajerwerki!";
 } catch (err) { showError(err.message); }
+}
+
+// Funkcja uruchamiająca Ekran Podsumowania Rundy i zapowiadająca kolejną rundę!
+async function triggerRoundSummary(completedRound) {
+clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
+if (completedRound >= 6) {
+await showGrandFinale();
+return;
+}
+const nextR = completedRound + 1;
+document.getElementById('roundSel').value = String(nextR);
+statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Za 12 sekund automatyczny start Rundy ${nextR}...`;
+
+await setDoc(doc(db, "quizGame", "state"), {
+status: "round_summary",
+round: completedRound,
+completedRound: completedRound,
+nextRound: nextR,
+nextRoundTitle: roundTitlesSpeech[nextR] || `Runda ${nextR}`,
+speechTick: Date.now(),
+pool: currentPool
+});
+
+autoFlowTimer = setTimeout(() => {
+nextQuestion();
+}, 12500);
+}
+
+// --- STEROWANIE RUNDĄ 6: BŁYSKAWICA PRAWDA / FAŁSZ (Stoper 20.0s Start/Stop) ---
+async function startR6ForPlayer(pIdx) {
+r6PlayerIdx = pIdx;
+if (r6PlayerIdx >= r6Order.length) {
+await showGrandFinale();
+return;
+}
+const player = r6Order[r6PlayerIdx];
+const age = r6Ages[player];
+r6QIdx = -1;
+r6TimeLeftMs = 20000;
+r6PlayerScoreChange = 0;
+
+statusEl.innerText = `⚡ Runda 6: Przygotowanie tury gracza ${player} (${age} lat) - 20 pytań, 20.0s na liczniku!`;
+await setDoc(doc(db, "quizGame", "state"), {
+status: "r6_intro",
+round: 6,
+nominated: player,
+r6Age: age,
+r6TimeLeftMs: 20000,
+r6QNum: 0,
+r6ScoreDelta: 0,
+speechTick: Date.now(),
+pool: currentPool
+});
+}
+
+async function sendNextR6Question() {
+const player = r6Order[r6PlayerIdx];
+const qList = r6QuestionsByPlayer[player] || [];
+r6QIdx++;
+
+if (r6QIdx >= qList.length || r6TimeLeftMs <= 0) {
+await finishR6TurnForPlayer(r6TimeLeftMs <= 0 ? "KONIEC CZASU (0.0s)!" : "WSZYSTKIE 20 PYTAŃ UKOŃCZONE!");
+return;
+}
+
+const qItem = qList[r6QIdx];
+statusEl.innerText = `⚡ Runda 6 [${player}]: Pytanie #${r6QIdx + 1}/20 | Pozostało czasu: ${(r6TimeLeftMs / 1000).toFixed(1)}s`;
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_speaking",
+round: 6,
+nominated: player,
+r6Age: r6Ages[player],
+question: qItem.q,
+r6CorrectBool: qItem.a,
+r6QNum: r6QIdx + 1,
+r6TimeLeftMs: r6TimeLeftMs,
+speechTick: Date.now()
+});
+}
+
+async function finishR6TurnForPlayer(reasonText) {
+const player = r6Order[r6PlayerIdx];
+statusEl.innerText = `⚡ Koniec tury gracza ${player} (${reasonText}). Bilans: ${r6PlayerScoreChange >= 0 ? "+" : ""}${r6PlayerScoreChange} pkt.`;
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_player_summary",
+nominated: player,
+r6EndReason: reasonText,
+r6ScoreDelta: r6PlayerScoreChange,
+r6TimeLeftMs: Math.max(0, r6TimeLeftMs),
+speechTick: Date.now()
+});
+
+clearTimeout(autoFlowTimer);
+autoFlowTimer = setTimeout(() => {
+startR6ForPlayer(r6PlayerIdx + 1);
+}, 7500);
 }
 
 function pickR5QuestionByCategory(pool, catName) {
@@ -700,6 +909,58 @@ let winners = currentState.r3Winners || [];
 statusEl.innerText = `Status: Runda 3 (Szybkie Pisanie - 20s) - odgadło już: ${winners.length}/4 graczy (Prawidłowa: ${currentState.correctText}).`;
 r3LiveBox.style.display = 'block';
 r3LiveBox.innerHTML = `<b>Poprawna:</b> <span style="color:#d4af37">${currentState.correctText}</span> | <b>Trafili:</b> ${winners.join(", ") || "brak"}`;
+}
+
+// --- OBSŁUGA RUNDY 6: ODBIÓR ODPOWIEDZI PRAWDA/FAŁSZ I ZATRZYMANIE STOPERA ---
+if (currentState.round === 6 && currentState.status === "r6_ready_first") {
+let readyKey = "r6_first_" + currentState.speechTick;
+if (lastR6HandledKey !== readyKey) {
+lastR6HandledKey = readyKey;
+sendNextR6Question();
+}
+}
+
+if (currentState.round === 6 && currentState.status === "r6_answered") {
+let ansKey = "r6_ans_" + currentState.answerTick;
+if (lastR6HandledKey !== ansKey) {
+lastR6HandledKey = ansKey;
+const player = currentState.nominated;
+const isCorrect = (currentState.r6GivenBool === currentState.r6CorrectBool);
+const ptsDelta = isCorrect ? 5 : -5;
+r6PlayerScoreChange += ptsDelta;
+r6TimeLeftMs = Math.max(0, currentState.r6TimeLeftMs || 0);
+
+(async () => {
+try {
+const scoreRef = doc(db, "quizScores", player);
+const scoreSnap = await getDoc(scoreRef);
+let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+await setDoc(scoreRef, { points: curPts + ptsDelta }, { merge: true });
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_feedback",
+r6LastCorrect: isCorrect,
+r6LastPts: ptsDelta,
+r6ScoreDelta: r6PlayerScoreChange,
+r6TimeLeftMs: r6TimeLeftMs
+});
+
+clearTimeout(autoFlowTimer);
+autoFlowTimer = setTimeout(() => {
+sendNextR6Question();
+}, 1700);
+} catch (e) { showError(e.message); }
+})();
+}
+}
+
+if (currentState.round === 6 && currentState.status === "r6_timeout") {
+let toKey = "r6_to_" + currentState.answerTick;
+if (lastR6HandledKey !== toKey) {
+lastR6HandledKey = toKey;
+r6TimeLeftMs = 0;
+finishR6TurnForPlayer("CZAS 20.0s MINĄŁ!");
+}
 }
 
 if (currentState.round === 5 && currentState.status === "r5_spinning") {
@@ -975,7 +1236,7 @@ async function sendPoolChoice() {
 try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value);
-currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1 };
+currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
 r4Controller = ""; r5CarryOverPool = 0; usedR5Indices = [];
 await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], pool: currentPool });
 statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}. Kliknij START GRY, aby puścić 1. pytanie!`;
@@ -988,11 +1249,22 @@ clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value) || 1;
 let r = parseInt(document.getElementById('roundSel').value);
 
+// Obsługa Rundy 6 (Błyskawica Prawda/Fałsz)
+if (r === 6) {
+if (currentQIndex[6] === -1) {
+currentQIndex[6] = 0;
+await startR6ForPlayer(0);
+} else {
+await sendNextR6Question();
+}
+return;
+}
+
 currentQIndex[r]++;
 
 if (r === 5) {
 if (currentQIndex[5] >= 15) {
-await showGrandFinale();
+await triggerRoundSummary(5);
 return;
 }
 let tieBanner = "";
@@ -1016,8 +1288,9 @@ return;
 
 let qData = allDBs[currentPool][r][currentQIndex[r]];
 if (!qData) {
-statusEl.innerText = `Status: Koniec pytań w Rundzie ${r} (Pula ${currentPool})! Zmień rundę.`;
-return alert(`Koniec pytań w Rundzie ${r} z Puli ${currentPool}! Wybierz kolejną rundę z listy.`);
+// Koniec pytań w bieżącej rundzie -> włącz Ekran Podsumowania Rundy i zapowiedź kolejnej!
+await triggerRoundSummary(r);
+return;
 }
 
 statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} / ${allDBs[currentPool][r].length} (Runda ${r}, Pula ${currentPool})`;
