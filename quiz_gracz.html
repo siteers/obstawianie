@@ -1,172 +1,175 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Cyber-Pad | Gracz</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
-  <style>
-    :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
-    body { 
-      font-family: sans-serif; background: var(--bg); color: #fff; margin: 0; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      min-height: 100vh; text-align: center; box-sizing: border-box; touch-action: manipulation;
-    }
-    body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
-    
-    .login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
-    select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
-    
-    #gamePad { display: none; width: 94%; max-width: 420px; }
-    .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
-    
-    /* KOLOROWE KAFELKI ABCD ZGODNE Z EKRANEM TV */
-    .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
-    .btn-abcd { 
-      color: #fff; border-radius: 16px; padding: 18px 10px; cursor: pointer; transition: 0.15s; 
-      display: flex; flex-direction: column; align-items: center; justify-content: center; 
-      min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    }
-    .btn-color-0 { background: rgba(241, 196, 15, 0.28); border: 3px solid #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
-    .btn-color-1 { background: rgba(0, 212, 255, 0.28); border: 3px solid #00d4ff; box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
-    .btn-color-2 { background: rgba(46, 213, 115, 0.28); border: 3px solid #2ed573; box-shadow: 0 0 15px rgba(46, 213, 115, 0.3); }
-    .btn-color-3 { background: rgba(255, 71, 87, 0.28); border: 3px solid #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.3); }
+<meta charset="UTF-8">
+<title>Cyber-Pad | Gracz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+<style>
+:root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
+body {
+font-family: sans-serif; background: var(--bg); color: #fff; margin: 0;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+min-height: 100vh; text-align: center; box-sizing: border-box; touch-action: manipulation;
+}
+body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
 
-    .btn-abcd .opt-letter { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
-    .btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
-    .btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
-    .btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
-    
-    /* KAFELKI KOŁA FORTUNY NA TELEFONIE (RUNDA 2) */
-    .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
-    .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
-    .wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 6px 0; width: 100%; }
-    .wheel-pad-word { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
-    
-    .wheel-tile-input {
-      width: 34px; height: 42px; background: #111; border: 2px solid #444; border-radius: 7px;
-      color: #fff; font-size: 20px; font-weight: 900; text-align: center; text-transform: uppercase;
-      padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret-color: transparent;
-    }
-    .wheel-tile-input:focus { border-color: var(--cyan); background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); transform: translateY(-2px); }
-    .wheel-tile-input.revealed { background: var(--gold) !important; color: #000 !important; border-color: #fff !important; pointer-events: none; }
-    .wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
+.login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
+select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
 
-    /* RUNDA 3: SZYBKIE PISANIE */
-    .input-area { display: none; flex-direction: column; gap: 10px; }
-    input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
-    .btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
-    .btn-submit:active { transform: scale(0.97); }
-    
-    .nominate-area { display: none; flex-direction: column; gap: 10px; }
-    .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
-    .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
-    .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
+#gamePad { display: none; width: 94%; max-width: 420px; }
+.status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
 
-    /* RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE */
-    #ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
-    .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
-    #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
+.grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
+.btn-abcd {
+color: #fff; border-radius: 16px; padding: 18px 10px; cursor: pointer; transition: 0.15s;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+.btn-color-0 { background: rgba(241, 196, 15, 0.28); border: 3px solid #f1c40f; box-shadow: 0 0 15px rgba(241, 196, 15, 0.3); }
+.btn-color-1 { background: rgba(0, 212, 255, 0.28); border: 3px solid #00d4ff; box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); }
+.btn-color-2 { background: rgba(46, 213, 115, 0.28); border: 3px solid #2ed573; box-shadow: 0 0 15px rgba(46, 213, 115, 0.3); }
+.btn-color-3 { background: rgba(255, 71, 87, 0.28); border: 3px solid #ff4757; box-shadow: 0 0 15px rgba(255, 71, 87, 0.3); }
 
-    #ui-r5-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
-    .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
-    .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
-    .bid-info-row b { color: var(--gold); font-size: 19px; }
-    .bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-    .btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
-    .btn-bid:active { transform: scale(0.93); }
-    .btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
-    .auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
-    
-    .locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
-    .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
-    .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
-    .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
-  </style>
+.btn-abcd .opt-letter { font-size: 26px; font-weight: 900; color: #fff; margin-bottom: 6px; }
+.btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
+.btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
+.btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
+
+/* RUNDA 6: PRZYCISKI PRAWDA / FAŁSZ NA TELEFONIE */
+.grid-tf { display: none; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 10px; }
+.btn-tf { border-radius: 18px; padding: 38px 10px; font-size: 24px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
+.btn-tf-true { background: rgba(46, 213, 115, 0.35); border: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
+.btn-tf-false { background: rgba(255, 71, 87, 0.35); border: 4px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.4); }
+.btn-tf:active { transform: scale(0.93); filter: brightness(1.3); }
+
+.wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+.wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
+.wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 6px 0; width: 100%; }
+.wheel-pad-word { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+
+.wheel-tile-input {
+width: 34px; height: 42px; background: #111; border: 2px solid #444; border-radius: 7px;
+color: #fff; font-size: 20px; font-weight: 900; text-align: center; text-transform: uppercase;
+padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret-color: transparent;
+}
+.wheel-tile-input:focus { border-color: var(--cyan); background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); transform: translateY(-2px); }
+.wheel-tile-input.revealed { background: var(--gold) !important; color: #000 !important; border-color: #fff !important; pointer-events: none; }
+.wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
+
+.input-area { display: none; flex-direction: column; gap: 10px; }
+input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
+.btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
+.btn-submit:active { transform: scale(0.97); }
+
+.nominate-area { display: none; flex-direction: column; gap: 10px; }
+.btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
+.btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
+.btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
+
+#ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
+.pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
+#pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
+
+#ui-r5-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
+.bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
+.bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
+.bid-info-row b { color: var(--gold); font-size: 19px; }
+.bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
+.btn-bid:active { transform: scale(0.93); }
+.btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
+.auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
+
+.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+.locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
+.locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
+.feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
+</style>
 </head>
 <body>
 
-  <div class="login-box" id="loginUI">
-    <h2>WYBIERZ AGENTA</h2>
-    <select id="agentSel">
-      <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-      <option value="Lila">Lila</option><option value="Kaja">Kaja</option>
-      <option value="Darek">Darek</option><option value="Jas">Jaś</option>
-    </select>
-    <button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
-  </div>
+<div class="login-box" id="loginUI">
+<h2>WYBIERZ AGENTA</h2>
+<select id="agentSel">
+<option value="" disabled selected>-- WYBIERZ AGENTA --</option>
+<option value="Lila">Lila</option><option value="Kaja">Kaja</option>
+<option value="Darek">Darek</option><option value="Jas">Jaś</option>
+</select>
+<button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
+</div>
 
-  <div id="gamePad">
-    <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
-    
-    <!-- RUNDA 1, 4 i 5: KOLOROWE KAFELKI ABCD -->
-    <div class="grid-abcd" id="ui-abcd">
-      <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
-        <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
-      </button>
-      <button class="btn-abcd btn-color-1" id="pad-btn-1" onclick="sendAnswer(1)">
-        <span class="opt-letter">B</span><span class="opt-label" id="pad-lbl-1"></span>
-      </button>
-      <button class="btn-abcd btn-color-2" id="pad-btn-2" onclick="sendAnswer(2)">
-        <span class="opt-letter">C</span><span class="opt-label" id="pad-lbl-2"></span>
-      </button>
-      <button class="btn-abcd btn-color-3" id="pad-btn-3" onclick="sendAnswer(3)">
-        <span class="opt-letter">D</span><span class="opt-label" id="pad-lbl-3"></span>
-      </button>
-    </div>
+<div id="gamePad">
+<div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
 
-    <!-- RUNDA 2: INTERAKTYWNE KAFELKI KOŁA FORTUNY -->
-    <div class="wheel-pad-area" id="ui-wheel">
-      <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
-      <div class="wheel-pad-board" id="wheelPadBoard"></div>
-      <div class="feedback-msg" id="wheelFeedback"></div>
-      <button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
-    </div>
-    
-    <!-- RUNDA 3: SZYBKIE PISANIE (20s) -->
-    <div class="input-area" id="ui-input">
-      <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
-      <div class="feedback-msg" id="r3Feedback"></div>
-      <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
-    </div>
-    
-    <!-- RUNDA 4: WYBIERANIE -->
-    <div class="nominate-area" id="ui-nominate">
-      <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
-      <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
-      <button class="btn-nom" id="nom-Lila" onclick="nominatePlayer('Lila')">LILA</button>
-      <button class="btn-nom" id="nom-Kaja" onclick="nominatePlayer('Kaja')">KAJA</button>
-      <button class="btn-nom" id="nom-Darek" onclick="nominatePlayer('Darek')">DAREK</button>
-      <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
-    </div>
+<div class="grid-abcd" id="ui-abcd">
+<button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
+<span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
+</button>
+<button class="btn-abcd btn-color-1" id="pad-btn-1" onclick="sendAnswer(1)">
+<span class="opt-letter">B</span><span class="opt-label" id="pad-lbl-1"></span>
+</button>
+<button class="btn-abcd btn-color-2" id="pad-btn-2" onclick="sendAnswer(2)">
+<span class="opt-letter">C</span><span class="opt-label" id="pad-lbl-2"></span>
+</button>
+<button class="btn-abcd btn-color-3" id="pad-btn-3" onclick="sendAnswer(3)">
+<span class="opt-letter">D</span><span class="opt-label" id="pad-lbl-3"></span>
+</button>
+</div>
 
-    <!-- RUNDA 5: FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE (ZOSTAJE NA EKRANIE PODCZAS OBROTU!) -->
-    <div id="ui-r5-spin">
-      <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
-      <div class="pad-wheel-pointer"></div>
-      <canvas id="pad-wheel-canvas" width="400" height="400"></canvas>
-      <div class="feedback-msg" id="spinFeedback"></div>
-    </div>
+<!-- RUNDA 6: PRZYCISKI PRAWDA / FAŁSZ -->
+<div class="grid-tf" id="ui-tf">
+<button class="btn-tf btn-tf-true" onclick="sendR6Answer(true)">✅ PRAWDA</button>
+<button class="btn-tf btn-tf-false" onclick="sendR6Answer(false)">❌ FAŁSZ</button>
+</div>
 
-    <!-- RUNDA 5: LICYTACJA (+2, +5, +10, +20) Z LIMITEM DO -100 PKT -->
-    <div id="ui-r5-bid">
-      <div class="bid-info-box">
-        <div class="bid-info-row">KATEGORIA: <b id="pad-r5-cat" style="color:var(--cyan);">---</b></div>
-        <div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r5-pot">20 PKT</b></div>
-        <div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r5-leader" style="color:#00ff00;">---</b></div>
-        <div class="bid-info-row">TWOJA STAWKA: <b id="pad-r5-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r5-maxinfo" style="font-size:12px; color:#888;"></span></div>
-      </div>
-      <div class="auction-pad-timer" id="pad-r5-countdown"></div>
-      <div class="feedback-msg" id="r5BidFeedback"></div>
-      <div class="bid-btns-grid">
-        <button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
-        <button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
-        <button class="btn-bid" id="btn-bid-10" onclick="placeBid(10)">+10</button>
-        <button class="btn-bid" id="btn-bid-20" onclick="placeBid(20)">+20</button>
-      </div>
-    </div>
-    
-    <div class="locked-msg" id="ui-locked">ZABLOKOWANE! Patrz na ekran.</div>
-  </div>
+<div class="wheel-pad-area" id="ui-wheel">
+<div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
+<div class="wheel-pad-board" id="wheelPadBoard"></div>
+<div class="feedback-msg" id="wheelFeedback"></div>
+<button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
+</div>
+
+<div class="input-area" id="ui-input">
+<input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
+<div class="feedback-msg" id="r3Feedback"></div>
+<button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
+</div>
+
+<div class="nominate-area" id="ui-nominate">
+<h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
+<p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
+<button class="btn-nom" id="nom-Lila" onclick="nominatePlayer('Lila')">LILA</button>
+<button class="btn-nom" id="nom-Kaja" onclick="nominatePlayer('Kaja')">KAJA</button>
+<button class="btn-nom" id="nom-Darek" onclick="nominatePlayer('Darek')">DAREK</button>
+<button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
+</div>
+
+<div id="ui-r5-spin">
+<p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
+<div class="pad-wheel-pointer"></div>
+<canvas id="pad-wheel-canvas" width="400" height="400"></canvas>
+<div class="feedback-msg" id="spinFeedback"></div>
+</div>
+
+<div id="ui-r5-bid">
+<div class="bid-info-box">
+<div class="bid-info-row">KATEGORIA: <b id="pad-r5-cat" style="color:var(--cyan);">---</b></div>
+<div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r5-pot">20 PKT</b></div>
+<div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r5-leader" style="color:#00ff00;">---</b></div>
+<div class="bid-info-row">TWOJA STAWKA: <b id="pad-r5-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r5-maxinfo" style="font-size:12px; color:#888;"></span></div>
+</div>
+<div class="auction-pad-timer" id="pad-r5-countdown"></div>
+<div class="feedback-msg" id="r5BidFeedback"></div>
+<div class="bid-btns-grid">
+<button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
+<button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
+<button class="btn-bid" id="btn-bid-10" onclick="placeBid(10)">+10</button>
+<button class="btn-bid" id="btn-bid-20" onclick="placeBid(20)">+20</button>
+</div>
+</div>
+
+<div class="locked-msg" id="ui-locked">ZABLOKOWANE! Patrz na ekran.</div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -176,10 +179,11 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
-let myCurrentPoints = 0; // Śledzenie własnych punktów, aby pilnować limitu zadłużenia do -100 pkt!
+let myCurrentPoints = 0;
 let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
+let r6LocalRunStart = 0;
 
 let currentWheelTick = null;
 let lastR3Question = null;
@@ -195,35 +199,35 @@ let isSpinningLocally = false;
 let lastHandledSpinTickOnPad = 0;
 
 function drawPadWheel() {
-    const canvas = document.getElementById('pad-wheel-canvas');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const cx = 200, cy = 200, r = 192;
-    const arc = (Math.PI * 2) / r5Categories.length;
+const canvas = document.getElementById('pad-wheel-canvas');
+if (!canvas) return;
+const ctx = canvas.getContext('2d');
+const cx = 200, cy = 200, r = 192;
+const arc = (Math.PI * 2) / r5Categories.length;
 
-    ctx.clearRect(0, 0, 400, 400);
-    r5Categories.forEach((cat, i) => {
-        const startAngle = i * arc - Math.PI / 2 - arc / 2;
-        const endAngle = startAngle + arc;
-        ctx.beginPath();
-        ctx.moveTo(cx, cy);
-        ctx.arc(cx, cy, r, startAngle, endAngle);
-        ctx.closePath();
-        ctx.fillStyle = r5Colors[i % r5Colors.length];
-        ctx.fill();
-        ctx.lineWidth = 3;
-        ctx.strokeStyle = "#050b14";
-        ctx.stroke();
+ctx.clearRect(0, 0, 400, 400);
+r5Categories.forEach((cat, i) => {
+const startAngle = i * arc - Math.PI / 2 - arc / 2;
+const endAngle = startAngle + arc;
+ctx.beginPath();
+ctx.moveTo(cx, cy);
+ctx.arc(cx, cy, r, startAngle, endAngle);
+ctx.closePath();
+ctx.fillStyle = r5Colors[i % r5Colors.length];
+ctx.fill();
+ctx.lineWidth = 3;
+ctx.strokeStyle = "#050b14";
+ctx.stroke();
 
-        ctx.save();
-        ctx.translate(cx, cy);
-        ctx.rotate(startAngle + arc / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 17px sans-serif";
-        ctx.fillText(cat, r - 14, 6);
-        ctx.restore();
-    });
+ctx.save();
+ctx.translate(cx, cy);
+ctx.rotate(startAngle + arc / 2);
+ctx.textAlign = "right";
+ctx.fillStyle = "#fff";
+ctx.font = "bold 17px sans-serif";
+ctx.fillText(cat, r - 14, 6);
+ctx.restore();
+});
 }
 drawPadWheel();
 
@@ -235,73 +239,73 @@ let lastMoveTime = 0;
 let angularVelocity = 0;
 
 function getAngleFromCenter(clientX, clientY) {
-    const rect = padWheelEl.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
+const rect = padWheelEl.getBoundingClientRect();
+const cx = rect.left + rect.width / 2;
+const cy = rect.top + rect.height / 2;
+return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
 }
 
 function onWheelStart(clientX, clientY) {
-    if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
-    isDraggingWheel = true;
-    document.getElementById('spinFeedback').innerText = "";
-    padWheelEl.style.transition = "none";
-    lastTouchAngle = getAngleFromCenter(clientX, clientY);
-    dragAccumulatedAngle = 0;
-    angularVelocity = 0;
-    lastMoveTime = Date.now();
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+isDraggingWheel = true;
+document.getElementById('spinFeedback').innerText = "";
+padWheelEl.style.transition = "none";
+lastTouchAngle = getAngleFromCenter(clientX, clientY);
+dragAccumulatedAngle = 0;
+angularVelocity = 0;
+lastMoveTime = Date.now();
 }
 
 function onWheelMove(clientX, clientY) {
-    if (!isDraggingWheel || isSpinningLocally) return;
-    const curAngle = getAngleFromCenter(clientX, clientY);
-    let delta = curAngle - lastTouchAngle;
-    if (delta > 180) delta -= 360;
-    if (delta < -180) delta += 360;
+if (!isDraggingWheel || isSpinningLocally) return;
+const curAngle = getAngleFromCenter(clientX, clientY);
+let delta = curAngle - lastTouchAngle;
+if (delta > 180) delta -= 360;
+if (delta < -180) delta += 360;
 
-    const now = Date.now();
-    const dt = Math.max(8, now - lastMoveTime);
-    angularVelocity = Math.abs(delta) / dt;
+const now = Date.now();
+const dt = Math.max(8, now - lastMoveTime);
+angularVelocity = Math.abs(delta) / dt;
 
-    padWheelRot += delta;
-    dragAccumulatedAngle += Math.abs(delta);
-    padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+padWheelRot += delta;
+dragAccumulatedAngle += Math.abs(delta);
+padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 
-    lastTouchAngle = curAngle;
-    lastMoveTime = now;
+lastTouchAngle = curAngle;
+lastMoveTime = now;
 }
 
 function onWheelEnd() {
-    if (!isDraggingWheel || isSpinningLocally) return;
-    isDraggingWheel = false;
+if (!isDraggingWheel || isSpinningLocally) return;
+isDraggingWheel = false;
 
-    if (dragAccumulatedAngle < 55 || angularVelocity < 0.32) {
-        document.getElementById('spinFeedback').innerText = "⚠️ ZA SŁABO! ZAMACHNIJ SIĘ I ZAKRĘĆ MOCNIEJ!";
-        padWheelEl.style.transition = "transform 0.4s ease-out";
-        padWheelRot = Math.round(padWheelRot / 360) * 360;
-        padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
-        return;
-    }
+if (dragAccumulatedAngle < 55 || angularVelocity < 0.32) {
+document.getElementById('spinFeedback').innerText = "⚠️ ZA SŁABO! ZAMACHNIJ SIĘ I ZAKRĘĆ MOCNIEJ!";
+padWheelEl.style.transition = "transform 0.4s ease-out";
+padWheelRot = Math.round(padWheelRot / 360) * 360;
+padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+return;
+}
 
-    const power = Math.min(11, Math.max(6, Math.round(angularVelocity * 10)));
-    window.triggerWheelSpin(power);
+const power = Math.min(11, Math.max(6, Math.round(angularVelocity * 10)));
+window.triggerWheelSpin(power);
 }
 
 padWheelEl.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    const t = e.touches[0];
-    onWheelStart(t.clientX, t.clientY);
+e.preventDefault();
+const t = e.touches[0];
+onWheelStart(t.clientX, t.clientY);
 }, { passive: false });
 
 padWheelEl.addEventListener('touchmove', (e) => {
-    e.preventDefault();
-    const t = e.touches[0];
-    onWheelMove(t.clientX, t.clientY);
+e.preventDefault();
+const t = e.touches[0];
+onWheelMove(t.clientX, t.clientY);
 }, { passive: false });
 
 padWheelEl.addEventListener('touchend', (e) => {
-    e.preventDefault();
-    onWheelEnd();
+e.preventDefault();
+onWheelEnd();
 }, { passive: false });
 
 padWheelEl.addEventListener('mousedown', (e) => onWheelStart(e.clientX, e.clientY));
@@ -309,665 +313,723 @@ window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => onWheelEnd());
 
 window.triggerWheelSpin = async (power = 7) => {
-    if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
-    isSpinningLocally = true;
-    const spinTickNow = Date.now();
-    lastHandledSpinTickOnPad = spinTickNow;
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+isSpinningLocally = true;
+const spinTickNow = Date.now();
+lastHandledSpinTickOnPad = spinTickNow;
 
-    padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-    const segAngle = 360 / r5Categories.length;
-    const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
-    const curMod = ((padWheelRot % 360) + 360) % 360;
-    let diff = targetMod - curMod;
-    if (diff < 0) diff += 360;
-    padWheelRot += power * 360 + diff;
-    padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
+const segAngle = 360 / r5Categories.length;
+const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
+const curMod = ((padWheelRot % 360) + 360) % 360;
+let diff = targetMod - curMod;
+if (diff < 0) diff += 360;
+padWheelRot += power * 360 + diff;
+padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 
-    await updateDoc(doc(db, "quizGame", "state"), {
-        status: "r5_spinning",
-        spinPower: power,
-        spinTick: spinTickNow
-    });
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r5_spinning",
+spinPower: power,
+spinTick: spinTickNow
+});
 };
 
-// Podbijanie stawki w Rundzie 5 (+2, +5, +10, +20) z obsługą wyrównania i limitem do -100 pkt!
 window.placeBid = async (addAmount) => {
-    if (!currentState || currentState.round !== 5 || currentState.status !== "r5_bidding") return;
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_bidding") return;
 
-    // Jeśli trwa dogrywka dla remisujących, sprawdź czy gracz bierze w niej udział
-    const tiedList = currentState.r5TiedBidders || [];
-    if (tiedList.length > 0 && !tiedList.includes(myName)) return;
+const tiedList = currentState.r5TiedBidders || [];
+if (tiedList.length > 0 && !tiedList.includes(myName)) return;
 
-    const stateRef = doc(db, "quizGame", "state");
-    const snap = await getDoc(stateRef);
-    const data = snap.data();
-    if (data.status !== "r5_bidding") return;
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+const data = snap.data();
+if (data.status !== "r5_bidding") return;
 
-    let bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
-    let myNewBid = (bids[myName] || 5) + addAmount;
+let bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+let myNewBid = (bids[myName] || 5) + addAmount;
 
-    // Twardy limit zadłużenia: gracz nie może spaść poniżej -100 punktów po odjęciu wylicytowanej stawki!
-    const maxAllowedBid = myCurrentPoints + 100;
-    if (myNewBid > maxAllowedBid) {
-        document.getElementById('r5BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
-        return;
-    }
+const maxAllowedBid = myCurrentPoints + 100;
+if (myNewBid > maxAllowedBid) {
+document.getElementById('r5BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
+return;
+}
 
-    const currentMax = data.r5HighestBid || 5;
-    // Pozwalamy wyrównać najwyższą stawkę (>= currentMax) lub przebić!
-    if (myNewBid < currentMax) {
-        document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
-        return;
-    }
+const currentMax = data.r5HighestBid || 5;
+if (myNewBid < currentMax) {
+document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
+return;
+}
 
-    document.getElementById('r5BidFeedback').innerText = "";
-    bids[myName] = myNewBid;
-    let newPot = (data.carryOver || 0) + Object.values(bids).reduce((a, b) => a + b, 0);
-    let newHighestBid = Math.max(currentMax, myNewBid);
+document.getElementById('r5BidFeedback').innerText = "";
+bids[myName] = myNewBid;
+let newPot = (data.carryOver || 0) + Object.values(bids).reduce((a, b) => a + b, 0);
+let newHighestBid = Math.max(currentMax, myNewBid);
 
-    await updateDoc(stateRef, {
-        r5Bids: bids,
-        r5Pot: newPot,
-        r5HighestBidder: myName,
-        r5HighestBid: newHighestBid,
-        r5Countdown: 0,
-        bidTick: Date.now()
-    });
+await updateDoc(stateRef, {
+r5Bids: bids,
+r5Pot: newPot,
+r5HighestBidder: myName,
+r5HighestBid: newHighestBid,
+r5Countdown: 0,
+bidTick: Date.now()
+});
+};
+
+// Wysłanie odpowiedzi Prawda / Fałsz w Rundzie 6 (natychmiast zatrzymuje stoper!)
+window.sendR6Answer = async (boolChoice) => {
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_running" || currentState.nominated !== myName) return;
+const elapsedMs = Math.max(100, Date.now() - (r6LocalRunStart || Date.now()));
+const newRemainingMs = Math.max(0, (currentState.r6TimeLeftMs || 20000) - elapsedMs);
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r6_answered",
+r6GivenBool: boolChoice,
+r6TimeLeftMs: newRemainingMs,
+answerTick: Date.now()
+});
 };
 
 function normalizeChar(str) {
-    return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
+return (str || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l").replace(/[^a-z0-9]/g, "");
 }
 
 window.forceSyncState = async () => {
-    if (!myName) return;
-    try {
-        const snap = await getDoc(doc(db, "quizGame", "state"));
-        if (snap.exists()) {
-            currentState = snap.data();
-            updatePadUI();
-        }
-    } catch (e) {}
+if (!myName) return;
+try {
+const snap = await getDoc(doc(db, "quizGame", "state"));
+if (snap.exists()) {
+currentState = snap.data();
+updatePadUI();
+}
+} catch (e) {}
 };
 
 function startRealtimeListener() {
-    if (unsubscribeSnapshot) unsubscribeSnapshot();
-    unsubscribeSnapshot = onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
-        if (!docSnap.exists()) return;
-        currentState = docSnap.data();
-        updatePadUI();
-    }, () => {
-        setTimeout(window.forceSyncState, 1500);
-    });
+if (unsubscribeSnapshot) unsubscribeSnapshot();
+unsubscribeSnapshot = onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
+if (!docSnap.exists()) return;
+currentState = docSnap.data();
+updatePadUI();
+}, () => {
+setTimeout(window.forceSyncState, 1500);
+});
 }
 
 window.joinGame = () => {
-    myName = document.getElementById('agentSel').value;
-    if(!myName) return alert("Musisz wybrać Agenta z listy!");
-    
-    document.getElementById('loginUI').style.display = 'none';
-    document.getElementById('gamePad').style.display = 'block';
-    
-    // Nasłuchuj własnych punktów z bazy, aby pilnować limitu -100 pkt w licytacji
-    onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
-        if (sSnap.exists()) {
-            myCurrentPoints = sSnap.data().points || 0;
-        }
-    });
+myName = document.getElementById('agentSel').value;
+if(!myName) return alert("Musisz wybrać Agenta z listy!");
 
-    startRealtimeListener();
+document.getElementById('loginUI').style.display = 'none';
+document.getElementById('gamePad').style.display = 'block';
 
-    clearInterval(watchdogInterval);
-    watchdogInterval = setInterval(window.forceSyncState, 2500);
+onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
+if (sSnap.exists()) {
+myCurrentPoints = sSnap.data().points || 0;
+}
+});
+
+startRealtimeListener();
+
+clearInterval(watchdogInterval);
+watchdogInterval = setInterval(window.forceSyncState, 2500);
 };
 
 document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && myName) {
-        startRealtimeListener();
-        window.forceSyncState();
-    }
+if (document.visibilityState === "visible" && myName) {
+startRealtimeListener();
+window.forceSyncState();
+}
 });
 window.addEventListener("focus", () => { if (myName) window.forceSyncState(); });
 window.addEventListener("online", () => { if (myName) { startRealtimeListener(); window.forceSyncState(); } });
 
 function buildWheelPadTiles(phrase) {
-    const board = document.getElementById('wheelPadBoard');
-    board.innerHTML = "";
-    tileInputs = [];
-    targetLetters = [];
-    let globalIdx = 0;
+const board = document.getElementById('wheelPadBoard');
+board.innerHTML = "";
+tileInputs = [];
+targetLetters = [];
+let globalIdx = 0;
 
-    phrase.split(" ").forEach(word => {
-        const wDiv = document.createElement('div');
-        wDiv.className = "wheel-pad-word";
-        for (let ch of word) {
-            const inp = document.createElement('input');
-            inp.type = "text";
-            inp.maxLength = 1;
-            inp.className = "wheel-tile-input";
-            inp.dataset.idx = globalIdx;
-            inp.autocomplete = "off";
-            inp.autocapitalize = "characters";
-            inp.spellcheck = false;
+phrase.split(" ").forEach(word => {
+const wDiv = document.createElement('div');
+wDiv.className = "wheel-pad-word";
+for (let ch of word) {
+const inp = document.createElement('input');
+inp.type = "text";
+inp.maxLength = 1;
+inp.className = "wheel-tile-input";
+inp.dataset.idx = globalIdx;
+inp.autocomplete = "off";
+inp.autocapitalize = "characters";
+inp.spellcheck = false;
 
-            const idxCopy = globalIdx;
-            targetLetters.push(ch);
+const idxCopy = globalIdx;
+targetLetters.push(ch);
 
-            inp.addEventListener('focus', () => {
-                if (inp.readOnly || inp.classList.contains('revealed')) {
-                    focusNextEditableTile(idxCopy + 1);
-                    return;
-                }
-                inp.select();
-            });
+inp.addEventListener('focus', () => {
+if (inp.readOnly || inp.classList.contains('revealed')) {
+focusNextEditableTile(idxCopy + 1);
+return;
+}
+inp.select();
+});
 
-            inp.addEventListener('input', (e) => {
-                if (inp.readOnly || inp.classList.contains('revealed')) {
-                    inp.value = targetLetters[idxCopy];
-                    focusNextEditableTile(idxCopy + 1);
-                    return;
-                }
-                document.getElementById('wheelFeedback').innerText = "";
-                let val = e.target.value.trim().slice(-1).toUpperCase();
-                e.target.value = val;
-                if (val) {
-                    inp.classList.add('filled');
-                    focusNextEditableTile(idxCopy + 1);
-                } else {
-                    inp.classList.remove('filled');
-                }
-            });
+inp.addEventListener('input', (e) => {
+if (inp.readOnly || inp.classList.contains('revealed')) {
+inp.value = targetLetters[idxCopy];
+focusNextEditableTile(idxCopy + 1);
+return;
+}
+document.getElementById('wheelFeedback').innerText = "";
+let val = e.target.value.trim().slice(-1).toUpperCase();
+e.target.value = val;
+if (val) {
+inp.classList.add('filled');
+focusNextEditableTile(idxCopy + 1);
+} else {
+inp.classList.remove('filled');
+}
+});
 
-            inp.addEventListener('keydown', (e) => {
-                if (e.key === 'Backspace') {
-                    e.preventDefault();
-                    if (inp.readOnly || inp.classList.contains('revealed')) {
-                        inp.value = targetLetters[idxCopy];
-                        focusPrevEditableTile(idxCopy - 1);
-                        return;
-                    }
-                    if (inp.value === "") {
-                        focusPrevEditableTile(idxCopy - 1);
-                    } else {
-                        inp.value = "";
-                        inp.classList.remove('filled');
-                    }
-                } else if (e.key === 'Enter') {
-                    e.preventDefault();
-                    window.submitWheelTiles();
-                }
-            });
+inp.addEventListener('keydown', (e) => {
+if (e.key === 'Backspace') {
+e.preventDefault();
+if (inp.readOnly || inp.classList.contains('revealed')) {
+inp.value = targetLetters[idxCopy];
+focusPrevEditableTile(idxCopy - 1);
+return;
+}
+if (inp.value === "") {
+focusPrevEditableTile(idxCopy - 1);
+} else {
+inp.value = "";
+inp.classList.remove('filled');
+}
+} else if (e.key === 'Enter') {
+e.preventDefault();
+window.submitWheelTiles();
+}
+});
 
-            wDiv.appendChild(inp);
-            tileInputs.push(inp);
-            globalIdx++;
-        }
-        board.appendChild(wDiv);
-    });
+wDiv.appendChild(inp);
+tileInputs.push(inp);
+globalIdx++;
+}
+board.appendChild(wDiv);
+});
 }
 
 function focusNextEditableTile(startIdx) {
-    for (let i = startIdx; i < tileInputs.length; i++) {
-        if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
-            tileInputs[i].focus();
-            return;
-        }
-    }
+for (let i = startIdx; i < tileInputs.length; i++) {
+if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
+tileInputs[i].focus();
+return;
+}
+}
 }
 
 function focusPrevEditableTile(startIdx) {
-    for (let i = startIdx; i >= 0; i--) {
-        if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
-            tileInputs[i].focus();
-            tileInputs[i].value = "";
-            tileInputs[i].classList.remove('filled');
-            return;
-        }
-    }
+for (let i = startIdx; i >= 0; i--) {
+if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
+tileInputs[i].focus();
+tileInputs[i].value = "";
+tileInputs[i].classList.remove('filled');
+return;
+}
+}
 }
 
 function updateRevealedTilesOnPad() {
-    if (!currentState || !currentState.wheelOrder) return;
-    const unlocked = currentState.wheelOrder.slice(0, padRevealedCount);
-    unlocked.forEach(idx => {
-        const inp = tileInputs[idx];
-        if (inp) {
-            const wasFocused = (document.activeElement === inp);
-            inp.value = targetLetters[idx];
-            inp.readOnly = true;
-            inp.classList.remove('filled');
-            inp.classList.add('revealed');
-            if (wasFocused) focusNextEditableTile(idx + 1);
-        }
-    });
+if (!currentState || !currentState.wheelOrder) return;
+const unlocked = currentState.wheelOrder.slice(0, padRevealedCount);
+unlocked.forEach(idx => {
+const inp = tileInputs[idx];
+if (inp) {
+const wasFocused = (document.activeElement === inp);
+inp.value = targetLetters[idx];
+inp.readOnly = true;
+inp.classList.remove('filled');
+inp.classList.add('revealed');
+if (wasFocused) focusNextEditableTile(idx + 1);
+}
+});
 }
 
+let lastR6TickSeen = 0;
+
 function updatePadUI() {
-    document.getElementById('ui-abcd').style.display = 'none';
-    document.getElementById('ui-wheel').style.display = 'none';
-    document.getElementById('ui-input').style.display = 'none';
-    document.getElementById('ui-nominate').style.display = 'none';
-    document.getElementById('ui-r5-spin').style.display = 'none';
-    document.getElementById('ui-r5-bid').style.display = 'none';
-    const lockedEl = document.getElementById('ui-locked');
-    lockedEl.style.display = 'none';
-    lockedEl.classList.remove('win-msg', 'speak-msg');
-    document.body.classList.remove('keyboard-mode');
+document.getElementById('ui-abcd').style.display = 'none';
+document.getElementById('ui-tf').style.display = 'none';
+document.getElementById('ui-wheel').style.display = 'none';
+document.getElementById('ui-input').style.display = 'none';
+document.getElementById('ui-nominate').style.display = 'none';
+document.getElementById('ui-r5-spin').style.display = 'none';
+document.getElementById('ui-r5-bid').style.display = 'none';
+const lockedEl = document.getElementById('ui-locked');
+lockedEl.style.display = 'none';
+lockedEl.classList.remove('win-msg', 'speak-msg');
+document.body.classList.remove('keyboard-mode');
 
-    if (currentState && currentState.status === "podium") {
-        clearInterval(padWheelInterval);
-        document.getElementById('padStatus').innerText = "🏆 WIELKI FINAŁ! 🏆";
-        lockedEl.classList.add('win-msg');
-        lockedEl.style.display = 'block';
-        lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
-        return;
-    }
+if (currentState && currentState.status === "podium") {
+clearInterval(padWheelInterval);
+document.getElementById('padStatus').innerText = "🏆 WIELKI FINAŁ! 🏆";
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
+return;
+}
 
-    // RUNDA 5: KOŁO ZOSTAJE NA TELEFONIE PRZEZ CAŁY CZAS KRĘCENIA (TAK DŁUGO JAK NA TV)!
-    if (currentState && currentState.round === 5 && (currentState.status === "r5_wait_spin" || currentState.status === "r5_spinning")) {
-        if (currentState.status === "r5_wait_spin") {
-            isSpinningLocally = false;
-        }
-        // Pokazujemy koło na telefonie każdemu (lub kręcącemu przez pełny czas obrotu!)
-        document.getElementById('ui-r5-spin').style.display = 'flex';
-        const instrEl = document.getElementById('spinInstruction');
+if (currentState && currentState.status === "round_summary") {
+clearInterval(padWheelInterval);
+document.getElementById('padStatus').innerText = `📊 PODSUMOWANIE RUNDY ${currentState.completedRound}`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `SPÓJRZ NA RANKING NA TV!\nZA CHWILĘ: ${(currentState.nextRoundTitle || "").toUpperCase()}!`;
+return;
+}
 
-        if (currentState.status === "r5_wait_spin") {
-            if (currentState.controller === myName) {
-                document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
-                instrEl.innerText = "ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!";
-            } else {
-                document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
-                instrEl.innerText = `CZEKAJ... TERAZ KOŁEM KRĘCI ${currentState.controller.toUpperCase()}!`;
-            }
-        } else {
-            // Status: r5_spinning -> koło kręci się na wszystkich telefonach synchronicznie z TV!
-            document.getElementById('padStatus').innerText = "🎡 KOŁO SIĘ OBRACA!";
-            instrEl.innerText = "LOSOWANIE KATEGORII...";
-            if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
-                lastHandledSpinTickOnPad = currentState.spinTick;
-                padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-                const segAngle = 360 / r5Categories.length;
-                const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
-                const curMod = ((padWheelRot % 360) + 360) % 360;
-                let diff = targetMod - curMod;
-                if (diff < 0) diff += 360;
-                padWheelRot += (currentState.spinPower || 7) * 360 + diff;
-                padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
-            }
-        }
-        return;
-    }
+// --- RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ NA TELEFONIE ---
+if (currentState && currentState.round === 6 && currentState.status && currentState.status.startsWith("r6_")) {
+if (currentState.nominated !== myName) {
+document.getElementById('padStatus').innerText = `⚡ BŁYSKAWICA: GRA ${currentState.nominated.toUpperCase()}`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}!\nPOZOSTAŁO: ${((currentState.r6TimeLeftMs || 0) / 1000).toFixed(1)}s`;
+return;
+}
 
-    // RUNDA 5: LICYTACJA NA TELEFONACH (+2, +5, +10, +20) Z DOGRYWKĄ DLA REMISUJĄCYCH I LIMITEM -100 PKT
-    if (currentState && currentState.round === 5 && (currentState.status === "r5_bidding" || currentState.status === "r5_sold")) {
-        if (currentState.status === "r5_sold") {
-            document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
-            lockedEl.classList.add('win-msg');
-            lockedEl.style.display = 'block';
-            lockedEl.innerText = currentState.r5RandomDrawn
-                ? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`
-                : `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`;
-            return;
-        }
+const secStr = ((currentState.r6TimeLeftMs || 0) / 1000).toFixed(1);
+if (currentState.status === "r6_intro" || currentState.status === "r6_ready_first") {
+document.getElementById('padStatus').innerText = "⚡ TWOJA KOLEJ W BŁYSKAWICY!";
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `PRZYGOTUJ SIĘ!\nMASZ 20.0 SEKUND NA 20 PYTAŃ PRAWDA / FAŁSZ!`;
+} else if (currentState.status === "r6_speaking") {
+document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI (${secStr}s) - SŁUCHAJ PYTANIA!`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `PYTANIE #${currentState.r6QNum}/20\nLEKTOR CZYTA PYTANIE...`;
+} else if (currentState.status === "r6_running") {
+if (currentState.tick !== lastR6TickSeen) {
+lastR6TickSeen = currentState.tick;
+r6LocalRunStart = Date.now();
+}
+document.getElementById('padStatus').innerText = `⏱️ CZAS LECI (${secStr}s) - PYTANIE #${currentState.r6QNum}/20!`;
+document.getElementById('ui-tf').style.display = 'grid';
+} else if (currentState.status === "r6_feedback") {
+document.getElementById('padStatus').innerText = `⏸️ ZEGAR ZATRZYMANY (${secStr}s)`;
+if (currentState.r6LastCorrect) lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = currentState.r6LastCorrect ? `✅ DOBRZE! (+5 PKT)\nZOSTAŁO: ${secStr}s` : `❌ BŁĄD! (-5 PKT)\nZOSTAŁO: ${secStr}s`;
+} else if (currentState.status === "r6_player_summary") {
+document.getElementById('padStatus').innerText = "KONIEC TWOJEJ SERII!";
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r6ScoreDelta >= 0 ? "+" : ""}${currentState.r6ScoreDelta} PKT!`;
+}
+return;
+}
 
-        const tiedList = currentState.r5TiedBidders || [];
-        if (tiedList.length > 0 && !tiedList.includes(myName)) {
-            document.getElementById('padStatus').innerText = "DOGRYWKA LICYTACJI!";
-            lockedEl.style.display = 'block';
-            lockedEl.innerText = `DOGRYWKA POMIĘDZY:\n${tiedList.join(" i ").toUpperCase()}!`;
-            return;
-        }
+if (currentState && currentState.round === 5 && (currentState.status === "r5_wait_spin" || currentState.status === "r5_spinning")) {
+if (currentState.status === "r5_wait_spin") {
+isSpinningLocally = false;
+}
+document.getElementById('ui-r5-spin').style.display = 'flex';
+const instrEl = document.getElementById('spinInstruction');
 
-        document.getElementById('padStatus').innerText = tiedList.length > 0 
-            ? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!" 
-            : "AWANTURA O PUNKTY - LICYTUJ!";
-        document.getElementById('ui-r5-bid').style.display = 'flex';
-        document.getElementById('pad-r5-cat').innerText = currentState.category || "";
-        document.getElementById('pad-r5-pot').innerText = `${currentState.r5Pot || 20} PKT`;
-        document.getElementById('pad-r5-leader').innerText = `${currentState.r5HighestBidder.toUpperCase()} (${currentState.r5HighestBid} PKT)`;
+if (currentState.status === "r5_wait_spin") {
+if (currentState.controller === myName) {
+document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
+instrEl.innerText = "ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!";
+} else {
+document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
+instrEl.innerText = `CZEKAJ... TERAZ KOŁEM KRĘCI ${currentState.controller.toUpperCase()}!`;
+}
+} else {
+document.getElementById('padStatus').innerText = "🎡 KOŁO SIĘ OBRACA!";
+instrEl.innerText = "LOSOWANIE KATEGORII...";
+if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
+lastHandledSpinTickOnPad = currentState.spinTick;
+padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
+const segAngle = 360 / r5Categories.length;
+const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
+const curMod = ((padWheelRot % 360) + 360) % 360;
+let diff = targetMod - curMod;
+if (diff < 0) diff += 360;
+padWheelRot += (currentState.spinPower || 7) * 360 + diff;
+padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+}
+}
+return;
+}
 
-        const myBid = (currentState.r5Bids || {})[myName] || 5;
-        const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
-        document.getElementById('pad-r5-mybid').innerText = `${myBid} PKT`;
-        document.getElementById('pad-r5-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
+if (currentState && currentState.round === 5 && (currentState.status === "r5_bidding" || currentState.status === "r5_sold")) {
+if (currentState.status === "r5_sold") {
+document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = currentState.r5RandomDrawn
+? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`
+: `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`;
+return;
+}
 
-        // Wyłącz przyciski, które przekroczyłyby limit -100 pkt
-        [2, 5, 10, 20].forEach(inc => {
-            const btn = document.getElementById(`btn-bid-${inc}`);
-            if (btn) btn.disabled = (myBid + inc > maxAllowedBid);
-        });
+const tiedList = currentState.r5TiedBidders || [];
+if (tiedList.length > 0 && !tiedList.includes(myName)) {
+document.getElementById('padStatus').innerText = "DOGRYWKA LICYTACJI!";
+lockedEl.style.display = 'block';
+lockedEl.innerText = `DOGRYWKA POMIĘDZY:\n${tiedList.join(" i ").toUpperCase()}!`;
+return;
+}
 
-        const cdEl = document.getElementById('pad-r5-countdown');
-        if (currentState.r5Countdown > 0) {
-            cdEl.style.color = "#ff4757";
-            cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r5Countdown}s)`;
-        } else if (currentState.r5MainSec > 0) {
-            cdEl.style.color = "#2ed573";
-            cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r5MainSec}s`;
-        } else {
-            cdEl.style.color = "var(--gold)";
-            cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
-        }
-        return;
-    }
+document.getElementById('padStatus').innerText = tiedList.length > 0
+? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!"
+: "AWANTURA O PUNKTY - LICYTUJ!";
+document.getElementById('ui-r5-bid').style.display = 'flex';
+document.getElementById('pad-r5-cat').innerText = currentState.category || "";
+document.getElementById('pad-r5-pot').innerText = `${currentState.r5Pot || 20} PKT`;
+document.getElementById('pad-r5-leader').innerText = `${currentState.r5HighestBidder.toUpperCase()} (${currentState.r5HighestBid} PKT)`;
 
-    if (currentState && currentState.status === "speaking") {
-        if (currentState.round === 3 && currentState.question !== lastR3Question) {
-            lastR3Question = currentState.question;
-            document.getElementById('typeAnswer').value = "";
-            document.getElementById('r3Feedback').innerText = "";
-        }
-        document.getElementById('padStatus').innerText = "🗣️ SŁUCHAJ LEKTORA NA TV!";
-        lockedEl.classList.add('speak-msg');
-        lockedEl.style.display = 'block';
-        lockedEl.innerText = "LEKTOR CZYTA PYTANIE...\nZA CHWILĘ ODBLOKUJĄ SIĘ ODPOWIEDZI!";
-        return;
-    }
-    
-    if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
-        clearInterval(padWheelInterval);
-        document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
-        if (currentState && (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results")) {
-            document.getElementById('typeAnswer').value = "";
-            document.getElementById('r3Feedback').innerText = "";
-            lastR3Question = null;
-        }
-        return;
-    }
+const myBid = (currentState.r5Bids || {})[myName] || 5;
+const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
+document.getElementById('pad-r5-mybid').innerText = `${myBid} PKT`;
+document.getElementById('pad-r5-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
 
-    if (currentState.status === "results_wrong") {
-        document.getElementById('padStatus').innerText = "KTOŚ SIĘ POMYLIŁ! ZA CHWILĘ DOBITKA...";
-        lockedEl.style.display = 'block';
-        lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
-        return;
-    }
+[2, 5, 10, 20].forEach(inc => {
+const btn = document.getElementById(`btn-bid-${inc}`);
+if (btn) btn.disabled = (myBid + inc > maxAllowedBid);
+});
 
-    if (currentState.status === "wheel_reading" && currentState.round === 2) {
-        const winners = currentState.wheelWinners || [];
-        const myRank = winners.indexOf(myName);
-        const ptsMap = [20, 15, 10, 5];
+const cdEl = document.getElementById('pad-r5-countdown');
+if (currentState.r5Countdown > 0) {
+cdEl.style.color = "#ff4757";
+cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r5Countdown}s)`;
+} else if (currentState.r5MainSec > 0) {
+cdEl.style.color = "#2ed573";
+cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r5MainSec}s`;
+} else {
+cdEl.style.color = "var(--gold)";
+cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
+}
+return;
+}
 
-        if (myRank !== -1) {
-            clearInterval(padWheelInterval);
-            document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
-            lockedEl.classList.add('win-msg');
-            lockedEl.style.display = 'block';
-            lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
-            return;
-        }
+if (currentState && currentState.status === "speaking") {
+if (currentState.round === 3 && currentState.question !== lastR3Question) {
+lastR3Question = currentState.question;
+document.getElementById('typeAnswer').value = "";
+document.getElementById('r3Feedback').innerText = "";
+}
+document.getElementById('padStatus').innerText = "🗣️ SŁUCHAJ LEKTORA NA TV!";
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = "LEKTOR CZYTA PYTANIE...\nZA CHWILĘ ODBLOKUJĄ SIĘ ODPOWIEDZI!";
+return;
+}
 
-        document.body.classList.add('keyboard-mode');
-        document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
-        document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
-        document.getElementById('ui-wheel').style.display = 'flex';
+if (!currentState || currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
+clearInterval(padWheelInterval);
+document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
+if (currentState && (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results")) {
+document.getElementById('typeAnswer').value = "";
+document.getElementById('r3Feedback').innerText = "";
+lastR3Question = null;
+}
+return;
+}
 
-        if (currentState.tick !== currentWheelTick) {
-            currentWheelTick = currentState.tick;
-            clearInterval(padWheelInterval);
-            padRevealedCount = 0;
-            document.getElementById('wheelFeedback').innerText = "";
-            buildWheelPadTiles(currentState.question);
+if (currentState.status === "results_wrong") {
+document.getElementById('padStatus').innerText = "KTOŚ SIĘ POMYLIŁ! ZA CHWILĘ DOBITKA...";
+lockedEl.style.display = 'block';
+lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
+return;
+}
 
-            let totalLetters = (currentState.wheelOrder || []).length;
-            let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
-            padWheelInterval = setInterval(() => {
-                if (padRevealedCount < totalLetters) {
-                    padRevealedCount++;
-                    updateRevealedTilesOnPad();
-                }
-            }, intervalMs);
+if (currentState.status === "wheel_reading" && currentState.round === 2) {
+const winners = currentState.wheelWinners || [];
+const myRank = winners.indexOf(myName);
+const ptsMap = [20, 15, 10, 5];
 
-            setTimeout(() => focusNextEditableTile(0), 100);
-        }
-        return;
-    }
-    
-    if (currentState.status === "nominating") {
-        if (currentState.controller === myName) {
-            document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
-            document.getElementById('pad-cat').innerText = currentState.category || "";
-            
-            const allPlayers = [
-                { id: "Lila", label: "LILA" },
-                { id: "Kaja", label: "KAJA" },
-                { id: "Darek", label: "DAREK" },
-                { id: "Jas", label: "JAŚ" }
-            ];
-            allPlayers.forEach(p => {
-                let btn = document.getElementById(`nom-${p.id}`);
-                let isBlocked = currentState.blocked && currentState.blocked.includes(p.id);
-                btn.disabled = isBlocked;
-                if (p.id === myName) {
-                    btn.classList.add('self-btn');
-                    btn.innerText = `${p.label} - BIORĘ NA SIEBIE! (±20 PKT)`;
-                } else {
-                    btn.classList.remove('self-btn');
-                    btn.innerText = `${p.label} (±10 PKT)`;
-                }
-            });
+if (myRank !== -1) {
+clearInterval(padWheelInterval);
+document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
+return;
+}
 
-            document.getElementById('ui-nominate').style.display = 'flex';
-        } else {
-            document.getElementById('padStatus').innerText = `${currentState.controller.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
-        }
-        return;
-    }
+document.body.classList.add('keyboard-mode');
+document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
+document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
+document.getElementById('ui-wheel').style.display = 'flex';
 
-    if (currentState.status === "reading") {
-        if (currentState.round === 3 && currentState.question !== lastR3Question) {
-            lastR3Question = currentState.question;
-            document.getElementById('typeAnswer').value = "";
-            document.getElementById('r3Feedback').innerText = "";
-        }
+if (currentState.tick !== currentWheelTick) {
+currentWheelTick = currentState.tick;
+clearInterval(padWheelInterval);
+padRevealedCount = 0;
+document.getElementById('wheelFeedback').innerText = "";
+buildWheelPadTiles(currentState.question);
 
-        if (currentState.round === 1) {
-            const myAns = (currentState.r1Answers || {})[myName];
-            if (myAns) {
-                document.getElementById('padStatus').innerText = "ODPOWIEDŹ ZAPISANA!";
-                if (myAns.pts > 0) lockedEl.classList.add('win-msg');
-                lockedEl.style.display = 'block';
-                lockedEl.innerText = myAns.pts > 0 
-                    ? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.` 
-                    : `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
-                return;
-            }
-            for(let i=0; i<4; i++) {
-                let btn = document.getElementById(`pad-btn-${i}`);
-                let lbl = document.getElementById(`pad-lbl-${i}`);
-                btn.disabled = false;
-                lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
-            }
-            document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
-            document.getElementById('ui-abcd').style.display = 'grid';
-            return;
-        }
+let totalLetters = (currentState.wheelOrder || []).length;
+let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+padWheelInterval = setInterval(() => {
+if (padRevealedCount < totalLetters) {
+padRevealedCount++;
+updateRevealedTilesOnPad();
+}
+}, intervalMs);
 
-        if (currentState.round === 3) {
-            const winners = currentState.r3Winners || [];
-            const myRank = winners.indexOf(myName);
-            const ptsMap = [15, 12, 10, 8];
-            if (myRank !== -1) {
-                document.getElementById('padStatus').innerText = "BRAWO! ODPOWIEDŹ ZALICZONA!";
-                lockedEl.classList.add('win-msg');
-                lockedEl.style.display = 'block';
-                lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)!\nCZEKAJ NA POZOSTAŁYCH.`;
-                return;
-            }
-            document.body.classList.add('keyboard-mode');
-            document.getElementById('padStatus').innerText = "MASZ 20 SEKUND - WPISZ ODPOWIEDŹ:";
-            document.getElementById('ui-input').style.display = 'flex';
-            return;
-        }
+setTimeout(() => focusNextEditableTile(0), 100);
+}
+return;
+}
 
-        if (currentState.round === 4 || currentState.round === 5) {
-            if (currentState.blocked && currentState.blocked.includes(myName)) {
-                document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
-                lockedEl.style.display = 'block';
-                lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
-                return;
-            }
+if (currentState.status === "nominating") {
+if (currentState.controller === myName) {
+document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
+document.getElementById('pad-cat').innerText = currentState.category || "";
 
-            for(let i=0; i<4; i++) {
-                let btn = document.getElementById(`pad-btn-${i}`);
-                let lbl = document.getElementById(`pad-lbl-${i}`);
-                btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
-                lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
-            }
+const allPlayers = [
+{ id: "Lila", label: "LILA" },
+{ id: "Kaja", label: "KAJA" },
+{ id: "Darek", label: "DAREK" },
+{ id: "Jas", label: "JAŚ" }
+];
+allPlayers.forEach(p => {
+let btn = document.getElementById(`nom-${p.id}`);
+let isBlocked = currentState.blocked && currentState.blocked.includes(p.id);
+btn.disabled = isBlocked;
+if (p.id === myName) {
+btn.classList.add('self-btn');
+btn.innerText = `${p.label} - BIORĘ NA SIEBIE! (±20 PKT)`;
+} else {
+btn.classList.remove('self-btn');
+btn.innerText = `${p.label} (±10 PKT)`;
+}
+});
 
-            if (!currentState.nominated || currentState.nominated === myName) {
-                let msg = currentState.round === 5 
-                    ? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r5Pot} PKT!` 
-                    : (!currentState.nominated ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!"));
-                document.getElementById('padStatus').innerText = msg;
-                document.getElementById('ui-abcd').style.display = 'grid';
-            } else {
-                document.getElementById('padStatus').innerText = "KIBICUJ!";
-                lockedEl.style.display = 'block';
-                lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
-            }
-        }
-    }
-    
-    if (currentState.status && (currentState.status.startsWith("results_pending") || currentState.status === "verifying")) {
-        document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
-        lockedEl.style.display = 'block';
-        lockedEl.innerText = "PATRZ NA TELEWIZOR!";
-    }
+document.getElementById('ui-nominate').style.display = 'flex';
+} else {
+document.getElementById('padStatus').innerText = `${currentState.controller.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
+}
+return;
+}
+
+if (currentState.status === "reading") {
+if (currentState.round === 3 && currentState.question !== lastR3Question) {
+lastR3Question = currentState.question;
+document.getElementById('typeAnswer').value = "";
+document.getElementById('r3Feedback').innerText = "";
+}
+
+if (currentState.round === 1) {
+const myAns = (currentState.r1Answers || {})[myName];
+if (myAns) {
+document.getElementById('padStatus').innerText = "ODPOWIEDŹ ZAPISANA!";
+if (myAns.pts > 0) lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = myAns.pts > 0
+? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.`
+: `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
+return;
+}
+for(let i=0; i<4; i++) {
+let btn = document.getElementById(`pad-btn-${i}`);
+let lbl = document.getElementById(`pad-lbl-${i}`);
+btn.disabled = false;
+lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
+}
+document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
+document.getElementById('ui-abcd').style.display = 'grid';
+return;
+}
+
+if (currentState.round === 3) {
+const winners = currentState.r3Winners || [];
+const myRank = winners.indexOf(myName);
+const ptsMap = [15, 12, 10, 8];
+if (myRank !== -1) {
+document.getElementById('padStatus').innerText = "BRAWO! ODPOWIEDŹ ZALICZONA!";
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)!\nCZEKAJ NA POZOSTAŁYCH.`;
+return;
+}
+document.body.classList.add('keyboard-mode');
+document.getElementById('padStatus').innerText = "MASZ 20 SEKUND - WPISZ ODPOWIEDŹ:";
+document.getElementById('ui-input').style.display = 'flex';
+return;
+}
+
+if (currentState.round === 4 || currentState.round === 5) {
+if (currentState.blocked && currentState.blocked.includes(myName)) {
+document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
+lockedEl.style.display = 'block';
+lockedEl.innerText = "STRACIŁEŚ SZANSĘ W TYM PYTANIU. TERAZ PRÓBUJĄ POZOSTALI!";
+return;
+}
+
+for(let i=0; i<4; i++) {
+let btn = document.getElementById(`pad-btn-${i}`);
+let lbl = document.getElementById(`pad-lbl-${i}`);
+btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
+lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
+}
+
+if (!currentState.nominated || currentState.nominated === myName) {
+let msg = currentState.round === 5
+? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r5Pot} PKT!`
+: (!currentState.nominated ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!"));
+document.getElementById('padStatus').innerText = msg;
+document.getElementById('ui-abcd').style.display = 'grid';
+} else {
+document.getElementById('padStatus').innerText = "KIBICUJ!";
+lockedEl.style.display = 'block';
+lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
+}
+}
+}
+
+if (currentState.status && (currentState.status.startsWith("results_pending") || currentState.status === "verifying")) {
+document.getElementById('padStatus').innerText = "TRWA WERYFIKACJA...";
+lockedEl.style.display = 'block';
+lockedEl.innerText = "PATRZ NA TELEWIZOR!";
+}
 }
 
 window.submitWheelTiles = async () => {
-    if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
-    
-    updateRevealedTilesOnPad();
+if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
 
-    const userBuilt = tileInputs.map(inp => inp.value).join("");
-    const targetBuilt = targetLetters.join("");
+updateRevealedTilesOnPad();
 
-    if (normalizeChar(userBuilt).length < normalizeChar(targetBuilt).length) {
-        document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI!";
-        focusNextEditableTile(0);
-        return;
-    }
+const userBuilt = tileInputs.map(inp => inp.value).join("");
+const targetBuilt = targetLetters.join("");
 
-    if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
-        const stateRef = doc(db, "quizGame", "state");
-        const snap = await getDoc(stateRef);
-        const data = snap.data();
-        let winners = data.wheelWinners || [];
+if (normalizeChar(userBuilt).length < normalizeChar(targetBuilt).length) {
+document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI!";
+focusNextEditableTile(0);
+return;
+}
 
-        if (!winners.includes(myName)) {
-            const ptsMap = [20, 15, 10, 5];
-            let myPts = ptsMap[winners.length] || 5;
-            winners.push(myName);
+if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+const data = snap.data();
+let winners = data.wheelWinners || [];
 
-            const scoreRef = doc(db, "quizScores", myName);
-            const scoreSnap = await getDoc(scoreRef);
-            let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-            await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+if (!winners.includes(myName)) {
+const ptsMap = [20, 15, 10, 5];
+let myPts = ptsMap[winners.length] || 5;
+winners.push(myName);
 
-            if (winners.length >= 4) {
-                await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
-            } else {
-                await updateDoc(stateRef, { wheelWinners: winners });
-            }
-        }
-    } else {
-        document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! POPRAW LITERY!";
-        tileInputs.forEach(inp => {
-            if (!inp.readOnly && !inp.classList.contains('revealed')) {
-                inp.value = "";
-                inp.classList.remove('filled');
-            }
-        });
-        focusNextEditableTile(0);
-    }
+const scoreRef = doc(db, "quizScores", myName);
+const scoreSnap = await getDoc(scoreRef);
+let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+
+if (winners.length >= 4) {
+await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
+} else {
+await updateDoc(stateRef, { wheelWinners: winners });
+}
+}
+} else {
+document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! POPRAW LITERY!";
+tileInputs.forEach(inp => {
+if (!inp.readOnly && !inp.classList.contains('revealed')) {
+inp.value = "";
+inp.classList.remove('filled');
+}
+});
+focusNextEditableTile(0);
+}
 };
 
 window.sendAnswer = async (index) => {
-    if (currentState.status !== "reading") return;
-    const isCorrect = (index === currentState.correctIndex);
-    
-    if (currentState.round === 1) {
-        const stateRef = doc(db, "quizGame", "state");
-        const snap = await getDoc(stateRef);
-        const data = snap.data();
-        let answers = data.r1Answers || {};
-        let winners = data.r1Winners || [];
-        if (answers[myName]) return;
+if (currentState.status !== "reading") return;
+const isCorrect = (index === currentState.correctIndex);
 
-        let myPts = 0;
-        if (isCorrect) {
-            const ptsMap = [15, 12, 10, 8];
-            myPts = ptsMap[winners.length] || 8;
-            winners.push(myName);
+if (currentState.round === 1) {
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+const data = snap.data();
+let answers = data.r1Answers || {};
+let winners = data.r1Winners || [];
+if (answers[myName]) return;
 
-            const scoreRef = doc(db, "quizScores", myName);
-            const scoreSnap = await getDoc(scoreRef);
-            let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-            await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-        }
-        answers[myName] = { index, isCorrect, pts: myPts };
+let myPts = 0;
+if (isCorrect) {
+const ptsMap = [15, 12, 10, 8];
+myPts = ptsMap[winners.length] || 8;
+winners.push(myName);
 
-        if (Object.keys(answers).length >= 4) {
-            await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners, status: "r1_results", answerTick: Date.now() });
-        } else {
-            await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners });
-        }
-        return;
-    }
+const scoreRef = doc(db, "quizScores", myName);
+const scoreSnap = await getDoc(scoreRef);
+let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+}
+answers[myName] = { index, isCorrect, pts: myPts };
 
-    if (currentState.round === 4) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-    } else if (currentState.round === 5) {
-        await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r5", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-    }
+if (Object.keys(answers).length >= 4) {
+await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners, status: "r1_results", answerTick: Date.now() });
+} else {
+await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners });
+}
+return;
+}
+
+if (currentState.round === 4) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
+} else if (currentState.round === 5) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r5", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
+}
 };
 
 window.sendTypedAnswer = async () => {
-    const inputEl = document.getElementById('typeAnswer');
-    const ans = inputEl.value.trim();
-    if (!ans) return;
+const inputEl = document.getElementById('typeAnswer');
+const ans = inputEl.value.trim();
+if (!ans) return;
 
-    if (currentState.status === "reading" && currentState.round === 3) {
-        const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s));
-        const userNorm = normalizeChar(ans);
+if (currentState.status === "reading" && currentState.round === 3) {
+const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s));
+const userNorm = normalizeChar(ans);
 
-        const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
+const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
 
-        if (isMatch) {
-            inputEl.value = "";
-            document.getElementById('r3Feedback').innerText = "";
-            const stateRef = doc(db, "quizGame", "state");
-            const snap = await getDoc(stateRef);
-            const data = snap.data();
-            let winners = data.r3Winners || [];
+if (isMatch) {
+inputEl.value = "";
+document.getElementById('r3Feedback').innerText = "";
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+const data = snap.data();
+let winners = data.r3Winners || [];
 
-            if (!winners.includes(myName)) {
-                const ptsMap = [15, 12, 10, 8];
-                let myPts = ptsMap[winners.length] || 8;
-                winners.push(myName);
+if (!winners.includes(myName)) {
+const ptsMap = [15, 12, 10, 8];
+let myPts = ptsMap[winners.length] || 8;
+winners.push(myName);
 
-                const scoreRef = doc(db, "quizScores", myName);
-                const scoreSnap = await getDoc(scoreRef);
-                let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-                await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
+const scoreRef = doc(db, "quizScores", myName);
+const scoreSnap = await getDoc(scoreRef);
+let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
+await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
 
-                if (winners.length >= 4) {
-                    await updateDoc(stateRef, { r3Winners: winners, status: "r3_results", answerTick: Date.now() });
-                } else {
-                    await updateDoc(stateRef, { r3Winners: winners });
-                }
-            }
-        } else {
-            document.getElementById('r3Feedback').innerText = "❌ SPRAWDŹ PISOWNIĘ I SPRÓBUJ PONOWNIE!";
-        }
-    }
+if (winners.length >= 4) {
+await updateDoc(stateRef, { r3Winners: winners, status: "r3_results", answerTick: Date.now() });
+} else {
+await updateDoc(stateRef, { r3Winners: winners });
+}
+}
+} else {
+document.getElementById('r3Feedback').innerText = "❌ SPRAWDŹ PISOWNIĘ I SPRÓBUJ PONOWNIE!";
+}
+}
 };
 
 window.nominatePlayer = async (targetPlayer) => {
-    if (currentState.status !== "nominating" || currentState.controller !== myName) return;
-    await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", nominated: targetPlayer, tieMsg: "", speechTick: Date.now() });
+if (currentState.status !== "nominating" || currentState.controller !== myName) return;
+await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", nominated: targetPlayer, tieMsg: "", speechTick: Date.now() });
 };
 </script>
 </body>
