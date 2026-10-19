@@ -35,12 +35,17 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 .btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
 .btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
 
-/* RUNDA 6: PRZYCISKI PRAWDA / FAŁSZ NA TELEFONIE */
+/* RUNDA 5: PRZYCISKI PRAWDA / FAŁSZ NA TELEFONIE */
 .grid-tf { display: none; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 10px; }
 .btn-tf { border-radius: 18px; padding: 38px 10px; font-size: 24px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
 .btn-tf-true { background: rgba(46, 213, 115, 0.35); border: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
 .btn-tf-false { background: rgba(255, 71, 87, 0.35); border: 4px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.4); }
 .btn-tf:active { transform: scale(0.93); filter: brightness(1.3); }
+
+/* PRZYCISKI GOTOWOŚCI (MIĘDZY RUNDAMI ORAZ PRZED BŁYSKAWICĄ) */
+.ready-box { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 15px; }
+.btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 21px; font-weight: 900; padding: 24px 16px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulse 1s infinite; }
+.btn-ready:active { transform: scale(0.95); }
 
 .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
 .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
@@ -66,11 +71,11 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
 .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
 
-#ui-r5-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
+#ui-r6-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
 .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
 #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
 
-#ui-r5-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
+#ui-r6-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
 .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
 .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
 .bid-info-row b { color: var(--gold); font-size: 19px; }
@@ -80,10 +85,11 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 .btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
 .auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; animation: pulse 0.5s infinite; }
 
-.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); white-space: pre-line; }
 .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
 .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
 .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 </style>
 </head>
 <body>
@@ -92,8 +98,10 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <h2>WYBIERZ AGENTA</h2>
 <select id="agentSel">
 <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-<option value="Lila">Lila</option><option value="Kaja">Kaja</option>
-<option value="Darek">Darek</option><option value="Jas">Jaś</option>
+<option value="Lila">Lila</option>
+<option value="Kaja">Kaja</option>
+<option value="Darek">Darek</option>
+<option value="Jas">Jaś</option>
 </select>
 <button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
 </div>
@@ -101,6 +109,7 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <div id="gamePad">
 <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Oczekiwanie na pytanie...</div>
 
+<!-- RUNDA 1, 4 i 6: KOLOROWE KAFELKI ABCD -->
 <div class="grid-abcd" id="ui-abcd">
 <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
 <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
@@ -116,12 +125,19 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 </button>
 </div>
 
-<!-- RUNDA 6: PRZYCISKI PRAWDA / FAŁSZ -->
+<!-- RUNDA 5: PRZYCISKI PRAWDA / FAŁSZ -->
 <div class="grid-tf" id="ui-tf">
-<button class="btn-tf btn-tf-true" onclick="sendR6Answer(true)">✅ PRAWDA</button>
-<button class="btn-tf btn-tf-false" onclick="sendR6Answer(false)">❌ FAŁSZ</button>
+<button class="btn-tf btn-tf-true" onclick="sendR5Answer(true)">✅ PRAWDA</button>
+<button class="btn-tf btn-tf-false" onclick="sendR5Answer(false)">❌ FAŁSZ</button>
 </div>
 
+<!-- PRZYCISK GOTOWOŚCI GRACZA (PO PODSUMOWANIU RUNDY LUB PRZED SWOJĄ TURĄ BŁYSKAWICY) -->
+<div class="ready-box" id="ui-ready-box">
+<p id="readyPromptText" style="font-size: 16px; color: var(--gold); font-weight: bold; margin: 0;"></p>
+<button class="btn-ready" id="btnReadyAction" onclick="confirmPlayerReady()">🚀 JESTEM GOTOWY! ZACZYNAMY!</button>
+</div>
+
+<!-- RUNDA 2: INTERAKTYWNE KAFELKI ROZSYPANKI LITEROWEJ -->
 <div class="wheel-pad-area" id="ui-wheel">
 <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
 <div class="wheel-pad-board" id="wheelPadBoard"></div>
@@ -129,12 +145,14 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
 </div>
 
+<!-- RUNDA 3: SZYBKIE PISANIE (20s) -->
 <div class="input-area" id="ui-input">
 <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
 <div class="feedback-msg" id="r3Feedback"></div>
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
+<!-- RUNDA 4: WYBIERANIE -->
 <div class="nominate-area" id="ui-nominate">
 <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
 <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
@@ -144,22 +162,24 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
 </div>
 
-<div id="ui-r5-spin">
+<!-- RUNDA 6 (AWANTURA): FIZYCZNE KRĘCENIE KOŁEM PALCEM NA TELEFONIE -->
+<div id="ui-r6-spin">
 <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
 <div class="pad-wheel-pointer"></div>
 <canvas id="pad-wheel-canvas" width="400" height="400"></canvas>
 <div class="feedback-msg" id="spinFeedback"></div>
 </div>
 
-<div id="ui-r5-bid">
+<!-- RUNDA 6 (AWANTURA): LICYTACJA (+2, +5, +10, +20) Z LIMITEM DO -100 PKT -->
+<div id="ui-r6-bid">
 <div class="bid-info-box">
-<div class="bid-info-row">KATEGORIA: <b id="pad-r5-cat" style="color:var(--cyan);">---</b></div>
-<div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r5-pot">20 PKT</b></div>
-<div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r5-leader" style="color:#00ff00;">---</b></div>
-<div class="bid-info-row">TWOJA STAWKA: <b id="pad-r5-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r5-maxinfo" style="font-size:12px; color:#888;"></span></div>
+<div class="bid-info-row">KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
+<div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r6-pot">20 PKT</b></div>
+<div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r6-leader" style="color:#00ff00;">---</b></div>
+<div class="bid-info-row">TWOJA STAWKA: <b id="pad-r6-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r6-maxinfo" style="font-size:12px; color:#888;"></span></div>
 </div>
-<div class="auction-pad-timer" id="pad-r5-countdown"></div>
-<div class="feedback-msg" id="r5BidFeedback"></div>
+<div class="auction-pad-timer" id="pad-r6-countdown"></div>
+<div class="feedback-msg" id="r6BidFeedback"></div>
 <div class="bid-btns-grid">
 <button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
 <button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
@@ -183,7 +203,7 @@ let myCurrentPoints = 0;
 let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
-let r6LocalRunStart = 0;
+let r5LocalRunStart = 0;
 
 let currentWheelTick = null;
 let lastR3Question = null;
@@ -192,28 +212,44 @@ let padRevealedCount = 0;
 let tileInputs = [];
 let targetLetters = [];
 
-const r5Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
-const r5Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
+const r6Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
+const r6Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let padWheelRot = 0;
 let isSpinningLocally = false;
 let lastHandledSpinTickOnPad = 0;
+
+// Zapisanie obecności gracza w aktywnej rozgrywce (aby system wiedział, ilu graczy ma kliknąć gotowość między rundami!)
+async function markPlayerActive() {
+if (!myName) return;
+try {
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+if (snap.exists()) {
+let active = snap.data().activePlayers || [];
+if (!active.includes(myName)) {
+active.push(myName);
+await updateDoc(stateRef, { activePlayers: active });
+}
+}
+} catch (e) {}
+}
 
 function drawPadWheel() {
 const canvas = document.getElementById('pad-wheel-canvas');
 if (!canvas) return;
 const ctx = canvas.getContext('2d');
 const cx = 200, cy = 200, r = 192;
-const arc = (Math.PI * 2) / r5Categories.length;
+const arc = (Math.PI * 2) / r6Categories.length;
 
 ctx.clearRect(0, 0, 400, 400);
-r5Categories.forEach((cat, i) => {
+r6Categories.forEach((cat, i) => {
 const startAngle = i * arc - Math.PI / 2 - arc / 2;
 const endAngle = startAngle + arc;
 ctx.beginPath();
 ctx.moveTo(cx, cy);
 ctx.arc(cx, cy, r, startAngle, endAngle);
 ctx.closePath();
-ctx.fillStyle = r5Colors[i % r5Colors.length];
+ctx.fillStyle = r6Colors[i % r6Colors.length];
 ctx.fill();
 ctx.lineWidth = 3;
 ctx.strokeStyle = "#050b14";
@@ -246,7 +282,7 @@ return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
 }
 
 function onWheelStart(clientX, clientY) {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
 isDraggingWheel = true;
 document.getElementById('spinFeedback').innerText = "";
 padWheelEl.style.transition = "none";
@@ -313,13 +349,13 @@ window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => onWheelEnd());
 
 window.triggerWheelSpin = async (power = 7) => {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
 isSpinningLocally = true;
 const spinTickNow = Date.now();
 lastHandledSpinTickOnPad = spinTickNow;
 
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-const segAngle = 360 / r5Categories.length;
+const segAngle = 360 / r6Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
@@ -328,65 +364,97 @@ padWheelRot += power * 360 + diff;
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_spinning",
+status: "r6_spinning",
 spinPower: power,
 spinTick: spinTickNow
 });
 };
 
 window.placeBid = async (addAmount) => {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_bidding") return;
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") return;
 
-const tiedList = currentState.r5TiedBidders || [];
+const tiedList = currentState.r6TiedBidders || [];
 if (tiedList.length > 0 && !tiedList.includes(myName)) return;
 
 const stateRef = doc(db, "quizGame", "state");
 const snap = await getDoc(stateRef);
 const data = snap.data();
-if (data.status !== "r5_bidding") return;
+if (data.status !== "r6_bidding") return;
 
-let bids = data.r5Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
+let bids = data.r6Bids || { Lila: 5, Kaja: 5, Darek: 5, Jas: 5 };
 let myNewBid = (bids[myName] || 5) + addAmount;
 
 const maxAllowedBid = myCurrentPoints + 100;
 if (myNewBid > maxAllowedBid) {
-document.getElementById('r5BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
+document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
 return;
 }
 
-const currentMax = data.r5HighestBid || 5;
+const currentMax = data.r6HighestBid || 5;
 if (myNewBid < currentMax) {
-document.getElementById('r5BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
+document.getElementById('r6BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
 return;
 }
 
-document.getElementById('r5BidFeedback').innerText = "";
+document.getElementById('r6BidFeedback').innerText = "";
 bids[myName] = myNewBid;
 let newPot = (data.carryOver || 0) + Object.values(bids).reduce((a, b) => a + b, 0);
 let newHighestBid = Math.max(currentMax, myNewBid);
 
 await updateDoc(stateRef, {
-r5Bids: bids,
-r5Pot: newPot,
-r5HighestBidder: myName,
-r5HighestBid: newHighestBid,
-r5Countdown: 0,
+r6Bids: bids,
+r6Pot: newPot,
+r6HighestBidder: myName,
+r6HighestBid: newHighestBid,
+r6Countdown: 0,
 bidTick: Date.now()
 });
 };
 
-// Wysłanie odpowiedzi Prawda / Fałsz w Rundzie 6 (natychmiast zatrzymuje stoper!)
-window.sendR6Answer = async (boolChoice) => {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_running" || currentState.nominated !== myName) return;
-const elapsedMs = Math.max(100, Date.now() - (r6LocalRunStart || Date.now()));
-const newRemainingMs = Math.max(0, (currentState.r6TimeLeftMs || 20000) - elapsedMs);
+// Wysłanie odpowiedzi Prawda / Fałsz w Rundzie 5 (natychmiast zatrzymuje stoper!)
+window.sendR5Answer = async (boolChoice) => {
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_running" || currentState.nominated !== myName) return;
+const elapsedMs = Math.max(100, Date.now() - (r5LocalRunStart || Date.now()));
+const newRemainingMs = Math.max(0, (currentState.r5TimeLeftMs || 20000) - elapsedMs);
 
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_answered",
-r6GivenBool: boolChoice,
-r6TimeLeftMs: newRemainingMs,
+status: "r5_answered",
+r5GivenBool: boolChoice,
+r5TimeLeftMs: newRemainingMs,
 answerTick: Date.now()
 });
+};
+
+// Kliknięcie przycisku GOTOWOŚCI (po podsumowaniu rundy lub przed swoją serią w Błyskawicy R5!)
+window.confirmPlayerReady = async () => {
+if (!currentState) return;
+const stateRef = doc(db, "quizGame", "state");
+
+// 1. Gotowość przed swoją indywidualną serią 20 pytań w Błyskawicy (Runda 5)
+if (currentState.round === 5 && currentState.status === "r5_wait_ready" && currentState.nominated === myName) {
+await updateDoc(stateRef, {
+status: "r5_ready_first",
+speechTick: Date.now()
+});
+return;
+}
+
+// 2. Gotowość wszystkich aktywnych graczy po podsumowaniu rundy
+if (currentState.status === "round_summary") {
+const snap = await getDoc(stateRef);
+if (!snap.exists()) return;
+const data = snap.data();
+let readyList = data.readyPlayers || [];
+let activeList = data.activePlayers || [];
+if (!activeList.includes(myName)) activeList.push(myName);
+if (!readyList.includes(myName)) readyList.push(myName);
+
+await updateDoc(stateRef, {
+activePlayers: activeList,
+readyPlayers: readyList,
+readyTick: Date.now()
+});
+}
 };
 
 function normalizeChar(str) {
@@ -415,12 +483,14 @@ setTimeout(window.forceSyncState, 1500);
 });
 }
 
-window.joinGame = () => {
+window.joinGame = async () => {
 myName = document.getElementById('agentSel').value;
 if(!myName) return alert("Musisz wybrać Agenta z listy!");
 
 document.getElementById('loginUI').style.display = 'none';
 document.getElementById('gamePad').style.display = 'block';
+
+await markPlayerActive();
 
 onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
 if (sSnap.exists()) {
@@ -555,20 +625,25 @@ if (wasFocused) focusNextEditableTile(idx + 1);
 });
 }
 
-let lastR6TickSeen = 0;
+let lastR5TickSeen = 0;
 
 function updatePadUI() {
 document.getElementById('ui-abcd').style.display = 'none';
 document.getElementById('ui-tf').style.display = 'none';
+document.getElementById('ui-ready-box').style.display = 'none';
 document.getElementById('ui-wheel').style.display = 'none';
 document.getElementById('ui-input').style.display = 'none';
 document.getElementById('ui-nominate').style.display = 'none';
-document.getElementById('ui-r5-spin').style.display = 'none';
-document.getElementById('ui-r5-bid').style.display = 'none';
+document.getElementById('ui-r6-spin').style.display = 'none';
+document.getElementById('ui-r6-bid').style.display = 'none';
 const lockedEl = document.getElementById('ui-locked');
 lockedEl.style.display = 'none';
 lockedEl.classList.remove('win-msg', 'speak-msg');
 document.body.classList.remove('keyboard-mode');
+
+if (currentState && myName && !(currentState.activePlayers || []).includes(myName)) {
+markPlayerActive();
+}
 
 if (currentState && currentState.status === "podium") {
 clearInterval(padWheelInterval);
@@ -579,65 +654,78 @@ lockedEl.innerText = "KONIEC GRY! SPÓJRZ NA PODIUM I FAJERWERKI NA TV!";
 return;
 }
 
+// --- PODSUMOWANIE RUNDY: PRZYCISK GOTOWOŚCI DLA GRACZY ---
 if (currentState && currentState.status === "round_summary") {
 clearInterval(padWheelInterval);
+const readyList = currentState.readyPlayers || [];
+const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 document.getElementById('padStatus').innerText = `📊 PODSUMOWANIE RUNDY ${currentState.completedRound}`;
-lockedEl.classList.add('speak-msg');
+
+if (readyList.includes(myName)) {
+lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `SPÓJRZ NA RANKING NA TV!\nZA CHWILĘ: ${(currentState.nextRoundTitle || "").toUpperCase()}!`;
+lockedEl.innerText = `✅ JESTEŚ GOTOWY!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
+} else {
+document.getElementById('readyPromptText').innerText = `PRZED NAMI: ${(currentState.nextRoundTitle || "").toUpperCase()}`;
+document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY DO RUNDY ${currentState.nextRound}!`;
+document.getElementById('ui-ready-box').style.display = 'flex';
+}
 return;
 }
 
-// --- RUNDA 6: BŁYSKAWICA PRAWDA / FAŁSZ NA TELEFONIE ---
-if (currentState && currentState.round === 6 && currentState.status && currentState.status.startsWith("r6_")) {
+// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ NA TELEFONIE (Z POTWIERDZENIEM GOTOWOŚCI PRZED STARTEM!) ---
+if (currentState && currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_")) {
 if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `⚡ BŁYSKAWICA: GRA ${currentState.nominated.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}!\nPOZOSTAŁO: ${((currentState.r6TimeLeftMs || 0) / 1000).toFixed(1)}s`;
+lockedEl.innerText = currentState.status === "r5_wait_ready"
+? `PRZYGOTOWUJE SIĘ: ${currentState.nominated.toUpperCase()}!\nCZEKAMY AŻ KLIKNIE GOTOWOŚĆ NA TELEFONIE.`
+: `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}!\nPOZOSTAŁO: ${((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1)}s`;
 return;
 }
 
-const secStr = ((currentState.r6TimeLeftMs || 0) / 1000).toFixed(1);
-if (currentState.status === "r6_intro" || currentState.status === "r6_ready_first") {
+const secStr = ((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1);
+if (currentState.status === "r5_wait_ready") {
 document.getElementById('padStatus').innerText = "⚡ TWOJA KOLEJ W BŁYSKAWICY!";
-lockedEl.classList.add('speak-msg');
-lockedEl.style.display = 'block';
-lockedEl.innerText = `PRZYGOTUJ SIĘ!\nMASZ 20.0 SEKUND NA 20 PYTAŃ PRAWDA / FAŁSZ!`;
-} else if (currentState.status === "r6_speaking") {
+document.getElementById('readyPromptText').innerText = `MASZ 20.0 SEKUND NA 20 PYTAŃ PRAWDA / FAŁSZ!\nKLIKNIJ PONIŻEJ, GDY BĘDZIESZ GOTOWY:`;
+document.getElementById('btnReadyAction').innerText = `🚀 JESTEM GOTOWY - ZACZYNAMY!`;
+document.getElementById('ui-ready-box').style.display = 'flex';
+} else if (currentState.status === "r5_ready_first" || currentState.status === "r5_speaking") {
 document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI (${secStr}s) - SŁUCHAJ PYTANIA!`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `PYTANIE #${currentState.r6QNum}/20\nLEKTOR CZYTA PYTANIE...`;
-} else if (currentState.status === "r6_running") {
-if (currentState.tick !== lastR6TickSeen) {
-lastR6TickSeen = currentState.tick;
-r6LocalRunStart = Date.now();
+lockedEl.innerText = `PYTANIE #${currentState.r5QNum || 1}/20\nLEKTOR CZYTA PYTANIE...`;
+} else if (currentState.status === "r5_running") {
+if (currentState.tick !== lastR5TickSeen) {
+lastR5TickSeen = currentState.tick;
+r5LocalRunStart = Date.now();
 }
-document.getElementById('padStatus').innerText = `⏱️ CZAS LECI (${secStr}s) - PYTANIE #${currentState.r6QNum}/20!`;
+document.getElementById('padStatus').innerText = `⏱️ CZAS LECI (${secStr}s) - PYTANIE #${currentState.r5QNum}/20!`;
 document.getElementById('ui-tf').style.display = 'grid';
-} else if (currentState.status === "r6_feedback") {
+} else if (currentState.status === "r5_feedback") {
 document.getElementById('padStatus').innerText = `⏸️ ZEGAR ZATRZYMANY (${secStr}s)`;
-if (currentState.r6LastCorrect) lockedEl.classList.add('win-msg');
+if (currentState.r5LastCorrect) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.r6LastCorrect ? `✅ DOBRZE! (+5 PKT)\nZOSTAŁO: ${secStr}s` : `❌ BŁĄD! (-5 PKT)\nZOSTAŁO: ${secStr}s`;
-} else if (currentState.status === "r6_player_summary") {
+lockedEl.innerText = currentState.r5LastCorrect ? `✅ DOBRZE! (+5 PKT)\nZOSTAŁO: ${secStr}s` : `❌ BŁĄD! (-5 PKT)\nZOSTAŁO: ${secStr}s`;
+} else if (currentState.status === "r5_player_summary") {
 document.getElementById('padStatus').innerText = "KONIEC TWOJEJ SERII!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r6ScoreDelta >= 0 ? "+" : ""}${currentState.r6ScoreDelta} PKT!`;
+lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r5ScoreDelta >= 0 ? "+" : ""}${currentState.r5ScoreDelta} PKT!`;
 }
 return;
 }
 
-if (currentState && currentState.round === 5 && (currentState.status === "r5_wait_spin" || currentState.status === "r5_spinning")) {
-if (currentState.status === "r5_wait_spin") {
+// --- RUNDA 6 (AWANTURA O PUNKTY): KRĘCENIE KOŁEM NA TELEFONIE ---
+if (currentState && currentState.round === 6 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
+if (currentState.status === "r6_wait_spin") {
 isSpinningLocally = false;
 }
-document.getElementById('ui-r5-spin').style.display = 'flex';
+document.getElementById('ui-r6-spin').style.display = 'flex';
 const instrEl = document.getElementById('spinInstruction');
 
-if (currentState.status === "r5_wait_spin") {
+if (currentState.status === "r6_wait_spin") {
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
 instrEl.innerText = "ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!";
@@ -651,7 +739,7 @@ instrEl.innerText = "LOSOWANIE KATEGORII...";
 if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
 lastHandledSpinTickOnPad = currentState.spinTick;
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-const segAngle = 360 / r5Categories.length;
+const segAngle = 360 / r6Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
@@ -663,18 +751,19 @@ padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 return;
 }
 
-if (currentState && currentState.round === 5 && (currentState.status === "r5_bidding" || currentState.status === "r5_sold")) {
-if (currentState.status === "r5_sold") {
+// --- RUNDA 6 (AWANTURA O PUNKTY): LICYTACJA ---
+if (currentState && currentState.round === 6 && (currentState.status === "r6_bidding" || currentState.status === "r6_sold")) {
+if (currentState.status === "r6_sold") {
 document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.r5RandomDrawn
-? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`
-: `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r5HighestBidder.toUpperCase()} (PULA: ${currentState.r5Pot} PKT)`;
+lockedEl.innerText = currentState.r6RandomDrawn
+? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r6HighestBidder.toUpperCase()} (PULA: ${currentState.r6Pot} PKT)`
+: `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r6HighestBidder.toUpperCase()} (PULA: ${currentState.r6Pot} PKT)`;
 return;
 }
 
-const tiedList = currentState.r5TiedBidders || [];
+const tiedList = currentState.r6TiedBidders || [];
 if (tiedList.length > 0 && !tiedList.includes(myName)) {
 document.getElementById('padStatus').innerText = "DOGRYWKA LICYTACJI!";
 lockedEl.style.display = 'block';
@@ -685,28 +774,28 @@ return;
 document.getElementById('padStatus').innerText = tiedList.length > 0
 ? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!"
 : "AWANTURA O PUNKTY - LICYTUJ!";
-document.getElementById('ui-r5-bid').style.display = 'flex';
-document.getElementById('pad-r5-cat').innerText = currentState.category || "";
-document.getElementById('pad-r5-pot').innerText = `${currentState.r5Pot || 20} PKT`;
-document.getElementById('pad-r5-leader').innerText = `${currentState.r5HighestBidder.toUpperCase()} (${currentState.r5HighestBid} PKT)`;
+document.getElementById('ui-r6-bid').style.display = 'flex';
+document.getElementById('pad-r6-cat').innerText = currentState.category || "";
+document.getElementById('pad-r6-pot').innerText = `${currentState.r6Pot || 20} PKT`;
+document.getElementById('pad-r6-leader').innerText = `${currentState.r6HighestBidder.toUpperCase()} (${currentState.r6HighestBid} PKT)`;
 
-const myBid = (currentState.r5Bids || {})[myName] || 5;
+const myBid = (currentState.r6Bids || {})[myName] || 5;
 const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
-document.getElementById('pad-r5-mybid').innerText = `${myBid} PKT`;
-document.getElementById('pad-r5-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
+document.getElementById('pad-r6-mybid').innerText = `${myBid} PKT`;
+document.getElementById('pad-r6-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
 
 [2, 5, 10, 20].forEach(inc => {
 const btn = document.getElementById(`btn-bid-${inc}`);
 if (btn) btn.disabled = (myBid + inc > maxAllowedBid);
 });
 
-const cdEl = document.getElementById('pad-r5-countdown');
-if (currentState.r5Countdown > 0) {
+const cdEl = document.getElementById('pad-r6-countdown');
+if (currentState.r6Countdown > 0) {
 cdEl.style.color = "#ff4757";
-cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r5Countdown}s)`;
-} else if (currentState.r5MainSec > 0) {
+cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r6Countdown}s)`;
+} else if (currentState.r6MainSec > 0) {
 cdEl.style.color = "#2ed573";
-cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r5MainSec}s`;
+cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r6MainSec}s`;
 } else {
 cdEl.style.color = "var(--gold)";
 cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
@@ -760,7 +849,7 @@ return;
 }
 
 document.body.classList.add('keyboard-mode');
-document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
+document.getElementById('padStatus').innerText = "ROZSYPANKA LITEROWA - WPISUJ LITERY:";
 document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
 document.getElementById('ui-wheel').style.display = 'flex';
 
@@ -862,7 +951,7 @@ document.getElementById('ui-input').style.display = 'flex';
 return;
 }
 
-if (currentState.round === 4 || currentState.round === 5) {
+if (currentState.round === 4 || currentState.round === 6) {
 if (currentState.blocked && currentState.blocked.includes(myName)) {
 document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
 lockedEl.style.display = 'block';
@@ -878,8 +967,8 @@ lbl.innerText = (currentState.options && currentState.options[i]) ? currentState
 }
 
 if (!currentState.nominated || currentState.nominated === myName) {
-let msg = currentState.round === 5
-? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r5Pot} PKT!`
+let msg = currentState.round === 6
+? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r6Pot} PKT!`
 : (!currentState.nominated ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!"));
 document.getElementById('padStatus').innerText = msg;
 document.getElementById('ui-abcd').style.display = 'grid';
@@ -981,8 +1070,8 @@ return;
 
 if (currentState.round === 4) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-} else if (currentState.round === 5) {
-await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r5", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
+} else if (currentState.round === 6) {
+await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r6", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
 }
 };
 
