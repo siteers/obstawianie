@@ -1,238 +1,710 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <title>Cyber-Agent | Ekran Główny TV</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>
-    :root { --cyan: #00d4ff; --bg: #000; --gold: #d4af37; --error: #ff0000; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: #fff; margin: 0; padding: 0; overflow: hidden; }
-    
-    /* PEŁNY EKRAN TABLICY (Z POPRAWIONYM ZAWINĘCIEM DLA 40 LITER) */
-    #fullscreenBoard { display: flex; width: 100vw; height: 100vh; background: #000; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-    
-    /* Zmniejszony max-width do 56vw, żeby tekst nie wchodził pod boczne panele */
-    .board { display: flex; flex-wrap: wrap; justify-content: center; gap: 2vw; max-width: 56vw; margin-bottom: 2vw; }
-    .word { display: flex; gap: 0.5vw; justify-content: center; flex-wrap: wrap; }
-    
-    /* Nieco mniejsze kafelki liter, by zmieściło się ich więcej w rzędzie */
-    .letter-box { width: 3.2vw; height: 4.5vw; background: #111; border: 0.2vw solid #333; border-radius: 0.6vw; display: flex; justify-content: center; align-items: center; font-size: 2.5vw; font-weight: bold; color: #fff; text-transform: uppercase; }
-    .letter-box.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.8); }
+<meta charset="UTF-8">
+<title>Cyber-Agent | Ekran Główny TV</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; --green: #2ed573; }
+body { font-family: sans-serif; background: radial-gradient(circle at center, #0f172a 0%, #050b14 100%); color: #fff; margin: 0; padding: 0; overflow: hidden; height: 100vh; display: flex; align-items: center; justify-content: center; }
 
-    /* NAROŻNE WIDŻETY AGENTÓW (TV) */
-    .tv-corner { position: absolute; width: 18vw; background: rgba(0, 0, 0, 0.85); border: 0.15vw solid var(--cyan); border-radius: 1vw; padding: 1vw; display: flex; flex-direction: column; gap: 0.8vw; box-shadow: 0 0 1vw rgba(0, 212, 255, 0.15); transition: all 0.3s; z-index: 900; }
-    .tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 2vw rgba(0, 255, 0, 0.6); transform: scale(1.05); }
-    
-    .tv-top-left { top: 1.5vw; left: 1.5vw; }
-    .tv-top-right { top: 1.5vw; right: 1.5vw; }
-    .tv-bottom-left { bottom: 1.5vw; left: 1.5vw; }
-    .tv-bottom-right { bottom: 1.5vw; right: 1.5vw; }
-    
-    .tv-agent-name { font-size: 1.4vw; color: var(--gold); font-weight: 900; text-align: center; letter-spacing: 0.2vw; }
-    .tv-task-num { font-size: 0.8vw; color: #888; letter-spacing: 0.1vw; text-align: center; font-weight: bold; }
-    .tv-task-q { font-size: 1.1vw; font-weight: bold; text-align: center; min-height: 3vw; display: flex; align-items: center; justify-content: center; }
-    .tv-input-box { background: #111; border: 0.1vw dashed #555; border-radius: 0.5vw; padding: 0.8vw; text-align: center; font-family: monospace; font-size: 1.2vw; color: #aaa; min-height: 1.5vw; word-break: break-all; text-transform: uppercase; }
-    .tv-input-box.active { color: #fff; border-style: solid; border-color: var(--cyan); }
-    .tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: bold; font-size: 1.5vw; }
-    
-    #loading-msg { font-size: 1.5vw; color: var(--cyan); letter-spacing: 0.2vw; font-weight: bold; }
+#audio-overlay { position: fixed; inset: 0; background: rgba(5, 11, 20, 0.94); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
+#audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1.2s infinite; }
 
-    /* --- QR KOD NA TV --- */
-    .tv-qr-container {
-        margin-top: 4vw;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1vw;
-    }
-    .tv-qr-container p {
-        font-size: 1.2vw; color: var(--cyan); font-weight: 800; text-transform: uppercase; letter-spacing: 0.2vw; margin: 0; text-shadow: 0 0 1vw rgba(0, 212, 255, 0.5);
-    }
-    .tv-qr-container img {
-        width: 10vw; height: 10vw; background: #fff; padding: 0.4vw; border-radius: 0.8vw; border: 0.2vw solid var(--cyan);
-        box-shadow: 0 0 2vw rgba(0, 212, 255, 0.3);
-    }
-  </style>
+#voice-bar { position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 950; opacity: 0.45; transition: 0.3s; font-size: 0.85vw; background: rgba(0,0,0,0.8); padding: 0.35vw 1vw; border-radius: 0.6vw; display: flex; align-items: center; gap: 0.8vw; border: 1px solid #333; }
+#voice-bar:hover { opacity: 1; }
+#voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.8vw; padding: 2px 6px; }
+#muteMusicBtn { background: #1e293b; color: #fff; border: 1px solid var(--cyan); border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.8vw; font-weight: bold; }
+
+#fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 800; display: none; background: transparent; }
+
+@keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes popReveal {
+0% { transform: scale(0.4) rotateY(90deg); background: #fff; }
+60% { transform: scale(1.18) rotateY(0deg); background: var(--gold); }
+100% { transform: scale(1) rotateY(0deg); background: var(--gold); }
+}
+
+#fullscreenBoard { display: flex; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+
+/* CENTRALNA SCENA JAK W QUIZ_TV */
+.center-stage {
+width: 55vw; max-width: 55vw; text-align: center; background: rgba(15, 23, 42, 0.92);
+border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 1.8vw 2.2vw;
+box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.5s; z-index: 10; box-sizing: border-box;
+display: flex; flex-direction: column; align-items: center;
+}
+.center-stage.victory-glow { border-color: #00ff00; box-shadow: 0 0 6vw rgba(0, 255, 0, 0.7); background: rgba(10, 35, 25, 0.95); }
+
+.mission-header { font-size: 1.25vw; color: var(--cyan); text-transform: uppercase; letter-spacing: 0.3vw; font-weight: 900; margin-bottom: 0.6vw; text-shadow: 0 0 1vw rgba(0, 212, 255, 0.5); }
+
+.progress-wrap { width: 85%; background: #090d16; border: 0.15vw solid #334155; border-radius: 1vw; height: 1.4vw; margin-bottom: 1.4vw; overflow: hidden; position: relative; box-shadow: inset 0 0 0.5vw #000; }
+.progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--cyan), var(--green)); transition: width 0.6s ease-out; box-shadow: 0 0 1vw var(--cyan); }
+.progress-label { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85vw; font-weight: 900; color: #fff; text-shadow: 0 1px 3px #000; letter-spacing: 0.1vw; }
+
+.board { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.4vw 2vw; width: 100%; margin: 0.5vw 0 1vw 0; }
+.word { display: flex; gap: 0.38vw; justify-content: center; flex-wrap: wrap; }
+
+.letter-box {
+width: 2.9vw; height: 4vw; background: #0b1120; border: 0.18vw solid #334155; border-radius: 0.5vw;
+display: flex; justify-content: center; align-items: center; font-size: 2.1vw; font-weight: 900;
+color: #475569; text-transform: uppercase; transition: 0.3s; box-shadow: inset 0 0 0.6vw rgba(0,0,0,0.8);
+}
+.letter-box.revealed {
+background: linear-gradient(180deg, #ffe066, #d4af37); color: #000; border-color: #fff;
+box-shadow: 0 0 1.3vw rgba(212, 175, 55, 0.85); text-shadow: none;
+}
+.letter-box.just-unlocked { animation: popReveal 0.7s ease-out forwards; }
+
+#victory-banner { display: none; font-size: 2vw; font-weight: 900; color: #00ff00; text-transform: uppercase; letter-spacing: 0.2vw; margin-top: 0.8vw; text-shadow: 0 0 1.5vw #00ff00; animation: pulse 1s infinite; }
+
+/* NAROŻNE KARTY AGENTÓW */
+.tv-corner {
+position: absolute; width: 18.5vw; background: rgba(10, 15, 30, 0.9); border: 0.2vw solid var(--cyan);
+border-radius: 1.2vw; padding: 1vw 1.1vw; display: flex; flex-direction: column; gap: 0.6vw;
+box-shadow: 0 0 1.8vw rgba(0, 212, 255, 0.2); transition: all 0.35s; z-index: 900; box-sizing: border-box;
+}
+.tv-corner.flash-success { border-color: #00ff00; background: rgba(0, 255, 0, 0.18); box-shadow: 0 0 3vw rgba(0, 255, 0, 0.75); transform: scale(1.06); }
+.tv-corner.done-all { border-color: var(--gold); box-shadow: 0 0 2vw rgba(212, 175, 55, 0.45); }
+
+.tv-top-left { top: 1.5vw; left: 1.5vw; }
+.tv-top-right { top: 1.5vw; right: 1.5vw; }
+.tv-bottom-left { bottom: 1.5vw; left: 1.5vw; }
+.tv-bottom-right { bottom: 1.5vw; right: 1.5vw; }
+
+.tv-agent-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.1vw solid rgba(0, 212, 255, 0.3); padding-bottom: 0.3vw; }
+.tv-agent-name { font-size: 1.5vw; color: var(--gold); font-weight: 900; letter-spacing: 0.15vw; text-transform: uppercase; }
+.tv-task-num { font-size: 0.85vw; color: var(--cyan); letter-spacing: 0.08vw; font-weight: 900; background: rgba(0, 212, 255, 0.12); padding: 0.2vw 0.5vw; border-radius: 0.4vw; }
+
+.tv-task-q { font-size: 1.05vw; font-weight: bold; text-align: center; min-height: 2.8vw; display: flex; align-items: center; justify-content: center; color: #e2e8f0; line-height: 1.25; }
+.tv-input-box { background: #050b14; border: 0.15vw dashed #475569; border-radius: 0.6vw; padding: 0.6vw; text-align: center; font-family: monospace; font-size: 1.25vw; color: #64748b; min-height: 1.5vw; word-break: break-all; text-transform: uppercase; transition: 0.2s; }
+.tv-input-box.active { color: var(--cyan); border-style: solid; border-color: var(--cyan); box-shadow: 0 0 0.8vw rgba(0, 212, 255, 0.3); font-weight: bold; }
+.tv-input-box.success { color: #00ff00; border-color: #00ff00; border-style: solid; font-weight: 900; font-size: 1.4vw; background: rgba(0, 255, 0, 0.1); box-shadow: 0 0 1.2vw rgba(0, 255, 0, 0.5); }
+
+#loading-msg { font-size: 1.4vw; color: var(--cyan); letter-spacing: 0.2vw; font-weight: bold; padding: 2vw; }
+
+/* QR KOD NA DOLE SCENY */
+.tv-qr-container { margin-top: 1.2vw; padding-top: 1vw; border-top: 0.1vw dashed rgba(212, 175, 55, 0.35); text-align: center; display: flex; align-items: center; justify-content: center; gap: 1.5vw; width: 100%; }
+.tv-qr-container p { font-size: 1.05vw; color: var(--cyan); font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; margin: 0; text-shadow: 0 0 0.8vw rgba(0, 212, 255, 0.4); max-width: 18vw; text-align: left; line-height: 1.35; }
+.tv-qr-container img { width: 7.5vw; height: 7.5vw; background: #fff; padding: 0.35vw; border-radius: 0.7vw; border: 0.2vw solid var(--cyan); box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.35); }
+</style>
 </head>
 <body>
 
-  <div id="fullscreenBoard">
-    <div class="board" id="boardWords">
-        <div id="loading-msg">ŁĄCZENIE Z SYSTEMEM GŁÓWNYM...</div>
-    </div>
+<div id="audio-overlay">
+<button id="audio-btn" onclick="initAudio()">🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, MUZYKĘ I LEKTORA TV</button>
+</div>
 
-    <!-- QR KOD DO LOGOWANIA DLA DZIECI -->
-    <div class="tv-qr-container">
-        <p>ZESKANUJ, ABY WEJŚĆ DO TERMINALA</p>
-        <img id="qrLoginTv" src="" alt="Ładowanie QR...">
-    </div>
+<div id="voice-bar">
+<span>🗣️ Głos lektora:</span>
+<select id="voiceSelect"></select>
+<button id="muteMusicBtn" onclick="toggleBgMusic()">🎵 Muzyka: WŁ</button>
+</div>
 
-    <!-- PANELE DZIECI -->
-    <div class="tv-corner tv-top-left" id="tv-Lila">
-      <div class="tv-agent-name">LILA</div>
-      <div class="tv-task-num" id="tv-num-Lila">...</div>
-      <div class="tv-task-q" id="tv-q-Lila">...</div>
-      <div class="tv-input-box" id="tv-in-Lila">_</div>
-    </div>
-    
-    <div class="tv-corner tv-top-right" id="tv-Kaja">
-      <div class="tv-agent-name">KAJA</div>
-      <div class="tv-task-num" id="tv-num-Kaja">...</div>
-      <div class="tv-task-q" id="tv-q-Kaja">...</div>
-      <div class="tv-input-box" id="tv-in-Kaja">_</div>
-    </div>
-    
-    <div class="tv-corner tv-bottom-left" id="tv-Darek">
-      <div class="tv-agent-name">DAREK</div>
-      <div class="tv-task-num" id="tv-num-Darek">...</div>
-      <div class="tv-task-q" id="tv-q-Darek">...</div>
-      <div class="tv-input-box" id="tv-in-Darek">_</div>
-    </div>
-    
-    <div class="tv-corner tv-bottom-right" id="tv-Jaś">
-      <div class="tv-agent-name">JAŚ</div>
-      <div class="tv-task-num" id="tv-num-Jaś">...</div>
-      <div class="tv-task-q" id="tv-q-Jaś">...</div>
-      <div class="tv-input-box" id="tv-in-Jaś">_</div>
-    </div>
-  </div>
+<canvas id="fireworks-canvas"></canvas>
+
+<div id="fullscreenBoard">
+<!-- NAROŻNE PANELE AGENTÓW -->
+<div class="tv-corner tv-top-left" id="tv-Lila">
+<div class="tv-agent-header">
+<div class="tv-agent-name">LILA</div>
+<div class="tv-task-num" id="tv-num-Lila">...</div>
+</div>
+<div class="tv-task-q" id="tv-q-Lila">Oczekiwanie na połączenie...</div>
+<div class="tv-input-box" id="tv-in-Lila">_</div>
+</div>
+
+<div class="tv-corner tv-top-right" id="tv-Kaja">
+<div class="tv-agent-header">
+<div class="tv-agent-name">KAJA</div>
+<div class="tv-task-num" id="tv-num-Kaja">...</div>
+</div>
+<div class="tv-task-q" id="tv-q-Kaja">Oczekiwanie na połączenie...</div>
+<div class="tv-input-box" id="tv-in-Kaja">_</div>
+</div>
+
+<div class="tv-corner tv-bottom-left" id="tv-Darek">
+<div class="tv-agent-header">
+<div class="tv-agent-name">DAREK</div>
+<div class="tv-task-num" id="tv-num-Darek">...</div>
+</div>
+<div class="tv-task-q" id="tv-q-Darek">Oczekiwanie na połączenie...</div>
+<div class="tv-input-box" id="tv-in-Darek">_</div>
+</div>
+
+<div class="tv-corner tv-bottom-right" id="tv-Jaś">
+<div class="tv-agent-header">
+<div class="tv-agent-name">JAŚ</div>
+<div class="tv-task-num" id="tv-num-Jaś">...</div>
+</div>
+<div class="tv-task-q" id="tv-q-Jaś">Oczekiwanie na połączenie...</div>
+<div class="tv-input-box" id="tv-in-Jaś">_</div>
+</div>
+
+<!-- CENTRALNA SCENA Z HASŁEM -->
+<div class="center-stage" id="mainStage">
+<div class="mission-header" id="missionHeader">🎄 TAJNA MISJA ŚWIĄTECZNA - DESZYFRACJA HASŁA 🎄</div>
+
+<div class="progress-wrap">
+<div class="progress-fill" id="progressFill"></div>
+<div class="progress-label" id="progressLabel">ODKRYTE LITERY: 0 / 0</div>
+</div>
+
+<div class="board" id="boardWords">
+<div id="loading-msg">ŁĄCZENIE Z SYSTEMEM GŁÓWNYM...</div>
+</div>
+
+<div id="victory-banner">🏆 MISJA ZAKOŃCZONA SUKCESEM! HASŁO ODKRYTE! 🏆</div>
+
+<div class="tv-qr-container" id="qrBox">
+<p>📱 Zeskanuj telefonem, aby zalogować się do terminala Agenta i odkrywać litery!</p>
+<img id="qrLoginTv" src="" alt="Ładowanie QR...">
+</div>
+</div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-const app = initializeApp(firebaseConfig); 
+const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 
-// GENEROWANIE KODU QR DO LOGOWANIA DLA DZIECI
+const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
+winSound.volume = 0.95;
+const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
+fanfareSound.volume = 1.0;
+
+// --- LEKTOR PL-PL ---
+let selectedPlVoice = null;
+let speechSafetyTimer = null;
+let utteranceQueue = [];
+
+function initPolishVoices() {
+if (!('speechSynthesis' in window)) return;
+const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
+const sel = document.getElementById('voiceSelect');
+if (!voices.length) return;
+
+sel.innerHTML = "";
+voices.sort((a, b) => {
+const score = (v) => {
+const n = v.name.toLowerCase();
+if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
+if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
+if (n.includes('google')) return 12;
+if (n.includes('natural') || n.includes('online')) return 10;
+if (n.includes('paulina')) return 4;
+if (n.includes('marek') || n.includes('adam')) return 2;
+return 3;
+};
+return score(b) - score(a);
+});
+
+voices.forEach((v, idx) => {
+const opt = document.createElement('option');
+opt.value = idx;
+opt.innerText = v.name;
+sel.appendChild(opt);
+});
+
+selectedPlVoice = voices[0];
+sel.onchange = () => {
+selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
+speakPolishText("Głos lektora został zmieniony.");
+};
+}
+if ('speechSynthesis' in window) {
+window.speechSynthesis.onvoiceschanged = initPolishVoices;
+setTimeout(initPolishVoices, 300);
+}
+
+function speakPolishText(textToRead, onDoneCallback) {
+clearTimeout(speechSafetyTimer);
+if (!('speechSynthesis' in window)) {
+if (onDoneCallback) setTimeout(onDoneCallback, 1500);
+return;
+}
+window.speechSynthesis.cancel();
+
+let cleanText = textToRead.replace(/:\s*$/, "").replace(/:/g, ", ") + " ... ,";
+const utter = new SpeechSynthesisUtterance(cleanText);
+utter.lang = "pl-PL";
+if (selectedPlVoice) utter.voice = selectedPlVoice;
+utter.rate = 0.94;
+utter.pitch = 1.04;
+
+utteranceQueue.push(utter);
+if (utteranceQueue.length > 10) utteranceQueue.shift();
+
+let finished = false;
+const finishOnce = () => {
+if (finished) return;
+finished = true;
+clearTimeout(speechSafetyTimer);
+if (onDoneCallback) setTimeout(onDoneCallback, 400);
+};
+
+utter.onend = finishOnce;
+utter.onerror = finishOnce;
+
+const estMs = Math.max(3500, Math.min(14000, cleanText.length * 105 + 1500));
+speechSafetyTimer = setTimeout(finishOnce, estMs);
+window.speechSynthesis.speak(utter);
+}
+
+// --- SYNTEZATOR MUZYKI W TLE + FANFAR ---
+let audioCtx = null;
+let bgMasterGain = null;
+let musicInterval = null;
+let fanfareLoopInterval = null;
+let isBgMusicPlaying = false;
+let musicMutedByUser = false;
+
+function createUpbeatGameMusic() {
+if (audioCtx) return;
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+audioCtx = new AudioContext();
+
+bgMasterGain = audioCtx.createGain();
+bgMasterGain.gain.value = 0.20;
+bgMasterGain.connect(audioCtx.destination);
+
+const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
+const bassNotes = [130.81, 146.83, 164.81, 196.00];
+
+let step = 0;
+musicInterval = setInterval(() => {
+if (!audioCtx || !isBgMusicPlaying || musicMutedByUser) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+const now = audioCtx.currentTime;
+
+const bassOsc = audioCtx.createOscillator();
+const bassGain = audioCtx.createGain();
+bassOsc.type = "triangle";
+bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
+bassGain.gain.setValueAtTime(0.10, now);
+bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+bassOsc.connect(bassGain);
+bassGain.connect(bgMasterGain);
+bassOsc.start(now);
+bassOsc.stop(now + 0.25);
+
+if (step % 2 === 0) {
+const leadOsc = audioCtx.createOscillator();
+const leadGain = audioCtx.createGain();
+leadOsc.type = "sine";
+const note = scale[Math.floor(Math.random() * scale.length)];
+leadOsc.frequency.setValueAtTime(note, now);
+leadGain.gain.setValueAtTime(0.06, now);
+leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+leadOsc.connect(leadGain);
+leadGain.connect(bgMasterGain);
+leadOsc.start(now);
+leadOsc.stop(now + 0.18);
+}
+step++;
+}, 220);
+}
+
+window.toggleBgMusic = function() {
+musicMutedByUser = !musicMutedByUser;
+document.getElementById('muteMusicBtn').innerText = musicMutedByUser ? "🔇 Muzyka: WYŁ" : "🎵 Muzyka: WŁ";
+};
+
+function playFireworkBoom() {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+
+const bufferSize = audioCtx.sampleRate * 0.35;
+const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+const output = noiseBuffer.getChannelData(0);
+for (let i = 0; i < bufferSize; i++) {
+output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.1));
+}
+const whiteNoise = audioCtx.createBufferSource();
+whiteNoise.buffer = noiseBuffer;
+
+const filter = audioCtx.createBiquadFilter();
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(700, now);
+filter.frequency.exponentialRampToValueAtTime(100, now + 0.35);
+
+const gain = audioCtx.createGain();
+gain.gain.setValueAtTime(0.35, now);
+gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+
+whiteNoise.connect(filter);
+filter.connect(gain);
+gain.connect(audioCtx.destination);
+whiteNoise.start(now);
+}
+
+function playGrandFanfareSequence() {
+fanfareSound.currentTime = 0;
+fanfareSound.play().catch(()=>{});
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+const playBrassChord = (freqs, startOffset, duration, vol = 0.22) => {
+const now = audioCtx.currentTime + startOffset;
+freqs.forEach((f, idx) => {
+const osc = audioCtx.createOscillator();
+const filter = audioCtx.createBiquadFilter();
+const g = audioCtx.createGain();
+
+osc.type = "sawtooth";
+osc.frequency.setValueAtTime(f, now);
+osc.detune.setValueAtTime((idx - 1) * 6, now);
+
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(2400, now);
+
+g.gain.setValueAtTime(0.001, now);
+g.gain.linearRampToValueAtTime(vol, now + 0.03);
+g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+osc.connect(filter);
+filter.connect(g);
+g.connect(audioCtx.destination);
+
+osc.start(now);
+osc.stop(now + duration + 0.02);
+});
+};
+
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
+playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
+playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.35);
+}
+
+function startVictoryFanfareLoop() {
+clearInterval(fanfareLoopInterval);
+playGrandFanfareSequence();
+fanfareLoopInterval = setInterval(() => {
+if (fwActive) playGrandFanfareSequence();
+}, 7000);
+}
+
+function stopVictoryFanfareLoop() {
+clearInterval(fanfareLoopInterval);
+}
+
+window.initAudio = function() {
+document.getElementById('audio-overlay').style.display = 'none';
+createUpbeatGameMusic();
+isBgMusicPlaying = true;
+initPolishVoices();
+speakPolishText("System główny aktywowany. Zeskanujcie kod i rozpocznijcie odkrywanie tajnego hasła!");
+[winSound, fanfareSound].forEach(s => {
+s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
+});
+};
+
+// --- ZOPTYMALIZOWANY SILNIK FAJERWERKÓW (BEZ LAGÓW) ---
+const fwCanvas = document.getElementById('fireworks-canvas');
+const fwCtx = fwCanvas.getContext('2d');
+let fwParticles = [];
+let fwRockets = [];
+let fwActive = false;
+let fwLoopId = null;
+let fwSpawnTimer = null;
+
+function createExplosion(x, y, mainColor) {
+playFireworkBoom();
+const count = 15;
+for (let i = 0; i < count; i++) {
+const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
+const speed = Math.random() * 5 + 2;
+fwParticles.push({
+x, y,
+vx: Math.cos(angle) * speed,
+vy: Math.sin(angle) * speed,
+alpha: 1,
+size: Math.random() * 3 + 1.5,
+color: i % 2 === 0 ? '#ffffff' : mainColor,
+decay: Math.random() * 0.02 + 0.035
+});
+}
+}
+
+function startFireworks() {
+if (fwActive) return;
+fwActive = true;
+fwCanvas.style.display = 'block';
+fwCanvas.width = window.innerWidth;
+fwCanvas.height = window.innerHeight;
+fwParticles = [];
+fwRockets = [];
+
+const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43'];
+
+function launchWave() {
+if (!fwActive) return;
+const startX = fwCanvas.width * (0.2 + Math.random() * 0.6);
+const targetY = fwCanvas.height * (0.15 + Math.random() * 0.3);
+const color = colors[Math.floor(Math.random() * colors.length)];
+fwRockets.push({
+x: startX,
+y: fwCanvas.height,
+vx: (Math.random() - 0.5) * 1.5,
+vy: -(Math.random() * 4 + 9),
+targetY,
+color
+});
+fwSpawnTimer = setTimeout(launchWave, 1500);
+}
+launchWave();
+
+function animateFw() {
+if (!fwActive) return;
+fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+
+if (fwParticles.length > 35) {
+fwParticles.splice(0, fwParticles.length - 35);
+}
+
+for (let i = fwRockets.length - 1; i >= 0; i--) {
+const r = fwRockets[i];
+r.x += r.vx;
+r.y += r.vy;
+r.vy += 0.1;
+
+fwCtx.globalAlpha = 1;
+fwCtx.fillStyle = '#ffffff';
+fwCtx.beginPath();
+fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2);
+fwCtx.fill();
+
+if (r.y <= r.targetY || r.vy >= 0) {
+createExplosion(r.x, r.y, r.color);
+fwRockets.splice(i, 1);
+}
+}
+
+for (let i = fwParticles.length - 1; i >= 0; i--) {
+const p = fwParticles[i];
+p.x += p.vx;
+p.y += p.vy;
+p.vy += 0.07;
+p.alpha -= p.decay;
+
+if (p.alpha <= 0) {
+fwParticles.splice(i, 1);
+} else {
+fwCtx.globalAlpha = p.alpha;
+fwCtx.fillStyle = p.color;
+fwCtx.beginPath();
+fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+fwCtx.fill();
+}
+}
+fwLoopId = requestAnimationFrame(animateFw);
+}
+animateFw();
+}
+
+function stopFireworks() {
+fwActive = false;
+clearTimeout(fwSpawnTimer);
+if (fwLoopId) cancelAnimationFrame(fwLoopId);
+fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+fwCanvas.style.display = 'none';
+}
+
+// --- LOGIKA GRY ŚWIĄTECZNEJ ---
 window.onload = () => {
-    const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const loginUrl = encodeURIComponent(baseHref + 'dziecilog.html');
-    document.getElementById('qrLoginTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${loginUrl}&color=000000&bgcolor=ffffff`;
+const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+const loginUrl = encodeURIComponent(baseHref + 'dziecilog.html');
+document.getElementById('qrLoginTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${loginUrl}&color=000000&bgcolor=ffffff`;
 };
 
 let gameConfig = null;
 let globalSolved = 0;
+let previousSolvedCount = -1;
+let victoryCelebrated = false;
+let listenersInitialized = false;
 let agentLocalState = { "Lila": { task: -1, t: null }, "Kaja": { task: -1, t: null }, "Darek": { task: -1, t: null }, "Jaś": { task: -1, t: null } };
 const agentsList = [ { id: "Lila", dbKey: "Lila" }, { id: "Kaja", dbKey: "Kaja" }, { id: "Darek", dbKey: "Darek" }, { id: "Jaś", dbKey: "Jas" } ];
 
-// POBIERANIE KONFIGURACJI Z BAZY
-onSnapshot(doc(db, "appState2", "config"), (docSnap) => { 
-    if (docSnap.exists()) { 
-        gameConfig = docSnap.data(); 
-        renderTVBoard(); 
-        setupAgentListeners(); 
-    } else {
-        document.getElementById('boardWords').innerHTML = "<div id='loading-msg' style='color:red;'>BRAK KONFIGURACJI. ZAPISZ JĄ W PANELU ADMINA.</div>";
-    }
+onSnapshot(doc(db, "appState2", "config"), (docSnap) => {
+if (docSnap.exists()) {
+gameConfig = docSnap.data();
+renderTVBoard();
+if (!listenersInitialized) {
+listenersInitialized = true;
+setupAgentListeners();
+}
+} else {
+document.getElementById('boardWords').innerHTML = "<div id='loading-msg' style='color:#ff4757;'>BRAK KONFIGURACJI. ZAPISZ JĄ W PANELU ADMINA.</div>";
+}
 });
 
-// POBIERANIE GLOBALNYCH PUNKTÓW
-onSnapshot(doc(db, "appState2", "global"), (docSnap) => { 
-    if (docSnap.exists()) { 
-        globalSolved = docSnap.data().totalSolved || 0; 
-        renderTVBoard(); 
-    } 
+onSnapshot(doc(db, "appState2", "global"), (docSnap) => {
+if (docSnap.exists()) {
+globalSolved = docSnap.data().totalSolved || 0;
+renderTVBoard();
+}
 });
 
 function renderTVBoard() {
-    if (!gameConfig) return;
-    const container = document.getElementById('boardWords');
-    container.innerHTML = "";
-    
-    const phraseWords = gameConfig.phrase;
-    const unlockOrder = gameConfig.unlockOrder;
-    const unlockedIndices = unlockOrder.slice(0, globalSolved);
-    let letterCounter = 0;
-    
-    phraseWords.forEach(word => {
-        const wordDiv = document.createElement('div'); 
-        wordDiv.className = "word";
-        
-        for (let i = 0; i < word.length; i++) {
-            const letterDiv = document.createElement('div');
-            if (unlockedIndices.includes(letterCounter)) { 
-                letterDiv.className = "letter-box revealed"; 
-                letterDiv.innerText = word[i]; 
-            } else { 
-                letterDiv.className = "letter-box"; 
-                letterDiv.innerText = "?"; 
-            }
-            wordDiv.appendChild(letterDiv); 
-            letterCounter++;
-        }
-        container.appendChild(wordDiv);
-    });
+if (!gameConfig) return;
+const container = document.getElementById('boardWords');
+container.innerHTML = "";
+
+const phraseWords = gameConfig.phrase || [];
+const unlockOrder = gameConfig.unlockOrder || [];
+const totalLetters = unlockOrder.length;
+const unlockedIndices = unlockOrder.slice(0, globalSolved);
+const newlyUnlockedIdx = (previousSolvedCount >= 0 && globalSolved > previousSolvedCount) ? unlockOrder[globalSolved - 1] : -1;
+
+// Aktualizacja paska postępu
+const pct = totalLetters > 0 ? Math.min(100, Math.round((globalSolved / totalLetters) * 100)) : 0;
+document.getElementById('progressFill').style.width = `${pct}%`;
+document.getElementById('progressLabel').innerText = `ODKRYTE LITERY: ${Math.min(globalSolved, totalLetters)} / ${totalLetters} (${pct}%)`;
+
+let letterCounter = 0;
+
+phraseWords.forEach(word => {
+const wordDiv = document.createElement('div');
+wordDiv.className = "word";
+
+for (let i = 0; i < word.length; i++) {
+const letterDiv = document.createElement('div');
+if (unlockedIndices.includes(letterCounter)) {
+letterDiv.className = "letter-box revealed" + (letterCounter === newlyUnlockedIdx ? " just-unlocked" : "");
+letterDiv.innerText = word[i];
+} else {
+letterDiv.className = "letter-box";
+letterDiv.innerText = "?";
+}
+wordDiv.appendChild(letterDiv);
+letterCounter++;
+}
+container.appendChild(wordDiv);
+});
+
+// Sprawdzenie Wielkiego Finału (całe hasło odkryte!)
+const stageEl = document.getElementById('mainStage');
+const vicBanner = document.getElementById('victory-banner');
+const qrBox = document.getElementById('qrBox');
+
+if (totalLetters > 0 && globalSolved >= totalLetters) {
+stageEl.classList.add('victory-glow');
+vicBanner.style.display = 'block';
+qrBox.style.display = 'none';
+if (!victoryCelebrated) {
+victoryCelebrated = true;
+isBgMusicPlaying = false;
+startFireworks();
+startVictoryFanfareLoop();
+const fullSentence = phraseWords.join(" ");
+setTimeout(() => {
+speakPolishText(`Gratulacje Agenci! Wszystkie zadania rozwiązane! Tajne hasło to: ${fullSentence}!`);
+}, 1500);
+}
+} else {
+victoryCelebrated = false;
+stageEl.classList.remove('victory-glow');
+vicBanner.style.display = 'none';
+qrBox.style.display = 'flex';
+stopFireworks();
+stopVictoryFanfareLoop();
+isBgMusicPlaying = true;
+}
+
+previousSolvedCount = globalSolved;
 }
 
 function setupAgentListeners() {
-    agentsList.forEach(agent => {
-        onSnapshot(doc(db, "gracze", agent.id), (docSnap) => {
-            if (!docSnap.exists() || !gameConfig) return;
-            let data = docSnap.data();
-            let currentTask = data.task || 0;
-            let liveInput = data.liveInput || "";
-            let state = agentLocalState[agent.id];
-            
-            let widget = document.getElementById(`tv-${agent.id}`);
-            let inEl = document.getElementById(`tv-in-${agent.id}`);
-            let myTasks = gameConfig.tasksData[agent.dbKey];
-            let totalTasks = myTasks ? myTasks.length : 0;
+agentsList.forEach(agent => {
+onSnapshot(doc(db, "gracze", agent.id), (docSnap) => {
+if (!docSnap.exists() || !gameConfig) return;
+let data = docSnap.data();
+let currentTask = data.task || 0;
+let liveInput = data.liveInput || "";
+let state = agentLocalState[agent.id];
 
-            // Inicjalizacja lub normalny update
-            if (state.task === -1) {
-                state.task = currentTask;
-                updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
-            } 
-            // Animacja sukcesu, gdy wzrośnie poziom zadania
-            else if (currentTask > state.task) {
-                state.task = currentTask;
-                widget.classList.add("flash-success");
-                inEl.classList.add("success");
-                inEl.innerText = "DOBRZE!";
-                
-                clearTimeout(state.t);
-                state.t = setTimeout(() => {
-                    widget.classList.remove("flash-success");
-                    inEl.classList.remove("success");
-                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
-                }, 3000);
-            } 
-            // Zwykłe pisanie
-            else {
-                if (!widget.classList.contains("flash-success")) {
-                    updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
-                }
-            }
-        });
-    });
+let widget = document.getElementById(`tv-${agent.id}`);
+let inEl = document.getElementById(`tv-in-${agent.id}`);
+let myTasks = (gameConfig.tasksData && gameConfig.tasksData[agent.dbKey]) ? gameConfig.tasksData[agent.dbKey] : [];
+let totalTasks = myTasks.length;
+
+if (state.task === -1) {
+state.task = currentTask;
+updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+}
+else if (currentTask > state.task) {
+state.task = currentTask;
+widget.classList.add("flash-success");
+inEl.classList.add("success");
+inEl.innerText = "✨ DOBRZE! ✨";
+
+// Dźwięk wygranej i pochwała od lektora!
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+
+const totalLetters = (gameConfig.unlockOrder || []).length;
+if (globalSolved < totalLetters) {
+if (currentTask >= totalTasks) {
+speakPolishText(`Brawo ${agent.id}! Wszystkie Twoje zadania zostały ukończone!`);
+} else {
+speakPolishText(`Brawo ${agent.id}! Odkryto nową literę!`);
+}
+}
+
+clearTimeout(state.t);
+state.t = setTimeout(() => {
+widget.classList.remove("flash-success");
+inEl.classList.remove("success");
+updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+}, 3000);
+}
+else {
+if (!widget.classList.contains("flash-success")) {
+updateWidgetContent(agent.id, currentTask, liveInput, myTasks, totalTasks);
+}
+}
+});
+});
 }
 
 function updateWidgetContent(agentId, currentTask, liveInput, myTasks, totalTasks) {
-    let numEl = document.getElementById(`tv-num-${agentId}`);
-    let qEl = document.getElementById(`tv-q-${agentId}`);
-    let inEl = document.getElementById(`tv-in-${agentId}`);
+let widget = document.getElementById(`tv-${agentId}`);
+let numEl = document.getElementById(`tv-num-${agentId}`);
+let qEl = document.getElementById(`tv-q-${agentId}`);
+let inEl = document.getElementById(`tv-in-${agentId}`);
 
-    if (currentTask >= totalTasks) {
-        numEl.innerText = "ZAKOŃCZONO WSZYSTKO!";
-        qEl.innerText = "Czeka na resztę drużyny...";
-        inEl.innerText = "✔️";
-        inEl.classList.remove("active");
-        return;
-    }
-    
-    numEl.innerText = `ROZWIĄZUJE ZADANIE ${currentTask + 1} / ${totalTasks}`;
-    qEl.innerText = myTasks[currentTask].q;
-    
-    if (liveInput) { 
-        inEl.innerText = liveInput; 
-        inEl.classList.add("active"); 
-    } else { 
-        inEl.innerText = "_"; 
-        inEl.classList.remove("active"); 
-    }
+if (currentTask >= totalTasks && totalTasks > 0) {
+widget.classList.add("done-all");
+numEl.innerText = `UKOŃCZONO (${totalTasks}/${totalTasks})`;
+qEl.innerText = "🎉 Wszystkie zadania rozwiązane! Wspieraj resztę drużyny!";
+inEl.innerText = "✔️ GOTOWE";
+inEl.classList.remove("active");
+return;
+}
+
+widget.classList.remove("done-all");
+numEl.innerText = `ZADANIE ${currentTask + 1} / ${totalTasks}`;
+qEl.innerText = myTasks[currentTask] ? myTasks[currentTask].q : "...";
+
+if (liveInput) {
+inEl.innerText = liveInput;
+inEl.classList.add("active");
+} else {
+inEl.innerText = "_";
+inEl.classList.remove("active");
+}
 }
 </script>
 </body>
