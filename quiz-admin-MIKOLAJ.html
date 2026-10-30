@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Mikołajki | Panel Admina</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: sans-serif; background: #0c1914; color: #fff; padding: 20px; max-width: 900px; margin: 0 auto; }
+.box { background: #142a21; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 2px solid #d4af37; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+h3 { margin-top: 0; color: #ffd700; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
+button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; color: #000; }
+button:active { transform: scale(0.95); }
+button.red { background: #d62828; color: #fff; border: 1px solid #ffd700; }
+button.green { background: #2dc653; color: #000; }
+button.gold { background: #ffd700; color: #000; }
+button.purple { background: #a855f7; color: #fff; }
+select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 8px; width: 100%; max-width: 520px; }
+.status-banner { background: #07140f; border-left: 5px solid #2dc653; padding: 12px; font-size: 14px; font-weight: bold; color: #2dc653; margin-top: 15px; border-radius: 6px; }
+.error-banner { background: #300; border-left: 5px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 6px; display: none; }
+.player-cb-label { background: #081c15; padding: 10px 16px; border-radius: 8px; border: 2px solid #ffd700; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
+.player-cb-label input { width: 18px; height: 18px; cursor: pointer; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 12px; margin-top: 12px; }
+.photo-card { background: #081c15; border: 2px solid #334155; border-radius: 12px; padding: 10px; text-align: center; }
+.photo-card.pending { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
+.photo-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; background: #000; margin: 6px 0; border: 1px solid #444; }
+.cheat-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+.cheat-table th, .cheat-table td { border: 1px solid #2d4a3e; padding: 8px; text-align: left; }
+.cheat-table th { background: #081c15; color: #ffd700; }
+.code-pill { background: #ffd700; color: #000; font-weight: 900; padding: 2px 7px; border-radius: 5px; font-family: monospace; font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="box">
+<h3>KROK 1: RESET MISJI MIKOŁAJKOWEJ I WYBÓR KTO GRA</h3>
+<button type="button" class="red" onclick="window.resetMission()">🗑️ ZRESETUJ CAŁĄ MISJĘ OD ZERA</button>
+<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #2d4a3e;">
+<label style="color:#ffd700; font-weight:bold; font-size:14px; display:block; margin-bottom:10px;">👥 ZAZNACZ KTO DZIŚ GRA (odznacz osobę nieobecną):</label>
+<div style="display:flex; gap:12px; flex-wrap:wrap;">
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Lila" checked onchange="window.updateActivePlayers()"> 🦌 LILA</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Kaja" checked onchange="window.updateActivePlayers()"> ⛄ KAJA</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Darek" checked onchange="window.updateActivePlayers()"> 🎄 DAREK</label>
+<label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Jas" checked onchange="window.updateActivePlayers()"> 🎅 JAŚ</label>
+</div>
+</div>
+</div>
+
+<div class="box">
+<h3>KROK 2: STEROWANIE ETAPAMI SKARBCA MIKOŁAJA (1 - 6)</h3>
+<select id="stageSel">
+<option value="1">ETAP 1: Foto-Zwiad (Po 3 zdjęcia na osobę -> Akceptacja Wujka)</option>
+<option value="2">ETAP 2: Poszukiwacze Tajnych Kodów w Domu (12 trudnych zagadek)</option>
+<option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania na osobę)</option>
+<option value="4">ETAP 4: Tajny Szyfr Kolorów Elfów (Wspólna pamięć 4 kolorów)</option>
+<option value="5">ETAP 5: Tankowanie Sań Mikołaja (Wyzwanie 20 sekund | 75 klików/os.)</option>
+<option value="6">ETAP 6: Skaner Wytrwałości (Trzymanie przycisku przez 60 sekund + Finał)</option>
+</select><br>
+<button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
+<button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
+<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (FINAŁ Z KLUCZEM U WUJKA)</button>
+<div class="status-banner" id="adminStatus">⏳ Ładowanie systemu Mikołajkowego...</div>
+<div class="error-banner" id="errorBox"></div>
+</div>
+
+<div class="box" id="photoReviewBox" style="display:none;">
+<h3>📸 WERYFIKACJA ZDJĘĆ DZIECI NA ŻYWO (ETAP 1)</h3>
+<div class="photo-grid" id="photoGrid"></div>
+</div>
+
+<div class="box">
+<h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 2)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz też w każdej chwili kliknąć <b>"ZALICZ KOD"</b> przy dziecku, jeśli zgubi karteczkę:</p>
+<table class="cheat-table">
+<thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Aktualny postęp i pomoc</th></tr></thead>
+<tbody>
+<tr>
+<td><b>🦌 Lila</b></td>
+<td>Pralka <span class="code-pill">482</span></td>
+<td>Babcia Ela <span class="code-pill">915</span></td>
+<td>Biurko Lili <span class="code-pill">307</span></td>
+<td><span id="prog-Lila">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Lila')">⏭️ ZALICZ KROK</button></td>
+</tr>
+<tr>
+<td><b>⛄ Kaja</b></td>
+<td>Piekarnik <span class="code-pill">629</span></td>
+<td>Lustro (łazienka) <span class="code-pill">154</span></td>
+<td>Ciocia Ania <span class="code-pill">840</span></td>
+<td><span id="prog-Kaja">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Kaja')">⏭️ ZALICZ KROK</button></td>
+</tr>
+<tr>
+<td><b>🎄 Darek</b></td>
+<td>Kuweta <span class="code-pill">518</span></td>
+<td>Telewizor <span class="code-pill">763</span></td>
+<td>Ciocia Ola <span class="code-pill">291</span></td>
+<td><span id="prog-Darek">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Darek')">⏭️ ZALICZ KROK</button></td>
+</tr>
+<tr>
+<td><b>🎅 Jaś</b></td>
+<td>Lodówka <span class="code-pill">336</span></td>
+<td>Buty (przedpokój) <span class="code-pill">804</span></td>
+<td>Czajnik <span class="code-pill">672</span></td>
+<td><span id="prog-Jas">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Jas')">⏭️ ZALICZ KROK</button></td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const statusEl = document.getElementById('adminStatus');
+const errorEl = document.getElementById('errorBox');
+function showError(msg) { errorEl.style.display = 'block'; errorEl.innerText = "⚠️ BŁĄD: " + msg; }
+window.addEventListener('error', (e) => showError(e.message));
+
+const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
+const db = getFirestore(initializeApp(firebaseConfig));
+const stateRef = doc(db, "mikolajGame", "state");
+
+export const STAGE1_PHOTOS = {
+Lila: [
+"Zrób zdjęcie uśmiechniętego Bartusia!",
+"Zrób zbliżenie na swoją własną skarpetkę (świąteczny skarpetkowy potwór)!",
+"Zrób wspólne zdjęcie pozostałym Agentom, jak robią najśmieszniejsze miny!"
+],
+Kaja: [
+"Załóż okulary przeciwsłoneczne lub zimową czapkę i zrób sobie wesołe selfie!",
+"Znajdź w domu coś zielonego jak choinka lub roślina i zrób temu zdjęcie!",
+"Zrób zdjęcie swoim ulubionym butom gotowym na daleką wyprawę!"
+],
+Darek: [
+"Zrób zdjęcie rzeczy, w którą można spakować ekwipunek na wyjazd (plecak, walizka lub torba)!",
+"Znajdź w domu przedmiot pokazujący godzinę i zrób mu zdjęcie!",
+"Zrób z ukrycia zdjęcie (jak tajny detektyw!) któremuś z dorosłych w pokoju!"
+],
+Jas: [
+"Znajdź w domu coś czerwonego jak czapka Świętego Mikołaja i zrób temu zdjęcie!",
+"Zrób zdjęcie swojej ulubionej zabawce lub pluszakowi!",
+"Zrób zdjęcie kubkowi lub szklance, z której pije się ciepłą zimową herbatę!"
+]
+};
+
+export const STAGE2_RIDDLES = {
+Lila: [
+{ q: "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?", code: "482", place: "Pralka" },
+{ q: "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.", code: "915", place: "Babcia Ela" },
+{ q: "Ostatni Twój szyfr spoczywa w Twoim własnym królestwie na czterech nogach – dokładnie tam, gdzie odrabiasz lekcje, rysujesz i odkładasz zeszyty!", code: "307", place: "Biurko Lili" }
+],
+Kaja: [
+{ q: "Zwykle zieję gorącem jak wulkan i rumienię świąteczne ciasta za szklaną szybą, ale dziś jestem chłodny i czekam, aż zajrzysz do mojego wnętrza!", code: "629", place: "Piekarnik" },
+{ q: "Milczę na ścianie tam, gdzie myjesz ręce i zęby, ale potrafię bezbłędnie przedrzeźniać każdą minę, którą przede mną zrobisz!", code: "154", place: "Lustro w łazience" },
+{ q: "Ostatni kod ma przy sobie osoba, która zna Twoją mamę od kołyski, bo jest jej starszą siostrą! Podbiegnij do tej cioci po tajny szyfr!", code: "840", place: "Ciocia Ania" }
+],
+Darek: [
+{ q: "Prywatna piaszczysta wyspa w domu, którą odwiedza tylko czworonożny mruczący domownik! Nie musisz kopać w żwirku – obejrzyj jej obudowę z boku!", code: "518", place: "Kuweta" },
+{ q: "Świecę prosto w Twoje oczy w tej właśnie sekundzie i wyświetlam całą tę grę! Sprawdź ostrożnie przy mojej ramce lub pod podstawką!", code: "763", place: "Telewizor" },
+{ q: "Trzeciego kodu pilnuje młodsza siostra Twojej mamy Ani! Odszukaj tę ciocię i szepnij jej hasło: 'Mikołaj pakuje walizki'!", code: "291", place: "Ciocia Ola" }
+],
+Jas: [
+{ q: "Nawet w środku lata w moim brzuchu panuje arktyczny mróz, a gdy otwierasz moje drzwi, zapala się jasne światełko. Zajrzyj do środka!", code: "336", place: "Lodówka" },
+{ q: "Odpoczywamy parami na podłodze blisko drzwi wyjściowych i cierpliwie czekamy, aż włożysz w nas stopy przed wyjściem na dwór!", code: "804", place: "Buty w przedpokoju" },
+{ q: "Gdy nalejesz mi do brzuszka zimnej wody i klikniesz pstryczek, po chwili zaczynam głośno bulgotać i puszczać gorącą parę dzióbkiem!", code: "672", place: "Czajnik w kuchni" }
+]
+};
+
+let currentState = null;
+
+function getSelectedActivePlayers() {
+const cbs = document.querySelectorAll('.active-player-cb:checked');
+const arr = Array.from(cbs).map(cb => cb.value);
+return arr.length > 0 ? arr : ["Lila", "Kaja", "Darek", "Jas"];
+}
+
+window.updateActivePlayers = async () => {
+const activeList = getSelectedActivePlayers();
+try {
+await updateDoc(stateRef, { activePlayers: activeList });
+statusEl.innerText = `👥 Zaktualizowano skład drużyny (${activeList.length}): ${activeList.join(", ")}`;
+} catch (e) {}
+};
+
+window.resetMission = async () => {
+if (!confirm("Czy na pewno chcesz zresetować całą Misję Mikołajkową do początku?")) return;
+document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
+const all = ["Lila", "Kaja", "Darek", "Jas"];
+await setDoc(stateRef, {
+stage: 0,
+status: "idle",
+activePlayers: all,
+stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
+photos: {},
+simonLevel: 1,
+simonSeq: [],
+simonInput: [],
+tapsCount: 0,
+tapsTarget: 300,
+tapsStartTime: 0,
+holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
+holdRemainingMs: 60000,
+speechTick: Date.now()
+});
+statusEl.innerText = "✅ Misja zresetowana! Wybierz Etap 1 i kliknij URUCHOM WYBRANY ETAP.";
+};
+
+window.startSelectedStage = async (forcedStageNum) => {
+const stNum = forcedStageNum || parseInt(document.getElementById('stageSel').value) || 1;
+document.getElementById('stageSel').value = String(stNum);
+const activeList = getSelectedActivePlayers();
+let resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
+
+if (stNum === 1) {
+await setDoc(stateRef, {
+stage: 1,
+status: "stage1_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+photos: {},
+speechTick: Date.now()
+}, { merge: true });
+} else if (stNum === 2) {
+await updateDoc(stateRef, {
+stage: 2,
+status: "stage2_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+speechTick: Date.now()
+});
+} else if (stNum === 3) {
+await updateDoc(stateRef, {
+stage: 3,
+status: "stage3_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+speechTick: Date.now()
+});
+} else if (stNum === 4) {
+const seq = generateSimonSequence(4, activeList);
+await updateDoc(stateRef, {
+stage: 4,
+status: "stage4_watch",
+activePlayers: activeList,
+simonLevel: 1,
+simonSeq: seq,
+simonInput: [],
+speechTick: Date.now(),
+seqTick: Date.now()
+});
+} else if (stNum === 5) {
+const target = activeList.length * 75;
+await updateDoc(stateRef, {
+stage: 5,
+status: "stage5_active",
+activePlayers: activeList,
+tapsCount: 0,
+tapsTarget: target,
+tapsStartTime: Date.now(),
+speechTick: Date.now()
+});
+} else if (stNum === 6) {
+await updateDoc(stateRef, {
+stage: 6,
+status: "stage6_active",
+activePlayers: activeList,
+holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
+holdRemainingMs: 60000,
+speechTick: Date.now()
+});
+}
+};
+
+function generateSimonSequence(len, activeList) {
+let arr = [];
+for (let i = 0; i < len; i++) {
+arr.push(activeList[Math.floor(Math.random() * activeList.length)]);
+}
+return arr;
+}
+
+window.forceNextStage = async () => {
+const cur = (currentState && currentState.stage) ? currentState.stage : 0;
+if (cur >= 6) {
+await window.triggerGrandFinale();
+} else {
+await window.startSelectedStage(cur + 1);
+}
+};
+
+window.triggerGrandFinale = async () => {
+await updateDoc(stateRef, {
+stage: 7,
+status: "finale_unlocked",
+speechTick: Date.now()
+});
+};
+
+window.approvePhoto = async (player) => {
+if (!currentState) return;
+let prog = { ...(currentState.stepProgress || { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }) };
+let photos = { ...(currentState.photos || {}) };
+prog[player] = Math.min(3, (prog[player] || 0) + 1);
+photos[player] = { ...(photos[player] || {}), status: "approved", approvedAt: Date.now() };
+
+const activeList = currentState.activePlayers || getSelectedActivePlayers();
+const allDone = activeList.every(p => (prog[p] || 0) >= 3);
+
+await updateDoc(stateRef, {
+stepProgress: prog,
+photos: photos,
+status: allDone ? "stage_complete" : "stage1_active",
+completedStageNum: allDone ? 1 : 0,
+speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
+});
+};
+
+window.rejectPhoto = async (player) => {
+if (!currentState) return;
+let photos = { ...(currentState.photos || {}) };
+photos[player] = { ...(photos[player] || {}), status: "rejected", rejectedAt: Date.now() };
+await updateDoc(stateRef, { photos: photos });
+};
+
+window.skipChildStep = async (player) => {
+if (!currentState) return;
+let prog = { ...(currentState.stepProgress || { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }) };
+prog[player] = Math.min(3, (prog[player] || 0) + 1);
+const activeList = currentState.activePlayers || getSelectedActivePlayers();
+const allDone = activeList.every(p => (prog[p] || 0) >= 3);
+
+await updateDoc(stateRef, {
+stepProgress: prog,
+status: allDone ? "stage_complete" : currentState.status,
+completedStageNum: allDone ? currentState.stage : 0,
+speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
+});
+};
+
+onSnapshot(stateRef, (snap) => {
+if (!snap.exists()) return;
+currentState = snap.data();
+const st = currentState.stage || 0;
+const prog = currentState.stepProgress || {};
+["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
+const el = document.getElementById(`prog-${p}`);
+if (el) el.innerText = `${prog[p] || 0}/3`;
+});
+
+statusEl.innerText = `🎄 Aktualny Etap: ${st}/6 | Status: ${currentState.status} | Aktywni: ${(currentState.activePlayers || []).join(", ")}`;
+
+// Podgląd zdjęć w Etapie 1
+const photoBox = document.getElementById('photoReviewBox');
+const photoGrid = document.getElementById('photoGrid');
+if (st === 1) {
+photoBox.style.display = 'block';
+photoGrid.innerHTML = "";
+const photos = currentState.photos || {};
+(currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"]).forEach(p => {
+const pData = photos[p] || {};
+const stepIdx = prog[p] || 0;
+const taskDesc = stepIdx < 3 ? STAGE1_PHOTOS[p][stepIdx] : "Wszystkie 3 zdjęcia zaliczone!";
+const card = document.createElement('div');
+card.className = "photo-card" + (pData.status === "pending" ? " pending" : "");
+card.innerHTML = `
+<div style="font-weight:900; color:#ffd700;">${p.toUpperCase()} (${stepIdx}/3)</div>
+<div style="font-size:11px; color:#cbd5e1; min-height:32px; margin:4px 0;">${taskDesc}</div>
+${pData.img ? `<img src="${pData.img}">` : `<div style="height:140px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>`}
+${pData.status === "pending" ? `
+<button class="green" style="width:100%; padding:8px; margin:4px 0;" onclick="window.approvePhoto('${p}')">✅ AKCEPTUJ</button>
+<button class="red" style="width:100%; padding:8px; margin:0;" onclick="window.rejectPhoto('${p}')">❌ ODRZUĆ</button>
+` : `<div style="font-size:12px; color:#2dc653; font-weight:bold; margin-top:6px;">${stepIdx >= 3 ? "✔️ UKOŃCZONO (3/3)" : "Czeka na nowe zdjęcie..."}</div>`}
+`;
+photoGrid.appendChild(card);
+});
+} else {
+photoBox.style.display = 'none';
+}
+});
+</script>
+</body>
+</html>
