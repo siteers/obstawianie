@@ -19,10 +19,10 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .error-banner { background: #300; border-left: 5px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 6px; display: none; }
 .player-cb-label { background: #081c15; padding: 10px 16px; border-radius: 8px; border: 2px solid #ffd700; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
 .player-cb-label input { width: 18px; height: 18px; cursor: pointer; }
-.photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(195px, 1fr)); gap: 12px; margin-top: 12px; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
 .photo-card { background: #081c15; border: 2px solid #334155; border-radius: 12px; padding: 10px; text-align: center; }
 .photo-card.pending { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
-.photo-card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; background: #000; margin: 6px 0; border: 1px solid #444; }
+.photo-card img { width: 100%; height: 180px; object-fit: contain; border-radius: 8px; background: #000; margin: 6px 0; border: 1px solid #444; }
 .cheat-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
 .cheat-table th, .cheat-table td { border: 1px solid #2d4a3e; padding: 8px; text-align: left; }
 .cheat-table th { background: #081c15; color: #ffd700; }
@@ -50,14 +50,14 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <select id="stageSel">
 <option value="1">ETAP 1: Foto-Zwiad (Po 3 zdjęcia na osobę -> Akceptacja Wujka)</option>
 <option value="2">ETAP 2: Poszukiwacze Tajnych Kodów w Domu (12 trudnych zagadek)</option>
-<option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania na osobę)</option>
+<option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania | Kara 20s za błąd)</option>
 <option value="4">ETAP 4: Tajny Szyfr Kolorów Elfów (Wspólna pamięć 4 kolorów)</option>
 <option value="5">ETAP 5: Tankowanie Sań Mikołaja (Wyzwanie 20 sekund | 75 klików/os.)</option>
 <option value="6">ETAP 6: Skaner Wytrwałości (Trzymanie przycisku przez 60 sekund + Finał)</option>
 </select><br>
 <button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
 <button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
-<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (FINAŁ Z KLUCZEM U WUJKA)</button>
+<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (SEKWENCJA NAPIĘCIA + KLUCZ U WUJKA)</button>
 <div class="status-banner" id="adminStatus">⏳ Ładowanie systemu Mikołajkowego...</div>
 <div class="error-banner" id="errorBox"></div>
 </div>
@@ -69,7 +69,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 
 <div class="box">
 <h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 2)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz też w każdej chwili kliknąć <b>"ZALICZ KOD"</b> przy dziecku, jeśli zgubi karteczkę:</p>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz też w każdej chwili kliknąć <b>"ZALICZ KROK"</b> przy dziecku, jeśli zgubi karteczkę:</p>
 <table class="cheat-table">
 <thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Aktualny postęp i pomoc</th></tr></thead>
 <tbody>
@@ -165,6 +165,7 @@ Jas: [
 };
 
 let currentState = null;
+let adminStageTimer = null;
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
@@ -243,6 +244,7 @@ activePlayers: activeList,
 simonLevel: 1,
 simonSeq: seq,
 simonInput: [],
+simonMistakeBy: "",
 speechTick: Date.now(),
 seqTick: Date.now()
 });
@@ -289,7 +291,8 @@ await window.startSelectedStage(cur + 1);
 window.triggerGrandFinale = async () => {
 await updateDoc(stateRef, {
 stage: 7,
-status: "finale_unlocked",
+status: "finale_suspense",
+finaleStartTick: Date.now(),
 speechTick: Date.now()
 });
 };
@@ -335,6 +338,47 @@ speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
 });
 };
 
+// Pętla zegarowa Admina dla Etapu 5 (limit 20s) oraz Etapu 6 (skaner 60s)
+if (adminStageTimer) clearInterval(adminStageTimer);
+adminStageTimer = setInterval(async () => {
+if (!currentState) return;
+
+// Monitorowanie limitu 20 sekund w Etapie 5
+if (currentState.stage === 5 && currentState.status === "stage5_active") {
+const startT = currentState.tapsStartTime || 0;
+if (startT > 0) {
+const elapsed = Date.now() - startT;
+if (elapsed >= 20000 && (currentState.tapsCount || 0) < (currentState.tapsTarget || 300)) {
+await updateDoc(stateRef, {
+status: "stage5_failed",
+speechTick: Date.now()
+});
+}
+}
+}
+
+// Monitorowanie trzymania 60 sekund w Etapie 6
+if (currentState.stage === 6 && currentState.status === "stage6_active") {
+const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
+const hm = currentState.holdMap || {};
+const allHold = activeList.length > 0 && activeList.every(p => hm[p] === true);
+if (allHold) {
+const nextRem = Math.max(0, (currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) - 500);
+if (nextRem <= 0) {
+await updateDoc(stateRef, {
+holdRemainingMs: 0,
+stage: 7,
+status: "finale_suspense",
+finaleStartTick: Date.now(),
+speechTick: Date.now()
+});
+} else {
+await updateDoc(stateRef, { holdRemainingMs: nextRem });
+}
+}
+}
+}, 500);
+
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
 currentState = snap.data();
@@ -363,7 +407,7 @@ card.className = "photo-card" + (pData.status === "pending" ? " pending" : "");
 card.innerHTML = `
 <div style="font-weight:900; color:#ffd700;">${p.toUpperCase()} (${stepIdx}/3)</div>
 <div style="font-size:11px; color:#cbd5e1; min-height:32px; margin:4px 0;">${taskDesc}</div>
-${pData.img ? `<img src="${pData.img}">` : `<div style="height:140px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>`}
+${pData.img ? `<img src="${pData.img}">` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>`}
 ${pData.status === "pending" ? `
 <button class="green" style="width:100%; padding:8px; margin:4px 0;" onclick="window.approvePhoto('${p}')">✅ AKCEPTUJ</button>
 <button class="red" style="width:100%; padding:8px; margin:0;" onclick="window.rejectPhoto('${p}')">❌ ODRZUĆ</button>
@@ -377,4 +421,4 @@ photoBox.style.display = 'none';
 });
 </script>
 </body>
-</html> 
+</html>
