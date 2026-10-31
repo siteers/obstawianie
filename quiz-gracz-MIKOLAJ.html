@@ -33,7 +33,7 @@ box-shadow: 0 8px 20px rgba(214, 40, 40, 0.45); transition: 0.15s; display: inli
 .btn-green { background: linear-gradient(135deg, #2dc653, #15803d); color: #000; }
 .task-box { background: rgba(0,0,0,0.45); border: 1px dashed var(--gold); border-radius: 14px; padding: 15px; margin: 12px 0; font-size: 16px; line-height: 1.4; color: #f1f5f9; font-weight: bold; }
 .step-badge { display: inline-block; background: var(--gold); color: #000; font-weight: 900; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
-.preview-img { width: 100%; max-height: 200px; object-fit: cover; border-radius: 12px; border: 2px solid var(--gold); margin-top: 10px; display: none; }
+.preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 12px; border: 2px solid var(--gold); margin-top: 10px; display: none; }
 .opt-btn { width: 100%; padding: 15px; margin: 6px 0; border-radius: 12px; border: 2px solid var(--gold); background: #0b2419; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
 .opt-btn:active { background: var(--gold); color: #000; }
 .Tap-btn {
@@ -53,6 +53,10 @@ font-size: 18px; font-weight: 900; cursor: pointer; transition: 0.2s;
 .hold-scanner.holding {
 background: rgba(45, 198, 83, 0.35); border-style: solid; border-color: #2dc653;
 color: #fff; box-shadow: 0 0 40px #2dc653; transform: scale(1.04);
+}
+.penalty-box {
+background: rgba(214, 40, 40, 0.25); border: 3px solid #ff4d4d; border-radius: 16px;
+padding: 22px 14px; margin: 12px 0; color: #fff; font-weight: 900;
 }
 .feedback { color: #ff6b6b; font-weight: 900; font-size: 14px; min-height: 20px; margin-top: 6px; }
 </style>
@@ -132,26 +136,27 @@ Jas: [
 ]
 };
 
+// ETAP 3: ZERO WZMIANEK O CYPRZE - CZYSTO ŚWIĄTECZNO-ZIMOWE ZAGADKI!
 const STAGE3_QUIZ = {
 Lila: [
-{ q: "W jakim państwie na Morzu Śródziemnym leży słoneczne miasto Paphos?", o: ["W Hiszpanii", "Na Cyprze", "W Grecji"], c: 1 },
-{ q: "Po której stronie ulicy jeździ się samochodem na Cyprze?", o: ["Po lewej stronie", "Po prawej stronie", "Po środku"], c: 0 },
-{ q: "Jakim środkiem transportu najszybciej polecimy na wyspę przez chmury?", o: ["Pociągiem", "Samolotem", "Rowerem"], c: 1 }
+{ q: "W jakiej mroźnej krainie na północy Finlandii znajduje się oficjalna wioska Świętego Mikołaja?", o: ["W Laponii", "Na Saharze", "W Bawarii"], c: 0 },
+{ q: "Ile geometrycznych ramion ma zawsze prawdziwy płatek śniegu oglądany pod lupą?", o: ["Cztery", "Sześć", "Osiem"], c: 1 },
+{ q: "Jak nazywa się najsłynniejszy renifer Mikołaja z błyszczącym czerwonym nosem?", o: ["Kometek", "Rudolf", "Błyskawiczny"], c: 1 }
 ],
 Kaja: [
-{ q: "Jaką walutą płaci się w sklepach na Cyprze Południowym?", o: ["Euro", "Koronami", "Dolarami"], c: 0 },
-{ q: "Jakie morze otacza słoneczną wyspę Cypr?", o: ["Morze Bałtyckie", "Morze Śródziemne", "Morze Czarne"], c: 1 },
-{ q: "Co koniecznie trzeba pokazać na lotnisku przed wejściem do samolotu?", o: ["Świadectwo szkolne", "Dowód lub paszport i bilet", "Książeczkę zdrowia kota"], c: 1 }
+{ q: "Co według tradycji trzeba wypatrzeć na wigilijnym niebie, zanim zasiądziemy do kolacji?", o: ["Pełnię Księżyca", "Pierwszą gwiazdkę", "Tęczę"], c: 1 },
+{ q: "Które drzewo iglaste jako jedyne w Polsce gubi swoje wszystkie igły na zimę?", o: ["Świerk", "Modrzew", "Jodła"], c: 1 },
+{ q: "Co zostawia się pod choinką lub na talerzyku jako przysmak dla Świętego Mikołaja?", o: ["Mleko i ciasteczka", "Zupę pomidorową", "Surowe ziemniaki"], c: 0 }
 ],
 Darek: [
-{ q: "Ile skrzydeł nośnych ma klasyczny samolot pasażerski?", o: ["Dwa (lewe i prawe)", "Cztery", "Ani jednego"], c: 0 },
-{ q: "Co robią palmy na Cyprze w grudniu, gdy w Polsce jest zima?", o: ["Są zielone i rosną w słońcu", "Zamarzają w sopel lodu", "Odlatują do Afryki"], c: 0 },
-{ q: "Jak nazywa się kapitan siedzący za sterami samolotu?", o: ["Maszynista", "Pilot", "Sternik"], c: 1 }
+{ q: "Które z tych zwierząt zapada w głęboki sen zimowy aż do nadejścia wiosny?", o: ["Wilk", "Świstak i niedźwiedź", "Zając szarak"], c: 1 },
+{ q: "W jakiej temperaturze zwykła woda zaczyna zamarzać i zamieniać się w lód?", o: ["0 stopni Celsjusza", "10 stopni Celsjusza", "100 stopni Celsjusza"], c: 0 },
+{ q: "Jak nazywa się tradycyjny puszysty wypiek z rodzynkami lub lukrem pieczony w Święta?", o: ["Makowiec i piernik", "Pizza margherita", "Tortilla"], c: 0 }
 ],
 Jas: [
 { q: "Jakiego koloru jest płaszcz i czapka Świętego Mikołaja?", o: ["Zielonego", "Czerwonego", "Niebieskiego"], c: 1 },
-{ q: "Jakie zwierzęta z rogami ciągną sanie Mikołaja po niebie?", o: ["Renifery", "Żyrafy", "Pingwiny"], c: 0 },
-{ q: "W jakim miesiącu przychodzi Mikołaj (6 grudnia) i są Święta?", o: ["W lipcu", "W grudniu", "W maju"], c: 1 }
+{ q: "Jakie zwierzęta z rogami ciągną sanie Mikołaja po zimowym niebie?", o: ["Renifery", "Żyrafy", "Pingwiny"], c: 0 },
+{ q: "Z czego lepi się bałwana na podwórku, gdy spadnie biały puch?", o: ["Z piasku", "Ze śniegu", "Z błota"], c: 1 }
 ]
 };
 
@@ -159,6 +164,8 @@ let myName = "";
 let currentState = null;
 let lastRenderKey = "";
 let isHoldingScanner = false;
+let quizPenaltyInterval = null;
+let stage5PadTimer = null;
 
 window.joinMission = () => {
 myName = document.getElementById('agentSel').value;
@@ -173,6 +180,26 @@ currentState = snap.data();
 renderPad();
 });
 };
+
+function getQuizLockRemainingSec() {
+const unlockAt = parseInt(localStorage.getItem('mikolaj_quiz_lock_' + myName) || '0', 10);
+return Math.max(0, Math.ceil((unlockAt - Date.now()) / 1000));
+}
+
+function startStage5LocalCountdown() {
+if (stage5PadTimer) clearInterval(stage5PadTimer);
+stage5PadTimer = setInterval(() => {
+if (!currentState || currentState.stage !== 5 || currentState.status !== "stage5_active") {
+clearInterval(stage5PadTimer);
+return;
+}
+const el = document.getElementById('padStage5Sec');
+if (!el) return;
+const startT = currentState.tapsStartTime || Date.now();
+const rem = Math.max(0, (20000 - (Date.now() - startT)) / 1000);
+el.innerText = `⏱️ POZOSTAŁO CZASU: ${rem.toFixed(1)}s`;
+}, 100);
+}
 
 function renderPad() {
 const container = document.getElementById('stageContent');
@@ -190,8 +217,6 @@ const status = currentState.status || "idle";
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const myPhoto = (currentState.photos && currentState.photos[myName]) || {};
 
-// Klucz zapobiegający przeładowaniu pola input podczas pisania
-const renderKey = `${st}_${status}_${myStep}_${myPhoto.status || ""}_${currentState.simonLevel || 0}`;
 if (st === 5 && status === "stage5_active") {
 const countEl = document.getElementById('liveTapCounter');
 if (countEl) {
@@ -199,12 +224,28 @@ countEl.innerText = `${currentState.tapsCount || 0} / ${currentState.tapsTarget 
 return;
 }
 }
-if (renderKey === lastRenderKey && st !== 4 && st !== 6) return;
+
+if (st === 6 && status === "stage6_active") {
+const secEl = document.getElementById('padHoldSec');
+if (secEl) {
+secEl.innerText = ((currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) / 1000).toFixed(1) + "s";
+return;
+}
+}
+
+const lockRem = st === 3 ? getQuizLockRemainingSec() : 0;
+const renderKey = `${st}_${status}_${myStep}_${myPhoto.status || ""}_${currentState.simonLevel || 0}_${lockRem > 0 ? "locked" : "open"}`;
+if (renderKey === lastRenderKey) return;
 lastRenderKey = renderKey;
 fb.innerText = "";
 
 if (status === "idle" || st === 0) {
 container.innerHTML = `<h2>GOTOWY DO MISJI!</h2><div class="task-box">Patrz na ekran telewizora. Zaraz Wujek uruchomi pierwszy etap!</div>`;
+return;
+}
+
+if (status === "finale_suspense") {
+container.innerHTML = `<h2>🔓 ZAMKI PUSZCZAJĄ...</h2><div class="task-box" style="border-color:var(--gold); color:var(--gold); font-size:18px;">PATRZ UWAŻNIE NA TELEWIZOR! Pancerne rygle Skarbca właśnie się otwierają...</div>`;
 return;
 }
 
@@ -261,15 +302,37 @@ container.innerHTML = `
 return;
 }
 
-// ETAP 3: PO 3 PYTANIA ŚWIĄTECZNO-PODRÓŻNICZE
+// ETAP 3: PO 3 PYTANIA ŚWIĄTECZNO-ZIMOWE Z BLOKADĄ 20 SEKUND ZA BŁĄD!
 if (st === 3) {
 if (myStep >= 3) {
 container.innerHTML = `<h2>🧠 PYTANIA ROZWIĄZANE (3/3)!</h2><div class="task-box">Świetna robota! Czekamy aż reszta drużyny odpowie na swoje pytania!</div>`;
 return;
 }
+if (lockRem > 0) {
+container.innerHTML = `
+<span class="step-badge">BLOKADA ZA BŁĄD!</span>
+<h2>❄️ TERMINAL ZAMROŻONY!</h2>
+<div class="penalty-box">
+Pudło! Nie można strzelać na oślep!<br><br>
+Odczekaj: <span id="lockTimerSpan" style="font-size:28px; color:var(--gold);">${lockRem}s</span>
+</div>
+`;
+if (quizPenaltyInterval) clearInterval(quizPenaltyInterval);
+quizPenaltyInterval = setInterval(() => {
+const r = getQuizLockRemainingSec();
+const sp = document.getElementById('lockTimerSpan');
+if (sp) sp.innerText = r + "s";
+if (r <= 0) {
+clearInterval(quizPenaltyInterval);
+lastRenderKey = "";
+renderPad();
+}
+}, 250);
+return;
+}
 const qObj = STAGE3_QUIZ[myName][myStep];
 container.innerHTML = `
-<span class="step-badge">PYTANIE ${myStep + 1} / 3</span>
+<span class="step-badge">PYTANIE ${myStep + 1} / 3 (BŁĄD = BLOKADA 20s)</span>
 <h2>🎄 ZAGADKA MIKOŁAJA</h2>
 <div class="task-box">${qObj.q}</div>
 ${qObj.o.map((opt, idx) => `<button class="opt-btn" onclick="window.submitQuizAns(${idx})">${opt}</button>`).join("")}
@@ -311,19 +374,21 @@ return;
 container.innerHTML = `
 <span class="step-badge">WYZWANIE 20 SEKUND!</span>
 <h2>🔥 ROZGRZEJ SILNIK SAŃ!</h2>
+<div id="padStage5Sec" style="font-size:18px; font-weight:900; color:#ff4d4d; margin-bottom:4px;">⏱️ POZOSTAŁO CZASU: 20.0s</div>
 <div style="font-size:22px; font-weight:900; color:var(--gold);" id="liveTapCounter">${currentState.tapsCount || 0} / ${currentState.tapsTarget || 300}</div>
 <div class="Tap-btn" onclick="window.sendEngineTap()">🔥<br>STUKAJ<br>SZYBKO!</div>
 `;
+startStage5LocalCountdown();
 return;
 }
 
 // ETAP 6: SKANER WYTRWAŁOŚCI 60 SEKUND
 if (st === 6) {
-const secRem = ((currentState.holdRemainingMs || 60000) / 1000).toFixed(1);
+const secRem = ((currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) / 1000).toFixed(1);
 container.innerHTML = `
 <span class="step-badge">OSTATNI RYGIEL SKARBCA!</span>
 <h2>⚡ SKANER LINII PAPILARNYCH</h2>
-<div class="task-box">Wszyscy jednocześnie przytrzymajcie palec na skanerze przez 60 sekund! (Pozostało: <b>${secRem}s</b>)</div>
+<div class="task-box">Wszyscy jednocześnie przytrzymajcie palec na skanerze przez 60 sekund!<br>(Pozostało: <b id="padHoldSec" style="color:var(--gold); font-size:20px;">${secRem}s</b>)</div>
 <div class="hold-scanner ${isHoldingScanner ? 'holding' : ''}" id="scannerPad">
 🖐️<br>${isHoldingScanner ? "TRZYMASZ!" : "PRZYŁÓŻ I TRZYMAJ PALEC"}
 </div>
@@ -332,7 +397,6 @@ bindScannerEvents();
 }
 }
 
-// Kompresja zdjęcia na telefonie (do ok. 45KB Base64) i wysyłka na TV + Admin
 window.handlePhotoUpload = (e) => {
 const file = e.target.files[0];
 if (!file) return;
@@ -345,13 +409,13 @@ reader.onload = (ev) => {
 const img = new Image();
 img.onload = async () => {
 const canvas = document.createElement('canvas');
-const maxW = 420;
+const maxW = 540;
 const scale = Math.min(1, maxW / img.width);
 canvas.width = Math.round(img.width * scale);
 canvas.height = Math.round(img.height * scale);
 const ctx = canvas.getContext('2d');
 ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-const dataUrl = canvas.toDataURL('image/jpeg', 0.62);
+const dataUrl = canvas.toDataURL('image/jpeg', 0.68);
 
 const snap = await getDoc(stateRef);
 const data = snap.data() || {};
@@ -395,6 +459,7 @@ document.getElementById('codeInput').value = "";
 };
 
 window.submitQuizAns = async (idx) => {
+if (getQuizLockRemainingSec() > 0) return;
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const qObj = STAGE3_QUIZ[myName][myStep];
 const fb = document.getElementById('feedbackMsg');
@@ -416,8 +481,10 @@ speechTick: allDone ? Date.now() : (data.speechTick || 0),
 solveTick: Date.now()
 });
 } else {
-fb.style.color = "#ff4d4d";
-fb.innerText = "❌ PUDŁO! SPRÓBUJ INNEJ ODPOWIEDZI!";
+// Karna blokada na 20 sekund!
+localStorage.setItem('mikolaj_quiz_lock_' + myName, String(Date.now() + 20000));
+lastRenderKey = "";
+renderPad();
 }
 };
 
@@ -432,7 +499,6 @@ let inp = [...(data.simonInput || []), myName];
 const curIdx = inp.length - 1;
 
 if (seq[curIdx] !== myName) {
-// Pomyłka - powtórz sekwencję tego poziomu
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const newSeq = [];
 for (let i = 0; i < seq.length; i++) newSeq.push(activeList[Math.floor(Math.random() * activeList.length)]);
@@ -450,6 +516,8 @@ if (inp.length >= seq.length) {
 const nextLvl = (data.simonLevel || 1) + 1;
 if (nextLvl > 3) {
 await updateDoc(stateRef, {
+lastColorPressed: myName,
+colorTick: Date.now(),
 status: "stage_complete",
 completedStageNum: 4,
 speechTick: Date.now()
@@ -464,6 +532,9 @@ status: "stage4_watch",
 simonLevel: nextLvl,
 simonSeq: newSeq,
 simonInput: [],
+simonMistakeBy: "",
+lastColorPressed: myName,
+colorTick: Date.now(),
 seqTick: Date.now()
 });
 }
@@ -515,7 +586,7 @@ await updateDoc(stateRef, { stage: 3, status: "stage3_active", stepProgress: res
 } else if (nextSt === 4) {
 const seq = [];
 for (let i = 0; i < 4; i++) seq.push(activeList[Math.floor(Math.random() * activeList.length)]);
-await updateDoc(stateRef, { stage: 4, status: "stage4_watch", simonLevel: 1, simonSeq: seq, simonInput: [], seqTick: Date.now(), speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 4, status: "stage4_watch", simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
 } else if (nextSt === 5) {
 await updateDoc(stateRef, { stage: 5, status: "stage5_active", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: Date.now(), speechTick: Date.now() });
 } else if (nextSt === 6) {
