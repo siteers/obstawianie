@@ -129,7 +129,7 @@
         </div>
       </div>
 
-      <button class="btn-cyber btn-tv-link" onclick="window.open('tv.html', '_blank')">📺 Otwórz Świąteczny TV</button>
+      <button class="btn-cyber btn-tv-link" onclick="window.open('quiz_tv-swieta.html', '_blank')">📺 Otwórz Świąteczny TV</button>
 
     </div>
   </div>
@@ -151,7 +151,7 @@ window.onload = () => {
     document.getElementById('qrLogin').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${currentUrl}&color=000000&bgcolor=ffffff`;
 
     const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-    const tvUrl = encodeURIComponent(baseHref + 'tv.html');
+    const tvUrl = encodeURIComponent(baseHref + 'quiz_tv-swieta.html');
     document.getElementById('qrTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=${tvUrl}&color=000000&bgcolor=ffffff`;
 };
 
@@ -192,7 +192,7 @@ window.authorizeAgent = async function() {
                 
                 setTimeout(() => { 
                     if (agentName === "Wujek (admin)") {
-                        window.location.href = 'admin.html';
+                        window.location.href = 'quiz_admin-swieta.html';
                     } else {
                         localStorage.setItem('activeAgent', agentName);
                         window.location.href = 'wskazowki.html'; 
