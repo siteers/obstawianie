@@ -130,7 +130,7 @@ text-transform: uppercase; letter-spacing: 0.15vw; margin-top: 0.8vw;
 text-shadow: 0 0 1.5vw var(--gold), 0 2px 5px #000; animation: pulse 1s infinite;
 }
 
-/* NAROŻNE KARTY POMOCNIKÓW MIKOŁAJA (POWIĘKSZONE ZDJĘCIA W PROPORCJACH CONTAIN!) */
+/* NAROŻNE KARTY POMOCNIKÓW MIKOŁAJA */
 .tv-corner {
 position: absolute; width: 19vw;
 background: linear-gradient(145deg, rgba(110, 14, 22, 0.92), rgba(55, 8, 14, 0.95));
@@ -415,14 +415,20 @@ utter.rate = 0.93; utter.pitch = 1.05;
 utteranceQueue.push(utter);
 if (utteranceQueue.length > 10) utteranceQueue.shift();
 let finished = false;
-const finishOnce = () => { if (finished) return; finished = true; clearTimeout(speechSafetyTimer); if (onDoneCallback) setTimeout(onDoneCallback, 450); };
-utter.onend = finishOnce; utter.onerror = finishOnce;
-const estMs = Math.max(3500, Math.min(14000, cleanText.length * 105 + 1600));
+const finishOnce = () => {
+if (finished) return;
+finished = true;
+clearTimeout(speechSafetyTimer);
+if (onDoneCallback) setTimeout(onDoneCallback, 550);
+};
+utter.onend = finishOnce;
+utter.onerror = finishOnce;
+const estMs = Math.max(4500, Math.min(18000, cleanText.length * 115 + 2200));
 speechSafetyTimer = setTimeout(finishOnce, estMs);
 window.speechSynthesis.speak(utter);
 }
 
-// --- AUDIO SYNTEZATOR: DZWONECZKI, SIMON SAYS, DRŻENIE SKARBCA I POTĘŻNE FAJERWERKI ---
+// --- AUDIO SYNTEZATOR: DZWONECZKI, MUZYKA NAPIĘCIA 60s, SIMON SAYS I POTĘŻNE FAJERWERKI ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -470,6 +476,55 @@ musicMutedByUser = !musicMutedByUser;
 document.getElementById('muteMusicBtn').innerText = musicMutedByUser ? "🔇 Dzwoneczki: WYŁ" : "🔔 Dzwoneczki: WŁ";
 };
 
+// SYNTEZATOR ROSNĄCEGO NAPIĘCIA W ETAPIE 6 (60s -> 0s)
+let lastTensionBeatAt = 0;
+function playStage6TensionPulse(remainingMs) {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+// progress = 0.0 (na starcie przy 60s) -> 1.0 (tuż przed 0s)
+const progress = Math.max(0, Math.min(1, (60000 - remainingMs) / 60000));
+// Odstęp między uderzeniami spada z 650ms (przy 60s) do 115ms (w ostatnich sekundach!)
+const intervalMs = Math.round(650 - progress * 535);
+const nowMs = Date.now();
+if (nowMs - lastTensionBeatAt < intervalMs) return;
+lastTensionBeatAt = nowMs;
+
+const now = audioCtx.currentTime;
+
+// 1. Niski puls (bicie serca / reaktor) - przyspiesza i rośnie z czasem
+const bassOsc = audioCtx.createOscillator();
+const bassGain = audioCtx.createGain();
+bassOsc.type = "triangle";
+const baseFreq = 75 + Math.pow(progress, 1.5) * 320;
+bassOsc.frequency.setValueAtTime(baseFreq, now);
+bassOsc.frequency.exponentialRampToValueAtTime(baseFreq * 0.65, now + 0.14);
+
+const vol = 0.16 + progress * 0.26;
+bassGain.gain.setValueAtTime(vol, now);
+bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+bassOsc.connect(bassGain);
+bassGain.connect(audioCtx.destination);
+bassOsc.start(now);
+bassOsc.stop(now + 0.16);
+
+// 2. Od połowy czasu (poniżej 35s) dochodzi wysoki, nerwowy impuls skanera
+if (progress > 0.4) {
+const hiOsc = audioCtx.createOscillator();
+const hiGain = audioCtx.createGain();
+hiOsc.type = "sawtooth";
+const hiFreq = 440 + Math.pow(progress, 2) * 880;
+hiOsc.frequency.setValueAtTime(hiFreq, now);
+hiGain.gain.setValueAtTime((progress - 0.35) * 0.22, now);
+hiGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+hiOsc.connect(hiGain);
+hiGain.connect(audioCtx.destination);
+hiOsc.start(now);
+hiOsc.stop(now + 0.08);
+}
+}
+
 function playSimonTone(player) {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -505,7 +560,6 @@ osc.start(now);
 osc.stop(now + 2.0);
 }
 
-// POTĘŻNY HUK FAJERWERKÓW + ORKIESTROWE FANFARY Z TELEURNIEJU
 function playFireworkBoom() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -719,7 +773,53 @@ let lastColorTickPlayed = 0;
 let lastFinaleSuspenseTick = 0;
 let lastAnnouncedStage = -1;
 let tvStage5TimerInterval = null;
-let suspenseTimeouts = [];
+let stage5ReadyAfterSpeech = false;
+let lastStage5StartSeen = 0;
+let suspenseRunId = 0;
+let wasHoldingAllInStage6 = false;
+
+// GŁÓWNY ZEGAR ETAPU 6 (60s): Muzyka napięcia + Reset z powrotem do 60.0s, gdy ktokolwiek puści palec!
+setInterval(async () => {
+if (!currentState) return;
+if (currentState.stage === 6 && currentState.status === "stage6_active") {
+const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
+const hm = currentState.holdMap || {};
+const allHold = activeList.length > 0 && activeList.every(p => hm[p] === true);
+const curRem = currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000;
+
+if (allHold) {
+wasHoldingAllInStage6 = true;
+isBgMusicPlaying = false; // Wycisz dzwoneczki na rzecz budowania napięcia!
+const nextRem = Math.max(0, curRem - 200);
+playStage6TensionPulse(nextRem);
+
+if (nextRem <= 0) {
+wasHoldingAllInStage6 = false;
+await updateDoc(stateRef, {
+holdRemainingMs: 0,
+stage: 7,
+status: "finale_suspense",
+finaleStartTick: Date.now(),
+speechTick: Date.now()
+});
+} else {
+await updateDoc(stateRef, { holdRemainingMs: nextRem });
+}
+} else {
+// Ktoś puścił palec przed końcem odliczania -> RESET Z POWROTEM NA 60.0 SEKUND!
+if (wasHoldingAllInStage6 || curRem < 60000) {
+wasHoldingAllInStage6 = false;
+isBgMusicPlaying = true;
+loseSound.currentTime = 0;
+loseSound.play().catch(()=>{});
+speakPolishText("O nie! Ktoś puścił skaner! Zegar wraca na sześćdziesiąt sekund!");
+await updateDoc(stateRef, { holdRemainingMs: 60000 });
+}
+}
+} else {
+wasHoldingAllInStage6 = false;
+}
+}, 200);
 
 onSnapshot(stateRef, (docSnap) => {
 if (!docSnap.exists()) return;
@@ -763,25 +863,37 @@ await updateDoc(stateRef, { status: "stage4_input" });
 });
 }
 
-function startTVStage5Countdown() {
+function startTVStage5Countdown(freshStartMs) {
 if (tvStage5TimerInterval) clearInterval(tvStage5TimerInterval);
-tvStage5TimerInterval = setInterval(() => {
+const localStart = freshStartMs || Date.now();
+tvStage5TimerInterval = setInterval(async () => {
 if (!currentState || currentState.stage !== 5 || currentState.status !== "stage5_active") {
 clearInterval(tvStage5TimerInterval);
 return;
 }
+if (!stage5ReadyAfterSpeech) return;
+
 const timerEl = document.getElementById('tvStage5Sec');
-if (!timerEl) return;
-const startT = currentState.tapsStartTime || Date.now();
-const rem = Math.max(0, (20000 - (Date.now() - startT)) / 1000);
+const elapsed = Date.now() - localStart;
+const rem = Math.max(0, (20000 - elapsed) / 1000);
+if (timerEl) {
 timerEl.innerText = `⏱️ POZOSTAŁO CZASU: ${rem.toFixed(1)}s`;
+}
+if (rem <= 0) {
+clearInterval(tvStage5TimerInterval);
+if ((currentState.tapsCount || 0) < (currentState.tapsTarget || 300)) {
+await updateDoc(stateRef, {
+status: "stage5_failed",
+speechTick: Date.now()
+});
+}
+}
 }, 80);
 }
 
-// 4-STOPNIOWA SEKWENCJA BUDOWANIA NAPIĘCIA PRZED ODKRYCIEM KLUCZA U WUJKA!
-function runFinaleSuspenseSequence(tickId) {
-suspenseTimeouts.forEach(t => clearTimeout(t));
-suspenseTimeouts = [];
+// ŁAŃCUCHOWA SEKWENCJA NAPIĘCIA (Każdy krok czeka w 100%, aż lektor dokończy poprzednie zdanie!)
+function runFinaleSuspenseSequence() {
+const myRun = ++suspenseRunId;
 isBgMusicPlaying = false;
 
 const stageBox = document.getElementById('mainStage');
@@ -789,36 +901,41 @@ const head = document.getElementById('missionHeader');
 const arena = document.getElementById('stageArena');
 stageBox.classList.add('suspense-shake');
 
-// Krok 1 (0s): Ostatni rygiel puszcza
 playVaultRumbleEffect();
 head.innerText = "⚠️ UWAGA! WSZYSTKIE 6 RYGLI ZOSTAŁO ZWOLNIONYCH! ⚠️";
 arena.innerHTML = `<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">⚙️ TRWA OTWIERANIE PANCERNYCH DRZWI SKARBCA...<br><span style="font-size:1.3vw; color:#fff;">Stalowe zasuwy cofają się z głośnym zgrzytem...</span></div>`;
-speakPolishText("Uwaga Agenci! Ostatni szósty rygiel puścił! Pancerne drzwi skarbca powoli się uchylają...");
 
-// Krok 2 (5.5s): Wewnątrz skarbca widać tajną skrzynię zamkniętą na kłódkę
-suspenseTimeouts.push(setTimeout(() => {
+speakPolishText("Uwaga Agenci! Ostatni szósty rygiel puścił! Pancerne drzwi skarbca powoli się uchylają...", () => {
+if (myRun !== suspenseRunId) return;
+setTimeout(() => {
+if (myRun !== suspenseRunId) return;
 playVaultRumbleEffect();
 head.innerText = "📦 WEWNĄTRZ SKARBCA JEST TAJNA SKRZYNIA... 📦";
 arena.innerHTML = `<div style="font-size:2vw; color:var(--gold); font-weight:900; line-height:1.4;">😱 CHWILECZKĘ! SKRZYNIA Z PREZENTEM JEST ZAMKNIĘTA NA KLUCZ!<br><span style="font-size:1.35vw; color:#cbd5e1;">Ktoś zabrał fizyczny klucz ze środka skarbca!</span></div>`;
-speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć złodzieja klucza!");
-}, 5500));
 
-// Krok 3 (11.5s): Namierzanie sygnału klucza w pokoju
-suspenseTimeouts.push(setTimeout(() => {
+speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć złodzieja klucza!", () => {
+if (myRun !== suspenseRunId) return;
+setTimeout(() => {
+if (myRun !== suspenseRunId) return;
 playVaultRumbleEffect();
 head.innerText = "📡 NAMIERZANIE SYGNAŁU KLUCZA W TYM POKOJU... 📡";
 arena.innerHTML = `<div style="font-size:2.1vw; color:#2dc653; font-weight:900; line-height:1.4;">🎯 SYGNAŁ NAMIERZONY W ODLEGŁOŚCI KILKU METRÓW!<br><span style="font-size:1.4vw; color:#fff;">Klucz znajduje się w czyjejś kieszeni...</span></div>`;
-speakPolishText("Sygnał namierzony! Klucz znajduje się dokładnie w tym pokoju, ukryty w czyjejś kieszeni...");
-}, 11500));
 
-// Krok 4 (16.5s): Wielki wybuch fajerwerków i odkrycie, że klucz ma Wujek!
-suspenseTimeouts.push(setTimeout(async () => {
+speakPolishText("Sygnał namierzony! Klucz znajduje się dokładnie w tym pokoju, ukryty w czyjejś kieszeni...", () => {
+if (myRun !== suspenseRunId) return;
+setTimeout(async () => {
+if (myRun !== suspenseRunId) return;
 stageBox.classList.remove('suspense-shake');
 await updateDoc(stateRef, {
 status: "finale_unlocked",
 speechTick: Date.now()
 });
-}, 16500));
+}, 1000);
+});
+}, 900);
+});
+}, 900);
+});
 }
 
 function renderTVStage() {
@@ -860,7 +977,7 @@ bolt.innerText = `RYGIEL ${i} 🔒`;
 }
 }
 
-// Aktualizacja narożników Agentów (pełna treść zagadek i pytań na TV!)
+// Aktualizacja narożników Agentów
 agentsList.forEach(a => {
 const corner = document.getElementById(`tv-${a}`);
 const numEl = document.getElementById(`tv-num-${a}`);
@@ -906,7 +1023,7 @@ vicBanner.style.display = 'none';
 const fTick = currentState.finaleStartTick || 1;
 if (lastFinaleSuspenseTick !== fTick) {
 lastFinaleSuspenseTick = fTick;
-runFinaleSuspenseSequence(fTick);
+runFinaleSuspenseSequence();
 }
 return;
 }
@@ -1031,6 +1148,7 @@ playSimonSequenceOnTV(currentState.simonSeq || [], currentState.simonMistakeBy, 
 else if (st === 5) {
 head.innerText = "🔥 ETAP 5: TANKOWANIE SAŃ MIKOŁAJA (WYZWANIE 20 SEKUND!)";
 if (status === "stage5_failed") {
+clearInterval(tvStage5TimerInterval);
 arena.innerHTML = `<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">
 ❄️ CZAS 20 SEKUND MINĄŁ! SILNIK ZAMARZŁ! ❄️<br>
 <span style="font-size:1.3vw; color:#fff;">Kliknijcie "SPRÓBUJCIE PONOWNIE" na telefonie, aby zresetować stoper!</span>
@@ -1046,35 +1164,51 @@ return;
 const remCount = currentState.tapsCount || 0;
 const tgtCount = currentState.tapsTarget || 300;
 const pct = Math.min(100, Math.round((remCount / tgtCount) * 100));
+
+if (!document.getElementById('tvStage5Sec')) {
 arena.innerHTML = `
-<div id="tvStage5Sec" style="font-size:2.2vw; font-weight:900; color:#ff4d4d; margin-bottom:6px;">⏱️ POZOSTAŁO CZASU: 20.0s</div>
-<div style="font-size:1.2vw; font-weight:bold; margin-bottom:8px;">Stukajcie wspólnie w telefony, aby nabić ${tgtCount} jednostek mocy przed końcem czasu!</div>
-<div style="font-size:2.7vw; font-weight:900; color:var(--gold); margin-bottom:8px;">${remCount} / ${tgtCount} KLIKÓW (${pct}%)</div>
+<div id="tvStage5Sec" style="font-size:2.2vw; font-weight:900; color:#ff4d4d; margin-bottom:6px;">🗣️ SŁUCHAJCIE LEKTORA - PRZYGOTUJCIE PALCE... (20.0s)</div>
+<div style="font-size:1.2vw; font-weight:bold; margin-bottom:8px;">Stukajcie wspólnie w telefony, aby nabić <span id="tvStage5Tgt">${tgtCount}</span> jednostek mocy przed końcem czasu!</div>
+<div id="tvStage5Clicks" style="font-size:2.7vw; font-weight:900; color:var(--gold); margin-bottom:8px;">${remCount} / ${tgtCount} KLIKÓW (${pct}%)</div>
 <div style="width:78%; background:#071912; border:2px solid var(--gold); border-radius:15px; height:2.1vw; overflow:hidden;">
-<div style="height:100%; width:${pct}%; background:linear-gradient(90deg, #d62828, #ffd700, #2dc653); transition:0.1s;"></div>
+<div id="tvStage5Bar" style="height:100%; width:${pct}%; background:linear-gradient(90deg, #d62828, #ffd700, #2dc653); transition:0.1s;"></div>
 </div>
 `;
-startTVStage5Countdown();
+} else {
+document.getElementById('tvStage5Clicks').innerText = `${remCount} / ${tgtCount} KLIKÓW (${pct}%)`;
+document.getElementById('tvStage5Bar').style.width = `${pct}%`;
+}
+
 if (lastAnnouncedStage !== 5) {
 lastAnnouncedStage = 5;
-speakPolishText("Etap piąty! Macie tylko dwadzieścia sekund, aby wspólnie rozgrzać silniki sań! Stukajcie w ekrany najszybciej jak potraficie!");
+stage5ReadyAfterSpeech = false;
+speakPolishText("Etap piąty! Przygotujcie palce! Macie dwadzieścia sekund, aby wspólnie rozgrzać silniki sań! Trzy, dwa, jeden, start!", async () => {
+const freshNow = Date.now();
+lastStage5StartSeen = freshNow;
+stage5ReadyAfterSpeech = true;
+await updateDoc(stateRef, { status: "stage5_active", tapsStartTime: freshNow });
+startTVStage5Countdown(freshNow);
+});
+} else if (currentState.tapsStartTime && currentState.tapsStartTime !== lastStage5StartSeen && stage5ReadyAfterSpeech) {
+lastStage5StartSeen = currentState.tapsStartTime;
+startTVStage5Countdown( Date.now() );
 }
 }
 else if (st === 6) {
 const msRem = currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000;
 const secStr = (msRem / 1000).toFixed(1);
-head.innerText = "⚡ ETAP 6: OSTATNI RYGIEL - SKANER WYTRWAŁOŚCI (60 SEKUND)";
+head.innerText = "⚡ ETAP 6: OSTATNI RYGIEL - SKANER WYTRWAŁOŚCI (60 SEKUND BEZ PUSZCZANIA!)";
 const hm = currentState.holdMap || {};
 let allHold = activeList.every(p => hm[p] === true);
 arena.innerHTML = `
-<div style="font-size:1.25vw; font-weight:bold; margin-bottom:8px;">Wszyscy aktywni Agenci muszą jednocześnie trzymać palec na skanerze przez 60 sekund!</div>
-<div style="font-size:3.8vw; font-weight:900; color:${allHold ? '#2dc653' : '#ff4757'}; text-shadow:0 0 1.5vw ${allHold ? '#2dc653' : '#ff4757'};">${secStr}s</div>
-<div style="font-size:1.2vw; color:#fff; font-weight:bold; margin-top:8px;">${allHold ? "⚡ SKANOWANIE W TOKU - NIE PUSZCZAJCIE! ⚡" : "⏸️ SKANER WSTRZYMANY - POŁÓŻCIE WSZYSCY PALCE NA EKRANACH!"}</div>
+<div style="font-size:1.2vw; font-weight:bold; margin-bottom:6px; color:#ffd700;">⚠️ UWAGA: JEŚLI KTOKOLWIEK PUŚCI PALEC, ZEGAR WRACA NA 60.0 SEKUND! ⚠️</div>
+<div style="font-size:4vw; font-weight:900; color:${allHold ? '#2dc653' : '#ff4757'}; text-shadow:0 0 1.5vw ${allHold ? '#2dc653' : '#ff4757'};">${secStr}s</div>
+<div style="font-size:1.2vw; color:#fff; font-weight:bold; margin-top:6px;">${allHold ? "⚡ SKANOWANIE W TOKU - NIE PUSZCZAJCIE! ⚡" : "⏸️ POŁÓŻCIE WSZYSCY PALCE NA SKANERACH!"}</div>
 <div style="font-size:1.15vw; color:var(--gold); margin-top:10px;">Status skanerów: ${activeList.map(p => `${p.toUpperCase()}: ${hm[p] ? '✅ TRZYMA' : '❌ BRAK'}`).join(" &nbsp;|&nbsp; ")}</div>
 `;
 if (lastAnnouncedStage !== 6) {
 lastAnnouncedStage = 6;
-speakPolishText("Etap szósty, ostatni rygiel! Przyłóżcie wszyscy jednocześnie palce do skanerów na telefonach i wytrzymajcie sześćdziesiąt sekund!");
+speakPolishText("Etap szósty, ostatni rygiel! Przyłóżcie wszyscy jednocześnie palce do skanerów i trzymajcie przez sześćdziesiąt sekund! Uwaga: jeśli ktokolwiek puści palec, zegar zresetuje się z powrotem do sześćdziesięciu sekund!");
 }
 }
 else {
