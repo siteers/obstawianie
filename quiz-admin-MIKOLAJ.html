@@ -52,8 +52,8 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="2">ETAP 2: Poszukiwacze Tajnych Kodów w Domu (12 trudnych zagadek)</option>
 <option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania | Kara 20s za błąd)</option>
 <option value="4">ETAP 4: Tajny Szyfr Kolorów Elfów (Wspólna pamięć 4 kolorów)</option>
-<option value="5">ETAP 5: Tankowanie Sań Mikołaja (Wyzwanie 20 sekund | 75 klików/os.)</option>
-<option value="6">ETAP 6: Skaner Wytrwałości (Trzymanie przycisku przez 60 sekund + Finał)</option>
+<option value="5">ETAP 5: Tankowanie Sań Mikołaja (20s po lektorze | 75 klików/os.)</option>
+<option value="6">ETAP 6: Skaner Wytrwałości (60s | Puszczenie palca resetuje czas z powrotem do 60s!)</option>
 </select><br>
 <button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
 <button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
@@ -338,46 +338,7 @@ speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
 });
 };
 
-// Pętla zegarowa Admina dla Etapu 5 (limit 20s) oraz Etapu 6 (skaner 60s)
-if (adminStageTimer) clearInterval(adminStageTimer);
-adminStageTimer = setInterval(async () => {
-if (!currentState) return;
 
-// Monitorowanie limitu 20 sekund w Etapie 5
-if (currentState.stage === 5 && currentState.status === "stage5_active") {
-const startT = currentState.tapsStartTime || 0;
-if (startT > 0) {
-const elapsed = Date.now() - startT;
-if (elapsed >= 20000 && (currentState.tapsCount || 0) < (currentState.tapsTarget || 300)) {
-await updateDoc(stateRef, {
-status: "stage5_failed",
-speechTick: Date.now()
-});
-}
-}
-}
-
-// Monitorowanie trzymania 60 sekund w Etapie 6
-if (currentState.stage === 6 && currentState.status === "stage6_active") {
-const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-const hm = currentState.holdMap || {};
-const allHold = activeList.length > 0 && activeList.every(p => hm[p] === true);
-if (allHold) {
-const nextRem = Math.max(0, (currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) - 500);
-if (nextRem <= 0) {
-await updateDoc(stateRef, {
-holdRemainingMs: 0,
-stage: 7,
-status: "finale_suspense",
-finaleStartTick: Date.now(),
-speechTick: Date.now()
-});
-} else {
-await updateDoc(stateRef, { holdRemainingMs: nextRem });
-}
-}
-}
-}, 500);
 
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
