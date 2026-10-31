@@ -67,6 +67,13 @@ border: 1px solid var(--gold);
 #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 800; display: none; background: transparent; }
 
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
+@keyframes vaultShake {
+0%, 100% { transform: translate(0, 0); }
+20% { transform: translate(-7px, 4px); }
+40% { transform: translate(7px, -4px); }
+60% { transform: translate(-7px, -4px); }
+80% { transform: translate(7px, 4px); }
+}
 
 #fullscreenBoard { display: flex; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; }
 
@@ -81,7 +88,12 @@ display: flex; flex-direction: column; align-items: center;
 }
 .center-stage.victory-glow {
 border-color: #fff;
-box-shadow: 0 0 6vw rgba(255, 215, 0, 0.9), inset 0 0 3vw rgba(45, 198, 83, 0.4);
+box-shadow: 0 0 6vw rgba(255, 215, 0, 0.95), inset 0 0 3vw rgba(45, 198, 83, 0.5);
+}
+.center-stage.suspense-shake {
+animation: vaultShake 0.28s infinite;
+border-color: var(--xmas-bright-red);
+box-shadow: 0 0 5vw rgba(255, 77, 77, 0.8), inset 0 0 3vw rgba(255, 215, 0, 0.4);
 }
 
 .mission-header {
@@ -89,8 +101,8 @@ font-size: 1.35vw; color: var(--gold); text-transform: uppercase; letter-spacing
 font-weight: 900; margin-bottom: 0.8vw; text-shadow: 0 2px 6px rgba(0,0,0,0.8);
 }
 
-/* PASKI RYKGLI SKARBCA (1 - 6) */
-.bolts-bar { display: flex; gap: 0.6vw; margin-bottom: 1vw; }
+/* PASKI RYGLI SKARBCA (1 - 6) */
+.bolts-bar { display: flex; gap: 0.6vw; margin-bottom: 1vw; flex-wrap: wrap; justify-content: center; }
 .vault-bolt {
 background: #0b1a13; border: 2px solid var(--gold); color: #888; font-size: 0.8vw; font-weight: 900;
 padding: 6px 12px; border-radius: 6px; text-transform: uppercase; transition: 0.3s;
@@ -98,12 +110,19 @@ padding: 6px 12px; border-radius: 6px; text-transform: uppercase; transition: 0.
 .vault-bolt.unlocked { background: var(--xmas-light-green); color: #000; border-color: #fff; box-shadow: 0 0 12px #2dc653; }
 
 /* PANEL WYZWAŃ NA ŚRODKU TV */
-.stage-arena { width: 100%; min-height: 18vw; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.stage-arena { width: 100%; min-height: 19vw; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
 /* ETAP 4: WIZUALIZACJA SIMON SAYS (SZYFR KOLORÓW) */
-.simon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1vw; width: 22vw; height: 22vw; margin: 1vw auto; }
-.simon-pad { border-radius: 1vw; border: 3px solid #fff; opacity: 0.35; transition: 0.15s; }
-.simon-pad.lit { opacity: 1; transform: scale(1.06); box-shadow: 0 0 2.5vw #fff; }
+.simon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; width: 23vw; height: 19vw; margin: 0.8vw auto; }
+.simon-pad {
+border-radius: 1.2vw; border: 0.25vw solid rgba(255,255,255,0.6); opacity: 0.28; transition: 0.15s;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+font-size: 1.3vw; font-weight: 900; color: #000; text-shadow: 0 1px 2px rgba(255,255,255,0.7);
+}
+.simon-pad.lit {
+opacity: 1 !important; transform: scale(1.08); border-color: #fff;
+box-shadow: 0 0 3vw #fff, 0 0 1.5vw var(--gold); z-index: 20;
+}
 
 #victory-banner {
 display: none; font-size: 1.8vw; font-weight: 900; color: var(--gold);
@@ -111,12 +130,12 @@ text-transform: uppercase; letter-spacing: 0.15vw; margin-top: 0.8vw;
 text-shadow: 0 0 1.5vw var(--gold), 0 2px 5px #000; animation: pulse 1s infinite;
 }
 
-/* NAROŻNE KARTY POMOCNIKÓW MIKOŁAJA */
+/* NAROŻNE KARTY POMOCNIKÓW MIKOŁAJA (POWIĘKSZONE ZDJĘCIA W PROPORCJACH CONTAIN!) */
 .tv-corner {
-position: absolute; width: 18.5vw;
+position: absolute; width: 19vw;
 background: linear-gradient(145deg, rgba(110, 14, 22, 0.92), rgba(55, 8, 14, 0.95));
 border: 0.22vw solid var(--gold);
-border-radius: 1.3vw; padding: 0.9vw 1vw; display: flex; flex-direction: column; gap: 0.5vw;
+border-radius: 1.3vw; padding: 0.85vw 1vw; display: flex; flex-direction: column; gap: 0.45vw;
 box-shadow: 0 0 2vw rgba(0, 0, 0, 0.6), 0 0 1.2vw rgba(255, 215, 0, 0.25);
 transition: all 0.35s; z-index: 900; box-sizing: border-box;
 }
@@ -129,17 +148,28 @@ border-color: var(--xmas-light-green);
 background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.95));
 }
 
-.tv-top-left { top: 2vw; left: 1.5vw; }
-.tv-top-right { top: 2vw; right: 1.5vw; }
-.tv-bottom-left { bottom: 1.5vw; left: 1.5vw; }
-.tv-bottom-right { bottom: 1.5vw; right: 1.5vw; }
+.tv-top-left { top: 2vw; left: 1.2vw; }
+.tv-top-right { top: 2vw; right: 1.2vw; }
+.tv-bottom-left { bottom: 1.5vw; left: 1.2vw; }
+.tv-bottom-right { bottom: 1.5vw; right: 1.2vw; }
 
 .tv-agent-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.1vw solid rgba(255, 215, 0, 0.35); padding-bottom: 0.3vw; }
 .tv-agent-name { font-size: 1.35vw; color: var(--gold); font-weight: 900; letter-spacing: 0.1vw; text-transform: uppercase; }
 .tv-task-num { font-size: 0.75vw; color: #fff; letter-spacing: 0.05vw; font-weight: 900; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--gold); padding: 0.15vw 0.4vw; border-radius: 0.35vw; }
 
-.tv-task-q { font-size: 0.98vw; font-weight: bold; text-align: center; min-height: 2.4vw; display: flex; align-items: center; justify-content: center; color: #e2e8f0; line-height: 1.2; }
-.tv-photo-view { width: 100%; height: 7.5vw; object-fit: cover; border-radius: 0.5vw; border: 1px solid var(--gold); background: #000; margin-top: 4px; display: none; }
+.tv-task-q { font-size: 0.95vw; font-weight: bold; text-align: center; min-height: 2.2vw; display: flex; align-items: center; justify-content: center; color: #e2e8f0; line-height: 1.22; }
+
+/* ZDJĘCIA BEZ UCINANIA (CONTAIN) + DUŻA WYSOKOŚĆ */
+.tv-photo-view {
+width: 100%; height: 11.5vw; object-fit: contain; border-radius: 0.6vw;
+border: 2px solid var(--gold); background: #030a07; margin-top: 4px; display: none;
+box-shadow: inset 0 0 1vw rgba(0,0,0,0.9);
+}
+
+.center-photo-thumb {
+width: 100%; height: 9.5vw; object-fit: contain; background: #000;
+border-radius: 8px; border: 1px solid var(--gold); margin: 6px 0;
+}
 </style>
 </head>
 <body>
@@ -149,6 +179,8 @@ background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.9
 </div>
 
 <div class="christmas-lights">
+<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
+<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
@@ -216,7 +248,7 @@ background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.9
 </div>
 
 <div class="stage-arena" id="stageArena">
-<div id="loading-msg">ŁĄCZENIE Z BIEGUNEM PÓŁNOCNYM...</div>
+<div id="loading-msg" style="font-size:1.4vw; color:var(--gold); font-weight:bold;">ŁĄCZENIE Z BIEGUNEM PÓŁNOCNYM...</div>
 </div>
 
 <div id="victory-banner">🏆 SKARBIEC OTWARTY! KLUCZ MA W KIESZENI WUJEK! 🎅🔑</div>
@@ -225,25 +257,90 @@ background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.9
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const stateRef = doc(db, "mikolajGame", "state");
 
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
 winSound.volume = 0.95;
+const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3");
+loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
 
 const STAGE1_PHOTOS = {
-Lila: ["Zrób zdjęcie uśmiechniętego Bartusia!", "Zrób zbliżenie na swoją własną skarpetkę!", "Zrób wspólne zdjęcie pozostałym Agentom!"],
-Kaja: ["Załóż okulary przeciwsłoneczne lub zimową czapkę i zrób selfie!", "Znajdź w domu coś zielonego i zrób temu zdjęcie!", "Zrób zdjęcie swoim ulubionym butom!"],
-Darek: ["Zrób zdjęcie plecaka, walizki lub torby podróżnej!", "Znajdź w domu przedmiot pokazujący godzinę!", "Zrób z ukrycia zdjęcie dorosłemu w pokoju!"],
-Jas: ["Znajdź w domu coś czerwonego jak czapka Mikołaja!", "Zrób zdjęcie swojej ulubionej zabawce!", "Zrób zdjęcie kubkowi na ciepłą herbatę!"]
+Lila: [
+"Zrób zdjęcie uśmiechniętego Bartusia!",
+"Zrób zbliżenie na swoją własną skarpetkę (świąteczny skarpetkowy potwór)!",
+"Zrób wspólne zdjęcie pozostałym Agentom, jak robią najśmieszniejsze miny!"
+],
+Kaja: [
+"Załóż okulary przeciwsłoneczne lub zimową czapkę i zrób sobie wesołe selfie!",
+"Znajdź w domu coś zielonego jak choinka lub roślina i zrób temu zdjęcie!",
+"Zrób zdjęcie swoim ulubionym butom gotowym na daleką wyprawę!"
+],
+Darek: [
+"Zrób zdjęcie rzeczy, w którą można spakować ekwipunek na wyjazd (plecak, walizka lub torba)!",
+"Znajdź w domu przedmiot pokazujący godzinę i zrób mu zdjęcie!",
+"Zrób z ukrycia zdjęcie (jak tajny detektyw!) któremuś z dorosłych w pokoju!"
+],
+Jas: [
+"Znajdź w domu coś czerwonego jak czapka Świętego Mikołaja i zrób temu zdjęcie!",
+"Zrób zdjęcie swojej ulubionej zabawce lub pluszakowi!",
+"Zrób zdjęcie kubkowi lub szklance, z której pije się ciepłą zimową herbatę!"
+]
 };
 
-// ŚNIEG
+const STAGE2_RIDDLES = {
+Lila: [
+"Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?",
+"Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.",
+"Ostatni Twój szyfr spoczywa w Twoim własnym królestwie na czterech nogach – dokładnie tam, gdzie odrabiasz lekcje, rysujesz i odkładasz zeszyty!"
+],
+Kaja: [
+"Zwykle zieję gorącem jak wulkan i rumienię świąteczne ciasta za szklaną szybą, ale dziś jestem chłodny i czekam, aż zajrzysz do mojego wnętrza!",
+"Milczę na ścianie tam, gdzie myjesz ręce i zęby, ale potrafię bezbłędnie przedrzeźniać każdą minę, którą przede mną zrobisz!",
+"Ostatni kod ma przy sobie osoba, która zna Twoją mamę od kołyski, bo jest jej starszą siostrą! Podbiegnij do tej cioci po tajny szyfr!"
+],
+Darek: [
+"Prywatna piaszczysta wyspa w domu, którą odwiedza tylko czworonożny mruczący domownik! Nie musisz kopać w żwirku – obejrzyj jej obudowę z boku!",
+"Świecę prosto w Twoje oczy w tej właśnie sekundzie i wyświetlam całą tę grę! Sprawdź ostrożnie przy mojej ramce lub pod podstawką!",
+"Trzeciego kodu pilnuje młodsza siostra Twojej mamy Ani! Odszukaj tę ciocię i szepnij jej hasło: 'Mikołaj pakuje walizki'!"
+],
+Jas: [
+"Nawet w środku lata w moim brzuchu panuje arktyczny mróz, a gdy otwierasz moje drzwi, zapala się jasne światełko. Zajrzyj do środka!",
+"Odpoczywamy parami na podłodze blisko drzwi wyjściowych i cierpliwie czekamy, aż włożysz w nas stopy przed wyjściem na dwór!",
+"Gdy nalejesz mi do brzuszka zimnej wody i klikniesz pstryczek, po chwili zaczynam głośno bulgotać i puszczać gorącą parę dzióbkiem!"
+]
+};
+
+const STAGE3_QUESTIONS_TEXT = {
+Lila: [
+"W jakiej mroźnej krainie na północy Finlandii znajduje się oficjalna wioska Świętego Mikołaja?",
+"Ile geometrycznych ramion ma zawsze prawdziwy płatek śniegu oglądany pod lupą?",
+"Jak nazywa się najsłynniejszy renifer Mikołaja z błyszczącym czerwonym nosem?"
+],
+Kaja: [
+"Co według tradycji trzeba wypatrzeć na wigilijnym niebie, zanim zasiądziemy do kolacji?",
+"Które drzewo iglaste jako jedyne w Polsce gubi swoje wszystkie igły na zimę?",
+"Co zostawia się pod choinką lub na talerzyku jako przysmak dla Świętego Mikołaja?"
+],
+Darek: [
+"Które z tych zwierząt zapada w głęboki sen zimowy aż do nadejścia wiosny?",
+"W jakiej temperaturze zwykła woda zaczyna zamarzać i zamieniać się w lód?",
+"Jak nazywa się tradycyjny puszysty wypiek z rodzynkami lub lukrem pieczony w Święta?"
+],
+Jas: [
+"Jakiego koloru jest płaszcz i czapka Świętego Mikołaja?",
+"Jakie zwierzęta z rogami ciągną sanie Mikołaja po zimowym niebie?",
+"Z czego lepi się bałwana na podwórku, gdy spadnie biały puch?"
+]
+};
+
+// --- ŚNIEG W TLE ---
 const snowCanvas = document.getElementById('snow-canvas');
 const snowCtx = snowCanvas.getContext('2d');
 let snowflakes = [];
@@ -270,7 +367,7 @@ requestAnimationFrame(animateSnow);
 }
 animateSnow();
 
-// LEKTOR PL-PL
+// --- LEKTOR PL-PL ---
 let selectedPlVoice = null;
 let speechSafetyTimer = null;
 let utteranceQueue = [];
@@ -281,11 +378,25 @@ const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.t
 const sel = document.getElementById('voiceSelect');
 if (!voices.length) return;
 sel.innerHTML = "";
+voices.sort((a, b) => {
+const score = (v) => {
+const n = v.name.toLowerCase();
+if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
+if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
+if (n.includes('google')) return 12;
+return 3;
+};
+return score(b) - score(a);
+});
 voices.forEach((v, idx) => {
 const opt = document.createElement('option');
 opt.value = idx; opt.innerText = v.name; sel.appendChild(opt);
 });
 selectedPlVoice = voices[0];
+sel.onchange = () => {
+selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
+speakPolishText("Głos lektora został zmieniony.");
+};
 }
 if ('speechSynthesis' in window) {
 window.speechSynthesis.onvoiceschanged = initPolishVoices;
@@ -302,14 +413,16 @@ utter.lang = "pl-PL";
 if (selectedPlVoice) utter.voice = selectedPlVoice;
 utter.rate = 0.93; utter.pitch = 1.05;
 utteranceQueue.push(utter);
+if (utteranceQueue.length > 10) utteranceQueue.shift();
 let finished = false;
-const finishOnce = () => { if (finished) return; finished = true; clearTimeout(speechSafetyTimer); if (onDoneCallback) setTimeout(onDoneCallback, 400); };
+const finishOnce = () => { if (finished) return; finished = true; clearTimeout(speechSafetyTimer); if (onDoneCallback) setTimeout(onDoneCallback, 450); };
 utter.onend = finishOnce; utter.onerror = finishOnce;
-speechSafetyTimer = setTimeout(finishOnce, 12000);
+const estMs = Math.max(3500, Math.min(14000, cleanText.length * 105 + 1600));
+speechSafetyTimer = setTimeout(finishOnce, estMs);
 window.speechSynthesis.speak(utter);
 }
 
-// DZWONECZKI
+// --- AUDIO SYNTEZATOR: DZWONECZKI, SIMON SAYS, DRŻENIE SKARBCA I POTĘŻNE FAJERWERKI ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -324,7 +437,16 @@ audioCtx = new AudioContext();
 bgMasterGain = audioCtx.createGain();
 bgMasterGain.gain.value = 0.20;
 bgMasterGain.connect(audioCtx.destination);
-const jingleMelody = [659.25, 659.25, 659.25, 0, 659.25, 659.25, 659.25, 0, 659.25, 783.99, 523.25, 587.33, 659.25, 0, 0, 0];
+const jingleMelody = [
+659.25, 659.25, 659.25, 0,
+659.25, 659.25, 659.25, 0,
+659.25, 783.99, 523.25, 587.33,
+659.25, 0, 0, 0,
+698.46, 698.46, 698.46, 698.46,
+698.46, 659.25, 659.25, 659.25,
+659.25, 587.33, 587.33, 659.25,
+587.33, 0, 783.99, 0
+];
 let step = 0;
 musicInterval = setInterval(() => {
 if (!audioCtx || !isBgMusicPlaying || musicMutedByUser) return;
@@ -348,72 +470,356 @@ musicMutedByUser = !musicMutedByUser;
 document.getElementById('muteMusicBtn').innerText = musicMutedByUser ? "🔇 Dzwoneczki: WYŁ" : "🔔 Dzwoneczki: WŁ";
 };
 
+function playSimonTone(player) {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const tones = { Lila: 523.25, Kaja: 659.25, Darek: 783.99, Jas: 987.77 };
+const freq = tones[player] || 523.25;
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "triangle";
+osc.frequency.setValueAtTime(freq, now);
+g.gain.setValueAtTime(0.32, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.45);
+}
+
+function playVaultRumbleEffect() {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "sawtooth";
+osc.frequency.setValueAtTime(95, now);
+osc.frequency.linearRampToValueAtTime(55, now + 1.8);
+g.gain.setValueAtTime(0.25, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 1.9);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 2.0);
+}
+
+// POTĘŻNY HUK FAJERWERKÓW + ORKIESTROWE FANFARY Z TELEURNIEJU
 function playFireworkBoom() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 const now = audioCtx.currentTime;
-const bufferSize = audioCtx.sampleRate * 0.35;
+
+const bufferSize = audioCtx.sampleRate * 0.45;
 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
 const output = noiseBuffer.getChannelData(0);
-for (let i = 0; i < bufferSize; i++) { output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.1)); }
-const whiteNoise = audioCtx.createBufferSource(); whiteNoise.buffer = noiseBuffer;
-const filter = audioCtx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.setValueAtTime(700, now);
-const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.35, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
-whiteNoise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+for (let i = 0; i < bufferSize; i++) {
+output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.14));
+}
+const whiteNoise = audioCtx.createBufferSource();
+whiteNoise.buffer = noiseBuffer;
+
+const filter = audioCtx.createBiquadFilter();
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(850, now);
+filter.frequency.exponentialRampToValueAtTime(90, now + 0.42);
+
+const gain = audioCtx.createGain();
+gain.gain.setValueAtTime(0.55, now);
+gain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
+
+whiteNoise.connect(filter);
+filter.connect(gain);
+gain.connect(audioCtx.destination);
 whiteNoise.start(now);
+}
+
+function playGrandFanfareSequence() {
+fanfareSound.currentTime = 0;
+fanfareSound.play().catch(()=>{});
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+const playBrassChord = (freqs, startOffset, duration, vol = 0.24) => {
+const now = audioCtx.currentTime + startOffset;
+freqs.forEach((f, idx) => {
+const osc = audioCtx.createOscillator();
+const filter = audioCtx.createBiquadFilter();
+const g = audioCtx.createGain();
+osc.type = "sawtooth";
+osc.frequency.setValueAtTime(f, now);
+osc.detune.setValueAtTime((idx - 1) * 6, now);
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(2400, now);
+g.gain.setValueAtTime(0.001, now);
+g.gain.linearRampToValueAtTime(vol, now + 0.03);
+g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+osc.connect(filter);
+filter.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + duration + 0.02);
+});
+};
+
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.26);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.26);
+playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.26);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
+playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
+playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
+playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.36);
 }
 
 function startVictoryFanfareLoop() {
 clearInterval(fanfareLoopInterval);
-fanfareSound.currentTime = 0; fanfareSound.play().catch(()=>{});
-winSound.currentTime = 0; winSound.play().catch(()=>{});
-fanfareLoopInterval = setInterval(() => { playFireworkBoom(); fanfareSound.currentTime = 0; fanfareSound.play().catch(()=>{}); }, 6500);
+playGrandFanfareSequence();
+fanfareLoopInterval = setInterval(() => {
+if (fwActive) playGrandFanfareSequence();
+}, 6800);
+}
+
+function stopVictoryFanfareLoop() {
+clearInterval(fanfareLoopInterval);
 }
 
 window.initAudio = function() {
 document.getElementById('audio-overlay').style.display = 'none';
-createFestiveChimesMusic(); isBgMusicPlaying = true; initPolishVoices();
+createFestiveChimesMusic();
+isBgMusicPlaying = true;
+initPolishVoices();
 speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na sześć rygli. Agenci, do dzieła!");
+[winSound, loseSound, fanfareSound].forEach(s => {
+s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
+});
 };
 
+// --- PEŁNY SILNIK WIZUALNYCH FAJERWERKÓW NA TV ---
 const fwCanvas = document.getElementById('fireworks-canvas');
 const fwCtx = fwCanvas.getContext('2d');
-let fwParticles = []; let fwRockets = []; let fwActive = false; let fwLoopId = null;
+let fwParticles = [];
+let fwRockets = [];
+let fwActive = false;
+let fwLoopId = null;
+let fwSpawnTimer = null;
+
+function createExplosion(x, y, mainColor) {
+playFireworkBoom();
+const count = 18;
+for (let i = 0; i < count; i++) {
+const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.12;
+const speed = Math.random() * 5.5 + 2.2;
+fwParticles.push({
+x, y,
+vx: Math.cos(angle) * speed,
+vy: Math.sin(angle) * speed,
+alpha: 1,
+size: Math.random() * 3.5 + 1.8,
+color: i % 2 === 0 ? '#ffffff' : mainColor,
+decay: Math.random() * 0.02 + 0.032
+});
+}
+}
 
 function startFireworks() {
 if (fwActive) return;
-fwActive = true; fwCanvas.style.display = 'block';
-fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight;
-fwParticles = []; fwRockets = [];
-const colors = ['#ffd700', '#ff4757', '#2ed573', '#ffffff', '#ff9f43'];
+fwActive = true;
+fwCanvas.style.display = 'block';
+fwCanvas.width = window.innerWidth;
+fwCanvas.height = window.innerHeight;
+fwParticles = [];
+fwRockets = [];
+
+const colors = ['#ffd700', '#ff4757', '#2ed573', '#00d4ff', '#ff9f43'];
+
 function launchWave() {
 if (!fwActive) return;
-fwRockets.push({ x: fwCanvas.width * (0.2 + Math.random() * 0.6), y: fwCanvas.height, vx: (Math.random() - 0.5) * 1.5, vy: -(Math.random() * 4 + 9), targetY: fwCanvas.height * (0.15 + Math.random() * 0.3), color: colors[Math.floor(Math.random() * colors.length)] });
-setTimeout(launchWave, 1500);
+const startX = fwCanvas.width * (0.18 + Math.random() * 0.64);
+const targetY = fwCanvas.height * (0.14 + Math.random() * 0.32);
+const color = colors[Math.floor(Math.random() * colors.length)];
+fwRockets.push({
+x: startX,
+y: fwCanvas.height,
+vx: (Math.random() - 0.5) * 1.5,
+vy: -(Math.random() * 4 + 9.5),
+targetY,
+color
+});
+fwSpawnTimer = setTimeout(launchWave, 1300);
 }
 launchWave();
+
 function animateFw() {
 if (!fwActive) return;
 fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-if (fwParticles.length > 35) fwParticles.splice(0, fwParticles.length - 35);
+
+if (fwParticles.length > 45) {
+fwParticles.splice(0, fwParticles.length - 45);
+}
+
 for (let i = fwRockets.length - 1; i >= 0; i--) {
-const r = fwRockets[i]; r.x += r.vx; r.y += r.vy; r.vy += 0.1;
-if (r.y <= r.targetY || r.vy >= 0) { playFireworkBoom(); fwRockets.splice(i, 1); }
+const r = fwRockets[i];
+r.x += r.vx;
+r.y += r.vy;
+r.vy += 0.1;
+
+fwCtx.globalAlpha = 1;
+fwCtx.fillStyle = '#ffffff';
+fwCtx.beginPath();
+fwCtx.arc(r.x, r.y, 3.2, 0, Math.PI * 2);
+fwCtx.fill();
+
+if (r.y <= r.targetY || r.vy >= 0) {
+createExplosion(r.x, r.y, r.color);
+fwRockets.splice(i, 1);
+}
+}
+
+for (let i = fwParticles.length - 1; i >= 0; i--) {
+const p = fwParticles[i];
+p.x += p.vx;
+p.y += p.vy;
+p.vy += 0.07;
+p.alpha -= p.decay;
+
+if (p.alpha <= 0) {
+fwParticles.splice(i, 1);
+} else {
+fwCtx.globalAlpha = p.alpha;
+fwCtx.fillStyle = p.color;
+fwCtx.beginPath();
+fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+fwCtx.fill();
+}
 }
 fwLoopId = requestAnimationFrame(animateFw);
 }
 animateFw();
 }
 
+function stopFireworks() {
+fwActive = false;
+clearTimeout(fwSpawnTimer);
+if (fwLoopId) cancelAnimationFrame(fwLoopId);
+fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
+fwCanvas.style.display = 'none';
+}
+
+// --- ZARZĄDZANIE STANEM TELEWIZORA ---
 let currentState = null;
 const agentsList = ["Lila", "Kaja", "Darek", "Jaś"];
 const dbKeyMap = { "Lila": "Lila", "Kaja": "Kaja", "Darek": "Darek", "Jaś": "Jas" };
 
-onSnapshot(doc(db, "mikolajGame", "state"), (docSnap) => {
+let lastSeqTickPlayed = 0;
+let lastColorTickPlayed = 0;
+let lastFinaleSuspenseTick = 0;
+let lastAnnouncedStage = -1;
+let tvStage5TimerInterval = null;
+let suspenseTimeouts = [];
+
+onSnapshot(stateRef, (docSnap) => {
 if (!docSnap.exists()) return;
 currentState = docSnap.data();
 renderTVStage();
 });
+
+function highlightSimonPad(player, durationMs = 520) {
+const padEl = document.getElementById(`sp-${player}`);
+if (!padEl) return;
+padEl.classList.add('lit');
+playSimonTone(player);
+setTimeout(() => {
+padEl.classList.remove('lit');
+}, durationMs);
+}
+
+function playSimonSequenceOnTV(seq, mistakeBy, levelNum) {
+isBgMusicPlaying = false;
+const msgEl = document.getElementById('simonStatusText');
+const introSpeech = mistakeBy
+? `Pomyłka! Zobaczcie sekwencję poziomu ${levelNum} jeszcze raz!`
+: `Poziom ${levelNum}. Patrzcie uważnie na kolejność kolorów!`;
+
+if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
+
+speakPolishText(introSpeech, () => {
+let delay = 500;
+seq.forEach((player) => {
+setTimeout(() => {
+highlightSimonPad(player, 550);
+}, delay);
+delay += 900;
+});
+
+setTimeout(async () => {
+if (msgEl) msgEl.innerText = "👉 WASZA KOLEJ! ODTWÓRZCIE SZYFR NA TELEFONACH!";
+isBgMusicPlaying = true;
+await updateDoc(stateRef, { status: "stage4_input" });
+}, delay + 300);
+});
+}
+
+function startTVStage5Countdown() {
+if (tvStage5TimerInterval) clearInterval(tvStage5TimerInterval);
+tvStage5TimerInterval = setInterval(() => {
+if (!currentState || currentState.stage !== 5 || currentState.status !== "stage5_active") {
+clearInterval(tvStage5TimerInterval);
+return;
+}
+const timerEl = document.getElementById('tvStage5Sec');
+if (!timerEl) return;
+const startT = currentState.tapsStartTime || Date.now();
+const rem = Math.max(0, (20000 - (Date.now() - startT)) / 1000);
+timerEl.innerText = `⏱️ POZOSTAŁO CZASU: ${rem.toFixed(1)}s`;
+}, 80);
+}
+
+// 4-STOPNIOWA SEKWENCJA BUDOWANIA NAPIĘCIA PRZED ODKRYCIEM KLUCZA U WUJKA!
+function runFinaleSuspenseSequence(tickId) {
+suspenseTimeouts.forEach(t => clearTimeout(t));
+suspenseTimeouts = [];
+isBgMusicPlaying = false;
+
+const stageBox = document.getElementById('mainStage');
+const head = document.getElementById('missionHeader');
+const arena = document.getElementById('stageArena');
+stageBox.classList.add('suspense-shake');
+
+// Krok 1 (0s): Ostatni rygiel puszcza
+playVaultRumbleEffect();
+head.innerText = "⚠️ UWAGA! WSZYSTKIE 6 RYGLI ZOSTAŁO ZWOLNIONYCH! ⚠️";
+arena.innerHTML = `<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">⚙️ TRWA OTWIERANIE PANCERNYCH DRZWI SKARBCA...<br><span style="font-size:1.3vw; color:#fff;">Stalowe zasuwy cofają się z głośnym zgrzytem...</span></div>`;
+speakPolishText("Uwaga Agenci! Ostatni szósty rygiel puścił! Pancerne drzwi skarbca powoli się uchylają...");
+
+// Krok 2 (5.5s): Wewnątrz skarbca widać tajną skrzynię zamkniętą na kłódkę
+suspenseTimeouts.push(setTimeout(() => {
+playVaultRumbleEffect();
+head.innerText = "📦 WEWNĄTRZ SKARBCA JEST TAJNA SKRZYNIA... 📦";
+arena.innerHTML = `<div style="font-size:2vw; color:var(--gold); font-weight:900; line-height:1.4;">😱 CHWILECZKĘ! SKRZYNIA Z PREZENTEM JEST ZAMKNIĘTA NA KLUCZ!<br><span style="font-size:1.35vw; color:#cbd5e1;">Ktoś zabrał fizyczny klucz ze środka skarbca!</span></div>`;
+speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć złodzieja klucza!");
+}, 5500));
+
+// Krok 3 (11.5s): Namierzanie sygnału klucza w pokoju
+suspenseTimeouts.push(setTimeout(() => {
+playVaultRumbleEffect();
+head.innerText = "📡 NAMIERZANIE SYGNAŁU KLUCZA W TYM POKOJU... 📡";
+arena.innerHTML = `<div style="font-size:2.1vw; color:#2dc653; font-weight:900; line-height:1.4;">🎯 SYGNAŁ NAMIERZONY W ODLEGŁOŚCI KILKU METRÓW!<br><span style="font-size:1.4vw; color:#fff;">Klucz znajduje się w czyjejś kieszeni...</span></div>`;
+speakPolishText("Sygnał namierzony! Klucz znajduje się dokładnie w tym pokoju, ukryty w czyjejś kieszeni...");
+}, 11500));
+
+// Krok 4 (16.5s): Wielki wybuch fajerwerków i odkrycie, że klucz ma Wujek!
+suspenseTimeouts.push(setTimeout(async () => {
+stageBox.classList.remove('suspense-shake');
+await updateDoc(stateRef, {
+status: "finale_unlocked",
+speechTick: Date.now()
+});
+}, 16500));
+}
 
 function renderTVStage() {
 if (!currentState) return;
@@ -423,11 +829,25 @@ const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"
 const prog = currentState.stepProgress || {};
 const photos = currentState.photos || {};
 
+const stageBox = document.getElementById('mainStage');
+const arena = document.getElementById('stageArena');
+const vicBanner = document.getElementById('victory-banner');
+const head = document.getElementById('missionHeader');
+
+if (status !== "finale_unlocked" && st !== 7) {
+stopFireworks();
+stopVictoryFanfareLoop();
+stageBox.classList.remove('victory-glow');
+}
+if (status !== "finale_suspense") {
+stageBox.classList.remove('suspense-shake');
+}
+
 // Aktualizacja rygli skarbca na górze
 for (let i = 1; i <= 6; i++) {
 const bolt = document.getElementById(`bolt-${i}`);
 if (bolt) {
-if (i < st || status === "finale_unlocked") {
+if (i < st || status === "finale_unlocked" || status === "finale_suspense") {
 bolt.className = "vault-bolt unlocked";
 bolt.innerText = `RYGIEL ${i} 🔓`;
 } else if (i === st) {
@@ -440,7 +860,7 @@ bolt.innerText = `RYGIEL ${i} 🔒`;
 }
 }
 
-// Aktualizacja narożników Agentów
+// Aktualizacja narożników Agentów (pełna treść zagadek i pytań na TV!)
 agentsList.forEach(a => {
 const corner = document.getElementById(`tv-${a}`);
 const numEl = document.getElementById(`tv-num-${a}`);
@@ -457,8 +877,8 @@ const pStep = prog[dbK] || 0;
 const pPhoto = photos[dbK] || {};
 
 if (st === 1) {
-numEl.innerText = `ZDJĘCIE ${pStep + 1}/3`;
-qEl.innerText = pStep < 3 ? STAGE1_PHOTOS[dbK][pStep] : "Zrobione (3/3)!";
+numEl.innerText = `ZDJĘCIE ${Math.min(3, pStep + 1)}/3`;
+qEl.innerText = pStep < 3 ? STAGE1_PHOTOS[dbK][pStep] : "Wszystkie 3 zdjęcia zaliczone!";
 if (pPhoto.img) {
 imgEl.style.display = 'block';
 imgEl.src = pPhoto.img;
@@ -466,98 +886,200 @@ imgEl.src = pPhoto.img;
 imgEl.style.display = 'none';
 }
 } else if (st === 2) {
-numEl.innerText = `KRYJÓWKA ${pStep + 1}/3`;
-qEl.innerText = pStep < 3 ? "Szukaj tajnego kodu w domowych kryjówkach!" : "Wszystkie kody znalezione!";
+numEl.innerText = `KRYJÓWKA ${Math.min(3, pStep + 1)}/3`;
+qEl.innerText = pStep < 3 ? STAGE2_RIDDLES[dbK][pStep] : "Wszystkie 3 kody znalezione!";
 imgEl.style.display = 'none';
 } else if (st === 3) {
-numEl.innerText = `PYTANIE ${pStep + 1}/3`;
-qEl.innerText = pStep < 3 ? "Odpowiadaj na pytania na telefonie!" : "Rozwiązane!";
+numEl.innerText = `ZAGADKA ${Math.min(3, pStep + 1)}/3`;
+qEl.innerText = pStep < 3 ? STAGE3_QUESTIONS_TEXT[dbK][pStep] : "Wszystkie 3 zagadki rozwiązane!";
 imgEl.style.display = 'none';
 } else {
-numEl.innerText = `ETAP ${st}`;
-qEl.innerText = "Pomagaj drużynie!";
+numEl.innerText = `ETAP ${Math.min(6, st)}/6`;
+qEl.innerText = "Wspólne zadanie drużynowe na głównym ekranie!";
 imgEl.style.display = 'none';
 }
 });
 
-// Centralna Arena TV
-const arena = document.getElementById('stageArena');
-const vicBanner = document.getElementById('victory-banner');
-const head = document.getElementById('missionHeader');
+// SEKWENCJA BUDOWANIA NAPIĘCIA (FINALE SUSPENSE)
+if (status === "finale_suspense") {
+vicBanner.style.display = 'none';
+const fTick = currentState.finaleStartTick || 1;
+if (lastFinaleSuspenseTick !== fTick) {
+lastFinaleSuspenseTick = fTick;
+runFinaleSuspenseSequence(fTick);
+}
+return;
+}
 
-if (status === "finale_unlocked" || st === 7) {
-head.innerText = "🏆 SKARBIEC OTWARTY! 🏆";
-arena.innerHTML = `<div style="font-size:2.2vw; color:var(--gold); font-weight:900; line-height:1.4;">Wszystkie 6 rygli puściło!<br>KLUCZ DO SKRZYNI Z PREZENTEM MA W KIESZENI WUJEK! ŁAPCIE GO! 🎅🔑</div>`;
+// WIELKI FINAŁ (PO ZAKOŃCZENIU SEKWENCJI NAPIĘCIA)
+if (status === "finale_unlocked" || (st === 7 && status !== "finale_suspense")) {
+stageBox.classList.add('victory-glow');
+head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
+arena.innerHTML = `<div style="font-size:2.15vw; color:var(--gold); font-weight:900; line-height:1.45; text-shadow:0 2px 8px #000;">
+WSZYSTKIE 6 RYGLI PUŚCIŁO!<br>
+TAJNA SKRZYNIA Z PREZENTEM JEST GOTOWA, ALE...<br>
+<span style="color:#2dc653; font-size:2.5vw;">KLUCZ DO NIEJ UKRYŁ W SWOJEJ KIESZENI WUJEK!</span><br>
+🎅🔑 ŁAPCIE WUJKA I ODBIERZCIE KLUCZ! 🔑🎅
+</div>`;
 vicBanner.style.display = 'block';
+if (!fwActive) {
 startFireworks();
+startVictoryFanfareLoop();
+speakPolishText("Wszystkie zamki otwarte! Klucz do tajnej skrzyni z Waszym prezentem ukrył w swojej kieszeni Wujek! Łapcie go!");
+}
 return;
 }
 
 vicBanner.style.display = 'none';
 
+if (status === "stage_complete") {
+const cNum = currentState.completedStageNum || st;
+head.innerText = `✅ RYGIEL ${cNum} ODBLOKOWANY!`;
+arena.innerHTML = `<div style="font-size:1.9vw; color:#2dc653; font-weight:900; line-height:1.4;">
+🎉 BRAWO DRUŻYNO! ETAP ${cNum} UKOŃCZONY! 🎉<br>
+<span style="font-size:1.3vw; color:#fff;">Kliknijcie przycisk na telefonie, aby uruchomić kolejny etap!</span>
+</div>`;
+if (lastAnnouncedStage !== 100 + cNum) {
+lastAnnouncedStage = 100 + cNum;
+winSound.currentTime = 0; winSound.play().catch(()=>{});
+speakPolishText(`Brawo drużyno! Rygiel numer ${cNum} został odblokowany!`);
+}
+return;
+}
+
 if (st === 1) {
 head.innerText = "📸 ETAP 1: FOTO-ZWIAD - CZEKAMY NA ZDJĘCIA!";
-let html = `<div style="font-size:1.25vw; color:#cbd5e1; margin-bottom:10px;">Dzieci robią zdjęcia na telefonach. Wujek zatwierdza je w swoim panelu Admina!</div><div style="display:flex; gap:1vw;">`;
+let html = `<div style="font-size:1.15vw; color:#cbd5e1; margin-bottom:10px;">Zróbcie po 3 zdjęcia na telefonach. Wujek zatwierdza je na żywo!</div><div style="display:flex; gap:1vw; justify-content:center; width:100%;">`;
 activeList.forEach(p => {
 const pData = photos[p] || {};
 const sNum = prog[p] || 0;
-html += `<div style="background:#081c15; border:1px solid #334155; border-radius:10px; padding:10px; width:10vw; text-align:center;">
-<b style="color:var(--gold);">${p.toUpperCase()}</b><br><span style="font-size:0.8vw;">Postęp: ${sNum}/3</span><br>
-<span style="font-size:0.85vw; color:${pData.status==='approved'?'#2dc653':'#ffd700'}">${pData.status==='approved'?'✔️ ZATWIERDZIONE':pData.status==='pending'?'⏳ CZEKA NA WUJKA':'Ruszaj do aparatu!'}</span>
+html += `<div style="background:#081c15; border:2px solid ${pData.status==='pending'?'#ffd700':'#334155'}; border-radius:12px; padding:8px; width:12.5vw; text-align:center;">
+<b style="color:var(--gold); font-size:1.1vw;">${p.toUpperCase()} (${sNum}/3)</b><br>
+${pData.img ? `<img class="center-photo-thumb" src="${pData.img}">` : `<div style="height:9.5vw; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; margin:6px 0; font-size:0.85vw; color:#666;">Czeka na zdjęcie...</div>`}
+<span style="font-size:0.85vw; font-weight:bold; color:${pData.status==='approved'?'#2dc653':pData.status==='rejected'?'#ff4d4d':'#ffd700'}">${pData.status==='approved'?'✔️ ZATWIERDZONE':pData.status==='pending'?'⏳ CZEKA NA WUJKA':pData.status==='rejected'?'❌ POPRAW ZDJĘCIE':'Ruszaj z aparatem!'}</span>
 </div>`;
 });
 html += `</div>`;
 arena.innerHTML = html;
+if (lastAnnouncedStage !== 1) {
+lastAnnouncedStage = 1;
+speakPolishText("Etap pierwszy: Foto-Zwiad! Każdy Agent ma do wykonania trzy świąteczne zdjęcia w domu.");
+}
 }
 else if (st === 2) {
 head.innerText = "🔎 ETAP 2: POSZUKIWACZE TAJNYCH KODÓW W DOMU";
-arena.innerHTML = `<div style="font-size:1.6vw; font-weight:900; color:var(--gold); line-height:1.4;">Rozszyfrujcie zagadki na telefonach,<br>znajdźcie 12 ukrytych karteczek w domu i wpiszcie kody!</div>`;
+let solvedTotal = activeList.reduce((acc, p) => acc + (prog[p] || 0), 0);
+let maxTotal = activeList.length * 3;
+arena.innerHTML = `<div style="font-size:1.55vw; font-weight:900; color:var(--gold); line-height:1.45;">
+Rozszyfrujcie trudne zagadki w narożnikach ekranu i na telefonach!<br>
+Odszukajcie kryjówki w domu i wpiszcie 3-cyfrowe kody.<br><br>
+<span style="font-size:2.2vw; color:#2dc653;">ODNALEZIONE KODY: ${solvedTotal} / ${maxTotal}</span>
+</div>`;
+if (lastAnnouncedStage !== 2) {
+lastAnnouncedStage = 2;
+speakPolishText("Etap drugi! Rozszyfrujcie zagadki i odszukajcie ukryte w domu tajne kody!");
+}
 }
 else if (st === 3) {
 head.innerText = "🧠 ETAP 3: ŚWIĄTECZNA ROZGRZEWKA UMYSŁÓW";
-arena.innerHTML = `<div style="font-size:1.6vw; font-weight:900; color:var(--gold); line-height:1.4;">Każdy Agent odpowiada na 3 pytania o Cyprze i Mikołaju na swoim telefonie!</div>`;
+let solvedTotal = activeList.reduce((acc, p) => acc + (prog[p] || 0), 0);
+let maxTotal = activeList.length * 3;
+arena.innerHTML = `<div style="font-size:1.55vw; font-weight:900; color:var(--gold); line-height:1.45;">
+Każdy Agent odpowiada na 3 świąteczno-zimowe pytania na swoim telefonie!<br>
+<span style="color:#ff4d4d; font-size:1.25vw;">⚠️ UWAGA: Za błędną odpowiedź terminal blokuje się na karne 20 sekund!</span><br><br>
+<span style="font-size:2.2vw; color:#2dc653;">ROZWIĄZANE ZAGADKI: ${solvedTotal} / ${maxTotal}</span>
+</div>`;
+if (lastAnnouncedStage !== 3) {
+lastAnnouncedStage = 3;
+speakPolishText("Etap trzeci! Odpowiedzcie na trzy świąteczne pytania. Uważajcie, bo za błąd jest dwadzieścia sekund blokady!");
+}
 }
 else if (st === 4) {
 head.innerText = "🎶 ETAP 4: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS)";
 const simonLvl = currentState.simonLevel || 1;
+const inpLen = (currentState.simonInput || []).length;
+const seqLen = (currentState.simonSeq || []).length;
+
+if (!document.getElementById('sp-Lila')) {
 arena.innerHTML = `
-<div style="font-size:1.2vw; font-weight:bold; margin-bottom:6px;">Poziom pamięci: ${simonLvl} / 3</div>
+<div style="font-size:1.2vw; font-weight:bold; color:var(--gold);" id="simonLvlText">POZIOM PAMIĘCI: ${simonLvl} / 3 (${inpLen}/${seqLen})</div>
+<div style="font-size:1.1vw; color:#cbd5e1; margin:4px 0;" id="simonStatusText"> Przygotowanie sekwencji...</div>
 <div class="simon-grid">
-<div class="simon-pad" style="background:#f59e0b;" id="sp-Lila"></div>
-<div class="simon-pad" style="background:#00d4ff;" id="sp-Kaja"></div>
-<div class="simon-pad" style="background:#2dc653;" id="sp-Darek"></div>
-<div class="simon-pad" style="background:#d62828;" id="sp-Jas"></div>
+<div class="simon-pad" style="background:#f59e0b;" id="sp-Lila">🦌 LILA<br>(ŻÓŁTY)</div>
+<div class="simon-pad" style="background:#00d4ff;" id="sp-Kaja">⛄ KAJA<br>(NIEBIESKI)</div>
+<div class="simon-pad" style="background:#2dc653;" id="sp-Darek">🎄 DAREK<br>(ZIELONY)</div>
+<div class="simon-pad" style="background:#d62828; color:#fff;" id="sp-Jas">🎅 JAŚ<br>(CZERWONY)</div>
 </div>
 `;
+} else {
+const lvlEl = document.getElementById('simonLvlText');
+if (lvlEl) lvlEl.innerText = `POZIOM PAMIĘCI: ${simonLvl} / 3 (Wprowadzono: ${inpLen}/${seqLen})`;
+}
+
+if (currentState.colorTick && currentState.colorTick !== lastColorTickPlayed) {
+lastColorTickPlayed = currentState.colorTick;
+if (currentState.lastColorPressed) {
+highlightSimonPad(currentState.lastColorPressed, 380);
+}
+}
+
+if (status === "stage4_watch" && currentState.seqTick && currentState.seqTick !== lastSeqTickPlayed) {
+lastSeqTickPlayed = currentState.seqTick;
+playSimonSequenceOnTV(currentState.simonSeq || [], currentState.simonMistakeBy, simonLvl);
+}
 }
 else if (st === 5) {
+head.innerText = "🔥 ETAP 5: TANKOWANIE SAŃ MIKOŁAJA (WYZWANIE 20 SEKUND!)";
+if (status === "stage5_failed") {
+arena.innerHTML = `<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">
+❄️ CZAS 20 SEKUND MINĄŁ! SILNIK ZAMARZŁ! ❄️<br>
+<span style="font-size:1.3vw; color:#fff;">Kliknijcie "SPRÓBUJCIE PONOWNIE" na telefonie, aby zresetować stoper!</span>
+</div>`;
+if (lastAnnouncedStage !== 599) {
+lastAnnouncedStage = 599;
+loseSound.currentTime = 0; loseSound.play().catch(()=>{});
+speakPolishText("Czas minął! Zabrakło mocy w silniku! Kliknijcie ponowną próbę na telefonie i stukajcie jeszcze szybciej!");
+}
+return;
+}
+
 const remCount = currentState.tapsCount || 0;
 const tgtCount = currentState.tapsTarget || 300;
 const pct = Math.min(100, Math.round((remCount / tgtCount) * 100));
-head.innerText = "🔥 ETAP 5: TANKOWANIE SAŃ MIKOŁAJA (WYZWANIE 20s)";
 arena.innerHTML = `
-<div style="font-size:1.3vw; font-weight:bold; margin-bottom:10px;">Stukajcie wspólnie w telefony, aby nabić moc silników!</div>
-<div style="font-size:2.8vw; font-weight:900; color:var(--gold); margin-bottom:10px;">${remCount} / ${tgtCount} KLIKÓW (${pct}%)</div>
-<div style="width:75%; background:#071912; border:2px solid var(--gold); border-radius:15px; height:2vw; overflow:hidden;">
-<div style="height:100%; width:${pct}%; background:linear-gradient(90deg, #d62828, #ffd700); transition:0.1s;"></div>
+<div id="tvStage5Sec" style="font-size:2.2vw; font-weight:900; color:#ff4d4d; margin-bottom:6px;">⏱️ POZOSTAŁO CZASU: 20.0s</div>
+<div style="font-size:1.2vw; font-weight:bold; margin-bottom:8px;">Stukajcie wspólnie w telefony, aby nabić ${tgtCount} jednostek mocy przed końcem czasu!</div>
+<div style="font-size:2.7vw; font-weight:900; color:var(--gold); margin-bottom:8px;">${remCount} / ${tgtCount} KLIKÓW (${pct}%)</div>
+<div style="width:78%; background:#071912; border:2px solid var(--gold); border-radius:15px; height:2.1vw; overflow:hidden;">
+<div style="height:100%; width:${pct}%; background:linear-gradient(90deg, #d62828, #ffd700, #2dc653); transition:0.1s;"></div>
 </div>
 `;
+startTVStage5Countdown();
+if (lastAnnouncedStage !== 5) {
+lastAnnouncedStage = 5;
+speakPolishText("Etap piąty! Macie tylko dwadzieścia sekund, aby wspólnie rozgrzać silniki sań! Stukajcie w ekrany najszybciej jak potraficie!");
+}
 }
 else if (st === 6) {
-const msRem = currentState.holdRemainingMs || 60000;
+const msRem = currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000;
 const secStr = (msRem / 1000).toFixed(1);
-head.innerText = "⚡ ETAP 6: OSTATNI RYGIEL - SKANER WYTRWAŁOŚCI";
+head.innerText = "⚡ ETAP 6: OSTATNI RYGIEL - SKANER WYTRWAŁOŚCI (60 SEKUND)";
 const hm = currentState.holdMap || {};
-let allHold = activeList.every(p => hm[dbKeyMap[p]] === true);
+let allHold = activeList.every(p => hm[p] === true);
 arena.innerHTML = `
-<div style="font-size:1.3vw; font-weight:bold; margin-bottom:10px;">Wszyscy aktywni Agenci muszą trzymać palec na skanerze przez 60 sekund!</div>
-<div style="font-size:3.5vw; font-weight:900; color:${allHold ? '#2dc653' : '#ff4757'};">${secStr}s</div>
-<div style="font-size:1.1vw; color:#cbd5e1; margin-top:8px;">Status palców: ${activeList.map(p => `${p}: ${hm[dbKeyMap[p]] ? '✅' : '❌'}`).join(" | ")}</div>
+<div style="font-size:1.25vw; font-weight:bold; margin-bottom:8px;">Wszyscy aktywni Agenci muszą jednocześnie trzymać palec na skanerze przez 60 sekund!</div>
+<div style="font-size:3.8vw; font-weight:900; color:${allHold ? '#2dc653' : '#ff4757'}; text-shadow:0 0 1.5vw ${allHold ? '#2dc653' : '#ff4757'};">${secStr}s</div>
+<div style="font-size:1.2vw; color:#fff; font-weight:bold; margin-top:8px;">${allHold ? "⚡ SKANOWANIE W TOKU - NIE PUSZCZAJCIE! ⚡" : "⏸️ SKANER WSTRZYMANY - POŁÓŻCIE WSZYSCY PALCE NA EKRANACH!"}</div>
+<div style="font-size:1.15vw; color:var(--gold); margin-top:10px;">Status skanerów: ${activeList.map(p => `${p.toUpperCase()}: ${hm[p] ? '✅ TRZYMA' : '❌ BRAK'}`).join(" &nbsp;|&nbsp; ")}</div>
 `;
+if (lastAnnouncedStage !== 6) {
+lastAnnouncedStage = 6;
+speakPolishText("Etap szósty, ostatni rygiel! Przyłóżcie wszyscy jednocześnie palce do skanerów na telefonach i wytrzymajcie sześćdziesiąt sekund!");
+}
 }
 else {
-head.innerText = "🎅 OCZEKIWANIE NA START MISJI 🎄";
-arena.innerHTML = `<div style="font-size:1.3vw; color:var(--cyan);">Wujek wybierze w panelu Admina Etap 1 i kliknie Uruchom!</div>`;
+head.innerText = "🎅 OCZEKIWANIE NA START MISJI MIKOŁAJKOWEJ 🎄";
+arena.innerHTML = `<div style="font-size:1.4vw; color:var(--gold); font-weight:bold;">Przygotujcie telefony! Zaraz Wujek uruchomi Etap 1!</div>`;
 }
 }
 </script>
