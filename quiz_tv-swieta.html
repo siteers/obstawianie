@@ -422,7 +422,6 @@ bgMasterGain = audioCtx.createGain();
 bgMasterGain.gain.value = 0.22;
 bgMasterGain.connect(audioCtx.destination);
 
-// Melodia inspirowana Jingle Bells na dzwoneczkach (E5, E5, E5, -, E5, E5, E5, -, E5, G5, C5, D5, E5...)
 const jingleMelody = [
 659.25, 659.25, 659.25, 0,
 659.25, 659.25, 659.25, 0,
@@ -454,7 +453,6 @@ bellGain.connect(bgMasterGain);
 bellOsc.start(now);
 bellOsc.stop(now + 0.25);
 
-// Delikatny alikwot dzwoneczka oktawę wyżej
 const chimeOsc = audioCtx.createOscillator();
 const chimeGain = audioCtx.createGain();
 chimeOsc.type = "triangle";
@@ -686,7 +684,7 @@ fwCanvas.style.display = 'none';
 // --- LOGIKA GRY ŚWIĄTECZNEJ ---
 window.onload = () => {
 const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
-const loginUrl = encodeURIComponent(baseHref + 'dziecilog.html');
+const loginUrl = encodeURIComponent(baseHref + 'quiz_gracz-swieta.html');
 document.getElementById('qrLoginTv').src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${loginUrl}&color=000000&bgcolor=ffffff`;
 };
 
