@@ -63,10 +63,18 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 #ui-r6-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
 .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
 #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
-#ui-r6-bid { display: none; flex-direction: column; gap: 12px; width: 100%; }
+#ui-r6-bid { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
 .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
 .bid-info-row b { color: var(--gold); font-size: 19px; }
+.btn-match-leader {
+width: 100%; background: linear-gradient(135deg, var(--gold), #e67e22); color: #000;
+border: 2px solid #fff; border-radius: 12px; padding: 14px 8px; font-size: 16px;
+font-weight: 900; cursor: pointer; text-transform: uppercase;
+box-shadow: 0 0 18px rgba(212, 175, 55, 0.5); display: none;
+}
+.btn-match-leader:active { transform: scale(0.95); }
+.btn-match-leader:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
 .bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
 .btn-bid:active { transform: scale(0.93); }
@@ -156,6 +164,7 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 </div>
 <div class="auction-pad-timer" id="pad-r6-countdown"></div>
 <div class="feedback-msg" id="r6BidFeedback"></div>
+<button class="btn-match-leader" id="btn-bid-match" onclick="placeBid(0)">🎯 WYRÓWNAJ DO LIDERA</button>
 <div class="bid-btns-grid">
 <button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
 <button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
@@ -314,6 +323,7 @@ spinTick: spinTickNow
 });
 };
 
+// NAPRAWIONA LICYTACJA: Inteligentne przebijanie od stawki lidera + przycisk "Wyrównaj do lidera"!
 window.placeBid = async (addAmount) => {
 if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") return;
 const tiedList = currentState.r6TiedBidders || [];
@@ -326,17 +336,22 @@ if (data.status !== "r6_bidding") return;
 
 const activeList = getActivePlayers(data);
 let bids = data.r6Bids || {};
-let myNewBid = (bids[myName] || 5) + addAmount;
+const myOldBid = bids[myName] || 5;
+const currentMax = data.r6HighestBid || 5;
 
-const maxAllowedBid = myCurrentPoints + 100;
-if (myNewBid > maxAllowedBid) {
-document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ DAĆ MAKSYMALNIE ${Math.max(5, maxAllowedBid)} PKT!`;
+// Bazą do podbicia jest zawsze wyższa wartość: albo nasza stawka, albo aktualna stawka lidera!
+// Dzięki temu kliknięcie +5 przy liderze mającym 60 pkt od razu daje 65 pkt (a kliknięcie Wyrównaj (+0) daje 60 pkt).
+const baseBid = Math.max(myOldBid, currentMax);
+let myNewBid = addAmount === 0 ? currentMax : (baseBid + addAmount);
+
+if (myNewBid <= myOldBid) {
+document.getElementById('r6BidFeedback').innerText = `⚠️ MASZ JUŻ NAJWYŻSZĄ STAWKĘ (${myOldBid} PKT)!`;
 return;
 }
 
-const currentMax = data.r6HighestBid || 5;
-if (myNewBid < currentMax) {
-document.getElementById('r6BidFeedback').innerText = `⚠️ MUSISZ DAĆ MINIMUM ${currentMax} PKT, ABY WYRÓWNAĆ LUB PRZEBIĆ!`;
+const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
+if (myNewBid > maxAllowedBid) {
+document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! TWÓJ MAKSYMALNY ZAKŁAD TO ${maxAllowedBid} PKT!`;
 return;
 }
 
@@ -357,7 +372,6 @@ bidTick: Date.now()
 });
 };
 
-// Przycisk gotowości: wyłącznie dla zalogowanego gracza!
 window.confirmPlayerReady = async () => {
 if (!currentState || !myName) return;
 const stateRef = doc(db, "quizGame", "state");
@@ -374,7 +388,6 @@ await updateDoc(stateRef, { readyPlayers: readyList });
 return;
 }
 
-// W Rundzie 5 (Błyskawica) TYLKO wywołany gracz (np. Lila) może kliknąć swoją gotowość!
 if (currentState.round === 5 && currentState.status === "r5_tf_wait_ready" && currentState.nominated === myName) {
 await updateDoc(stateRef, {
 status: "r5_tf_ready_first",
@@ -578,7 +591,6 @@ document.body.classList.remove('keyboard-mode');
 if (!currentState) return;
 const activeList = getActivePlayers(currentState);
 
-// Jeśli gracz został wyłączony przez Admina w "KTO GRA"
 if (!activeList.includes(myName)) {
 document.getElementById('padStatus').innerText = "GRACZ WYŁĄCZONY W TEJ GRZE";
 lockedEl.style.display = 'block';
@@ -611,7 +623,6 @@ document.getElementById('ui-ready').style.display = 'flex';
 return;
 }
 
-// --- RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ (TYLKO WYWOŁANA OSOBA MA PRZYCISK GOTOWOŚCI!) ---
 if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_tf_")) {
 if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `⚡ BŁYSKAWICA: GRA ${currentState.nominated.toUpperCase()}`;
@@ -660,7 +671,6 @@ lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r5ScoreDelta >=
 return;
 }
 
-// --- RUNDA 6: AWANTURA O PUNKTY (KOŁO + LICYTACJA) ---
 if (currentState.round === 6 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
 if (currentState.status === "r6_wait_spin") isSpinningLocally = false;
 document.getElementById('ui-r6-spin').style.display = 'flex';
@@ -717,13 +727,33 @@ document.getElementById('pad-r6-pot').innerText = `${currentState.r6Pot || 20} P
 document.getElementById('pad-r6-leader').innerText = `${currentState.r6HighestBidder.toUpperCase()} (${currentState.r6HighestBid} PKT)`;
 
 const myBid = (currentState.r6Bids || {})[myName] || 5;
+const currentMax = currentState.r6HighestBid || 5;
+const baseBid = Math.max(myBid, currentMax);
 const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
+
 document.getElementById('pad-r6-mybid').innerText = `${myBid} PKT`;
 document.getElementById('pad-r6-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
 
+// Przycisk "Wyrównaj do lidera", gdy nasza stawka jest niższa niż najwyższa oferta
+const matchBtn = document.getElementById('btn-bid-match');
+if (matchBtn) {
+if (myBid < currentMax) {
+matchBtn.style.display = 'block';
+matchBtn.innerText = `🎯 WYRÓWNAJ DO LIDERA (${currentMax} PKT)`;
+matchBtn.disabled = (currentMax > maxAllowedBid);
+} else {
+matchBtn.style.display = 'none';
+}
+}
+
+// Przyciski +2, +5, +10, +20 pokazują i sprawdzają przebicie względem aktualnego lidera (baseBid)
 [2, 5, 10, 20].forEach(inc => {
 const btn = document.getElementById(`btn-bid-${inc}`);
-if (btn) btn.disabled = (myBid + inc > maxAllowedBid);
+if (btn) {
+const targetVal = baseBid + inc;
+btn.innerText = myBid < currentMax ? `+${inc} (${targetVal})` : `+${inc}`;
+btn.disabled = (targetVal > maxAllowedBid);
+}
 });
 
 const cdEl = document.getElementById('pad-r6-countdown');
