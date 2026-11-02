@@ -74,6 +74,11 @@ border: 1px solid var(--gold);
 60% { transform: translate(-7px, -4px); }
 80% { transform: translate(7px, 4px); }
 }
+@keyframes dramaticPop {
+0% { transform: scale(0.3); opacity: 0; }
+70% { transform: scale(1.12); opacity: 1; }
+100% { transform: scale(1); opacity: 1; }
+}
 
 #fullscreenBoard { display: flex; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; }
 
@@ -112,6 +117,18 @@ padding: 6px 12px; border-radius: 6px; text-transform: uppercase; transition: 0.
 /* PANEL WYZWAŃ NA ŚRODKU TV */
 .stage-arena { width: 100%; min-height: 19vw; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 
+/* KOD QR NA EKRANIE STARTOWYM */
+.start-qr-box {
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+background: rgba(5, 20, 14, 0.85); border: 0.22vw dashed var(--gold); border-radius: 1.4vw;
+padding: 1.2vw 2vw; margin-top: 0.5vw; box-shadow: 0 0 2vw rgba(0,0,0,0.5);
+}
+.start-qr-box img {
+width: 11.5vw; height: 11.5vw; background: #fff; padding: 0.45vw; border-radius: 0.9vw;
+border: 0.25vw solid var(--gold); box-shadow: 0 0 1.8vw rgba(255, 215, 0, 0.45);
+margin: 0.6vw 0;
+}
+
 /* ETAP 4: WIZUALIZACJA SIMON SAYS (SZYFR KOLORÓW) */
 .simon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; width: 23vw; height: 19vw; margin: 0.8vw auto; }
 .simon-pad {
@@ -128,6 +145,11 @@ box-shadow: 0 0 3vw #fff, 0 0 1.5vw var(--gold); z-index: 20;
 display: none; font-size: 1.8vw; font-weight: 900; color: var(--gold);
 text-transform: uppercase; letter-spacing: 0.15vw; margin-top: 0.8vw;
 text-shadow: 0 0 1.5vw var(--gold), 0 2px 5px #000; animation: pulse 1s infinite;
+}
+
+.reveal-step-line {
+animation: dramaticPop 0.55s ease-out forwards;
+margin: 0.35vw 0;
 }
 
 /* NAROŻNE KARTY POMOCNIKÓW MIKOŁAJA */
@@ -270,6 +292,12 @@ const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/29
 loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
+
+function getGraczQrUrl() {
+const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
+const targetUrl = encodeURIComponent(baseHref + 'quiz-gracz-MIKOLAJ.html');
+return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${targetUrl}&color=000000&bgcolor=ffffff`;
+}
 
 const STAGE1_PHOTOS = {
 Lila: [
@@ -482,9 +510,7 @@ function playStage6TensionPulse(remainingMs) {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-// progress = 0.0 (na starcie przy 60s) -> 1.0 (tuż przed 0s)
 const progress = Math.max(0, Math.min(1, (60000 - remainingMs) / 60000));
-// Odstęp między uderzeniami spada z 650ms (przy 60s) do 115ms (w ostatnich sekundach!)
 const intervalMs = Math.round(650 - progress * 535);
 const nowMs = Date.now();
 if (nowMs - lastTensionBeatAt < intervalMs) return;
@@ -492,7 +518,6 @@ lastTensionBeatAt = nowMs;
 
 const now = audioCtx.currentTime;
 
-// 1. Niski puls (bicie serca / reaktor) - przyspiesza i rośnie z czasem
 const bassOsc = audioCtx.createOscillator();
 const bassGain = audioCtx.createGain();
 bassOsc.type = "triangle";
@@ -509,7 +534,6 @@ bassGain.connect(audioCtx.destination);
 bassOsc.start(now);
 bassOsc.stop(now + 0.16);
 
-// 2. Od połowy czasu (poniżej 35s) dochodzi wysoki, nerwowy impuls skanera
 if (progress > 0.4) {
 const hiOsc = audioCtx.createOscillator();
 const hiGain = audioCtx.createGain();
@@ -523,6 +547,23 @@ hiGain.connect(audioCtx.destination);
 hiOsc.start(now);
 hiOsc.stop(now + 0.08);
 }
+}
+
+function playDramaticDrumHit(freq = 110) {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "triangle";
+osc.frequency.setValueAtTime(freq, now);
+osc.frequency.exponentialRampToValueAtTime(38, now + 0.55);
+g.gain.setValueAtTime(0.45, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.62);
 }
 
 function playSimonTone(player) {
@@ -646,7 +687,7 @@ document.getElementById('audio-overlay').style.display = 'none';
 createFestiveChimesMusic();
 isBgMusicPlaying = true;
 initPolishVoices();
-speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na sześć rygli. Agenci, do dzieła!");
+speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na sześć rygli. Zeskanujcie kod na ekranie i do dzieła!");
 [winSound, loseSound, fanfareSound].forEach(s => {
 s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
 });
@@ -771,11 +812,13 @@ const dbKeyMap = { "Lila": "Lila", "Kaja": "Kaja", "Darek": "Darek", "Jaś": "Ja
 let lastSeqTickPlayed = 0;
 let lastColorTickPlayed = 0;
 let lastFinaleSuspenseTick = 0;
+let lastFinaleUnlockedStarted = false;
 let lastAnnouncedStage = -1;
 let tvStage5TimerInterval = null;
 let stage5ReadyAfterSpeech = false;
 let lastStage5StartSeen = 0;
 let suspenseRunId = 0;
+let finaleSlideRunId = 0;
 let wasHoldingAllInStage6 = false;
 
 // GŁÓWNY ZEGAR ETAPU 6 (60s): Muzyka napięcia + Reset z powrotem do 60.0s, gdy ktokolwiek puści palec!
@@ -789,7 +832,7 @@ const curRem = currentState.holdRemainingMs !== undefined ? currentState.holdRem
 
 if (allHold) {
 wasHoldingAllInStage6 = true;
-isBgMusicPlaying = false; // Wycisz dzwoneczki na rzecz budowania napięcia!
+isBgMusicPlaying = false;
 const nextRem = Math.max(0, curRem - 200);
 playStage6TensionPulse(nextRem);
 
@@ -806,7 +849,6 @@ speechTick: Date.now()
 await updateDoc(stateRef, { holdRemainingMs: nextRem });
 }
 } else {
-// Ktoś puścił palec przed końcem odliczania -> RESET Z POWROTEM NA 60.0 SEKUND!
 if (wasHoldingAllInStage6 || curRem < 60000) {
 wasHoldingAllInStage6 = false;
 isBgMusicPlaying = true;
@@ -827,7 +869,7 @@ currentState = docSnap.data();
 renderTVStage();
 });
 
-function highlightSimonPad(player, durationMs = 520) {
+function highlightSimonPad(player, durationMs = 460) {
 const padEl = document.getElementById(`sp-${player}`);
 if (!padEl) return;
 padEl.classList.add('lit');
@@ -837,22 +879,59 @@ padEl.classList.remove('lit');
 }, durationMs);
 }
 
-function playSimonSequenceOnTV(seq, mistakeBy, levelNum) {
+// GENERATOR TRUDNIEJSZEJ SEKWENCJI SIMONA BEZ POWTÓRZEŃ TEGO SAMEGO KOLORU POD RZĄD!
+function buildHardNonRepeatingSequence(levelNum, activeList) {
+// Poziom 1 = 5 kolorów, Poziom 2 = 6 kolorów, Poziom 3 = 8 kolorów!
+const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
+const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
+const res = [];
+for (let i = 0; i < targetLen; i++) {
+let candidates = pool;
+if (pool.length > 1 && i > 0) {
+// Wykluczamy kolor, który był przed chwilą, żeby nigdy nie było np. 2, 3 ani 4 razy z rzędu tego samego!
+candidates = pool.filter(p => p !== res[i - 1]);
+}
+const pick = candidates[Math.floor(Math.random() * candidates.length)];
+res.push(pick);
+}
+return res;
+}
+
+function hasConsecutiveRepeats(seq) {
+for (let i = 1; i < seq.length; i++) {
+if (seq[i] === seq[i - 1]) return true;
+}
+return false;
+}
+
+async function playSimonSequenceOnTV(seq, mistakeBy, levelNum, activeList) {
+const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
+// Jeśli sekwencja z Admina/Gracza ma powtórzenia pod rząd lub jest za krótka -> automatycznie napraw ją w bazie!
+if ((activeList || []).length > 1 && (seq.length !== targetLen || hasConsecutiveRepeats(seq))) {
+const fixedSeq = buildHardNonRepeatingSequence(levelNum, activeList);
+await updateDoc(stateRef, { simonSeq: fixedSeq, seqTick: Date.now() });
+return;
+}
+
 isBgMusicPlaying = false;
 const msgEl = document.getElementById('simonStatusText');
 const introSpeech = mistakeBy
-? `Pomyłka! Zobaczcie sekwencję poziomu ${levelNum} jeszcze raz!`
-: `Poziom ${levelNum}. Patrzcie uważnie na kolejność kolorów!`;
+? `Pomyłka! Nowa sekwencja poziomu ${levelNum}. Patrzcie uważnie!`
+: `Poziom ${levelNum}, aż ${seq.length} kolorów! Patrzcie uważnie na kolejność!`;
 
 if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
 
+// Im wyższy poziom, tym szybsze tempo migania!
+const stepInterval = levelNum === 1 ? 780 : (levelNum === 2 ? 680 : 580);
+const litDuration = Math.round(stepInterval * 0.65);
+
 speakPolishText(introSpeech, () => {
-let delay = 500;
+let delay = 450;
 seq.forEach((player) => {
 setTimeout(() => {
-highlightSimonPad(player, 550);
+highlightSimonPad(player, litDuration);
 }, delay);
-delay += 900;
+delay += stepInterval;
 });
 
 setTimeout(async () => {
@@ -891,7 +970,7 @@ speechTick: Date.now()
 }, 80);
 }
 
-// ŁAŃCUCHOWA SEKWENCJA NAPIĘCIA (Każdy krok czeka w 100%, aż lektor dokończy poprzednie zdanie!)
+// ŁAŃCUCHOWA SEKWENCJA NAPIĘCIA PRZED OSTATNIM SLAJDEM
 function runFinaleSuspenseSequence() {
 const myRun = ++suspenseRunId;
 isBgMusicPlaying = false;
@@ -938,6 +1017,69 @@ speechTick: Date.now()
 });
 }
 
+// DRAMATYCZNY OSTATNI SLAJD: "KLUCZ... MA... W SWOJEJ KIESZENI... WUJEK!"
+function runDramaticFinalSlideReveal() {
+const mySlideRun = ++finaleSlideRunId;
+const head = document.getElementById('missionHeader');
+const arena = document.getElementById('stageArena');
+const vicBanner = document.getElementById('victory-banner');
+const stageBox = document.getElementById('mainStage');
+
+vicBanner.style.display = 'none';
+stageBox.classList.remove('victory-glow');
+head.innerText = "🔍 WYNIK SKANOWANIA DETEKTYWISTYCZNEGO... 🔍";
+
+// Faza 1: "TAJNY KLUCZ DO SKRZYNI..."
+playDramaticDrumHit(90);
+arena.innerHTML = `
+<div id="finalRevealBox" style="font-size:2.2vw; font-weight:900; line-height:1.45; text-shadow:0 2px 8px #000;">
+<div class="reveal-step-line" style="color:#cbd5e1;">TAJNY KLUCZ DO SKRZYNI Z PREZENTEM...</div>
+</div>
+`;
+
+speakPolishText("Uwaga, odczytuję wynik skanera... Tajny klucz do skrzyni z prezentem...", () => {
+if (mySlideRun !== finaleSlideRunId) return;
+
+// Faza 2: "...UKRYŁ W SWOJEJ KIESZENI..."
+playDramaticDrumHit(120);
+const box = document.getElementById('finalRevealBox');
+if (box) {
+box.innerHTML += `<div class="reveal-step-line" style="color:var(--gold); font-size:2.4vw;">...UKRYŁ W SWOJEJ KIESZENI...</div>`;
+}
+
+speakPolishText("ukrył w swojej kieszeni...", () => {
+if (mySlideRun !== finaleSlideRunId) return;
+
+// Faza 3: Krótka dramatyczna cisza / werbel "... ... ..."
+playVaultRumbleEffect();
+if (box) {
+box.innerHTML += `<div class="reveal-step-line" id="dotsSuspense" style="color:#ff4d4d; font-size:2.8vw; letter-spacing:0.5vw;">. . .</div>`;
+}
+
+setTimeout(() => {
+if (mySlideRun !== finaleSlideRunId) return;
+
+// Faza 4: WIELKI WYBUCH -> "WUJEK KRZYSIEK! ŁAPCIE GO!"
+stageBox.classList.add('victory-glow');
+head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
+const dots = document.getElementById('dotsSuspense');
+if (dots) dots.remove();
+if (box) {
+box.innerHTML += `
+<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">
+🎅🔑 WUJEK! ŁAPCIE GO! 🔑🎅
+</div>
+`;
+}
+vicBanner.style.display = 'block';
+startFireworks();
+startVictoryFanfareLoop();
+speakPolishText("Wujek! Łapcie Wujka i odbierzcie klucz do prezentu!");
+}, 2400);
+});
+});
+}
+
 function renderTVStage() {
 if (!currentState) return;
 const st = currentState.stage || 0;
@@ -952,6 +1094,7 @@ const vicBanner = document.getElementById('victory-banner');
 const head = document.getElementById('missionHeader');
 
 if (status !== "finale_unlocked" && st !== 7) {
+lastFinaleUnlockedStarted = false;
 stopFireworks();
 stopVictoryFanfareLoop();
 stageBox.classList.remove('victory-glow');
@@ -1012,7 +1155,7 @@ qEl.innerText = pStep < 3 ? STAGE3_QUESTIONS_TEXT[dbK][pStep] : "Wszystkie 3 zag
 imgEl.style.display = 'none';
 } else {
 numEl.innerText = `ETAP ${Math.min(6, st)}/6`;
-qEl.innerText = "Wspólne zadanie drużynowe na głównym ekranie!";
+qEl.innerText = st === 0 ? "Zeskanuj kod QR ze środka ekranu!" : "Wspólne zadanie drużynowe na głównym ekranie!";
 imgEl.style.display = 'none';
 }
 });
@@ -1028,21 +1171,11 @@ runFinaleSuspenseSequence();
 return;
 }
 
-// WIELKI FINAŁ (PO ZAKOŃCZENIU SEKWENCJI NAPIĘCIA)
+// WIELKI FINAŁ (PO ZAKOŃCZENIU SEKWENCJI NAPIĘCIA -> STOPNIOWE ODKRYWANIE SŁOWO PO SŁOWIE!)
 if (status === "finale_unlocked" || (st === 7 && status !== "finale_suspense")) {
-stageBox.classList.add('victory-glow');
-head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
-arena.innerHTML = `<div style="font-size:2.15vw; color:var(--gold); font-weight:900; line-height:1.45; text-shadow:0 2px 8px #000;">
-WSZYSTKIE 6 RYGLI PUŚCIŁO!<br>
-TAJNA SKRZYNIA Z PREZENTEM JEST GOTOWA, ALE...<br>
-<span style="color:#2dc653; font-size:2.5vw;">KLUCZ DO NIEJ UKRYŁ W SWOJEJ KIESZENI WUJEK!</span><br>
-🎅🔑 ŁAPCIE WUJKA I ODBIERZCIE KLUCZ! 🔑🎅
-</div>`;
-vicBanner.style.display = 'block';
-if (!fwActive) {
-startFireworks();
-startVictoryFanfareLoop();
-speakPolishText("Wszystkie zamki otwarte! Klucz do tajnej skrzyni z Waszym prezentem ukrył w swojej kieszeni Wujek! Łapcie go!");
+if (!lastFinaleUnlockedStarted) {
+lastFinaleUnlockedStarted = true;
+runDramaticFinalSlideReveal();
 }
 return;
 }
@@ -1142,7 +1275,7 @@ highlightSimonPad(currentState.lastColorPressed, 380);
 
 if (status === "stage4_watch" && currentState.seqTick && currentState.seqTick !== lastSeqTickPlayed) {
 lastSeqTickPlayed = currentState.seqTick;
-playSimonSequenceOnTV(currentState.simonSeq || [], currentState.simonMistakeBy, simonLvl);
+playSimonSequenceOnTV(currentState.simonSeq || [], currentState.simonMistakeBy, simonLvl, activeList);
 }
 }
 else if (st === 5) {
@@ -1213,7 +1346,13 @@ speakPolishText("Etap szósty, ostatni rygiel! Przyłóżcie wszyscy jednocześn
 }
 else {
 head.innerText = "🎅 OCZEKIWANIE NA START MISJI MIKOŁAJKOWEJ 🎄";
-arena.innerHTML = `<div style="font-size:1.4vw; color:var(--gold); font-weight:bold;">Przygotujcie telefony! Zaraz Wujek uruchomi Etap 1!</div>`;
+arena.innerHTML = `
+<div class="start-qr-box">
+<div style="font-size:1.25vw; color:var(--gold); font-weight:900; letter-spacing:0.1vw; text-transform:uppercase;">📱 ZESKANUJ KOD TELEFONEM, ABY DOŁĄCZYĆ DO MISJI:</div>
+<img src="${getGraczQrUrl()}" alt="QR Terminal Agenta">
+<div style="font-size:1vw; color:#cbd5e1; font-weight:bold;">Po zalogowaniu wszystkich Agentów Wujek uruchomi Etap 1!</div>
+</div>
+`;
 }
 }
 </script>
