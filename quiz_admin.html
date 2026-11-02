@@ -40,13 +40,18 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: WYBÓR PULI PYTAŃ (5 Puli - Zero powtórek między rundami!)</h3>
+<h3>KROK 2: WYBÓR PULI PYTAŃ (10 Unikalnych Puli - Zero powtórek kategorii pod rząd!)</h3>
 <select id="poolSel">
-<option value="1">PULA 1 (Łatwa)</option>
-<option value="3">PULA 3 (Średnia Klasyczna)</option>
-<option value="4">PULA 4 (Średnia Plus)</option>
-<option value="5">PULA 5 (Średnia Extra)</option>
-<option value="2">PULA 2 (Trudna)</option>
+<option value="1">PULA 1 (Zestaw Familijny Start)</option>
+<option value="2">PULA 2 (Zestaw Odkrywcy)</option>
+<option value="3">PULA 3 (Zestaw Przygodowy)</option>
+<option value="4">PULA 4 (Zestaw Bystrzaka)</option>
+<option value="5">PULA 5 (Zestaw Mistrzowski)</option>
+<option value="6">PULA 6 (Zestaw Kosmiczny)</option>
+<option value="7">PULA 7 (Zestaw Przyrodniczy)</option>
+<option value="8">PULA 8 (Zestaw Bajkowy)</option>
+<option value="9">PULA 9 (Zestaw Podróżnika)</option>
+<option value="10">PULA 10 (Zestaw Ekspercki)</option>
 </select>
 <button type="button" class="purple" id="btnSendPool" onclick="window.sendPoolChoice && window.sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
 </div>
@@ -55,10 +60,10 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <h3>KROK 3: STEROWANIE RUNDAMI (GOTOWOŚĆ GRACZY LUB ADMINA)</h3>
 <label>Wybierz rundę:</label>
 <select id="roundSel">
-<option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
+<option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 15 pytań)</option>
 <option value="2">Runda 2: Odsłanianie Hasła (60s | 20/15/10/5 pkt | 5 haseł)</option>
-<option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 25 pytań)</option>
-<option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 60 pytań)</option>
+<option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 15 pytań)</option>
+<option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 24 pytania)</option>
 <option value="5">Runda 5: Błyskawica Prawda/Fałsz (Stoper 20s Start/Stop | Wiek: 11/10/10/8 lat)</option>
 <option value="6">Runda 6: AWANTURA O PUNKTY - Koło i Licytacja (Finałowe 15 pytań)</option>
 </select><br>
@@ -100,28 +105,46 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-const parseR1 = (str) => str.trim().split('\n').map(l => {
+const parseR1 = (str) => str.trim().split('\n').filter(Boolean).map(l => {
 let [q, o, c] = l.split('|');
 return { q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
-const parseWheel = (str) => str.trim().split('\n').map(l => {
+const parseWheel = (str) => str.trim().split('\n').filter(Boolean).map(l => {
 let [cat, phrase] = l.split('|');
 return { cat: cat.trim(), phrase: phrase.trim().toUpperCase() };
 });
-const parseR3 = (str) => str.trim().split('\n').map(l => {
+const parseR3 = (str) => str.trim().split('\n').filter(Boolean).map(l => {
 let [q, c] = l.split('|');
 return { q: q.trim(), c: c.trim() };
 });
-const parseR4 = (str) => str.trim().split('\n').map(l => {
+const parseR4 = (str) => str.trim().split('\n').filter(Boolean).map(l => {
 let [cat, q, o, c] = l.split('|');
 return { cat: cat.trim(), q: q.trim(), o: o.split(';').map(x => x.trim()), c: parseInt(c.trim()) };
 });
-const parseTF = (str) => str.trim().split('\n').map(l => {
+const parseTF = (str) => str.trim().split('\n').filter(Boolean).map(l => {
 let [q, ans] = l.split('|');
 return { q: q.trim(), a: ans.trim() === "1" };
 });
 
-const rawR1_P1 = parseR1(`
+// Algorytm gwarantujący, że dwie takie same kategorie NIGDY nie wystąpią bezpośrednio po sobie
+function arrangeNoAdjacentCategories(items, seed = 1) {
+let pool = [...items];
+for (let i = pool.length - 1; i > 0; i--) {
+const j = (i * 17 + seed * 31) % (i + 1);
+[pool[i], pool[j]] = [pool[j], pool[i]];
+}
+const result = [];
+while (pool.length > 0) {
+const lastCat = result.length > 0 ? result[result.length - 1].cat : null;
+let idx = pool.findIndex(x => x.cat !== lastCat);
+if (idx === -1) idx = 0;
+result.push(pool.splice(idx, 1)[0]);
+}
+return result;
+}
+
+// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 1 (10 PUL PO 15 PYTAŃ) ---
+const masterR1 = parseR1(`
 Która planeta jest największa w Układzie Słonecznym?|Ziemia;Mars;Jowisz;Saturn|2
 Ile nóg ma typowy pająk?|Sześć;Osiem;Dziesięć;Dwanaście|1
 Co jest stolicą Włoch?|Madryt;Paryż;Rzym;Berlin|2
@@ -133,130 +156,201 @@ Kto napisał 'Akademię Pana Kleksa'?|Jan Brzechwa;Julian Tuwim;H. Sienkiewicz;A
 Co jedzą pandy wielkie?|Mięso;Eukaliptus;Bambus;Banany|2
 Ile dni ma rok przestępny?|365;366;364;360|1
 W jakiej wodzie żyje wieloryb?|Słodkiej;Słonej;Mineralnej;Gazowanej|1
-Co jest zimniejsze?|Lód;Woda;Para;Śnieg|0
+Co jest zimniejsze?|Lód;Woda;Para;Ciepłe mleko|0
 Jak ma na imię siostra Elsy z Krainy Lodu?|Olaf;Anna;Ariel;Mulan|1
 Które z tych zwierząt jest gadem?|Żaba;Wąż;Pies;Bocian|1
 Jak nazywa się nasz kontynent?|Azja;Ameryka;Europa;Afryka|2
 Ile to jest 100 - 35?|65;75;55;45|0
 Jaki instrument ma czarno-białe klawisze?|Gitara;Skrzypce;Pianino;Flet|2
-Z czego robi się szkło?|Z wody;Z piasku;Z gliny;Z drewna|1
-Jak nazywa się sześcian używany do gier planszowych?|Pionek;Kostka;Kula;Walec|1
-Kto zbudował zamek w Malborku?|Krzyżacy;Królowie;Rzymianie;Grecy|0
-Który miesiąc jest pierwszy w roku?|Luty;Styczeń;Marzec;Grudzień|1
-Który ocean jest największy?|Atlantycki;Indyjski;Spokojny;Arktyczny|2
-Jak nazywa się nauka o gwiazdach?|Biologia;Chemia;Geografia;Astronomia|3
-Jaki jest najszybszy ptak na świecie?|Sokół wędrowny;Struś;Orzeł;Gołąb|0
-Z jakiego kraju pochodzi pizza?|Grecja;Hiszpania;Włochy;Polska|2`);
-
-const rawR1_P2 = parseR1(`
+Z czego wytapia się szkło?|Z wody;Z piasku;Z gliny;Z drewna|1
+Jak nazywa się bryła z oczkami używana do gier planszowych?|Stożek;Kostka (sześcian);Kula;Walec|1
+Kto zbudował zamek w Malborku?|Krzyżacy;Wikingowie;Rzymianie;Grecy|0
+Który miesiąc otwiera nowy rok?|Luty;Styczeń;Marzec;Grudzień|1
+Który ocean jest największy na Ziemi?|Atlantycki;Indyjski;Spokojny (Pacyfik);Arktyczny|2
+Jak nazywa się nauka o gwiazdach i kosmosie?|Biologia;Chemia;Geografia;Astronomia|3
+Jaki jest najszybszy ptak w locie nurkowym?|Sokół wędrowny;Struś;Orzeł;Gołąb|0
+Z jakiego kraju pochodzi oryginalna pizza?|Z Grecji;Z Hiszpanii;Z Włoch;Z Polski|2
 Który z tych instrumentów należy do grupy dętych?|Gitara;Skrzypce;Trąbka;Perkusja|2
-Gdzie znajduje się Piramida Cheopsa?|Meksyk;Egipt;Peru;Grecja|1
-Największy kraj na świecie to?|USA;Chiny;Rosja;Kanada|2
-Jak nazywa się nasza galaktyka?|Andromeda;Droga Mleczna;Czarna Dziura;Mgławica Oriona|1
-Starożytny rzymski amfiteatr to...|Partenon;Panteon;Koloseum;Piramida|2
+W jakim kraju znajduje się Piramida Cheopsa?|W Meksyku;W Egipcie;W Peru;W Grecji|1
+Największy powierzchniowo kraj na świecie to:|USA;Chiny;Rosja;Kanada|2
+Jak nazywa się nasza galaktyka?|Andromeda;Droga Mleczna;Wielki Obłok;Mgławica Oriona|1
+Starożytny amfiteatr w Rzymie to:|Partenon;Luwr;Koloseum;Akropol|2
 W którym roku wybuchła II Wojna Światowa?|1914;1939;1945;1989|1
-Kto jest autorem 'Pana Tadeusza'?|Słowacki;Kochanowski;Mickiewicz;Prus|2
-Co pobierają rośliny z powietrza (fotosynteza)?|Tlen;Azot;Dwutlenek węgla;Wodór|2
-Gdzie odbyły się pierwsze Igrzyska Olimpijskie?|W Rzymie;W Atenach;W Sparcie;W Olimpii|3
-Ile lat żyje przeciętny kot domowy?|Około 5-8;Około 12-16;Powyżej 25;Około 30|1
-Z jakiego kraju wywodzi się Sushi?|Chiny;Japonia;Tajlandia;Wietnam|1
-Jak po angielsku jest 'Biblioteka'?|Bookstore;Library;School;Museum|1
+Kto napisał epopeję 'Pan Tadeusz'?|J. Słowacki;J. Kochanowski;A. Mickiewicz;B. Prus|2
+Jaki gaz pobierają rośliny z powietrza podczas fotosyntezy?|Tlen;Azot;Dwutlenek węgla;Hel|2
+W jakim kraju odbyły się starożytne Igrzyska Olimpijskie?|We Włoszech;W Grecji;W Egipcie;W Hiszpanii|1
+Ile lat żyje przeciętnie zadbany kot domowy?|Około 3 lata;Około 12-16 lat;Ponad 50 lat;Tylko rok|1
+Z jakiego kraju wywodzi się potrawa Sushi?|Z Chin;Z Japonii;Z Tajlandii;Z Indii|1
+Jak po angielsku powiesz 'Biblioteka'?|Bookstore;Library;School;Museum|1
 Co jest stolicą Wielkiej Brytanii?|Dublin;Edynburg;Londyn;Paryż|2
 Z ilu województw składa się Polska?|14;15;16;17|2
-Gdzie w Polsce leżą Tatry?|Na północy;Na południu;Na zachodzie;Na wschodzie|1
+W której części Polski leżą Tatry?|Na północy;Na południu;Na zachodzie;W centrum|1
 Ile wynosi pierwiastek kwadratowy z 81?|7;8;9;10|2
-Prawdziwe imię Spider-Mana to?|Iron Man;Peter Parker;Bruce Wayne;Clark Kent|1
-Z czego składa się cząsteczka H2O?|Tlen i Azot;Wodór i Tlen;Wodór i Węgiel;Azot i Węgiel|1
-Owad produkujący jedwab to?|Pająk;Pszczoła;Jedwabnik;Motyl|2
-Twórcą gry Minecraft był...|EA Games;Markus Persson;Ubisoft;Nintendo|1
-Skrót PC oznacza...|Personal Computer;Play Console;Power Control;Portable Computer|0
-Jaki stan skupienia ma lód?|Ciekły;Gazowy;Stały;Plazma|2
-Które drzewo iglaste gubi igły na zimę?|Świerk;Sosna;Jodła;Modrzew|3
-Najwyższa góra w Polsce to...|Gubałówka;Śnieżka;Rysy;Giewont|2
-Jaka waluta obowiązuje w Londynie?|Euro;Funt szterling;Dolar;Frank|1`);
-
-const rawR1_P3 = parseR1(`
+Jak brzmi prawdziwe imię i nazwisko Spider-Mana?|Tony Stark;Peter Parker;Bruce Wayne;Clark Kent|1
+Z jakich pierwiastków składa się cząsteczka wody (H2O)?|Tlen i Azot;Wodór i Tlen;Węgiel i Tlen;Wodór i Hel|1
+Który owad wytwarza nici prawdziwego jedwabiu?|Pająk krzyżak;Pszczoła;Jedwabnik;Biedronka|2
+Kto stworzył pierwszą wersję gry Minecraft?|Markus Persson (Notch);Elon Musk;Bill Gates;Steve Jobs|0
+Co oznacza skrót PC w informatyce?|Personal Computer;Play Console;Power Control;Pocket Calculator|0
+Jaki stan skupienia ma lód?|Ciekły;Gazowy;Stały;Plazmowy|2
+Które polskie drzewo iglaste gubi igły na zimę?|Świerk;Sosna;Jodła;Modrzew|3
+Najwyższy szczyt w polskich Tatrach to:|Gubałówka;Śnieżka;Rysy;Giewont|2
+Jaka waluta obowiązuje w Wielkiej Brytanii?|Euro;Funt szterling;Dolar;Frank|1
 Ile minut ma półtorej godziny?|60;75;90;100|2
-Nad jakim morzem leży Polska?|Czarne;Śródziemne;Bałtyckie;Północne|2
-Jak nazywa się zielony ogr z bagien, przyjaciel Osła?|Fiona;Shrek;Hulk;Gargamel|1
-Które zwierzę nosi swoje małe w torbie na brzuchu?|Niedźwiedź;Małpa;Kangur;Słoń|2
+Nad jakim morzem leży Polska?|Nad Czarnym;Nad Śródziemnym;Nad Bałtyckim;Nad Północnym|2
+Jak nazywa się zielony ogr z bagien, mąż Fiony?|Gargamel;Shrek;Hulk;Sulley|1
+Które zwierzę nosi swoje młode w torbie na brzuchu?|Niedźwiedź;Małpa;Kangur;Słoń|2
 Ile to jest 6 x 7?|36;42;48;49|1
-Co przyciąga magnes?|Drewno;Plastik;Żelazo;Szkło|2
-Z jakiego miasta pochodzą słynne pierniki?|Z Krakowa;Z Torunia;Z Poznania;Z Wrocławia|1
-Jak nazywa się przyrząd z igłą, który zawsze wskazuje północ?|Termometr;Zegar;Kompas;Lornetka|2
-Który ptak słynie z tego, że potrafi powtarzać ludzkie słowa?|Wróbel;Papuga;Bocian;Gołąb|1
+Który materiał jest przyciągany przez magnes?|Drewno;Plastik;Żelazo;Szkło|2
+Z jakiego polskiego miasta pochodzą najsłynniejsze pierniki?|Z Krakowa;Z Torunia;Z Poznania;Z Gdańska|1
+Jak nazywa się przyrząd z igłą magnetyczną wskazującą północ?|Termometr;Stoper;Kompas;Teleskop|2
+Który ptak potrafi naśladować ludzką mowę?|Wróbel;Papuga;Bocian;Jaskółka|1
 Jaki kolor ma kamień szlachetny o nazwie rubin?|Zielony;Niebieski;Czerwony;Żółty|2
-Ile palców u obu rąk i obu stóp ma razem człowiek?|10;15;20;24|2
-Jak miała na imię warszawska Syrenka według legend?|Wanda;Sawa;Kinga;Dobrawa|1
-Z jakiego kraju pochodzą klocki LEGO?|Z Niemiec;Z Danii;Z Polski;Ze Szwecji|1
+Ile łącznie palców u rąk i stóp ma człowiek?|10;15;20;24|2
+Z jakiego państwa pochodzą klocki LEGO?|Z Niemiec;Z Danii;Z Polski;Ze Szwecji|1
 Która pora roku następuje bezpośrednio po lecie?|Wiosna;Zima;Jesień;Przedwiośnie|2
 Ile to jest 250 + 150?|300;350;400;450|2
-Jak nazywa się doktor, który leczy zwierzęta?|Dentysta;Okulista;Weterynarz;Chirurg|2
-W jakiej bajce występuje mały drewniany chłopiec, któremu rośnie nos?|Kopciuszek;Pinokio;Piotruś Pan;Aladyn|1
-Który z tych ssaków potrafi latać?|Wiewiórka;Nietoperz;Struś;Pingwin|1
-Jak nazywa się góra w Zakopanem przypominająca śpiącego rycerza?|Rysy;Śnieżka;Giewont;Kasprowy Wierch|2
-Ile kółek jest we fladze olimpijskiej?|4;5;6;7|1
-Co robi kameleon, aby ukryć się przed drapieżnikiem?|Ucieka pod wodę;Zmienia kolor skóry;Udaje martwego;Świeci w ciemności|1
-Jak po angielsku powiesz 'Szkoła'?|House;School;Shop;Street|1
-Z jakiego ziarna produkuje się tabliczki czekolady?|Z kawy;Z kakaowca;Z pszenicy;Z kukurydzy|1
-Które miasto było pierwszą historyczną stolicą Polski?|Kraków;Warszawa;Gniezno;Poznań|2
-W jakim sporcie na lodzie używa się krążka i kijów?|Łyżwiarstwo;Curling;Hokej;Saneczkarstwo|2`);
-
-const rawR1_P4 = parseR1(`
-Jak nazywa się główny bohater gry o hydrauliku w czerwonej czapce?|Sonic;Mario;Zelda;Pac-Man|1
-Ile godzin mają łącznie dwie doby?|24;36;48;72|2
-Które zwierzę jest symbolem Białowieży i Puszczy Białowieskiej?|Łoś;Niedźwiedź;Żubr;Wilk|2
-Jakim kolorem na mapie fizycznej oznacza się niziny?|Żółtym;Zielonym;Niebieskim;Brązowym|1
+Jak nazywa się lekarz zajmujący się leczeniem zwierząt?|Dentysta;Okulista;Weterynarz;Pediatra|2
+W jakiej bajce występuje drewniany pajacyk, któremu od kłamstw rośnie nos?|Kopciuszek;Pinokio;Piotruś Pan;Aladyn|1
+Który z wymienionych ssaków potrafi aktywnie latać?|Wiewiórka;Nietoperz;Struś;Wydra|1
+Jak nazywa się góra w Tatrach przypominająca śpiącego rycerza?|Rysy;Śnieżka;Giewont;Kasprowy Wierch|2
+Ile splecionych kół znajduje się na fladze olimpijskiej?|4;5;6;7|1
+Co robi kameleon, aby zamaskować się na gałęzi?|Ucieka do wody;Zmienia barwę skóry;Zrzuca ogon;Szczeka|1
+Jak po angielsku powiesz słowo 'Szkoła'?|House;School;Shop;Street|1
+Z jakich ziaren produkuje się czekoladę?|Z kawy;Z kakaowca;Z pszenicy;Z kukurydzy|1
+Które miasto było pierwszą historyczną stolicą Polski?|Kraków;Warszawa;Gniezno;Lublin|2
+W jakim sporcie zawodnicy jeżdżą na łyżwach i uderzają kijami w krążek?|W curlingu;W hokeju na lodzie;W polo;W krykiecie|1
+Jak nazywa się hydraulik w czerwonej czapce z gier Nintendo?|Sonic;Mario;Link;Pac-Man|1
+Ile godzin mają łącznie dwie pełne doby?|24;36;48;72|2
+Które potężne zwierzę jest symbolem Puszczy Białowieskiej?|Łoś;Niedźwiedź;Żubr;Wilk|2
+Jakim kolorem na mapach geograficznych oznacza się niziny?|Żółtym;Zielonym;Niebieskim;Brązowym|1
 Ile to jest 9 x 9?|72;81;90;99|1
-W jakim mieście w Polsce znajduje się Zamek Królewski na Wawelu?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|2
-Jak nazywa się przyrząd do mierzenia temperatury ciała?|Barometr;Termometr;Kompas;Stetoskop|1
-Który z tych owadów wytwarza wosk i mieszka w ulu?|Osa;Szerszeń;Pszczoła;Trzmiel|2
-Jak po angielsku powiesz 'Rower'?|Car;Bike / Bicycle;Train;Bus|1
-Z jakiego kontynentu pochodzi ziemniak i pomidor?|Z Europy;Z Ameryki;Z Australii;Z Antarktydy|1
-Ile minut trwa jedna lekcja szkolna w Polsce?|30;45;60;50|1
-Kto jest najlepszym przyjacielem Shreka (dużo gada)?|Kot w Butach;Osioł;Ciastek;Pinokio|1
-Która z tych rzek wpada do Morza Bałtyckiego?|Dunaj;Wisła;Nil;Amazonka|1
+W jakim polskim mieście znajduje się Zamek Królewski na Wawelu?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|2
+Jak nazywa się przyrząd do mierzenia temperatury?|Barometr;Termometr;Kompas;Stetoskop|1
+Który z tych owadów mieszka w ulu i produkuje miód?|Osa;Szerszeń;Pszczoła;Trzmiel|2
+Jak po angielsku powiesz 'Rower'?|Car;Bike (Bicycle);Train;Boat|1
+Z jakiego kontynentu przywieziono do Europy ziemniaki i pomidory?|Z Azji;Z Ameryki;Z Australii;Z Antarktydy|1
+Ile minut trwa standardowa lekcja w polskiej szkole?|30;45;60;50|1
+Kto jest gadatliwym przyjacielem Shreka o długich uszach?|Kot w Butach;Osioł;Ciastek;Pinokio|1
 Ile to jest 500 podzielone przez 5?|50;100;150;250|1
-Jak nazywa się biała warstwa śniegu, po której zjeżdża się na nartach?|Tor;Stok;Kort;Bieżnia|1
-Które zwierzę zapada w sen zimowy?|Wróbel;Świstak;Zając;Jeleń|1
-Co mierzymy w kilogramach i tonach?|Długość;Czas;Masę (wagę);Temperaturę|2
-Jak nazywa się postać z bajki Disneya, która zgubiła szklany pantofelek?|Śnieżka;Kopciuszek;Roszpunka;Bella|1
-W jakim kraju znajduje się słynna Krzywa Wieża w Pizie?|W Hiszpanii;We Francji;We Włoszech;W Grecji|2
-Ile zer ma liczba jeden milion?|Cztery;Pięć;Sześć;Siedem|2
-Który z tych ptaków odlatuje z Polski na zimę do ciepłych krajów?|Wróbel;Sikorka;Bocian;Gołąb|2
+Co mierzymy w kilogramach, gramach i tonach?|Długość;Czas;Masę;Prędkość|2
+Która księżniczka Disneya zgubiła na schodach szklany pantofelek?|Śnieżka;Kopciuszek;Roszpunka;Bella|1
+W jakim kraju stoi słynna Krzywa Wieża w Pizie?|W Hiszpanii;We Francji;We Włoszech;W Grecji|2
+Ile zer ma w zapisie liczba jeden milion?|Cztery;Pięć;Sześć;Siedem|2
+Który z tych ptaków odlatuje z Polski na zimę do Afryki?|Wróbel;Sikorka;Bocian biały;Gołąb|2
 Jak po angielsku nazywa się kolor 'Niebieski'?|Red;Green;Blue;Yellow|2
-Czym żywi się gąsienica zanim zamieni się w motyla?|Mięsem;Liśćmi roślin;Rybią ikrą;Kamieniami|1
-Jak nazywa się stolica Wielkopolski (miasto z koziołkami)?|Wrocław;Poznań;Szczecin;Łódź|1
-Ile kół ma tradycyjny rower (bez bocznych kółek)?|Jedno;Dwa;Trzy;Cztery|1`);
-
-const rawR1_P5 = parseR1(`
-Jak nazywa się mały, żółty stworek uwielbiający banany (z filmu Gru)?|Smerf;Minionek;Pokemon;Troll|1
+Czym żywi się większość gąsienic zanim zmieni się w motyla?|Mięsem;Liśćmi roślin;Rybią ikrą;Korą sosny|1
+W jakim polskim mieście na wieży ratusza trykają się koziołki?|We Wrocławiu;W Poznaniu;W Szczecinie;W Łodzi|1
+Jak nazywa się mały żółty stworek w ogrodniczkach z filmu 'Gru i Minionki'?|Smerf;Minionek; Gremlin;Troll|1
 Ile to jest 12 x 5?|50;55;60;65|2
-Który zmysł pozwala nam słyszeć muzykę?|Wzrok;Węch;Słuch;Dotyk|2
-Jak nazywa się najwyższy szczyt na świecie?|Rysy;Mont Blanc;Mount Everest;Kilimandżaro|2
-W jakim miesiącu rozpoczyna się kalendarzowa wiosna?|W lutym;W marcu;W kwietniu;W maju|1
+Który zmysł pozwala nam słyszeć śpiew ptaków?|Wzrok;Węch;Słuch;Dotyk|2
+Jak nazywa się najwyższa góra na kuli ziemskiej?|Rysy;Mont Blanc;Mount Everest;Kilimandżaro|2
+W jakim miesiącu zaczyna się kalendarzowa wiosna?|W lutym;W marcu;W kwietniu;W maju|1
 Jak po angielsku powiesz 'Śniadanie'?|Dinner;Lunch;Breakfast;Snack|2
-Które z tych zwierząt potrafi zmieniać kształt i ma 8 ramion?|Rekin;Ośmiornica;Delfin;Krab|1
-Z czego robi się popcorn?|Z pszenicy;Z ryżu;Z kukurydzy;Z owsa|2
-Ile boków ma sześciokąt?|Cztery;Pięć;Sześć;Osiem|2
-Jak nazywa się polskie miasto słynące z krasnali na ulicach?|Kraków;Wrocław;Gdańsk;Lublin|1
-Która planeta znajduje się między Wenus a Marsem?|Merkury;Ziemia;Jowisz;Saturn|1
-Co jest głównym składnikiem sera żółtego i twarogu?|Mąka;Mleko;Jajka;Olej|1
-Jak nazywa się pies z bajki 'Scooby-Doo'?|Pluto;Reksio;Scooby;Burek|2
+Które morskie zwierzę ma 8 ramion z przyssawkami i potrafi wypuścić atrament?|Rekin;Ośmiornica;Delfin;Meduza|1
+Z jakich ziaren praży się w kinie popcorn?|Z pszenicy;Z ryżu;Z kukurydzy;Z owsa|2
+Ile boków ma figura o nazwie sześciokąt?|Cztery;Pięć;Sześć;Osiem|2
+Które polskie miasto słynie z setek małych figurek krasnali na ulicach?|Kraków;Wrocław;Gdańsk;Katowice|1
+Która planeta krąży wokół Słońca pomiędzy Wenus a Marsem?|Merkury;Ziemia;Jowisz;Saturn|1
+Z czego wytwarza się masło, śmietanę i ser żółty?|Z mąki;Z mleka;Z jajek;Z oleju|1
+Jak nazywa się tchórzliwy pies-detektyw z kreskówki, który uwielbia chrupki?|Pluto;Reksio;Scooby-Doo;Burek|2
 Ile to jest 1000 minus 300?|600;700;800;900|1
-W jakim sporcie rzuca się pomarańczową piłką do kosza na wysokości 3 metrów?|Siatkówka;Piłka ręczna;Koszykówka;Tenis|2
-Jak po angielsku jest 'Nauczyciel'?|Doctor;Driver;Teacher;Player|2
-Które drzewo ma białą korę z czarnymi paskami?|Dąb;Brzoza;Klon;Lipa|1
-Jak nazywa się stolica Grecji?|Rzym;Ateny;Kair;Madryt|1
-Ile nóg ma rak?|Dwie;Cztery;Sześć;Dziesięć (osiem krocznych i szczypce)|3
-Co chroni głowę rowerzysty i narciarza podczas upadku?|Czapka;Okulary;Kask;Szalik|2
-Jak nazywa się lew – król Lwiej Ziemi (ojciec Simby)?|Skaza;Mufasa;Timon;Pumba|1
-Ile centymetrów ma pół metra?|25 cm;50 cm;75 cm;100 cm|1
-Który z tych metali jest przyciągany przez magnes i rdzewieje?|Złoto;Srebro;Żelazo;Miedź|2
-Jak nazywa się urządzenie, które zamienia wiatr w prąd elektryczny?|Turbina wiatrowa (wiatrak);Panel słoneczny;Tama;Silnik|0
-Ile dni ma miesiąc kwiecień?|28;29;30;31|2`);
+W jakim sporcie drużynowym rzuca się piłką do obręczy zawieszonej na 3 metrach?|W siatkówce;W piłce ręcznej;W koszykówce;W tenisie|2
+Jak po angielsku powiesz 'Nauczyciel'?|Doctor;Driver;Teacher;Player|2
+Które drzewo liściaste ma charakterystyczną białą korę z czarnymi cętkami?|Dąb;Brzoza;Klon;Lipa|1
+Co jest stolicą Grecji?|Rzym;Ateny;Kair;Madryt|1
+Co zakładamy na głowę podczas jazdy na rowerze lub nartach dla bezpieczeństwa?|Czapkę z daszkiem;Kask;Nauszniki;Kapelusz|1
+Jak miał na imię ojciec Simby w filmie 'Król Lew'?|Skaza;Mufasa;Timon;Pumba|1
+Ile centymetrów mieści się w pół metra?|25 cm;50 cm;75 cm;100 cm|1
+Jak nazywa się urządzenie zamieniające siłę wiatru na prąd elektryczny?|Turbina wiatrowa;Panel słoneczny;Piorunochron;Akumulator|0
+Ile dni ma miesiąc kwiecień?|28;29;30;31|2
+Jak nazywa się największy dziki kot żyjący w azjatyckiej tajdze (w paski)?|Lew;Tygrys;Gepard;Ryś|1
+Ile to jest 7 x 8?|48;54;56;64|2
+W jakim mieście we Francji stoi Wieża Eiffla?|W Lyonie;W Marsylii;W Paryżu;W Nicei|2
+Jak nazywa się towarzysz Kubusia Puchatka, który uwielbia brykać na ogonie?|Kłapouchy;Tygrysek;Królik; Sowa|1
+Który instrument muzyczny posiada struny i smyczek?|Flet;Trąbka;Skrzypce;Bęben|2
+Jak po angielsku powiesz słowo 'Książka'?|Pen;Book;Desk;Bag|1
+Z jakiego metalu szlachetnego robi się złote medale i obrączki?|Ze srebra;Ze złota;Z miedzi;Z aluminium|1
+Ile minut mają dwie godziny?|90;100;120;150|2
+Jak nazywa się podziemna część grzyba przypominająca nitki?|Kapelusz;Trzon;Grzybnia;Korzeń|2
+Który ptak nie potrafi latać, ale doskonale pływa w zimnych wodach Antarktydy?|Bocian;Pingwin;Orzeł;Mewa|1
+W jakim kraju leży miasto Barcelona i Madryt?|We Włoszech;W Portugalii;W Hiszpanii;We Francji|2
+Ile to jest 45 + 55?|90;95;100;110|2
+Jak ma na imię bałwanek, który marzył o lecie w 'Krainie Lodu'?|Sven;Olaf;Kristoff;Hans|1
+Czym pokryte jest ciało większości ryb?|Piórami;Futrem;Łuskami;Kolcami|2
+Jak po angielsku nazywa się kolor 'Zielony'?|Red;Yellow;Green;Orange|2
+Który pojazd porusza się po szynach pod ziemią w wielkich miastach?|Autobus;Metro;Trolejbus;Prom|1
+Ile boków ma ośmiokąt?|Sześć;Siedem;Osiem;Dziesięć|2
+Jak nazywa się zabytek w Egipcie z ciałem lwa i głową człowieka?|Koloseum;Sfinks;Partenon;Big Ben|1
+W jakim sporcie używa się białych figur oraz szachownicy z 64 polami?|W warcabach;W szachach;W domino;W brydżu|1
+Ile to jest 36 podzielone przez 4?|7;8;9;10|2
+Jak nazywa się pora dnia, gdy Słońce chowa się za horyzontem?|Świt;Południe;Zachód słońca (zmierzch);Północ|2
+Które zwierzę z lasu ma rude futerko, puszysty ogon i zbiera orzechy w dziupli?|Jeż;Borsuk;Wiewiórka;Zając|2
+Jak po angielsku powiesz 'Jabłko'?|Pear;Plum;Apple;Peach|2
+Jak nazywa się stolica Japonii?|Pekin;Seul;Tokio;Bangkok|2
+Ile kół ma klasyczny samochód osobowy (podczas jazdy)?|Dwa;Trzy;Cztery;Sześć|2
+Który narząd w głowie odpowiada za myślenie i pamięć?|Serce;Płuca;Mózg;Żołądek|2
+W jakiej bajce główny bohater ma magiczną lampę z Dżinem?|Król Lew;Aladyn;Herkules;Tarzan|1
+Ile to jest 15 x 3?|35;40;45;50|2
+Jak nazywa się przyrząd optyczny służący do oglądania dalekich gwiazd?|Mikroskop;Teleskop;Lupa;Okulary|1
+Która rzeka przepływa przez Wrocław i Szczecin?|Wisła;Odra;Bug;San|1
+Jak po angielsku powiesz liczbę 'Dziesięć'?|Five;Eight;Ten;Twelve|2
+Z czego pszczoły zbierają pyłek i nektar na łące?|Z kamieni;Z kwiatów;Z mchu;Z wody|1`);
 
-const rawR3_P1 = parseR3(`
+// --- BAZA 50 UNIKALNYCH HASEŁ DO RUNDY 2 (10 PUL PO 5 HASEŁ, ZERO TYCH SAMYCH KATEGORII POD RZĄD) ---
+const masterR2 = parseWheel(`
+BAJKA|KRAINA LODU
+JEDZENIE|LODY WANILIOWE
+ZWIERZĘTA|ZŁOTA RYBKA
+POSTAĆ|MYSZKA MIKI
+LITERATURA|KUBUŚ PUCHATEK
+GEOGRAFIA|WIELKI MUR CHIŃSKI
+KOSMOS|UKŁAD SŁONECZNY
+HISTORIA|BITWA POD GRUNWALDEM
+ZABYTKI|WIEŻA EIFFLA
+TECHNOLOGIA|SZTUCZNA INTELIGENCJA
+FILM|GWIEZDNE WOJNY
+LEKTURA|AKADEMIA PANA KLEKSA
+MORZE|MORZE BAŁTYCKIE
+SPORT|PIŁKA NOŻNA
+MAGIA|HARRY POTTER
+ARKTYKA|NIEDŹWIEDŹ POLARNY
+ANIMACJA|KRÓL LEW
+POLSKA|KOPALNIA SOLI W WIELICZCE
+ZIMA|SKOKI NARCIARSKIE
+GRY|ŚWIAT MINECRAFT
+ASTRONOMIA|DROGA MLECZNA
+KINO|TOY STORY
+PRZYRODA|CZTERY PORY ROKU
+KRAKÓW|ZAMEK KRÓLEWSKI NA WAWELU
+OLIMPIADA|IGRZYSKA OLIMPIJSKIE
+SŁODYCZE|GORĄCA CZEKOLADA
+BAŚŃ|KRÓLEWNA ŚNIEŻKA
+OCEAN|RAFA KORALOWA
+KOMIKS|SPIDER MAN
+TRANSPORT|SZYBKI POCIĄG
+LAS|PUSZCZA BIAŁOWIESKA
+PRZYSMAK|PIERNIKI TORUŃSKIE
+GÓRY|ŚPIĄCY RYCERZ GIEWONT
+MUZYKA|FRYDERYK CHOPIN
+POGODA|KOLOROWA TĘCZA
+ZWIERZAK| PANDA WIELKA
+WAKACJE|SŁONECZNA PLAŻA
+BOHATER|KOT W BUTACH
+NAUKA|MIKOŁAJ KOPERNIK
+KUCHNIA|WŁOSKA PIZZA
+PODRÓŻE|WYSPA SKARBÓW
+BAJKA|GDZIE JEST NEMO
+PRZYRODA|ZIELONA DŻUNGLA
+SPORT|RZUT KARNY
+KOSMOS|PIERWSZY CZŁOWIEK NA KSIĘŻYCU
+ZABYTKI|EGIPSKIE PIRAMIDY
+ANIMACJA|EPOKA LODOWCOWA
+GEOGRAFIA|MOUNT EVEREST
+MUZYKA|FORTEPIAN I SKRZYPCE
+HISTORIA|ZAMEK W MALBORKU`);
+
+// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 3 (10 PUL PO 15 PYTAŃ) ---
+const masterR3 = parseR3(`
 Stolica Niemiec to...|Berlin
 Z jakiego owocu robi się rodzynki?|Z winogron / Winogrona / Winogrono
 Mąż krowy to...|Byk
@@ -269,130 +363,133 @@ Przeciwieństwo słowa 'zimno' to...|Ciepło / Gorąco
 Jak po angielsku jest 'kot'?|Cat
 W jakim sporcie używa się rakietki i lotki?|Badminton / Kometka
 Z czego robi się frytki?|Z ziemniaków / Ziemniaki / Ziemniak
-Jak ma na imię brat Mario z gry Nintendo?|Luigi
-Największy ptak na świecie to...|Struś
-Który miesiąc ma najmniej dni?|Luty
-Słodki płyn produkowany przez pszczoły to...|Miód
+Jak ma na imię brat Mario w zielonej czapce?|Luigi
+Największy żyjący ptak na świecie to...|Struś
+Który miesiąc w roku ma najmniej dni?|Luty
+Słodki złocisty przysmak produkowany przez pszczoły to...|Miód
 Co powstaje, gdy woda zamarznie?|Lód
-Kto roznosi listy w mieście?|Listonosz / Kurier
-Jaki kolor ma dojrzały banan?|Żółty
+Kto roznosi listy i pocztówki do skrzynek?|Listonosz / Kurier
+Jaki kolor ma skórka dojrzałego banana?|Żółty
 Jak po angielsku jest 'pies'?|Dog
-Który owoc jest w logo marki iPhone (Apple)?|Jabłko / Apple
-Z czego piecze się chleb?|Z mąki / Mąka
+Który owoc znajduje się w logo firmy Apple (iPhone)?|Jabłko / Apple
+Z czego wyrabia się ciasto na chleb?|Z mąki / Mąka
 Czym oddychają ryby pod wodą?|Skrzelami / Skrzela
 Jak po angielsku jest cyfra 'jeden'?|One
-Która planeta to 'Czerwona Planeta'?|Mars`);
-
-const rawR3_P2 = parseR3(`
-Wynik mnożenia to...|Iloczyn
-Nauka badająca przeszłość to...|Historia
-Słodka, biała substancja w kuchni to...|Cukier
+Która planeta nazywana jest 'Czerwoną Planetą'?|Mars
+Wynik mnożenia w matematyce to...|Iloczyn
+Nauka szkolna badająca dawne dzieje i królów to...|Historia
+Słodka, biała przyprawa sypana do herbaty to...|Cukier
 Jak po angielsku jest 'drzewo'?|Tree
-Kto napisał baśń 'Brzydkie Kaczątko'?|Andersen / Hans Christian Andersen
-Największy ocean to Ocean...|Spokojny / Pacyfik
-Stolica Czech to...|Praga
-Wynik odejmowania to...|Różnica
+Kto napisał baśnie 'Brzydkie Kaczątko' i 'Królowa Śniegu'?|Andersen / Hans Christian Andersen
+Największy ocean na Ziemi to Ocean...|Spokojny / Pacyfik
+Stolica naszych południowych sąsiadów - Czech to...|Praga
+Wynik odejmowania w matematyce to...|Różnica
 Jak po angielsku jest 'księżyc'?|Moon
-Rzeka w Warszawie to...|Wisła
-Kumkający płaz w stawie to...|Żaba / Ropucha
-Polska jednostka temperatury to...|Celsjusz / Stopnie Celsjusza
-Gaz niezbędny nam do oddychania...|Tlen
-Ptak będący godłem Polski to...|Orzeł / Orzeł Biały
-Największy drapieżnik lądowy na Arktyce to...|Niedźwiedź polarny / Niedźwiedź
+Najdłuższa rzeka przepływająca przez Warszawę to...|Wisła
+Zielony płaz, który kumka w stawie i skacze to...|Żaba / Ropucha
+W jakich stopniach mierzymy temperaturę w Polsce?|Celsjusza / Celsjusz
+Gaz w powietrzu niezbędny ludziom do oddychania to...|Tlen
+Biały ptak w koronie z godła Polski to...|Orzeł / Orzeł Biały
+Biały drapieżnik żyjący na lodach Arktyki to...|Niedźwiedź polarny / Niedźwiedź
 Ile to jest 12 razy 12?|144
 Stolica Francji to...|Paryż
 Jak po angielsku jest 'dziewczynka'?|Girl
-Polski piłkarz w Barcelonie (nr 9) to...|Lewandowski / Robert Lewandowski
-Urządzenie robiące zdjęcia to...|Aparat / Aparat fotograficzny
-W jakim państwie stoi Wieża Eiffla?|Francja / We Francji
-Najzimniejszy kontynent na świecie to...|Antarktyda
-Ludzki szkielet składa się z...|Z kości / Kości
-Gdynia i Sopot tworzą Trójmiasto z...|Gdańskiem / Gdańsk
-Przenośny komputer osobisty to...|Laptop / Notebook`);
-
-const rawR3_P3 = parseR3(`
-Zamarznięta woda zwisająca zimą z dachu to...|Sopel / Sopel lodu
+Słynny polski piłkarz grający z numerem 9 to...|Lewandowski / Robert Lewandowski
+Urządzenie służące do robienia zdjęć to...|Aparat / Aparat fotograficzny
+W jakim państwie stoi Wieża Eiffla?|We Francji / Francja
+Najzimniejszy, skuty lodem kontynent na południu Ziemi to...|Antarktyda
+Twarde części tworzące ludzki szkielet to...|Kości
+Gdynia i Sopot tworzą Trójmiasto razem z...|Gdańskiem / Gdańsk
+Przenośny, składany komputer osobisty to...|Laptop / Notebook
+Zamarznięta woda zwisająca zimą z brzegu dachu to...|Sopel / Sopel lodu
 Jak po angielsku jest 'słońce'?|Sun
-Ptak, który podrzuca swoje jajka do cudzych gniazd to...|Kukułka
-Ile groszy ma jedna złotówka?|100 / Sto
+Ptak, który podrzuca swoje jajka do obcych gniazd i kuka to...|Kukułka
+Ile groszy mieści się w jednej złotówce?|100 / Sto
 Stolica Polski to...|Warszawa
-Zwierzę w czarno-białe paski przypominające konia to...|Zebra
-Jak ma na imię mały różowy przyjaciel Kubusia Puchatka?|Prosiaczek
+Afrykańskie zwierzę w czarno-białe paski to...|Zebra
+Jak ma na imię mały, różowy przyjaciel Kubusia Puchatka?|Prosiaczek
 Ile to jest 9 razy 5?|45
-Część rośliny, która znajduje się pod ziemią to...|Korzeń / Korzenie
+Podziemna część rośliny pobierająca wodę z gleby to...|Korzeń / Korzenie
 Jak po angielsku jest 'samochód'?|Car / Auto
-Jak nazywa się król zwierząt z grzywą?|Lew
-Co pojawia się na niebie po deszczu, gdy świeci słońce (ma 7 kolorów)?|Tęcza
-Mieszkaniec Polski to Polak, a mieszkaniec Włoch to...|Włoch
-Ile godzin ma jedna doba?|24 / Dwadzieścia cztery
-Czerwony owad w CZARNE kropki, który przynosi szczęście to...|Biedronka
+Zwierzę nazywane królem dżungli (z bujną grzywą) to...|Lew
+Kolorowy łuk na niebie po deszczu, gdy wyjdzie słońce to...|Tęcza
+Ile godzin ma jedna pełna doba?|24 / Dwadzieścia cztery
+Czerwony chrząszcz w czarne kropki na skrzydełkach to...|Biedronka
 Jak po angielsku jest 'mleko'?|Milk
-Z czego buduje się zamki na plaży?|Z piasku / Piasek
-Kto gasi pożary?|Strażak / Straż pożarna
+Z czego dzieci budują babki i zamki na plaży?|Z piasku / Piasek
+Kto jeździ czerwonym wozem na sygnale i gasi pożary?|Strażak / Straż pożarna
 Ile boków ma kwadrat?|4 / Cztery
-Jak nazywa się okręt, który pływa pod wodą?|Łódź podwodna / Okręt podwodny
+Jak nazywa się statek zdolny pływać całkowicie pod wodą?|Łódź podwodna / Okręt podwodny
 Jak po angielsku jest 'dom'?|House / Home
-Zwierzę, które nosi spiralną muszlę na grzbiecie to...|Ślimak
-Ile to jest 100 minus 25?|75
-W jakim miesiącu obchodzimy Wigilię i Boże Narodzenie?|Grudzień / W grudniu
-Ile centymetrów ma jeden metr?|100 / Sto`);
-
-const rawR3_P4 = parseR3(`
-Jak nazywa się młody koń?|Źrebak / Źrebię
+Małe stworzenie, które nosi spiralną muszlę na grzbiecie to...|Ślimak
+Ile to jest 100 odjąć 25?|75
+W jakim miesiącu są Mikołajki i Święta Bożego Narodzenia?|W grudniu / Grudzień
+Ile centymetrów ma jeden metr?|100 / Sto
+Jak nazywa się dziecko konia i klaczy?|Źrebak / Źrebię
 Ile minut ma jedna godzina?|60 / Sześćdziesiąt
 Jak po angielsku jest 'woda'?|Water
-Kolor, który powstaje ze zmieszania czerwonego i białego to...|Różowy / Róż
-Jak nazywa się pora dnia w południe, gdy jemy główny ciepły posiłek?|Obiad / Południe
-Zwierzę z długimi uszami, które uwielbia chrupać marchewkę to...|Królik / Zając
+Kolor powstający z połączenia czerwonego i białego to...|Różowy / Róż
+Zwierzę z długimi uszami, które chrupie marchewkę to...|Królik / Zając
 Ile to jest 7 razy 7?|49
-Jak nazywa się stolica Anglii?|Londyn
+Stolica Anglii (Wielkiej Brytanii) to...|Londyn
 Czym zapinamy kurtkę (ma ząbki i suwak)?|Zamek / Suwak / Zamek błyskawiczny
 Jak po angielsku jest 'jabłko'?|Apple
-Ptak, który nocą poluje, ma wielkie oczy i pohukuje w lesie to...|Sowa / Puchacz
-Z jakiego drzewa spadają kasztany?|Kasztanowiec / Z kasztanowca / Kasztan
-Ile nóg ma pies?|4 / Cztery
-Jak nazywa się szklany dom dla rybek w pokoju?|Akwarium
+Nocny ptak z wielkimi oczami, który pohukuje w lesie to...|Sowa / Puchacz
+Z jakiego drzewa jesienią spadają brązowe kasztany w łupinach?|Z kasztanowca / Kasztanowiec
+Ile łap ma pies?|4 / Cztery
+Szklane naczynie lub zbiornik z wodą dla domowych rybek to...|Akwarium
 Przeciwieństwo słowa 'dzień' to...|Noc
 Jak po angielsku jest 'ryba'?|Fish
-W jakim sporcie odbija się piłkę rękami nad wysoką siatką?|Siatkówka / Piłka siatkowa
+Gra zespołowa, w której przebija się piłkę rękami nad siatką to...|Siatkówka
 Ile to jest 50 dodać 50?|100 / Sto
-Jak nazywa się lekarz, który leczy zęby?|Dentysta / Stomatolog
-Co świeci na niebie w nocy i zmienia kształt (rogalik lub pełnia)?|Księżyc
+Lekarz, do którego idziemy wyleczyć bolący ząb to...|Dentysta / Stomatolog
 Jak po angielsku jest kolor 'czarny'?|Black
-Jak nazywa się bałwanek z bajki 'Kraina Lodu'?|Olaf
-Z czego robi się masło?|Z mleka / Ze śmietanki / Śmietana / Mleko
-Ile dni ma tydzień?|7 / Siedem
-Jak nazywa się kraina pełna piasku, wielbłądów i kaktusów?|Pustynia`);
-
-const rawR3_P5 = parseR3(`
+Wesoły bałwanek z filmu 'Kraina Lodu' nazywa się...|Olaf
+Z czego ubija się masło?|Z mleka / Ze śmietanki / Śmietana
+Ile dni ma jeden tydzień?|7 / Siedem
+Gorąca kraina pełna wydm piasku, wielbłądów i oaz to...|Pustynia
 Jak nazywa się samica lwa?|Lwica
 Ile to jest 8 razy 5?|40 / Czterdzieści
 Jak po angielsku jest 'ptak'?|Bird
-Urządzenie w kuchni, które mrozi lody i mięso na kość to...|Zamrażarka / Zamrażalnik / Lodówka
-Która pora roku jest najzimniejsza?|Zima
-Jak nazywa się duża, zielona roślina z kolcami, rosnąca na pustyni?|Kaktus
-Ile palców u jednej ręki ma człowiek?|5 / Pięć
-Jak po angielsku jest 'zielony'?|Green
-Jak nazywa się budynek, do którego chodzą uczyć się dzieci?|Szkoła
-Zwierzę domowe, które mruczy i łapie myszy to...|Kot / Kotek
-Ile to jest 90 minus 30?|60
-Jak nazywa się człowiek, który leci rakietą w kosmos?|Astronauta / Kosmonauta
-W czym pieczemy ciasto w kuchni?|W piekarniku / Piekarnik / Piec
+Najzimniejsza pora roku ze śniegiem i mrozem to...|Zima
+Roślina pustynna, która zamiast liści ma ostre ciernie (kolce) to...|Kaktus
+Ile palców u jednej dłoni ma człowiek?|5 / Pięć
+Jak po angielsku jest kolor 'zielony'?|Green
+Budynek z klasami i tablicą, gdzie uczą się uczniowie to...|Szkoła
+Domowy pupil, który mruczy, pije mleko i łapie myszy to...|Kot / Kotek
+Ile to jest 90 odjąć 30?|60
+Człowiek, który w skafandrze leci rakietą w przestrzeń kosmiczną to...|Astronauta / Kosmonauta
+Urządzenie w kuchni z szybą, w którym pieczemy ciasta i pizzę to...|Piekarnik / Piec
 Jak po angielsku jest 'chłopiec'?|Boy
-Jak nazywa się największa rzeka w Polsce?|Wisła
-Co zakładamy na dłonie zimą, żeby nie marzły palce?|Rękawiczki / Rękawice
+Co zakładamy zimą na dłonie, żeby nie marzły?|Rękawiczki / Rękawice
 Ile to jest 6 razy 6?|36
-Jak nazywa się królestwo mrówek w lesie (kopiec z igieł)?|Mrowisko
+Duży kopiec z igieł w lesie zbudowany przez mrówki to...|Mrowisko
 Jak po angielsku jest cyfra 'dwa'?|Two
-Który zmysł znajduje się w oczach?|Wzrok
-Z jakiego owocu wyciska się sok pomarańczowy?|Z pomarańczy / Pomarańcza
-Ile kół ma hulajnoga klasyczna?|2 / Dwa
-Jak nazywa się szkiełko w oprawkach, które pomaga lepiej widzieć?|Okulary
+Który zmysł odpowiada za widzenie obrazów i kolorów?|Wzrok
+Z jakiego owocu cytrusowego wyciska się sok pomarańczowy?|Z pomarańczy / Pomarańcza
+Ile kół ma klasyczna hulajnoga dwukołowa?|2 / Dwa
+Co nosimy na nosie ze szkłami, aby lepiej widzieć lub chronić oczy od słońca?|Okulary
 Jak po angielsku jest 'król'?|King
-Co spada z drzew jesienią i szeleszczy pod butami?|Liście`);
+Co jesienią żółknie i opada z drzew na ziemię?|Liście
+Kwaśny, żółty owoc cytrusowy dodawany do herbaty to...|Cytryna
+Ile to jest 4 razy 8?|32
+Jak po angielsku jest 'czerwony'?|Red
+Ptak, który stuka dziobem w korę drzewa i szuka korników to...|Dzięcioł
+Miejsce z ekranem i fotelami, do którego chodzimy oglądać filmy to...|Kino
+Ile miesięcy ma jeden rok?|12 / Dwanaście
+Zwierzę z Afryki o najdłuższej szyi na świecie to...|Żyrafa
+Jak po angielsku jest 'siostra'?|Sister
+Z czego pszczoły budują plastry w ulu?|Z wosku / Wosk
+Ile to jest 200 podzielić przez 2?|100 / Sto
+Białe warzywo w łupinach podzielone na aromatyczne ząbki to...|Czosnek
+Jak nazywa się kraina, w której mieszka Święty Mikołaj z reniferami?|Laponia / Biegun Północny
+Jak po angielsku jest 'trzy'?|Three
+Wodne zwierzę ze szczypcami, które chodzi do tyłu to...|Rak / Krab
+Ile to jest 15 dodać 15?|30 / Trzydzieści`);
 
-const rawR4_A = parseR4(`
-CYPR|W jakim państwie leży miasto Paphos?|W Grecji;Na Cyprze;We Włoszech;W Hiszpanii|1
+// --- BAZA PYTAŃ DO RUNDY 4 (BEZ ZDRADZANIA ODPOWIEDZI W KATEGORII!) ---
+const masterR4 = parseR4(`
+PODRÓŻE|W jakim wyspiarskim państwie na Morzu Śródziemnym leży kurort Paphos?|W Grecji;Na Cyprze;We Włoszech;W Hiszpanii|1
 RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
 RODZINA|Jak ma na drugie imię Mama/Ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
 RODZINA|W jakim mieście urodziła się Mama/Ciocia Ola?|Katowice;Chorzów;Sosnowiec;Bytom|1
@@ -400,125 +497,119 @@ RODZINA|Jak ma na nazwisko panieńskie Babcia Ela?|Lis;Wilk;Kot;Zając|1
 SPORT|Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?|9;10;11;12|2
 MATEMATYKA|Ile to jest (20 + 30) - 10?|40;30;50;60|0
 MATEMATYKA|((8 x 7) + 44) - 100 = ?|0;1;10;100|0
-MATEMATYKA|Ile sztuk to jest jeden tuzin?|10;12;15;20|1
-GEOGRAFIA|Na jakim kontynencie leży Egipt?|Europa;Azja;Ameryka;Afryka|3
+MATEMATYKA|Ile sztuk liczy dokładnie jeden tuzin?|10;12;15;20|1
+GEOGRAFIA|Na jakim kontynencie leży Egipt i rzeka Nil?|Europa;Azja;Ameryka;Afryka|3
 GEOGRAFIA|Jaki jest najmniejszy kontynent na świecie?|Australia;Europa;Antarktyda;Azja|0
 ANGIELSKI|Jak jest 'ananas' po angielsku?|Apple;Pineapple;Banana;Orange|1
 ANGIELSKI|Jak jest 'szary' po angielsku?|Green;Blue;Grey;Black|2
-ZWIERZĘTA|Jakie jest najszybsze zwierzę lądowe?|Lew;Gepard;Tygrys;Kangur|1
-ZWIERZĘTA|Jak nazywa się największy ssak morski z fiszbinami?|Rekin wielorybi;Płetwal błękitny;Orka;Delfin|1
-BIOLOGIA|Który narząd pompuje krew w naszym organizmie?|Płuca;Żołądek;Serce;Wątroba|2
-KOSMOS|Gwiazda, wokół której krąży Ziemia to:|Księżyc;Słońce;Mars;Wenus|1
-KOSMOS|Pierwszy człowiek na Księżycu to:|Neil Armstrong;Yuri Gagarin;Buzz Aldrin;Kopernik|0
-BAJKI|Kto mieszka w ananasie na dnie morza?|Patryk;Skalmar;SpongeBob;Pan Krab|2
-BAJKI|Czego używa Harry Potter do latania?|Dywanu;Miotły;Rakiety;Smoka|1
-MUZYKA|Ile strun ma klasyczna gitara?|4;5;6;7|2
-HISTORIA|Który król zastał Polskę drewnianą, a zostawił murowaną?|Chrobry;Kazimierz Wielki;Mieszko I;Jagiełło|1
-POGODA|Co pada z nieba, gdy woda zamarza wysoko latem?|Deszcz;Grad;Śnieg;Rosa|1
+ZWIERZĘTA|Jakie jest najszybsze zwierzę lądowe na świecie?|Lew;Gepard;Tygrys;Kangur|1
+ZWIERZĘTA|Jak nazywa się największy ssak morski na Ziemi?|Rekin wielorybi;Płetwal błękitny;Orka;Delfin|1
+BIOLOGIA|Który narząd nieustannie pompuje krew w naszym organizmie?|Płuca;Żołądek;Serce;Wątroba|2
+KOSMOS|Gwiazda znajdująca się w centrum naszego Układu Słonecznego to:|Księżyc;Słońce;Mars;Wenus|1
+KOSMOS|Kto jako pierwszy człowiek w historii stanął na Księżycu?|Neil Armstrong;Jurij Gagarin;Buzz Aldrin;Mikołaj Kopernik|0
+BAJKI|Kto mieszka w ananasie na dnie morza w Bikini Dolnym?|Patryk Rozgwiazda;Skalmar;SpongeBob Kanciastoporty;Pan Krab|2
+BAJKI|Czego używa Harry Potter do latania podczas meczów Quidditcha?|Latającego dywanu;Magicznej miotły;Rakiety;Smoka|1
+MUZYKA|Ile strun ma tradycyjna gitara klasyczna?|4;5;6;7|2
+HISTORIA|Który król według przysłowia zastał Polskę drewnianą, a zostawił murowaną?|Bolesław Chrobry;Kazimierz Wielki;Mieszko I;Władysław Jagiełło|1
+POGODA|Jak nazywają się kulki lodu spadające z chmur podczas letniej burzy?|Deszcz;Grad;Mrzawka;Rosa|1
 ANATOMIA|Z ilu zębów składa się pełne uzębienie dorosłego człowieka?|28;30;32;34|2
-TECHNOLOGIA|Kto jest założycielem Microsoftu?|Steve Jobs;Mark Zuckerberg;Bill Gates;Elon Musk|2
-LITERATURA|Kto jest autorem baśni o Kopciuszku?|Bracia Grimm;Andersen;Perrault;Wszyscy (różne wersje)|3
-SPORT|Co ile lat odbywają się letnie Igrzyska Olimpijskie?|2;3;4;5|2
-PRZYRODA|Proces, w którym rośliny produkują tlen to:|Oddychanie;Fotosynteza;Trawienie;Parowanie|1
-ASTRONOMIA|Która planeta ma najwięcej widocznych pierścieni?|Uran;Neptun;Jowisz;Saturn|3
-MATEMATYKA|Ile to jest 100 podzielone na 4?|20;25;30;50|1`);
-
-const rawR4_B = parseR4(`
-GEOGRAFIA|Które z tych państw graniczy z Polską od południa?|Niemcy;Czechy;Szwecja;Litwa|1
+TECHNOLOGIA|Kto jest współzałożycielem firmy Microsoft?|Steve Jobs;Mark Zuckerberg;Bill Gates;Elon Musk|2
+LITERATURA|Który pisarz zasłynął baśniami o Małej Syrence i Calineczce?|Bracia Grimm;Hans Christian Andersen;Jan Brzechwa;Julian Tuwim|1
+SPORT|Co ile lat odbywają się Letnie Igrzyska Olimpijskie?|Co 2 lata;Co 3 lata;Co 4 lata;Co 5 lat|2
+PRZYRODA|Jak nazywa się proces, w którym zielone rośliny produkują tlen w świetle słonecznym?|Oddychanie;Fotosynteza;Trawienie;Parowanie|1
+ASTRONOMIA|Która planeta słynie z najokazalszych pierścieni z lodu i skał?|Uran;Neptun;Jowisz;Saturn|3
+MATEMATYKA|Ile to jest 100 podzielone na 4?|20;25;30;50|1
+GEOGRAFIA|Które z tych państw graniczy z Polską przez góry od południa?|Niemcy;Czechy;Szwecja;Litwa|1
 MATEMATYKA|Ile to jest 3 x 15?|35;40;45;50|2
-BAJKI|Jak nazywa się kowboj z bajki 'Toy Story'?|Buzz Astral;Chudy;Rex;Zurg|1
-PRZYRODA|Z jakiego drzewa spadają żołędzie?|Z sosny;Z kasztanowca;Z dębu;Z brzozy|2
+BAJKI|Jak ma na imię szeryf-kowboj z filmu 'Toy Story'?|Buzz Astral;Chudy;Rex;Zurg|1
+PRZYRODA|Z jakiego drzewa jesienią spadają żołędzie?|Z sosny;Z kasztanowca;Z dębu;Z brzozy|2
 ANGIELSKI|Co oznacza angielskie słowo 'Butterfly'?|Masło;Mucha;Motyl;Ptak|2
-SPORT|Ile trwa cały mecz piłki nożnej (bez dogrywki)?|45 minut;60 minut;80 minut;90 minut|3
-HISTORIA|Jak nazywał się smok, który mieszkał w jamie pod Wawelem?|Smok Welski;Smok Wawelski;Smok Krakowski;Bazyliszek|1
-KOSMOS|Jak nazywa się naturalny satelita Ziemi widoczny w nocy?|Mars;Słońce;Księżyc;Wenus|2
-ZWIERZĘTA|Ile garbów ma wielbłąd dwugarbny (baktrian)?|Jeden;Dwa;Trzy;Zero|1
-KULINARIA|Co jest głównym składnikiem włoskiego sosu Bolognese (oprócz mięsa)?|Śmietana;Pomidory;Szpinak;Ser pleśniowy|1
-MATEMATYKA|Ile wynosi obwód kwadratu o boku 5 cm?|10 cm;15 cm;20 cm;25 cm|2
-GEOGRAFIA|W jakim mieście w Polsce znajduje się słynny pomnik Neptuna?|W Krakowie;W Gdańsku;W Warszawie;We Wrocławiu|1
-GRY|Czego trzeba unikać w grze Minecraft, bo wybucha i syczy?|Zombie;Creepera;Pająka;Endermana|1
-ANGIELSKI|Jak powiesz po angielsku 'Dziękuję'?|Please;Hello;Thank you;Sorry|2
-MUZYKA|Jak nazywa się polski taniec narodowy oraz tytuł naszego hymnu?|Polonez;Krakowiak;Mazurek;Oberek|2
-BIOLOGIA|Który zmysł odpowiada za rozpoznawanie zapachów?|Wzrok;Słuch;Węch;Smak|2
-BAJKI|Ilu krasnoludków opiekowało się Królewną Śnieżką?|Pięciu;Sześciu;Siedmiu;Ośmiu|2
-TECHNOLOGIA|Czego używamy do klikania na ekranie komputera?|Klawiatury;Myszki;Głośnika;Drukarki|1
-PRZYRODA|Który z tych grzybów jest trujący (czerwony w białe kropki)?|Borowik;Pieczarka;Muchomor;Kurka|2
-SPORT|W jakiej dyscyplinie wielkie sukcesy odnosi Iga Świątek?|W siatkówce;W pływaniu;W tenisie ziemnym;W biegach|2
-MATEMATYKA|Jaka jest kolejna liczba w ciągu: 2, 4, 8, 16, ...?|20;24;32;64|2
-GEOGRAFIA|Z jakiego kontynentu pochodzą kangury i misie koala?|Z Afryki;Z Australii;Z Azji;Z Europy|1
-TRANSPORT|Co oznacza czerwone światło na sygnalizatorze?|Jedź szybko;Przygotuj się;Stój!;Skręć w prawo|2
-ANGIELSKI|Jakim dniem tygodnia jest 'Monday'?|Wtorek;Piątek;Poniedziałek;Niedziela|2
-ZWIERZĘTA|Które zwierzę buduje tamy z patyków na rzekach?|Wydra;Bóbr;Borsuk;Szop|1
-LITERATURA|Jak nazywał się słoń z powieści 'W pustyni i w puszczy'?|Dumbo;King;Saba;Bimbo|1
-NAUKA|W ilu stopniach Celsjusza wrze (gotuje się) woda?|50°C;90°C;100°C;120°C|2
-BAJKI|Jakiego koloru są Smerfy?|Zielonego;Żółtego;Niebieskiego;Czerwonego|2
-GEOGRAFIA|Jak nazywają się najwyższe góry na świecie (tam gdzie Mount Everest)?|Alpy;Tatry;Himalaje;Andy|2
-MATEMATYKA|Ile to jest 72 podzielone przez 9?|6;7;8;9|2`);
+SPORT|Ile minut trwa regulaminowy czas meczu piłki nożnej (obie połowy razem)?|45 minut;60 minut;80 minut;90 minut|3
+HISTORIA|Jaki legendarny potwór mieszkał w jamie pod wzgórzem wawelskim w Krakowie?|Bazyliszek;Smok Wawelski;Syrenka;Gryf|1
+KOSMOS|Jak nazywa się naturalny satelita Ziemi oświetlający nocne niebo?|Mars;Słońce;Księżyc;Wenus|2
+ZWIERZĘTA|Ile garbów na grzbiecie ma wielbłąd dwugarbny (baktrian)?|Jeden;Dwa;Trzy;Zero|1
+KULINARIA|Z jakich czerwonych warzyw (owoców) powstaje klasyczny sos Bolognese i ketchup?|Z papryki;Z pomidorów;Z buraków;Z rzodkiewki|1
+MATEMATYKA|Ile wynosi obwód kwadratu o boku długości 5 cm?|10 cm;15 cm;20 cm;25 cm|2
+GEOGRAFIA|W jakim nadmorskim mieście w Polsce stoi słynna Fontanna Neptuna?|W Krakowie;W Gdańsku;W Warszawie;We Wrocławiu|1
+GRY|Zielony potwór w grze Minecraft, który podchodzi po cichu, syczy i wybucha to:|Zombie;Creeper;Szkielet;Enderman|1
+ANGIELSKI|Jak po angielsku powiesz zwrot 'Dziękuję'?|Please;Hello;Thank you;Sorry|2
+MUZYKA|Jaki taniec ludowy znajduje się w tytule polskiego hymnu narodowego?|Polonez;Krakowiak;Mazurek;Oberek|2
+BIOLOGIA|Który zmysł odpowiada za wyczuwanie zapachów kwiatów i jedzenia?|Wzrok;Słuch;Węch;Smak|2
+BAJKI|Ilu krasnoludków przyjęło pod swój dach Królewnę Śnieżkę?|Pięciu;Sześciu;Siedmiu;Ośmiu|2
+TECHNOLOGIA|Jakiego małego urządzenia z rolką używamy do przesuwania kursora na ekranie komputera?|Klawiatury;Myszki;Głośnika;Drukarki|1
+PRZYRODA|Który leśny grzyb ma czerwony kapelusz w białe kropki i jest trujący?|Borowik szlachetny;Pieczarka;Muchomor czerwony;Kurka|2
+SPORT|W jakiej dyscyplinie sportowej wielkie turnieje wygrywa Iga Świątek?|W siatkówce;W pływaniu;W tenisie ziemnym;W lekkoatletyce|2
+MATEMATYKA|Jaka liczba będzie następna w ciągu: 2, 4, 8, 16, ...?|20;24;32;64|2
+GEOGRAFIA|Na jakim kontynencie żyją w naturze kangury oraz misie koala?|W Afryce;W Australii;W Azji;W Europie|1
+TRANSPORT|Co oznacza czerwone światło na sygnalizatorze świetlnym dla kierowców i pieszych?|Idź śmiało;Przygotuj się;Stój! (Zakaz wejścia/wjazdu);Skręć w lewo|2
+ANGIELSKI|Którym dniem tygodnia jest angielski 'Monday'?|Wtorkiem;Piątkiem;Poniedziałkiem;Niedzielą|2
+ZWIERZĘTA|Które wodne zwierzę z szerokim ogonem buduje tamy z gałęzi na rzekach?|Wydra;Bóbr;Borsuk;Szop pracz|1
+LITERATURA|Jak nazywał się wierny słoń, którym opiekowali się Staś i Nel w 'W pustyni i w puszczy'?|Dumbo;King;Saba;Bimbo|1
+NAUKA|W jakiej temperaturze wrze (gotuje się) czysta woda przy normalnym ciśnieniu?|50°C;90°C;100°C;120°C|2
+BAJKI|Jakiego koloru skórę mają wszystkie Smerfy?|Zielonego;Żółtego;Niebieskiego;Czerwonego|2
+GEOGRAFIA|W jakich najwyższych górach świata leży szczyt Mount Everest?|W Alpach;W Tatrach;W Himalajach;W Andach|2
+MATEMATYKA|Ile to jest 72 podzielone przez 9?|6;7;8;9|2
+CHEMIA|Jaki dwuliterowy symbol chemiczny ma pierwiastek złoto?|Ag;Au;Zn;Cu|1
+LOTNICTWO|W jakim mieście znajduje się największe międzynarodowe lotnisko pasażerskie na Cyprze?|W Larnace;W Atenach;W Rzymie;W Madrycie|0
+HISTORIA|W którym roku rycerze króla Władysława Jagiełły pokonali Krzyżaków pod Grunwaldem?|1410;966;1525;1918|0
+JĘZYKI ŚWIATA|Jaki język (obok tureckiego) jest językiem urzędowym mieszkańców Cypru?|Hiszpański;Włoski;Grecki;Niemiecki|2
+MUZYKA|Który genialny kompozytor napisał utwór 'Dla Elizy' oraz 'Odę do radości'?|Fryderyk Chopin;Ludwig van Beethoven;Wolfgang Amadeusz Mozart;Jan Sebastian Bach|1
+GEOGRAFIA|Jak nazywa się najmniejsze państwo świata położone wewnątrz Rzymu?|Monako;Malta;Watykan;San Marino|2
+LITERATURA|Kto jest autorką serii książek o młodym czarodzieju Harrym Potterze?|J.R.R. Tolkien;J.K. Rowling;C.S. Lewis;Astrid Lindgren|1
+MATEMATYKA|Ile wynosi pierwiastek kwadratowy z liczby 144?|10;11;12;14|2
+BIOLOGIA|Co jest najtwardszą częścią w całym organizmie człowieka?|Kość udowa;Szkliwo zębów;Paznokieć;Chrząstka|1
+SPORT|Z jakiego azjatyckiego kraju wywodzi się sztuka walki Karate i Judo?|Z Chin;Z Korei;Z Japonii;Z Tajlandii|2
+ASTRONOMIA|Która planeta posiada słynny antycyklon zwany Wielką Czerwoną Plamą?|Mars;Wenus;Jowisz;Neptun|2
+RUCH DROGOWY|Po której stronie jezdni poruszają się samochody w Wielkiej Brytanii, Australii i na Cyprze?|Po prawej;Po lewej;Po środku;Zależy od pory dnia|1
+TECHNOLOGIA|Kto był współzałożycielem i wieloletnim szefem firmy Apple?|Steve Jobs;Bill Gates;Jeff Bezos;Mark Zuckerberg|0
+FILM|W jakiej sadze filmowej występuje Darth Vader, Luke Skywalker i mistrz Yoda?|Star Trek;Harry Potter;Gwiezdne Wojny (Star Wars);Władca Pierścieni|2
+MATEMATYKA|Ile wynosi wynik działania: 5 + 5 x 5 (pamiętaj o kolejności działań!)?|50;25;30;15|2
+GEOGRAFIA|W jakim azjatyckim państwie zbudowano długi na tysiące kilometrów Wielki Mur?|W Japonii;W Chinach;W Indiach;W Korei|1
+ANATOMIA|Jak nazywa się najdłuższa i najmocniejsza kość w ciele człowieka?|Kość udowa;Kość ramienna;Żebro;Obojczyk|0
+ANGIELSKI|Jaki kolor oznacza angielskie słowo 'Yellow'?|Zielony;Czarny;Żółty;Biały|2
+HISTORIA|Kto stanął na czele odradzającego się państwa polskiego w listopadzie 1918 roku?|Lech Wałęsa;Józef Piłsudski;Tadeusz Kościuszko;Jan III Sobieski|1
+KULINARIA|Z jakiego startego warzywa smaży się tradycyjne placki ziemniaczane?|Z marchwi;Z cukinii;Z ziemniaków;Z pietruszki|2
+PRZYRODA|Które długowieczne drzewo (np. słynny Bartek) uchodzi w Polsce za symbol siły?|Sosna;Dąb;Brzoza;Wierzba|1
+MATEMATYKA|Ile stopni ma dokładnie kąt prosty?|45 stopni;90 stopni;180 stopni;360 stopni|1
+WALUTY|Jaką walutą płaci się we Włoszech, Grecji, Hiszpanii oraz na Cyprze?|Dolarami;Funtami;Euro;Frankami|2
+LITERATURA|Który błędny rycerz z powieści Cervantesa walczył z wiatrakami?|Król Artur;Don Kichot;Robin Hood;Zorro|1
+ZWIERZĘTA|Który afrykański ptak nie lata, ale biega z prędkością nawet 70 km/h?|Łabędź;Pelikan;Struś;Kondor|2
+SPORT|Jakiego koloru jest koszulka lidera wyścigu kolarskiego Tour de France?|Żółtego;Czerwonego;Czarnego;Niebieskiego|0
+GEOGRAFIA|Przez jaką europejską stolicę przepływa rzeka Tamiza?|Przez Paryż;Przez Londyn;Przez Berlin;Przez Madryt|1
+MUZYKA|Z jakiego skandynawskiego kraju pochodzi legendarny zespół ABBA?|Z Danii;Ze Szwecji;Z Norwegii;Z Finlandii|1
+MATEMATYKA|Ile w przybliżeniu wynosi słynna liczba Pi?|2.14;3.14;4.14;5.14|1
+ZWIERZĘTA|Który lądowy ssak używa długiej, chwytnej trąby do picia wody i zrywania liści?|Nosorożec;Słoń;Hipopotam;Żyrafa|1
+MATEMATYKA|Ile wynosi pole prostokąta o bokach długości 4 cm i 6 cm?|10 cm²;20 cm²;24 cm²;30 cm²|2
+BAJKI|Jak nazywa się mały błazenek z kreskówki, którego szukał w oceanie tata Marlin i rybka Dory?|Florek;Nemo;Rekinek;Sebastian|1
+GEOGRAFIA|Jak nazywa się ciepłe morze leżące pomiędzy Europą, Afryką i Azją?|Morze Bałtyckie;Morze Śródziemne;Morze Północne;Morze Barentsa|1
+ANGIELSKI|Co oznacza angielskie słowo 'Window'?|Drzwi;Okno;Podłoga;Sufit|1
+SPORT|Ilu zawodników jednej drużyny znajduje się jednocześnie na boisku do siatkówki?|5;6;7;11|1
+KOSMOS|Która mała, skalista planeta znajduje się najbliżej Słońca?|Wenus;Mars;Merkury;Pluton|2
+PRZYRODA|Który nocny ptak jest w bajkach i przysłowiach symbolem mądrości?|Kruk;Sowa;Orzeł;Bocian|1
+HISTORIA|Jak miała na imię czeska księżniczka, pierwsza chrześcijańska żona Mieszka I?|Bona Sforza;Jadwiga;Dobrawa;Kinga|2
+KULINARIA|Z jakiego kraju wywodzi się maślany rogalik w kształcie półksiężyca (Croissant)?|Z Włoch;Z Francji;Z Hiszpanii;Z Anglii|1
+MATEMATYKA|Ile to jest 150 odjąć 75?|65;75;85;95|1
+GRY|W jakiej serii gier komputerowych buduje się domy i kieruje życiem Simów z zielonym kryształem nad głową?|Roblox;The Sims;Fortnite;Minecraft|1
+BIOLOGIA|Ile skrzydeł posiada dorosły motyl?|Dwa;Cztery (dwie pary);Sześć;Osiem|1
+MUZYKA|Jak nazywa się cienka pałeczka, za pomocą której dyrygent kieruje orkiestrą?|Smyczek;Batuta;Kamerton;Flet|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Brat'?|Sister;Mother;Brother;Father|2
+GEOGRAFIA|Które z tych dużych polskich miast leży nad rzeką Odrą?|Warszawa;Kraków;Wrocław;Gdańsk|2
+TRANSPORT|Jak nazywa się szybka kolej miejska kursująca w tunelach pod ziemią?|Tramwaj;Trolejbus;Metro;Kolejka górska|2
+BAJKI|Który mieszkaniec Stumilowego Lasu często gubił swój przyczepiany ogon?|Tygrysek;Kłapouchy;Maleństwo;Prosiaczek|1
+NAUKA|Jaki lekki gaz wtłacza się do balonów odpustowych, aby same unosiły się w górę?|Tlen;Hel;Dwutlenek węgla;Azot|1
+MATEMATYKA|Ile to jest 11 pomnożone przez 11?|111;121;131;144|1
+ZWIERZĘTA|Jakie charakterystyczne umaszczenie ma pies rasy dalmatyńczyk?|Czarny w białe paski;Biały w czarne cętki;Czerwono-złoty;Szary|1
+SPORT|Co biegacze w sztafecie przekazują sobie z ręki do ręki na bieżni?|Piłeczkę;Pałeczkę sztafetową;Chorągiewkę;Szarfę|1
+LITERATURA|Jak miała na imię bohaterka książki, która pobiegła za Białym Królikiem do Krainy Czarów?|Dorotka;Alicja;Łucja;Klara|1
+PRZYRODA|Jak nazywa się młode lwa?|Szczenię;Lwiątko;Źrebię;Cielę|1
+ANGIELSKI|Którą porę roku oznacza angielskie słowo 'Summer'?|Zimę;Wiosnę;Lato;Jesień|2
+GEOGRAFIA|Który skandynawski kraj słynie z głębokich zatok zwanych fiordami oraz trolli?|Hiszpania;Norwegia;Węgry;Grecja|1
+TECHNOLOGIA|Jak nazywa się technologia bezprzewodowego internetu domowego?|Bluetooth;Wi-Fi;USB;GPS|1
+BAJKI|Kto zamieszkiwał magiczną oliwną lampę znalezioną przez Aladyna w jaskini?|Zły czarnoksiężnik;Niebieski Dżin;Latający smok;Małpka Abu|1
+MATEMATYKA|Ile kwadransów (po 15 minut) mieści się w jednej pełnej godzinie?|2;3;4;6|2
+HISTORIA|Czego dotyczyło wielkie odkrycie polskiego astronoma Mikołaja Kopernika?|Odkrycia Ameryki;Że Ziemia i planety krążą wokół Słońca;Wynalezienia druku;Odkrycia prądu|1`);
 
-const rawR4_C = parseR4(`
-CHEMIA|Jaki symbol chemiczny ma złoto?|Ag;Au;Zn;Cu|1
-CYPR|Jakie jest główne, międzynarodowe lotnisko na Cyprze?|Paphos;Larnaka;Nikozja;Limassol|1
-HISTORIA|W którym roku odbyła się Bitwa pod Grunwaldem?|1410;966;1525;1914|0
-CYPR|Jaki język urzędowy (obok tureckiego) obowiązuje na Cyprze?|Angielski;Włoski;Grecki;Hiszpański|2
-MUZYKA|Kto skomponował słynne 'Dla Elizy'?|Chopin;Beethoven;Mozart;Bach|1
-GEOGRAFIA|Jakie jest najmniejsze państwo świata?|Monako;Malta;Watykan;San Marino|2
-LITERATURA|Kto napisał 'Harrego Pottera'?|J.R.R. Tolkien;J.K. Rowling;Stephen King;Suzanne Collins|1
-MATEMATYKA|Ile wynosi pierwiastek z 144?|10;11;12;14|2
-BIOLOGIA|Co jest najtwardszą substancją w organizmie człowieka?|Kość udowa;Szkliwo zębów;Czaszka;Paznokieć|1
-SPORT|Z jakiego kraju pochodzi sztuka walki Karate?|Chiny;Korea;Japonia;Tajlandia|2
-ASTRONOMIA|Która planeta jest znana z potężnej, czerwonej plamy?|Mars;Wenus;Jowisz;Neptun|2
-CYPR|Po której stronie drogi jeździ się samochodami na Cyprze?|Tylko po prawej;Tylko po lewej;Zależy od miasta;Po środku|1
-TECHNOLOGIA|Kto był wizjonerem i twórcą firmy Apple?|Steve Jobs;Tim Cook;Bill Gates;Mark Zuckerberg|0
-FILM|W jakiej serii filmów pojawia się postać Dartha Vadera?|Star Trek;Harry Potter;Gwiezdne Wojny;Władca Pierścieni|2
-MATEMATYKA|Jaki jest wynik równania: 5 + 5 x 5?|50;25;30;15|2
-GEOGRAFIA|Gdzie znajduje się słynny Wielki Mur?|W Japonii;W Chinach;W Indiach;W Rosji|1
-ANATOMIA|Jaka jest największa kość w ludzkim ciele?|Kość udowa;Kręgosłup;Czaszka;Piszczel|0
-ANGIELSKI|Co oznacza słowo 'Yellow'?|Zielony;Czarny;Żółty;Biały|2
-HISTORIA|Kto był pierwszym naczelnikiem państwa polskiego po 1918?|Lech Wałęsa;Józef Piłsudski;Gabriel Narutowicz;Ignacy Mościcki|1
-KULINARIA|Z jakiego warzywa robi się placki ziemniaczane?|Z marchwi;Z cebuli;Z ziemniaków;Z selera|2
-PRZYRODA|Drzewo będące symbolem twardości w Polsce to:|Sosna;Dąb;Brzoza;Topola|1
-MATEMATYKA|Kąt prosty ma dokładnie:|45 stopni;90 stopni;180 stopni;360 stopni|1
-CYPR|Jaką walutą płaci się na Cyprze Południowym?|Euro;Lira;Dolar;Funt|0
-LITERATURA|W jakiej lekturze bohaterowie walczą z wiatrakami?|W Pustyni i w Puszczy;Krzyżacy;Don Kichot;Pan Tadeusz|2
-ZWIERZĘTA|Który ptak nie potrafi latać, ale świetnie biega?|Łabędź;Pelikan;Struś;Orzeł|2
-SPORT|Jakiego koloru jest koszulka lidera w wyścigu Tour de France?|Żółtego;Czerwonego;Białego;Zielonego|0
-BIOLOGIA|Jaka grupa krwi jest nazywana uniwersalnym dawcą?|A;B;AB;0 (Zero)|3
-GEOGRAFIA|Przez jaką stolicę przepływa Tamiza?|Paryż;Londyn;Berlin;Rzym|1
-MUZYKA|Z jakiego kraju pochodzi zespół ABBA?|Z Wielkiej Brytanii;Ze Szwecji;Z Niemiec;Z Norwegii|1
-MATEMATYKA|Co to jest liczba Pi w przybliżeniu?|2.14;3.14;4.14;5.14|1`);
-
-const rawR4_D = parseR4(`
-ZWIERZĘTA|Który ssak ma najdłuższą trąbę?|Nosorożec;Słoń;Hipopotam;Tapir|1
-MATEMATYKA|Ile wynosi pole prostokąta o bokach 4 cm i 6 cm?|10 cm²;20 cm²;24 cm²;30 cm²|2
-BAJKI|Jak nazywa się ryba, której szukał tata Marlin w oceanie?|Dory;Nemo;Bruce;Arielka|1
-GEOGRAFIA|Jakie morze leży na południu Europy (np. przy Włoszech i Cyprze)?|Bałtyckie;Śródziemne;Czerwone;Białe|1
-ANGIELSKI|Co oznacza angielskie słowo 'Window'?|Drzwi;Okno;Podłoga;Dach|1
-SPORT|Ilu graczy jednej drużyny przebywa na boisku w siatkówce?|5;6;7;11|1
-KOSMOS|Jak nazywa się planeta położona najbliżej Słońca?|Wenus;Mars;Merkury;Ziemia|2
-PRZYRODA|Który ptak jest symbolem mądrości w bajkach i powiedzeniach?|Kruk;Sowa;Orzeł;Papuga|1
-HISTORIA|Jak nazywała się pierwsza żona Mieszka I?|Bona;Jadwiga;Dobrawa;Kinga|2
-KULINARIA|Z jakiego kraju pochodzi tradycyjne ciasto rogalik Croissant?|Z Włoch;Z Francji;Z Niemiec;Z Polski|1
-MATEMATYKA|Ile to jest 150 minus 75?|65;75;85;95|1
-GRY|W jakiej grze buduje się domki i żyje postaciami z zielonym kryształkiem nad głową?|Roblox;The Sims;Fortnite;FIFA|1
-BIOLOGIA|Ile skrzydeł ma motyl?|Dwa;Cztery (dwie pary);Sześć;Osiem|1
-MUZYKA|Jak nazywa się pałeczka, którą dyrygent prowadzi orkiestrę?|Smyczek;Batuta;Różdżka;Pałka|1
-ANGIELSKI|Jak po angielsku powiesz 'Brat'?|Sister;Mother;Brother;Father|2
-GEOGRAFIA|Które miasto leży nad rzeką Odra?|Warszawa;Kraków;Wrocław;Gdańsk|2
-TRANSPORT|Jak nazywa się pociąg jeżdżący pod ziemią w dużych miastach?|Tramwaj;Trolejbus;Metro;Kolejka linowa|2
-BAJKI|Kto zgubił ogon w Stumilowym Lesie?|Tygrysek;Kłapouchy;Maleństwo;Sowa|1
-NAUKA|Jaki gaz sprawia, że balony unoszą się same do góry?|Tlen;Hel;Azot;Para|1
-MATEMATYKA|Ile to jest 11 x 11?|111;121;131;144|1
-ZWIERZĘTA|Jak nazywa się pies rasy dalmatyńczyk (jakie ma umaszczenie)?|Czarny w białe paski;Biały w czarne cętki;Rudy;Brązowy|1
-SPORT|Czego używa biegacz w biegu sztafetowym i przekazuje koledze?|Piłki;Pałeczki;Flagi;Dysku|1
-LITERATURA|Jak miała na imię dziewczynka, która trafiła do Krainy Czarów?|Dorotka;Alicja;Klara;Łucja|1
-PRZYRODA|Jak nazywa się młody lew?|Szczeniak;Lwiątko;Źrebak;Cielę|1
-ANGIELSKI|Co oznacza słowo 'Summer'?|Zima;Wiosna;Lato;Jesień|2
-GEOGRAFIA|W jakim państwie znajdują się słynne fiordy i zorza polarna?|W Hiszpanii;W Norwegii;W Egipcie;W Grecji|1
-TECHNOLOGIA|Jaki skrót ma bezprzewodowy internet w domu?|Bluetooth;Wi-Fi;USB;HDMI|1
-BAJKI|Jak nazywa się dżin z lampy w bajce Disneya?|Dżafar;Aladyn;Dżin;Abu|2
-MATEMATYKA|Ile kwadransów mieści się w jednej godzinie?|2;3;4;6|2
-HISTORIA|Co odkrył Mikołaj Kopernik?|Amerykę;Że Ziemia krąży wokół Słońca;Żarówkę;Grawitację|1`);
-
+// --- BAZA PYTAŃ DO RUNDY 6 (KOŁO FORTUNY + LICYTACJA, PO 10 PYTAŃ NA KAŻDĄ Z 8 KATEGORII = 80 PYTAŃ) ---
 const rawR6_Dedicated = parseR4(`
 KOSMOS|Jak nazywa się pas skał krążących między Marsem a Jowiszem?|Pas Oriona;Pas Planetoid (Asteroid);Droga Mleczna;Mgławica|1
 KOSMOS|Która planeta w Układzie Słonecznym jest najgorętsza przez gęste chmury?|Merkury;Wenus;Mars;Jowisz|1
@@ -526,150 +617,166 @@ KOSMOS|Jak nazywał się pierwszy pies wysłany w kosmos?|Burek;Szarik;Łajka;Re
 KOSMOS|Ile planet znajduje się łącznie w naszym Układzie Słonecznym?|Siedem;Osiem;Dziewięć;Dziesięć|1
 KOSMOS|Jak nazywa się zjawisko, gdy Księżyc w dzień zasłania Słońce?|Pełnia;Zaćmienie Słońca;Zorza polarna;Nów|1
 KOSMOS|Która planeta słynie z pięknego niebieskiego koloru i silnych wiatrów?|Mars;Merkury;Neptun;Wenus|2
-KOSMOS|Jak nazywa się skafander używany przez ludzi w przestrzeni kosmicznej?|Kombinezon nurka;Skafander astronauty;Zbroja;Fartuch|1
-KOSMOS|Co zostaje na niebie po przelocie komety?|Tęcza;Świetlisty warkocz (ogon);Chmura deszczowa;Dym|1
+KOSMOS|Jak nazywa się ubranie ochronne używane przez ludzi w przestrzeni kosmicznej?|Kombinezon nurka;Skafander astronauty;Zbroja;Fartuch|1
+KOSMOS|Co ciągnie się na niebie za przelatującą blisko Słońca kometą?|Tęcza;Świetlisty warkocz (ogon);Chmura deszczowa;Smuga dymu|1
+KOSMOS|Jak nazywa się łazik wysłany przez ludzi, aby badał powierzchnię Czerwonej Planety?|Łazik marsjański;Batmobil;Poduszkowiec;Ratrak|0
+KOSMOS|Która gwiazda wskazuje podróżnikom na nocnym niebie kierunek północny?|Syriusz;Gwiazda Polarna;Alfa Centauri;Wega|1
 BAJKI|Jak ma na imię zielony jednooki stwór z filmu 'Potwory i Spółka'?|Sulley;Mike Wazowski;Randall;Boo|1
 BAJKI|Jakim zwierzęciem jest król Julian z filmu 'Madagaskar'?|Małpą;Lemurem;Wiewiórką;Szopem|1
 BAJKI|W jakiej bajce główny bohater trenuje czarnego smoka o imieniu Szczerbatek?|Shrek;Jak wytresować smoka;Merida Waleczna;Zaplątani|1
-BAJKI|Czym żywi się Kubuś Puchatek z wielkim apetytem?|Marchewką;Miodkiem;Orzeszkami;Rybami|1
+BAJKI|Czym z wielkim apetytem zajada się Kubuś Puchatek?|Marchewką;Miodkiem;Orzeszkami;Rybami|1
 BAJKI|Jak nazywa się szybki czerwony samochód wyścigowy z filmu 'Auta'?|Złomek;Zygzak McQueen;Sally;Hudson|1
-BAJKI|Jakiego koloru są włosy Meridy Walecznej?|Czarne;Blond;Rude (kręcone);Niebieskie|2
+BAJKI|Jakiego koloru są burzliwe włosy księżniczki Meridy Walecznej?|Czarne;Blond;Rude (kręcone);Niebieskie|2
 BAJKI|Jak ma na imię gburowaty sąsiad SpongeBoba, który gra na klarnecie?|Patryk;Skalmar;Pan Krab;Plankton|1
-BAJKI|Kto uwięził Roszpunkę w wysokiej wieży w lesie?|Zły Wilk;Matka Gothel;Czarownica z zachodu;Kapitan Hak|1
-ZWIERZĘTA|Który z tych ptaków potrafi latać do tyłu i jest malutki?|Wróbel;Koliber;Jaskółka;Sikorka|1
-ZWIERZĘTA|Jak nazywa się australijski miś, który śpi na drzewach i zjada liście eukaliptusa?|Panda;Koala;Grizzly;Leniwiec|1
-ZWIERZĘTA|Ile serc ma ośmiornica?|Jedno;Dwa;Trzy;Cztery|2
-ZWIERZĘTA|Które zwierzę z Afryki ma charakterystyczny róg na nosie i grubą szarą skórę?|Hipopotam;Nosorożec;Bawół;Goryl|1
-ZWIERZĘTA|Jak nazywa się najwolniejszy ssak świata żyjący w koronach drzew?|Żółw;Leniwiec;Koala;Pancernik|1
-ZWIERZĘTA|Co robi jeż, gdy wyczuje niebezpieczeństwo?|Wspina się na drzewo;Zwija się w kolczastą kulkę;Ucieka do wody;Głośno szczeka|1
-ZWIERZĘTA|Jakiego koloru są pióra dorosłego flaminga?|Białego;Różowego;Niebieskiego;Zielonego|1
-ZWIERZĘTA|Który gad potrafi odrzucić swój ogon, aby uciec przed drapieżnikiem?|Żółw;Jaszczurka (zwinka);Krokodyl;Kobra|1
-MATEMATYKA|Ile wynosi suma kątów w każdym trójkącie?|90 stopni;180 stopni;270 stopni;360 stopni|1
-MATEMATYKA|Ile to jest 25 razy 4?|80;90;100;120|2
-MATEMATYKA|Jak nazywa się czworokąt, który ma wszystkie boki równe, ale nie musi mieć kątów prostych?|Prostokąt;Trapez;Romb;Trójkąt|2
-MATEMATYKA|Ile kilogramów ma pół tony?|50 kg;100 kg;500 kg;1000 kg|2
-MATEMATYKA|Jaka jest najmniejsza liczba dwucyfrowa?|9;10;11;99|1
+BAJKI|Kto uwięził długowłosą Roszpunkę w wysokiej wieży w lesie?|Zły Wilk;Matka Gothel;Czarownica z zachodu;Kapitan Hak|1
+BAJKI|Jak nazywa się mała rybka z problemami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Arielka;Dory;kotwica;Perła|1
+BAJKI|Jakim zwierzęciem jest Pumba z filmu 'Król Lew' (przyjaciel surykatki Timona)?|Hieną;Guzcem;Antylopą;Pawianem|1
+ZWIERZĘTA|Który malutki ptaszek potrafi zawisać w powietrzu i latać do tyłu?|Wróbel;Koliber;Jaskółka;Sikorka|1
+ZWIERZĘTA|Jak nazywa się australijski torbacz, który śpi na drzewach i zjada liście eukaliptusa?|Panda;Koala;Grizzly;Leniwiec|1
+ZWIERZĘTA|Ile serc bije w ciele ośmiornicy?|Jedno;Dwa;Trzy;Cztery|2
+ZWIERZĘTA|Które zwierzę z Afryki ma potężny róg na nosie i grubą szarą skórę?|Hipopotam;Nosorożec;Bawół;Goryl|1
+ZWIERZĘTA|Jak nazywa się najwolniejszy ssak świata wiszący całymi dniami na gałęziach?|Żółw;Leniwiec;Koala;Pancernik|1
+ZWIERZĘTA|Co robi jeż, gdy wyczuje zagrożenie?|Wspina się na drzewo;Zwija się w kolczastą kulkę;Wskakuje do wody;Szczeka|1
+ZWIERZĘTA|Jakiego koloru są pióra dorosłego flaminga brodzącego w wodzie?|Białego;Różowego;Niebieskiego;Zielonego|1
+ZWIERZĘTA|Który gad potrafi w razie niebezpieczeństwa odrzucić swój ogon?|Żółw błotny;Jaszczurka zwinka;Krokodyl;Żmija|1
+ZWIERZĘTA|Jak nazywa się największa jaszczurka na świecie żyjąca na wyspach Indonezji?|Kameleon;Waran z Komodo;Gekon;Legwan|1
+ZWIERZĘTA|Który ssak morski z długim spiralnym kłem na głowie nazywany jest 'jednorożcem morskim'?|Mors;Narwal;Foka;Kaszalot|1
+MATEMATYKA|Ile wynosi suma kątów wewnętrznych w każdym trójkącie?|90 stopni;180 stopni;270 stopni;360 stopni|1
+MATEMATYKA|Ile to jest 25 pomnożone przez 4?|80;90;100;120|2
+MATEMATYKA|Jak nazywa się czworokąt, który ma wszystkie 4 boki równej długości („kopnięty kwadrat”)?|Prostokąt;Trapez;Romb;Trójkąt|2
+MATEMATYKA|Ile kilogramów mieści się w pół tony?|50 kg;100 kg;500 kg;1000 kg|2
+MATEMATYKA|Jaka jest najmniejsza dodatnia liczba dwucyfrowa?|9;10;11;99|1
 MATEMATYKA|Ile to jest 15 + 15 + 15?|35;40;45;50|2
-MATEMATYKA|Ile krawędzi ma sześcian (kostka)?|6;8;10;12|3
-MATEMATYKA|Jeśli z 30 jabłek zjedzono jedną trzecią (1/3), to ile jabłek zostało?|10;15;20;25|2
-SPORT|Jak nazywa się polski skoczek narciarski z wąsem, zwany 'Orłem z Wisły'?|Kamil Stoch;Adam Małysz;Piotr Żyła;Dawid Kubacki|1
-SPORT|Jaki dystans (w przybliżeniu) ma bieg maratoński?|10 km;21 km;42 km;100 km|2
-SPORT|W jakim sporcie zawodnicy walczą na szpady, florety i szable?|W boksie;W szermierce;W judo;W łucznictwie|1
-SPORT|Ile punktów jest wart rzut za linią łuku w koszykówce?|1 punkt;2 punkty;3 punkty;5 punktów|2
-SPORT|Jak nazywa się uderzenie w piłce nożnej wykonywane z narożnika boiska?|Rzut karny;Rzut rożny;Rzut wolny;Spalony|1
-SPORT|Na jakiej nawierzchni rozgrywany jest słynny turniej tenisowy Wimbledon?|Na mączce ceglanej;Na trawie;Na piasku;Na lodzie|1
-SPORT|Jakiego koloru jest pas mistrzowski w karate i judo?|Białego;Żółtego;Czerwonego;Czarnego|3
-SPORT|Ile kręgli stoi na torze na początku rzutu w klasycznym bowlingu?|6;8;10;12|2
-GEOGRAFIA|Jak nazywa się największa wyspa na świecie pokryta lodem?|Madagaskar;Islandia;Grenlandia;Wielka Brytania|2
-GEOGRAFIA|W jakim państwie znajdują się słynne wulkany Etna i Wezuwiusz?|W Hiszpanii;We Włoszech;W Grecji;W Turcji|1
-GEOGRAFIA|Która rzeka w Ameryce Południowej niesie najwięcej wody na świecie?|Nil;Missisipi;Amazonka;Wisła|2
+MATEMATYKA|Ile krawędzi ma sześcian (np. kostka do gry)?|6;8;10;12|3
+MATEMATYKA|Jeśli z 30 jabłek zjedzono jedną trzecią (1/3), to ile jabłek zostało w koszyku?|10;15;20;25|2
+MATEMATYKA|Jak nazywa się wynik dzielenia dwóch liczb?|Suma;Różnica;Iloraz;Iloczyn|2
+MATEMATYKA|Ile minut upływa między godziną 14:15 a 15:00?|30 minut;45 minut;50 minut;60 minut|1
+SPORT|Jak nazywa się legendarny polski skoczek narciarski z wąsem, zwany 'Orłem z Wisły'?|Kamil Stoch;Adam Małysz;Piotr Żyła;Dawid Kubacki|1
+SPORT|Jaki dystans (w przybliżeniu) muszą pokonać biegacze w maratonie?|10 km;21 km;42 km;100 km|2
+SPORT|W jakim sporcie olimpijskim zawodnicy w białych strojach i maskach walczą na szpady i florety?|W boksie;W szermierce;W judo;W łucznictwie|1
+SPORT|Ile punktów zdobywa koszykarz za celny rzut zza dalekiego łuku?|1 punkt;2 punkty;3 punkty;5 punktów|2
+SPORT|Jak nazywa się wznowienie gry w piłce nożnej z samego narożnika boiska?|Rzut karny;Rzut rożny (korner);Rzut wolny;Aut|1
+SPORT|Na jakiej nawierzchni rozgrywany jest słynny turniej tenisowy Wimbledon w Londynie?|Na mączce ceglanej;Na trawie;Na piasku;Na lodzie|1
+SPORT|Jakiego koloru jest pas mistrzowski w karate oraz judo?|Białego;Żółtego;Czerwonego;Czarnego|3
+SPORT|Ile kręgli stoi na końcu toru na początku rzutu w klasycznym bowlingu?|6;8;10;12|2
+SPORT|Z ilu części (tercji) składa się mecz hokeja na lodzie?|Z dwóch;Z trzech;Z czterech;Z pięciu|1
+SPORT|Jak nazywa się sport wodny, w którym płynie się na desce z przyczepionym żaglem?|Kajakarstwo;Windsurfing;Wioślarstwo;Nurkowanie|1
+GEOGRAFIA|Jak nazywa się największa wyspa na świecie (w większości pokryta lodem)?|Madagaskar;Islandia;Grenlandia;Wielka Brytania|2
+GEOGRAFIA|W jakim europejskim państwie znajdują się czynne wulkany Etna i Wezuwiusz?|W Hiszpanii;We Włoszech;W Grecji;W Portugalii|1
+GEOGRAFIA|Która potężna rzeka w Ameryce Południowej płynie przez dżunglę i niesie najwięcej wody?|Nil;Missisipi;Amazonka;Wisła|2
 GEOGRAFIA|Jak nazywa się stolica Japonii?|Pekin;Seul;Tokio;Bangkok|2
-GEOGRAFIA|W jakim polskim mieście znajduje się kopalnia soli wpisana na listę UNESCO?|W Bochni i Wieliczce;W Zakopanem;W Sopocie;W Toruniu|0
-GEOGRAFIA|Jak nazywa się gorąca pustynia w północnej Afryce?|Gobi;Sahara;Atakama;Kalahari|1
-GEOGRAFIA|Który kraj ma na swojej fladze czerwony liść klonu?|USA;Australia;Kanada;Szwajcaria|2
-GEOGRAFIA|W jakich polskich górach leży szczyt Śnieżka?|W Tatrach;W Karkonoszach;W Bieszczadach;W Górach Świętokrzyskich|1
+GEOGRAFIA|W jakiej miejscowości koło Krakowa znajduje się słynna zabytkowa kopalnia soli?|W Wieliczce;W Zakopanem;W Sopocie;W Toruniu|0
+GEOGRAFIA|Jak nazywa się największa gorąca pustynia świata położona w północnej Afryce?|Gobi;Sahara;Atakama;Kalahari|1
+GEOGRAFIA|Które państwo z Ameryki Północnej ma czerwony liść klonu na swojej fladze?|USA;Meksyk;Kanada;Brazylia|2
+GEOGRAFIA|W jakim pasmie górskim w Polsce leży szczyt Śnieżka?|W Tatrach;W Karkonoszach;W Bieszczadach;W Pieninach|1
+GEOGRAFIA|Który kanał wodny łączy Morze Śródziemne z Morzem Czerwonym przy Egipcie?|Kanał Panamski;Kanał Sueski;Kanał La Manche;Kanał Gliwicki|1
+GEOGRAFIA|Jak nazywa się najgłębsze jezioro na świecie położone na Syberii?|Śniardwy;Bajkał;Wiktorii;Tanganika|1
 ANGIELSKI|Co oznacza angielskie słowo 'Rainbow'?|Deszcz;Chmura;Tęcza;Piorun|2
-ANGIELSKI|Jak po angielsku powiesz 'Truskawka'?|Blueberry;Strawberry;Raspberry;Cherry|1
+ANGIELSKI|Jak po angielsku powiesz słodki owoc 'Truskawka'?|Blueberry;Strawberry;Raspberry;Cherry|1
 ANGIELSKI|Co oznacza angielski zwrot 'Good night'?|Dzień dobry;Dobry wieczór;Dobranoc;Do widzenia|2
-ANGIELSKI|Jak po angielsku nazywa się zwierzę 'Wiewiórka'?|Rabbit;Squirrel;Mouse;Fox|1
+ANGIELSKI|Jak po angielsku nazywa się rude leśne zwierzę 'Wiewiórka'?|Rabbit;Squirrel;Mouse;Fox|1
 ANGIELSKI|Który miesiąc po angielsku nazywa się 'December'?|Listopad;Grudzień;Styczeń;Październik|1
-ANGIELSKI|Co oznacza słowo 'Airplane'?|Statek;Pociąg;Samolot;Helikopter|2
+ANGIELSKI|Co oznacza angielskie słowo 'Airplane'?|Statek;Pociąg;Samolot;Helikopter|2
 ANGIELSKI|Jak po angielsku powiesz liczbę 'Dwadzieścia'?|Twelve;Twenty;Two;Thirty|1
-ANGIELSKI|Co oznacza przymiotnik 'Happy'?|Smutny;Zmęczony;Szczęśliwy (wesoły);Zły|2
-HISTORIA|W którym roku Polska przyjęła chrzest za panowania Mieszka I?|966;1000;1025;1410|0
-HISTORIA|Jak nazywali się wojownicy z północy Europy pływający łodziami ze smoczymi głowami?|Rzymianie;Wikingowie;Samuraje;Spartanie|1
-HISTORIA|Kto wynalazł tradycyjną żarówkę elektryczną?|Albert Einstein;Thomas Edison;Nikola Tesla;Maria Skłodowska|1
-HISTORIA|Jak nazywała się polska uczona, która dwukrotnie zdobyła Nagrodę Nobla?|Eliza Orzeszkowa;Maria Skłodowska-Curie;Wisława Szymborska;Królowa Jadwiga|1
-HISTORIA|Jakiego ptaka w koronie widzimy na czerwonym tle w godle Polski?|Sokoła;Orła Białego;Bociana;Żurawia|1
-HISTORIA|W jakim kraju rządzili starożytni Faraonowie?|W Grecji;W Rzymie;W Egipcie;W Chinach|2
-HISTORIA|Jak nazywał się wielki statek pasażerski, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
-HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2`);
+ANGIELSKI|Co oznacza przymiotnik 'Happy'?|Smutny;Zmęczony;Szczęśliwy (wesoły);Głodny|2
+ANGIELSKI|Jak po angielsku nazywa się pomieszczenie 'Kuchnia'?|Bedroom;Bathroom;Kitchen;Garden|2
+ANGIELSKI|Co oznacza czasownik 'To swim'?|Biegać;Pływać;Skakać;Latać|1
+HISTORIA|W którym roku Polska przyjęła chrzest za panowania księcia Mieszka I?|966;1000;1025;1410|0
+HISTORIA|Jak nazywali się dawni wojownicy ze Skandynawii pływający łodziami ze smoczymi głowami?|Rzymianie;Wikingowie;Samuraje;Spartanie|1
+HISTORIA|Kto udoskonalił i opatentował tradycyjną żarówkę elektryczną?|Albert Einstein;Thomas Edison;Nikola Tesla;Isaac Newton|1
+HISTORIA|Jak nazywała się wielka polska uczona, która dwukrotnie zdobyła Nagrodę Nobla?|Eliza Orzeszkowa;Maria Skłodowska-Curie;Wisława Szymborska;Królowa Jadwiga|1
+HISTORIA|Jakiego ptaka w złotej koronie widzimy na czerwonym tle w godle Polski?|Sokoła;Orła Białego;Bociana;Żurawia|1
+HISTORIA|W jakim starożytnym kraju rządzili Faraonowie i budowano piramidy?|W Grecji;W Rzymie;W Egipcie;W Chinach|2
+HISTORIA|Jak nazywał się wielki transatlantyk, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
+HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2
+HISTORIA|Kto był pierwszym koronowanym królem Polski w 1025 roku?|Mieszko I;Bolesław Chrobry;Kazimierz Wielki;Władysław Łokietek|1
+HISTORIA|W którym mieście bracia Wright zbudowali pierwszy samolot, a wcześniej Kopernik prowadził obserwacje?|Kto wynalazł maszynę drukarską z ruchomymi czcionkami w Europie?: Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1`);
 
 const r5TFQuestionsByPlayer = {
 Lila: parseTF(`
 Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?|1
 Czy stolica Australii to Sydney?|0
 Czy liczba 17 jest liczbą pierwszą?|1
-Czy ludzkie serce ma cztery komory i przedsionki łącznie?|1
-Czy fotosynteza u roślin zachodzi głównie w korzeniach?|0
+Czy ludzkie serce ma łącznie cztery jamy (dwa przedsionki i dwie komory)?|1
+Czy fotosynteza u roślin zachodzi głównie w podziemnych korzeniach?|0
 Czy Wielka Rafa Koralowa znajduje się u wybrzeży Australii?|1
 Czy kąt rozwarty ma mniej niż 90 stopni?|0
-Czy Krzysztof Kolumb odkrył Amerykę w 1492 roku?|1
+Czy Krzysztof Kolumb dopłynął do Ameryki w 1492 roku?|1
 Czy diament jest najtwardszym naturalnym minerałem na Ziemi?|1
 Czy rzeka Nil przepływa przez Amerykę Południową?|0
 Czy ułamek jedna druga to tyle samo co pięć dziesiątych?|1
-Czy delfiny oddychają pod wodą za pomocą skrzeli?|0
+Czy delfiny oddychają pod wodą za pomocą skrzeli jak ryby?|0
 Czy Mount Everest leży w łańcuchu górskim Himalajów?|1
 Czy w języku angielskim słowo 'Library' oznacza księgarnię?|0
-Czy krew w naszym ciele rozprowadza tlen do komórek?|1
-Czy Wenus krąży wokół Słońca bliżej niż Ziemia?|1
-Czy w starożytnym Egipcie budowano Koloseum?|0
-Czy 25 procent z liczby 200 to 50?|1
-Czy pingwiny występują naturalnie na biegunie północnym (w Arktyce)?|0
-Czy Fryderyk Chopin był słynnym polskim kompozytorem?|1`),
+Czy czerwone krwinki w naszym ciele rozprowadzają tlen do komórek?|1
+Czy planeta Wenus krąży wokół Słońca bliżej niż Ziemia?|1
+Czy słynne Koloseum zostało zbudowane w starożytnym Egipcie?|0
+Czy 25 procent z liczby 200 wynosi dokładnie 50?|1
+Czy pingwiny żyją naturalnie na wolności na Biegunie Północnym?|0
+Czy Fryderyk Chopin był wybitnym polskim kompozytorem i pianistą?|1`),
 Kaja: parseTF(`
 Czy stolicą Hiszpanii jest Madryt?|1
-Czy nietoperze są ptakami?|0
-Czy godzina ma dokładnie 3600 sekund?|1
-Czy Morze Bałtyckie jest morzem ciepłym i bardzo słonym?|0
+Czy nietoperze należą do gromady ptaków?|0
+Czy jedna pełna godzina ma dokładnie 3600 sekund?|1
+Czy Morze Bałtyckie jest najcieplejszym i najbardziej słonym morzem świata?|0
 Czy wynik mnożenia 7 razy 8 to 56?|1
-Czy kangury potrafią chodzić do tyłu?|0
-Czy Wieża Eiffla w Paryżu została zbudowana z żelaza (stali)?|1
-Czy kwadrat ma cztery równe boki i cztery kąty proste?|1
+Czy kangury potrafią swobodnie chodzić i skakać do tyłu?|0
+Czy Wieża Eiffla w Paryżu została zbudowana z metalu (żelaza)?|1
+Czy każdy kwadrat ma cztery równe boki i cztery kąty proste?|1
 Czy po angielsku słowo 'Breakfast' oznacza kolację?|0
-Czy bursztyn powstaje ze skamieniałej żywicy drzew?|1
-Czy wieloryb jest największą rybą na świecie?|0
-Czy Polska graniczy z siedmioma państwami?|1
-Czy woda zamarza w temperaturze 10 stopni Celsjusza?|0
-Czy kameleon potrafi poruszać każdym okiem niezależnie?|1
-Czy Wisła przepływa przez Kraków i Warszawę?|1
-Czy pająki mają sześć nóg tak jak owady?|0
+Czy bałtycki bursztyn powstał przed wiekami z żywicy drzew?|1
+Czy płetwal błękitny (wieloryb) jest rybą?|0
+Czy Polska graniczy lądowo z siedmioma państwami?|1
+Czy czysta woda zamarza w temperaturze dodatnich 10 stopni Celsjusza?|0
+Czy kameleon potrafi poruszać każdym okiem w inną stronę niezależnie?|1
+Czy rzeka Wisła przepływa zarówno przez Kraków, jak i przez Warszawę?|1
+Czy pająki mają sześć nóg tak samo jak owady?|0
 Czy 1000 gramów to dokładnie jeden kilogram?|1
-Czy Harry Potter mieszkał w szkole o nazwie Hogwart?|1
-Czy Słońce jest wielką planetą?|0
-Czy pszczoły produkują miód z nektaru kwiatów?|1`),
+Czy Harry Potter uczył się magii w szkole o nazwie Hogwart?|1
+Czy Słońce jest ogromną planetą krążącą wokół Ziemi?|0
+Czy pszczoły wytwarzają miód z nektaru zbieranego z kwiatów?|1`),
 Darek: parseTF(`
-Czy mecz piłki nożnej składa się z dwóch połów po 45 minut?|1
-Czy w grze Minecraft obsydian powstaje z połączenia wody i lawy?|1
-Czy gepard potrafi biec szybciej niż 100 kilometrów na godzinę?|1
-Czy stolicą Niemiec jest Monachium?|0
-Czy wynik działania 9 razy 6 to 54?|1
-Czy rekiny mają szkielet zbudowany z twardych kości?|0
-Czy Jowisz jest mniejszy od Ziemi?|0
-Czy w koszykówce za rzut zza linii trzech punktów dostaje się 3 punkty?|1
+Czy tradycyjny mecz piłki nożnej składa się z dwóch połów po 45 minut?|1
+Czy w grze Minecraft obsydian powstaje po wylaniu wody na gorącą lawę?|1
+Czy gepard potrafi w sprincie biec szybciej niż 100 kilometrów na godzinę?|1
+Czy stolicą Niemiec jest miasto Monachium?|0
+Czy wynik działania 9 razy 6 wynosi 54?|1
+Czy rekiny mają szkielet zbudowany z lekkiej chrząstki zamiast twardych kości?|1
+Czy planeta Jowisz jest mniejsza od Ziemi?|0
+Czy w koszykówce za celny rzut zza dalekiego łuku drużyna dostaje 3 punkty?|1
 Czy po angielsku słowo 'Wednesday' oznacza wtorek?|0
-Czy Giewont znajduje się w polskich Tatrach?|1
-Czy strusie potrafią latać nad drzewami?|0
-Czy metr ma dokładnie 1000 milimetrów?|1
-Czy Robert Lewandowski gra na pozycji bramkarza?|0
-Czy magnes przyciąga aluminiową puszkę?|0
-Czy na fladze olimpijskiej znajduje się pięć połączonych kół?|1
-Czy żółwie morskie składają jaja na piaszczystym lądzie?|1
-Czy w szachach najważniejszą figurą jest Król?|1
-Czy Sahara to największa lodowa pustynia świata?|0
-Czy 120 podzielone przez 10 daje 12?|1
-Czy kompas wskazuje kierunek północny?|1`),
+Czy szczyt Giewont znajduje się w polskich Tatrach?|1
+Czy afrykańskie strusie potrafią latać wysoko nad drzewami?|0
+Czy jeden metr ma dokładnie 1000 milimetrów?|1
+Czy Robert Lewandowski gra na boisku jako bramkarz?|0
+Czy zwykły magnes przyciąga aluminiową puszkę po napoju?|0
+Czy na fladze olimpijskiej znajduje się pięć różnokolorowych kół?|1
+Czy żółwie morskie wychodzą na piaszczystą plażę, aby złożyć tam jaja?|1
+Czy w grze w szachy najważniejszą figurą, którą trzeba chronić, jest Król?|1
+Czy pustynia Sahara jest cała pokryta lodem i śniegiem?|0
+Czy 120 podzielone przez 10 daje wynik 12?|1
+Czy czerwona igła kompasu wskazuje kierunek północny?|1`),
 Jas: parseTF(`
-Czy krowa daje mleko, z którego robi się ser?|1
-Czy tydzień ma osiem dni?|0
-Czy lód jest zamarzniętą wodą?|1
-Czy psy potrafią miauczeć i chodzić po suficie?|0
-Czy banany rosną na drzewach (bylinach) w ciepłych krajach?|1
+Czy krowa daje mleko, z którego robi się biały i żółty ser?|1
+Czy jeden tydzień ma osiem dni?|0
+Czy kostka lodu to zamarznięta woda?|1
+Czy pieski potrafią miauczeć i latać pod sufitem?|0
+Czy słodkie żółte banany rosną w ciepłych krajach?|1
 Czy dwa dodać dwa równa się pięć?|0
-Czy strażak jeździ czerwonym wozem strażackim?|1
-Czy Słońce świeci na niebie w nocy?|0
-Czy ryby pływają w wodzie i mają płetwy?|1
-Czy pociąg jeździ po szynach (torach)?|1
-Czy zimą z drzew spadają zielone truskawki?|0
-Czy słonie mają długą trąbę i wielkie uszy?|1
-Czy trójkąt ma cztery rogi?|0
+Czy strażacy wyjeżdżają do pożaru czerwonym wozem strażackim?|1
+Czy w środku nocy na niebie mocno świeci Słońce?|0
+Czy ryby pływają pod wodą i mają płetwy?|1
+Czy pociąg jedzie po stalowych torach (szynach)?|1
+Czy zimą podczas mrozu w polskich lasach rosną świeże truskawki?|0
+Czy słoń ma długą trąbę i wielkie uszy?|1
+Czy figura trójkąt ma cztery rogi?|0
 Czy po angielsku słowo 'Cat' oznacza kota?|1
-Czy marchewka jest słodkim owocem rosnącym na krzaku?|0
-Czy bałwana lepi się z białego śniegu?|1
-Czy dziesięć odjąć trzy to siedem?|1
-Czy bocian ma długi czerwony dziób i nogi?|1
-Czy samoloty pływają pod wodą jak łodzie podwodne?|0
-Czy po lecie zawsze przychodzi jesień?|1`)
+Czy chrupiąca pomarańczowa marchewka rośnie pod ziemią?|1
+Czy zimowego bałwana lepi się z białego śniegu?|1
+Czy dziesięć odjąć trzy równa się siedem?|1
+Czy biały bocian ma długi czerwony dziób i czerwone nogi?|1
+Czy samoloty pasażerskie pływają głęboko pod wodą?|0
+Czy po ciepłym lecie zawsze przychodzi kolorowa jesień?|1`)
 };
 
 const r5Order = ["Lila", "Kaja", "Darek", "Jas"];
@@ -685,47 +792,41 @@ const roundTitlesSpeech = {
 6: "Runda szósta: Awantura o punkty"
 };
 
-const allDBs = {
-1: {
-1: rawR1_P1,
-2: parseWheel(`BAJKA|KRAINA LODU\nJEDZENIE|LODY WANILIOWE\nZWIERZĘTA|ZŁOTA RYBKA\nPOSTAĆ|MYSZKA MIKI\nBAJKA|KUBUŚ PUCHATEK`),
-3: rawR3_P1,
-4: [...rawR4_A, ...rawR4_B],
-6: rawR6_Dedicated
-},
-2: {
-1: rawR1_P2,
-2: parseWheel(`GEOGRAFIA|WIELKI MUR CHIŃSKI\nKOSMOS|UKŁAD SŁONECZNY\nHISTORIA|BITWA POD GRUNWALDEM\nZABYTKI|WIEŻA EIFFLA\nNAUKA|SZTUCZNA INTELIGENCJA`),
-3: rawR3_P2,
-4: [...rawR4_C, ...rawR4_A],
-6: rawR6_Dedicated
-},
-3: {
-1: rawR1_P3,
-2: parseWheel(`FILM|GWIEZDNE WOJNY\nLITERATURA|AKADEMIA PANA KLEKSA\nGEOGRAFIA|MORZE BAŁTYCKIE\nSPORT|PIŁKA NOŻNA\nBOHATER|HARRY POTTER`),
-3: rawR3_P3,
-4: [...rawR4_B, ...rawR4_D],
-6: rawR6_Dedicated
-},
-4: {
-1: rawR1_P4,
-2: parseWheel(`ZWIERZĘTA|NIEDŹWIEDŹ POLARNY\nBAJKA|KRÓL LEW\nGEOGRAFIA|KOPALNIA SOLI\nSPORT|SKOKI NARCIARSKIE\nGRY|MINECRAFT`),
-3: rawR3_P4,
-4: [...rawR4_D, ...rawR4_A],
-6: rawR6_Dedicated
-},
-5: {
-1: rawR1_P5,
-2: parseWheel(`KOSMOS|DROGA MLECZNA\nBAJKA|TOY STORY\nPRZYRODA|CZTERY PORY ROKU\nMIASTO|ZAMEK NA WAWELU\nSPORT|IGRZYSKA OLIMPIJSKIE`),
-3: rawR3_P5,
-4: [...rawR4_D, ...rawR4_C],
-6: rawR6_Dedicated
+// Budowanie 10 pełnych, wymieszanych Puli Pytań (Pule 1 - 10) bez sąsiadujących ze sobą tych samych kategorii!
+const allDBs = {};
+for (let p = 1; p <= 10; p++) {
+const r1Slice = [];
+const r3Slice = [];
+for (let i = 0; i < 15; i++) {
+r1Slice.push(masterR1[((p - 1) * 15 + i) % masterR1.length]);
+r3Slice.push(masterR3[((p - 1) * 15 + i) % masterR3.length]);
 }
+const r2Slice = [];
+for (let i = 0; i < 5; i++) {
+r2Slice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
+}
+const r4Slice = [];
+for (let i = 0; i < 24; i++) {
+r4Slice.push(masterR4[((p - 1) * 12 + i) % masterR4.length]);
+}
+const r6Rotated = [
+...rawR6_Dedicated.slice((p * 7) % rawR6_Dedicated.length),
+...rawR6_Dedicated.slice(0, (p * 7) % rawR6_Dedicated.length)
+];
+
+allDBs[p] = {
+1: r1Slice,
+2: arrangeNoAdjacentCategories(r2Slice, p),
+3: r3Slice,
+4: arrangeNoAdjacentCategories(r4Slice, p),
+6: r6Rotated
 };
+}
 
 let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
 let usedR6Indices = [];
+let lastR6WheelSegment = -1;
 let r6CarryOverPool = 0;
 let currentState = null;
 let r4Controller = "";
@@ -743,7 +844,7 @@ let lastHandledStatus = "";
 let lastSpinHandled = 0;
 let lastSummaryReadyKey = "";
 
-statusEl.innerText = "✅ SYSTEM GOTOWY! Połączono z bazą. Wybierz kto dziś gra i kliknij START GRY.";
+statusEl.innerText = "✅ SYSTEM GOTOWY (10 Puli Pytań załadowanych)! Wybierz kto dziś gra i kliknij START GRY.";
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
@@ -860,7 +961,9 @@ pool: currentPool
 
 async function sendNextR5TFQuestion() {
 const player = r5Order[r5PlayerIdx];
-const qList = r5TFQuestionsByPlayer[player] || [];
+const baseList = r5TFQuestionsByPlayer[player] || [];
+const offset = ((currentPool - 1) * 3) % Math.max(1, baseList.length);
+const qList = [...baseList.slice(offset), ...baseList.slice(0, offset)];
 r5QIdx++;
 
 if (r5QIdx >= qList.length || r5TimeLeftMs <= 0) {
@@ -1295,7 +1398,7 @@ if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom i przywróc
 try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
-r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
+r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = []; lastR6WheelSegment = -1;
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
 await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Wszyscy 4 gracze aktywni.", blocked: [], usedOptions: [], activePlayers: players, pool: currentPool });
@@ -1309,7 +1412,7 @@ try {
 clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 currentPool = parseInt(document.getElementById('poolSel').value);
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1 };
-r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = [];
+r4Controller = ""; r6CarryOverPool = 0; usedR6Indices = []; lastR6WheelSegment = -1;
 let activeList = getSelectedActivePlayers();
 await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], activePlayers: activeList, pool: currentPool });
 statusEl.innerText = `Status: Załadowano PULĘ ${currentPool} (Grają: ${activeList.join(", ")}). Kliknij START GRY!`;
@@ -1346,7 +1449,15 @@ let initRes = await determineInitialController();
 r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
 }
-let segIdx = Math.floor(Math.random() * r6WheelCategories.length);
+
+// Losowanie wycinka koła z blokadą powtórzenia tej samej kategorii dwa razy z rzędu!
+let candidateSegments = [];
+for (let s = 0; s < r6WheelCategories.length; s++) {
+if (s !== lastR6WheelSegment) candidateSegments.push(s);
+}
+let segIdx = candidateSegments[Math.floor(Math.random() * candidateSegments.length)];
+lastR6WheelSegment = segIdx;
+
 let chosenCat = r6WheelCategories[segIdx];
 let qData = pickR6QuestionByCategory(currentPool, chosenCat);
 
