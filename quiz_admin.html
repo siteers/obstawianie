@@ -40,18 +40,18 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: WYBÓR PULI PYTAŃ (10 Unikalnych Puli - Zero powtórek kategorii pod rząd!)</h3>
+<h3>KROK 2: WYBÓR PULI PYTAŃ (10 W Pełni Unikalnych Puli - Zero powtórek!)</h3>
 <select id="poolSel">
-<option value="1">PULA 1 (Zestaw Familijny Start)</option>
-<option value="2">PULA 2 (Zestaw Odkrywcy)</option>
-<option value="3">PULA 3 (Zestaw Przygodowy)</option>
-<option value="4">PULA 4 (Zestaw Bystrzaka)</option>
-<option value="5">PULA 5 (Zestaw Mistrzowski)</option>
-<option value="6">PULA 6 (Zestaw Kosmiczny)</option>
-<option value="7">PULA 7 (Zestaw Przyrodniczy)</option>
-<option value="8">PULA 8 (Zestaw Bajkowy)</option>
-<option value="9">PULA 9 (Zestaw Podróżnika)</option>
-<option value="10">PULA 10 (Zestaw Ekspercki)</option>
+<option value="1">PULA 1 (Zestaw Ogólny #1)</option>
+<option value="2">PULA 2 (Zestaw Ogólny #2)</option>
+<option value="3">PULA 3 (Zestaw Ogólny #3)</option>
+<option value="4">PULA 4 (Zestaw Ogólny #4)</option>
+<option value="5">PULA 5 (Zestaw Ogólny #5)</option>
+<option value="6">PULA 6 (Zestaw Ogólny #6)</option>
+<option value="7">PULA 7 (Zestaw Ogólny #7)</option>
+<option value="8">PULA 8 (Zestaw Ogólny #8)</option>
+<option value="9">PULA 9 (Zestaw Ogólny #9)</option>
+<option value="10">PULA 10 (Zestaw Ogólny #10)</option>
 </select>
 <button type="button" class="purple" id="btnSendPool" onclick="window.sendPoolChoice && window.sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
 </div>
@@ -240,7 +240,7 @@ Który z tych ptaków odlatuje z Polski na zimę do Afryki?|Wróbel;Sikorka;Boci
 Jak po angielsku nazywa się kolor 'Niebieski'?|Red;Green;Blue;Yellow|2
 Czym żywi się większość gąsienic zanim zmieni się w motyla?|Mięsem;Liśćmi roślin;Rybią ikrą;Korą sosny|1
 W jakim polskim mieście na wieży ratusza trykają się koziołki?|We Wrocławiu;W Poznaniu;W Szczecinie;W Łodzi|1
-Jak nazywa się mały żółty stworek w ogrodniczkach z filmu 'Gru i Minionki'?|Smerf;Minionek; Gremlin;Troll|1
+Jak nazywa się mały żółty stworek w ogrodniczkach z filmu 'Gru i Minionki'?|Smerf;Minionek;Gremlin;Troll|1
 Ile to jest 12 x 5?|50;55;60;65|2
 Który zmysł pozwala nam słyszeć śpiew ptaków?|Wzrok;Węch;Słuch;Dotyk|2
 Jak nazywa się najwyższa góra na kuli ziemskiej?|Rysy;Mont Blanc;Mount Everest;Kilimandżaro|2
@@ -266,7 +266,7 @@ Ile dni ma miesiąc kwiecień?|28;29;30;31|2
 Jak nazywa się największy dziki kot żyjący w azjatyckiej tajdze (w paski)?|Lew;Tygrys;Gepard;Ryś|1
 Ile to jest 7 x 8?|48;54;56;64|2
 W jakim mieście we Francji stoi Wieża Eiffla?|W Lyonie;W Marsylii;W Paryżu;W Nicei|2
-Jak nazywa się towarzysz Kubusia Puchatka, który uwielbia brykać na ogonie?|Kłapouchy;Tygrysek;Królik; Sowa|1
+Jak nazywa się towarzysz Kubusia Puchatka, który uwielbia brykać na ogonie?|Kłapouchy;Tygrysek;Królik;Sowa|1
 Który instrument muzyczny posiada struny i smyczek?|Flet;Trąbka;Skrzypce;Bęben|2
 Jak po angielsku powiesz słowo 'Książka'?|Pen;Book;Desk;Bag|1
 Z jakiego metalu szlachetnego robi się złote medale i obrączki?|Ze srebra;Ze złota;Z miedzi;Z aluminium|1
@@ -296,7 +296,7 @@ Która rzeka przepływa przez Wrocław i Szczecin?|Wisła;Odra;Bug;San|1
 Jak po angielsku powiesz liczbę 'Dziesięć'?|Five;Eight;Ten;Twelve|2
 Z czego pszczoły zbierają pyłek i nektar na łące?|Z kamieni;Z kwiatów;Z mchu;Z wody|1`);
 
-// --- BAZA 50 UNIKALNYCH HASEŁ DO RUNDY 2 (10 PUL PO 5 HASEŁ, ZERO TYCH SAMYCH KATEGORII POD RZĄD) ---
+// --- BAZA 50 UNIKALNYCH HASEŁ DO RUNDY 2 (10 PUL PO 5 HASEŁ) ---
 const masterR2 = parseWheel(`
 BAJKA|KRAINA LODU
 JEDZENIE|LODY WANILIOWE
@@ -333,7 +333,7 @@ PRZYSMAK|PIERNIKI TORUŃSKIE
 GÓRY|ŚPIĄCY RYCERZ GIEWONT
 MUZYKA|FRYDERYK CHOPIN
 POGODA|KOLOROWA TĘCZA
-ZWIERZAK| PANDA WIELKA
+ZWIERZAK|PANDA WIELKA
 WAKACJE|SŁONECZNA PLAŻA
 BOHATER|KOT W BUTACH
 NAUKA|MIKOŁAJ KOPERNIK
@@ -487,7 +487,7 @@ Jak po angielsku jest 'trzy'?|Three
 Wodne zwierzę ze szczypcami, które chodzi do tyłu to...|Rak / Krab
 Ile to jest 15 dodać 15?|30 / Trzydzieści`);
 
-// --- BAZA PYTAŃ DO RUNDY 4 (BEZ ZDRADZANIA ODPOWIEDZI W KATEGORII!) ---
+// --- BAZA 240 UNIKALNYCH PYTAŃ DO RUNDY 4 (10 PUL PO 24 PYTANIA = ZERO NAKŁADANIA SIĘ PUL!) ---
 const masterR4 = parseR4(`
 PODRÓŻE|W jakim wyspiarskim państwie na Morzu Śródziemnym leży kurort Paphos?|W Grecji;Na Cyprze;We Włoszech;W Hiszpanii|1
 RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
@@ -607,9 +607,99 @@ GEOGRAFIA|Który skandynawski kraj słynie z głębokich zatok zwanych fiordami 
 TECHNOLOGIA|Jak nazywa się technologia bezprzewodowego internetu domowego?|Bluetooth;Wi-Fi;USB;GPS|1
 BAJKI|Kto zamieszkiwał magiczną oliwną lampę znalezioną przez Aladyna w jaskini?|Zły czarnoksiężnik;Niebieski Dżin;Latający smok;Małpka Abu|1
 MATEMATYKA|Ile kwadransów (po 15 minut) mieści się w jednej pełnej godzinie?|2;3;4;6|2
-HISTORIA|Czego dotyczyło wielkie odkrycie polskiego astronoma Mikołaja Kopernika?|Odkrycia Ameryki;Że Ziemia i planety krążą wokół Słońca;Wynalezienia druku;Odkrycia prądu|1`);
+HISTORIA|Czego dotyczyło wielkie odkrycie polskiego astronoma Mikołaja Kopernika?|Odkrycia Ameryki;Że Ziemia i planety krążą wokół Słońca;Wynalezienia druku;Odkrycia prądu|1
+ZWIERZĘTA|Który wodny gryzoń ma spłaszczony ogon przypominający wiosło i ścina drzewa zębami?|Wydra;Bóbr;Nutria;Piżmak|1
+KOSMOS|Jak nazywa się czerwony łazik NASA, który wylądował na Marsie w 2012 roku?|Curiosity;Apollo;Voyager;Sputnik|0
+GEOGRAFIA|Jak nazywa się stolica Portugalii?|Madryt;Lizbona;Porto;Sewilla|1
+BAJKI|Jak nazywa się mała syrenka z czerwoną czupryną, córka króla Trytona?|Vaiana;Arielka; Dzwoneczek;Jasmina|1
+MATEMATYKA|Ile wynosi połowa z liczby 250?|100;115;125;150|2
+SPORT|W jakim sporcie używa się czepka, okularów i pokonuje długość basenu kraulem?|W wioślarstwie;W pływaniu;W żeglarstwie;W nurkowaniu|1
+PRZYRODA|Jak nazywa się żółty wiosenny kwiat, który po przekwitnięciu zmienia się w puszystego dmuchawca?|Stokrotka;Mniszek lekarski (mlecz);Tulipan;Przebiśnieg|1
+ANGIELSKI|Co oznacza angielskie słowo 'Cloud'?|Słońce;Wiatr;Chmura;Śnieg|2
+HISTORIA|W jakim polskim mieście znajduje się słynny pomnik Syrenki nad Wisłą?|W Gdańsku;W Krakowie;W Warszawie;W Toruniu|2
+KULINARIA|Z jakiego owocu robi się tradycyjne powidła do pączków?|Ze śliwek lub płatków róży;Z bananów;Z arbuza;Z cytryn|0
+BIOLOGIA|Jak nazywa się zielony barwnik w liściach roślin niezbędny do fotosyntezy?|Melanina;Chlorofil;Karoten;Hemoglobina|1
+GRY|Jak nazywa się kulisty żółty bohater starej gry zręcznościowej, który zjada kropki w labiryncie?|Sonic;Pac-Man;Kirby;Bomberman|1
+MUZYKA|Który z tych instrumentów jest największy i najniżej brzmiący w rodzinie smyczkowej?|Skrzypce;Altówka;Wiolonczela;Kontrabas|3
+TRANSPORT|Jak nazywa się statek powietrzny napełniany gorącym powietrzem z koszem pod spodem?|Sterowiec;Szybowiec;Balon;Paralotnia|2
+LITERATURA|Jak nazywał się mały chłopiec wychowany przez wilki w dżungli (bohater 'Księgi dżungli')?|Tarzan;Mowgli;Piotruś Pan;Aladyn|1
+NAUKA|Jaki przyrząd z soczewkami pozwala zobaczyć w laboratorium maleńkie bakterie i komórki?|Teleskop;Lornetka;Mikroskop;Peryskop|2
+ZWIERZĘTA|Który ptak buduje wielkie gniazda na słupach i kominach oraz klekocze dziobem?|Żuraw;Czapla;Bocian biały;Kormoran|2
+GEOGRAFIA|Jak nazywa się cieśnina oddzielająca Europę od Afryki przy Hiszpanii?|Bosfor;Gibraltarska;La Manche;Magellana|1
+MATEMATYKA|Ile stopni ma kąt półpełny (tworzący linię prostą)?|90 stopni;120 stopni;180 stopni;360 stopni|2
+BAJKI|Jak nazywa się zabawka-kosmonauta z filmu 'Toy Story' (przyjaciel Chudego)?|Zurg;Buzz Astral;Rex;Cienki|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Ogród'?|Kitchen;Garage;Garden;Balcony|2
+SPORT|Ile setów trzeba wygrać, aby zwyciężyć w standardowym meczu siatkówki?|Dwa;Trzy;Cztery;Pięć|1
+KOSMOS|Która planeta Układu Słonecznego wiruje 'na boku' i ma błękitno-zielonkawy kolor?|Mars;Merkury;Uran;Jowisz|2
+PRZYRODA|Jak nazywają się drzewa, które zamiast płaskich liści mają szpilki i szyszki?|Drzewa liściaste;Drzewa iglaste;Krzewy owocowe;Paprocie|1
+HISTORIA|Który słynny żeglarz w 1492 roku wypłynął na trzech statkach i odkrył Amerykę?|Ferdynand Magellan;Krzysztof Kolumb;Vasco da Gama;Marco Polo|1
+KULINARIA|Jak nazywa się japońska zupa z makaronem, bulionem i dodatkami?|Barszcz;Ramen;Gazpacho;Gulasz|1
+ANATOMIA|Która część oka ma kolor (np. niebieski, zielony lub brązowy) i otacza źrenicę?|Powieka;Tęczówka;Rzęsa;Siatkówka|1
+TECHNOLOGIA|Co oznacza skrót USB używany przy podłączaniu pendrive'a lub myszki?|Ultra Speed Box;Universal Serial Bus;United System Base;User Screen Button|1
+MATEMATYKA|Ile to jest 8 pomnożone przez 9?|64;72;81;63|1
+ZWIERZĘTA|Który ssak z Ameryki Południowej ma twardy pancerz z płytek i zwija się w kulkę?|Jeżozwierz;Pancernik;Mrówkojad;Kapibara|1
+GEOGRAFIA|Jak nazywa się stolica Austrii położona nad Dunajem?|Zurych;Wiedeń;Monachium;Praga|1
+BAJKI|Jak ma na imię córka wampira Draculi w filmie animowanym 'Hotel Transylwania'?|Mavis;Wanda;Bella;Koralina|0
+MUZYKA|Ile klawiszy (białych i czarnych łącznie) ma pełnowymiarowy fortepian koncertowy?|66;72;88;100|2
+ANGIELSKI|Co oznacza angielskie słowo 'Mountain'?|Rzeka;Jezioro;Góra;Las|2
+SPORT|Jak nazywa się element boiska do tenisa, który dzieli kort na dwie równe połowy?|Bramka;Siatka;Kosz;Płotek|1
+POGODA|Jakim przyrządem mierzy się prędkość wiatru na stacji meteorologicznej?|Termometrem;Wiatromierzem (anemometrem);Kompasem;Zegarem|1
+LITERATURA|W jakiej szafie rodzeństwo Pevensie odkryło przejście do magicznej krainy Narnii?|W starej szafie na ubrania;W lodówce;W skrzyni skarbów;W kredensie|0
+BIOLOGIA|Które z tych zwierząt jest płazem i przechodzi przeobrażenie z kijanki?|Jaszczurka;Żaba trawna;Węgorz;Ślimak|1
+HISTORIA|Jak nazywała się pierwsza stolica królów Polski przed Warszawą (przez ponad 500 lat)?|Poznań;Gdańsk;Kraków;Wrocław|2
+MATEMATYKA|Jaka jest największa liczba trzycyfrowa?|900;990;999;1000|2
+KOSMOS|Jak nazywa się Międzynarodowa Stacja Kosmiczna krążąca na orbicie wokół Ziemi (skrót)?|ISS;NASA;UFO;GPS|0
+ZWIERZĘTA|Który największy gryzoń świata z Ameryki Południowej uwielbia pływać i przyjaźni się z innymi zwierzętami?|Bóbr;Kapibara;Świnka morska;Chomik|1
+GEOGRAFIA|W jakim kraju leżą miasta Toronto, Montreal i Vancouver?|W USA;W Kanadzie;W Australii;W Wielkiej Brytanii|1
+BAJKI|Jak nazywa się mały smok z polskiej dobranocki, który wyruszył na wyprawę z Baltazarem Gąbką?|Smok Wawelski;Tabaluga;Szczerbatek;Mushu|0
+ANGIELSKI|Jak po angielsku powiesz słowo 'Pociąg'?|Plane;Ship;Train;Truck|2
+SPORT|Jakiego koloru kartkę pokazuje sędzia piłkarski za bardzo poważny faul, wyrzucając gracza z boiska?|Żółtą;Czerwoną;Zieloną;Niebieską|1
+KULINARIA|Z jakiego ziarna gotuje się białą bazę do sushi oraz risotto?|Z kaszy gryczanej;Z ryżu;Z soczewicy;Z grochu|1
+PRZYRODA|Który z tych owadów świeci wieczorem swoim odwłokiem w letnie noce?|Biedronka;Świetlik (robaczek świętojański);Pasikonik;Mrówka|1
+TECHNOLOGIA|Jak nazywa się przenośny bank energii służący do ładowania telefonu w podróży?|Router;Powerbank;Modem;Pendrive|1
+MATEMATYKA|Ile to jest 60 podzielone przez 5?|10;12;14;15|1
+HISTORIA|Jak nazywał się słynny polski pianista i kompozytor urodzony w Żelazowej Woli?|Stanisław Moniuszko;Fryderyk Chopin;Ignacy Jan Paderewski;Henryk Wieniawski|1
+ZWIERZĘTA|Czym żywi się dorosły komar (samica), a czym samiec komara?|Oba piją wodę;Samica krwią, a samiec nektarem kwiatów;Oba jedzą liście;Jedzą inne owady|1
+GEOGRAFIA|Jak nazywa się morze o niezwykle słonej wodzie, w którym nie da się utonąć (na granicy Izraela i Jordanii)?|Morze Czarne;Morze Martwe;Morze Czerwone;Morze Żółte|1
+BAJKI|Jak ma na imię dzielna polinezyjska dziewczyna, która płynie łodzią przez ocean z półbogiem Mauim?|Mulan;Vaiana (Moana);Pocahontas;Merida|1
+MUZYKA|Jak nazywa się pięć poziomych linii w zeszycie muzycznym, na których zapisuje się nuty?|Klucz wiolinowy;Pięciolinia;Takt;Gama|1
+ANGIELSKI|Co oznacza angielski przymiotnik 'Fast'?|Wolny;Szybki;Ciężki;Wysoki|1
+SPORT|W jakiej dyscyplinie sportowej zawodnicy zjeżdżają na czas po lodowym torze na specjalnych sankach?|W biathlonie;W saneczkarstwie / bobslejach;W curlingu;W hokeju|1
+NAUKA|Który metal w temperaturze pokojowej jest cieczą (dawniej stosowany w termometrach)?|Żelazo;Rtęć;Ołów;Srebro|1
+LITERATURA|Jak miał na imię chłopiec z blizną w kształcie błyskawicy na czole?|Ron Weasley;Harry Potter;Percy Jackson;Frodo Baggins|1
+MATEMATYKA|Ile wierzchołków (rogów) ma sześcian?|4;6;8;12|2
+KOSMOS|Jak nazywa się zjawisko świecenia kolorowych świateł na niebie blisko biegunów Ziemi?|Tęcza;Zorza polarna;Zaćmienie;Kometa|1
+ZWIERZĘTA|Który ptak potrafi obrócić głowę prawie o 270 stopni bez poruszania tułowiem?|Orzeł;Sowa;Bocian;Pingwin|1
+GEOGRAFIA|Jak nazywa się stolica Węgier podzielona rzeką Dunaj na dwie części?|Bukareszt;Budapeszt;Bratysława;Belgrad|1
+BAJKI|Jak nazywa się wiewiór z 'Epoki Lodowcowej', który bez przerwy goni swojego żołędzia?|Sid;Wiewiór (Scrat);Maniek;Diego|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Most'?|Road;Tower;Bridge;Tunnel|2
+SPORT|Ilu zawodników liczy drużyna koszykówki przebywająca jednocześnie na parkiecie?|4;5;6;7|1
+KULINARIA|Jak nazywa się tradycyjny polski chłodnik lub zupa gotowana z czerwonych buraków?|Żurek;Barszcz czerwony;Kapuśniak;Ogórkowa|1
+PRZYRODA|Które drzewo ma charakterystyczne liście stałe w godle Kanady i daje słodki syrop?|Dąb;Klon;Buk;Brzoza|1
+TECHNOLOGIA|Jak nazywa się program służący do przeglądania stron internetowych (np. Chrome, Safari)?|Edytor tekstu;Przeglądarka internetowa;Antywirus;Kalkulator|1
+MATEMATYKA|Ile to jest 13 dodać 27?|30;38;40;42|2
+HISTORIA|Jak nazywało się pismo obrazkowe używane przez starożytnych Egipcjan na ścianach świątyń?|Alfabet łaciński;Hieroglify;Runy;Cyrylica|1
+ZWIERZĘTA|Który morski ssak słynie z inteligencji, porozumiewa się gwizdami i wyskakuje ponad fale?|Rekin;Delfin;Murena;Płaszczka|1
+GEOGRAFIA|Jak nazywa się największe jezioro w Polsce (położone na Mazurach)?|Mamry;Śniardwy;Morskie Oko;Hańcza|1
+BAJKI|Jak nazywa się mały drewniany warsztat, w którym majster Geppetto wystrugał Pinokia?|Pałac;Stolarnia;Kuźnia;Piekarnia|1
+MUZYKA|Jak nazywa się śpiew wykonywany przez zespół głosów bez żadnego akompaniamentu instrumentów?|Playback;A cappella;Solo;Duet|1
+ANGIELSKI|Co oznacza angielskie słowo 'Snow'?|Deszcz;Wiatr;Śnieg;Mgła|2
+SPORT|Jak nazywa się wyścig kolarski dookoła Polski?|Tour de France;Tour de Pologne;Giro d'Italia;Vuelta|1
+BIOLOGIA|Ile par odnóży krocznych mają wszystkie owady (np. mrówka, pszczoła, chrząszcz)?|Dwie pary (4 nogi);Trzy pary (6 nóg);Cztery pary (8 nóg);Pięć par (10 nóg)|1
+LITERATURA|Jak nazywał się pies Stasia i Nel z powieści 'W pustyni i w puszczy'?|Reksio;Saba;Burek;Lassie|1
+MATEMATYKA|Ile to jest 90 podzielone przez 3?|20;25;30;35|2
+KOSMOS|Jak nazywał się pierwszy sztuczny satelita Ziemi wystrzelony w kosmos w 1957 roku?|Apollo;Sputnik 1;Hubble;Voyager|1
+ZWIERZĘTA|Który afrykański ssak żyje w rzekach, ma ogromną paszczę i waży kilka ton?|Tapir;Hipopotam;Goryl;Zebra|1
+GEOGRAFIA|W jakim polskim mieście znajduje się słynny Spodek oraz ulica Mariacka?|W Krakowie;W Katowicach;W Poznaniu;W Łodzi|1
+BAJKI|Jak ma na imię pies Myszki Miki o długich uszach?|Goofy;Pluto;Scooby;Odii|1
+ANGIELSKI|Jak po angielsku powiesz liczbę 'Sto'?|Ten;Thousand;Hundred (One hundred);Million|2
+SPORT|W jakim sporcie używa się białej bili oraz kija do wbijania kolorowych kul do łuz na zielonym stole?|W kręglach;W bilardzie (snookerze);W golfie;W krokiecie|1
+KULINARIA|Z jakiego kraju pochodzą placki kukurydziane tortilla oraz tacos?|Z Włoch;Z Meksyku;Z Japonii;Z Grecji|1
+PRZYRODA|Jak nazywa się pora roku, w której kwitną przebiśniegi i drzewa wypuszczają pąki?|Jesień;Zima;Wiosna;Lato|2
+TECHNOLOGIA|Który klawisz na klawiaturze komputera służy do robienia odstępu między wyrazami?|Enter;Spacja;Shift;Backspace|1
+MATEMATYKA|Ile to jest 7 pomnożone przez 9?|56;63;72;69|1`);
 
-// --- BAZA PYTAŃ DO RUNDY 6 (KOŁO FORTUNY + LICYTACJA, PO 10 PYTAŃ NA KAŻDĄ Z 8 KATEGORII = 80 PYTAŃ) ---
+// --- BAZA PYTAŃ DO RUNDY 6 (KOŁO FORTUNY + LICYTACJA, 80 PYTAŃ) ---
 const rawR6_Dedicated = parseR4(`
 KOSMOS|Jak nazywa się pas skał krążących między Marsem a Jowiszem?|Pas Oriona;Pas Planetoid (Asteroid);Droga Mleczna;Mgławica|1
 KOSMOS|Która planeta w Układzie Słonecznym jest najgorętsza przez gęste chmury?|Merkury;Wenus;Mars;Jowisz|1
@@ -629,7 +719,7 @@ BAJKI|Jak nazywa się szybki czerwony samochód wyścigowy z filmu 'Auta'?|Złom
 BAJKI|Jakiego koloru są burzliwe włosy księżniczki Meridy Walecznej?|Czarne;Blond;Rude (kręcone);Niebieskie|2
 BAJKI|Jak ma na imię gburowaty sąsiad SpongeBoba, który gra na klarnecie?|Patryk;Skalmar;Pan Krab;Plankton|1
 BAJKI|Kto uwięził długowłosą Roszpunkę w wysokiej wieży w lesie?|Zły Wilk;Matka Gothel;Czarownica z zachodu;Kapitan Hak|1
-BAJKI|Jak nazywa się mała rybka z problemami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Arielka;Dory;kotwica;Perła|1
+BAJKI|Jak nazywa się mała rybka z problemami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Arielka;Dory;Kotwica;Perła|1
 BAJKI|Jakim zwierzęciem jest Pumba z filmu 'Król Lew' (przyjaciel surykatki Timona)?|Hieną;Guzcem;Antylopą;Pawianem|1
 ZWIERZĘTA|Który malutki ptaszek potrafi zawisać w powietrzu i latać do tyłu?|Wróbel;Koliber;Jaskółka;Sikorka|1
 ZWIERZĘTA|Jak nazywa się australijski torbacz, który śpi na drzewach i zjada liście eukaliptusa?|Panda;Koala;Grizzly;Leniwiec|1
@@ -690,7 +780,7 @@ HISTORIA|W jakim starożytnym kraju rządzili Faraonowie i budowano piramidy?|W 
 HISTORIA|Jak nazywał się wielki transatlantyk, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
 HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2
 HISTORIA|Kto był pierwszym koronowanym królem Polski w 1025 roku?|Mieszko I;Bolesław Chrobry;Kazimierz Wielki;Władysław Łokietek|1
-HISTORIA|W którym mieście bracia Wright zbudowali pierwszy samolot, a wcześniej Kopernik prowadził obserwacje?|Kto wynalazł maszynę drukarską z ruchomymi czcionkami w Europie?: Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1`);
+HISTORIA|Kto w XV wieku wynalazł w Europie czcionkę drukarską i wydrukował pierwszą Biblię?|Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1`);
 
 const r5TFQuestionsByPlayer = {
 Lila: parseTF(`
@@ -759,7 +849,7 @@ Czy czerwona igła kompasu wskazuje kierunek północny?|1`),
 Jas: parseTF(`
 Czy krowa daje mleko, z którego robi się biały i żółty ser?|1
 Czy jeden tydzień ma osiem dni?|0
-Czy kostka lodu to zamarznięta woda?|1
+Czy kostka lodu to zamarzniętą woda?|1
 Czy pieski potrafią miauczeć i latać pod sufitem?|0
 Czy słodkie żółte banany rosną w ciepłych krajach?|1
 Czy dwa dodać dwa równa się pięć?|0
@@ -792,22 +882,22 @@ const roundTitlesSpeech = {
 6: "Runda szósta: Awantura o punkty"
 };
 
-// Budowanie 10 pełnych, wymieszanych Puli Pytań (Pule 1 - 10) bez sąsiadujących ze sobą tych samych kategorii!
+// Budowanie 10 pełnych, całkowicie rozłącznych Puli Pytań (Pule 1 - 10) bez żadnych powtórek między pulami w R1, R2, R3 i R4!
 const allDBs = {};
 for (let p = 1; p <= 10; p++) {
 const r1Slice = [];
 const r3Slice = [];
 for (let i = 0; i < 15; i++) {
-r1Slice.push(masterR1[((p - 1) * 15 + i) % masterR1.length]);
-r3Slice.push(masterR3[((p - 1) * 15 + i) % masterR3.length]);
+r1Slice.push(masterR1[(p - 1) * 15 + i]);
+r3Slice.push(masterR3[(p - 1) * 15 + i]);
 }
 const r2Slice = [];
 for (let i = 0; i < 5; i++) {
-r2Slice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
+r2Slice.push(masterR2[(p - 1) * 5 + i]);
 }
 const r4Slice = [];
 for (let i = 0; i < 24; i++) {
-r4Slice.push(masterR4[((p - 1) * 12 + i) % masterR4.length]);
+r4Slice.push(masterR4[(p - 1) * 24 + i]);
 }
 const r6Rotated = [
 ...rawR6_Dedicated.slice((p * 7) % rawR6_Dedicated.length),
@@ -844,7 +934,7 @@ let lastHandledStatus = "";
 let lastSpinHandled = 0;
 let lastSummaryReadyKey = "";
 
-statusEl.innerText = "✅ SYSTEM GOTOWY (10 Puli Pytań załadowanych)! Wybierz kto dziś gra i kliknij START GRY.";
+statusEl.innerText = "✅ SYSTEM GOTOWY (10 w pełni unikalnych Puli Pytań)! Wybierz kto dziś gra i kliknij START GRY.";
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
