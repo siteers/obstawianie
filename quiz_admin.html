@@ -128,7 +128,7 @@ return { q: q.trim(), a: ans.trim() === "1" };
 
 // Algorytm gwarantujący, że dwie takie same kategorie NIGDY nie wystąpią bezpośrednio po sobie
 function arrangeNoAdjacentCategories(items, seed = 1) {
-let pool = [...items];
+let pool = (items || []).filter(Boolean);
 for (let i = pool.length - 1; i > 0; i--) {
 const j = (i * 17 + seed * 31) % (i + 1);
 [pool[i], pool[j]] = [pool[j], pool[i]];
@@ -136,7 +136,7 @@ const j = (i * 17 + seed * 31) % (i + 1);
 const result = [];
 while (pool.length > 0) {
 const lastCat = result.length > 0 ? result[result.length - 1].cat : null;
-let idx = pool.findIndex(x => x.cat !== lastCat);
+let idx = pool.findIndex(x => x && x.cat !== lastCat);
 if (idx === -1) idx = 0;
 result.push(pool.splice(idx, 1)[0]);
 }
@@ -485,7 +485,22 @@ Białe warzywo w łupinach podzielone na aromatyczne ząbki to...|Czosnek
 Jak nazywa się kraina, w której mieszka Święty Mikołaj z reniferami?|Laponia / Biegun Północny
 Jak po angielsku jest 'trzy'?|Three
 Wodne zwierzę ze szczypcami, które chodzi do tyłu to...|Rak / Krab
-Ile to jest 15 dodać 15?|30 / Trzydzieści`);
+Ile to jest 15 dodać 15?|30 / Trzydzieści
+Jak nazywa się najwyższy szczyt w polskich Tatrach?|Rysy
+Ile to jest 3 razy 9?|27
+Jak po angielsku jest 'okno'?|Window
+Zwierzę leśne z kolcami na grzbiecie to...|Jeż
+Czym piszemy kredą w szkole?|Po tablicy / Tablica
+Jak nazywa się stolica Włoch?|Rzym
+Ile to jest 10 razy 10?|100 / Sto
+Jak po angielsku jest 'chleb'?|Bread
+Który owad robi pajęczynę (choć to pajęczak)?|Pająk
+Jak nazywa się pojazd Świętego Mikołaja ciągnięty przez renifery?|Sanie
+Ile pór roku mamy w Polsce?|4 / Cztery
+Jak po angielsku jest kolor 'biały'?|White
+Z jakiego ziarna parzy się czarną poranną kawę?|Z kawy / Ziarna kawy
+Ile to jest 50 odjąć 20?|30
+Jak nazywa się okrągła piłka przedstawiająca model całej Ziemi?|Globus`);
 
 // --- BAZA 240 UNIKALNYCH PYTAŃ DO RUNDY 4 (10 PUL PO 24 PYTANIA = ZERO NAKŁADANIA SIĘ PUL!) ---
 const masterR4 = parseR4(`
@@ -697,7 +712,47 @@ SPORT|W jakim sporcie używa się białej bili oraz kija do wbijania kolorowych 
 KULINARIA|Z jakiego kraju pochodzą placki kukurydziane tortilla oraz tacos?|Z Włoch;Z Meksyku;Z Japonii;Z Grecji|1
 PRZYRODA|Jak nazywa się pora roku, w której kwitną przebiśniegi i drzewa wypuszczają pąki?|Jesień;Zima;Wiosna;Lato|2
 TECHNOLOGIA|Który klawisz na klawiaturze komputera służy do robienia odstępu między wyrazami?|Enter;Spacja;Shift;Backspace|1
-MATEMATYKA|Ile to jest 7 pomnożone przez 9?|56;63;72;69|1`);
+MATEMATYKA|Ile to jest 7 pomnożone przez 9?|56;63;72;69|1
+ZWIERZĘTA|Jak nazywa się ptak, który potrafi budować gniazda w dziuplach wykuwanych w pniu drzewa?|Jaskółka;Dzięcioł;Słowik;Skowronek|1
+GEOGRAFIA|Które państwo słynie z tulipanów, wiatraków oraz drewnianych chodaków?|Belgia;Holandia;Dania;Szwajcaria|1
+BAJKI|Jak miał na imię chłopiec, który nigdy nie chciał dorosnąć i mieszkał w Nibylandii?|Pinokio;Piotruś Pan;Kaj;Aladyn|1
+MUZYKA|Ile strun ma klasyczny instrument smyczkowy – skrzypce?|Trzy;Cztery;Pięć;Sześć|1
+ANGIELSKI|Co oznacza angielskie słowo 'Star'?|Księżyc;Gwiazda;Planeta;Niebo|1
+SPORT|Jak nazywa się bramkarz w hokeju lub piłce nożnej po angielsku?|Striker;Goalkeeper;Referee;Coach|1
+HISTORIA|Który polski król pokonał wojska tureckie w wielkiej bitwie pod Wiedniem w 1683 roku?|Zygmunt Stary;Jan III Sobieski;Stefan Batory;Kazimierz Odnowiciel|1
+BIOLOGIA|Który z tych ssaków mieszka pod ziemią i kopie korytarze, tworząc kopce na łące?|Wiewiórka;Kret;Zając;Jeleń|1
+MATEMATYKA|Ile to jest 400 podzielone przez 8?|40;50;60;80|1
+KOSMOS|Jak nazywa się galaktyka sąsiadująca z naszą Drogą Mleczną?|Mgławica Kraba;Galaktyka Andromedy;Pas Oriona;Wielki Wóz|1
+KULINARIA|Z jakich owoców przygotowuje się tradycyjny meksykański sos guacamole?|Z pomidorów;Z awokado;Z mango;Z papai|1
+PRZYRODA|Jak nazywają się żółte lub brązowe igły modrzewia opadające jesienią?|Szpilki (igły);Szyszki;Żołędzie;Kasztany|0
+TECHNOLOGIA|Jak nazywa się mała kamera zamontowana nad ekranem laptopa do rozmów wideo?|Projektor;Kamera internetowa (webcam);Skaner;Mikrofon|1
+ZWIERZĘTA|Które z tych zwierząt potrafi przespać całą zimę zwinięte w kłębek w norze?|Wilk;Borsuk i jeż;Sarna;Lis|1
+GEOGRAFIA|Jak nazywa się stolica Szkocji ze słynnym zamkiem na skale?|Londyn;Edynburg;Dublin;Cardiff|1
+BAJKI|Jak nazywa się mała wróżka towarzysząca Piotrusiowi Panu, która sypie magicznym pyłem?|Kopciuszek;Dzwoneczek (Tinker Bell);Roszpunka;Fiona|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Rzeka'?|Sea;Lake;River;Ocean|2
+SPORT|Ile kółek ma jeden but do jazdy na klasycznych wrotkach dwurzędowych?|Dwa;Trzy;Cztery;Pięć|2
+LITERATURA|Jak nazywał się mały książę z planety B-612, który opiekował się jedną różą?|Książę Kaspian;Mały Książę;Artur;Piotruś|1
+MATEMATYKA|Ile to jest 14 dodać 19?|31;33;35;37|1
+HISTORIA|W jakim mieście nad Motławą stoi zabytkowy drewniany dźwig portowy – Żuraw?|W Szczecinie;W Gdańsku;W Gdyni;W Kołobrzegu|1
+NAUKA|Czym mierzymy napięcie prądu elektrycznego w bateriach (np. 1,5 V)?|W watach;W woltach;W metrach;W litrach|1
+ZWIERZĘTA|Jak nazywa się biały ptak z czarnymi końcówkami skrzydeł i czerwonym dziobem, który wraca do Polski na wiosnę?|Łabędź;Bocian biały;Mewa;Żuraw|1
+GEOGRAFIA|Na jakim kontynencie leżą państwa Brazylia, Argentyna i Peru?|W Ameryce Północnej;W Ameryce Południowej;W Afryce;W Europie|1
+BAJKI|Jak nazywa się goryl z filmu Disneya, który wychował w dżungli chłopca o imieniu Tarzan?|Kala i Kerchak;Skaza;Mufasa;Baloo|0
+MUZYKA|Który z tych instrumentów uderza się pałeczkami i ma metalowe lub drewniane płytki?|Trąbka;Ksylofon (dzwonki);Gitara;Akordeon|1
+ANGIELSKI|Co oznacza angielskie słowo 'Bread'?|Masło;Ser;Chleb;Szynka|2
+SPORT|W jakiej grze rzuca się płaskim dyskiem (frisbee) lub gra na trawie do dołków małą białą piłeczką?|W krykiecie;W golfie;W polo;W tenisie|1
+PRZYRODA|Jak nazywa się największy dziko żyjący drapieżnik z rodziny psowatych w polskich lasach?|Lis;Wilk szary;Ryś;Szakal|1
+MATEMATYKA|Ile to jest 5 razy 16?|70;75;80;85|2
+KOSMOS|Jak nazywa się faza Księżyca, w której widzimy na niebie całą, idealnie okrągłą jasną tarczę?|Nów;Pierwsza kwadra;Pełnia;Zaćmienie|2
+KULINARIA|Z jakiego kraju wywodzi się ser mozzarella oraz danie lasagne?|Z Francji;Z Włoch;Z Hiszpanii;Z Grecji|1
+BIOLOGIA|Który organ w ludzkim ciele odpowiada za oczyszczanie krwi i produkcję żółci?|Płuca;Wątroba;Żołądek;Trzustka|1
+TECHNOLOGIA|Co oznacza skrót GPS w telefonie i nawigacji samochodowej?|System nawigacji satelitarnej;Głośnik przenośny;Pamięć wewnętrzna;Karta graficzna|0
+ZWIERZĘTA|Jak nazywa się morski skorupiak, który chowa swój miękki odwłok w pustych muszlach ślimaków?|Krab pustelnik;Homar;Krewetka;Langusta|0
+GEOGRAFIA|Jak nazywa się stolica Irlandii?|Belfast;Dublin;Cork;Glasgow|1
+BAJKI|Jak nazywał się niedźwiedź z 'Księgi dżungli', który uczył Mowgliego beztroskiego życia?|Bagheera;Baloo;Shere Khan;Kaa|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Las'?|Field;Desert;Forest;Beach|2
+SPORT|Ilu zawodników jednej drużyny pływa w basenie podczas meczu piłki wodnej?|5;7;9;11|1
+MATEMATYKA|Ile to jest 1000 podzielone przez 8?|100;120;125;150|2`);
 
 // --- BAZA PYTAŃ DO RUNDY 6 (KOŁO FORTUNY + LICYTACJA, 80 PYTAŃ) ---
 const rawR6_Dedicated = parseR4(`
@@ -849,7 +904,7 @@ Czy czerwona igła kompasu wskazuje kierunek północny?|1`),
 Jas: parseTF(`
 Czy krowa daje mleko, z którego robi się biały i żółty ser?|1
 Czy jeden tydzień ma osiem dni?|0
-Czy kostka lodu to zamarzniętą woda?|1
+Czy kostka lodu to zamarznięta woda?|1
 Czy pieski potrafią miauczeć i latać pod sufitem?|0
 Czy słodkie żółte banany rosną w ciepłych krajach?|1
 Czy dwa dodać dwa równa się pięć?|0
@@ -882,22 +937,22 @@ const roundTitlesSpeech = {
 6: "Runda szósta: Awantura o punkty"
 };
 
-// Budowanie 10 pełnych, całkowicie rozłącznych Puli Pytań (Pule 1 - 10) bez żadnych powtórek między pulami w R1, R2, R3 i R4!
+// Budowanie 10 pełnych, całkowicie rozłącznych Puli Pytań (Pule 1 - 10)
 const allDBs = {};
 for (let p = 1; p <= 10; p++) {
 const r1Slice = [];
 const r3Slice = [];
 for (let i = 0; i < 15; i++) {
-r1Slice.push(masterR1[(p - 1) * 15 + i]);
-r3Slice.push(masterR3[(p - 1) * 15 + i]);
+r1Slice.push(masterR1[((p - 1) * 15 + i) % masterR1.length]);
+r3Slice.push(masterR3[((p - 1) * 15 + i) % masterR3.length]);
 }
 const r2Slice = [];
 for (let i = 0; i < 5; i++) {
-r2Slice.push(masterR2[(p - 1) * 5 + i]);
+r2Slice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
 }
 const r4Slice = [];
 for (let i = 0; i < 24; i++) {
-r4Slice.push(masterR4[(p - 1) * 24 + i]);
+r4Slice.push(masterR4[((p - 1) * 24 + i) % masterR4.length]);
 }
 const r6Rotated = [
 ...rawR6_Dedicated.slice((p * 7) % rawR6_Dedicated.length),
@@ -1172,7 +1227,6 @@ r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
 }
 
-// Losowanie wycinka koła z blokadą powtórzenia tej samej kategorii dwa razy z rzędu!
 let candidateSegments = [];
 for (let s = 0; s < r6WheelCategories.length; s++) {
 if (s !== lastR6WheelSegment) candidateSegments.push(s);
