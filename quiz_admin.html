@@ -5,10 +5,10 @@
 <title>Cyber-Quiz | Admin</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
-body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; max-width: 850px; margin: 0 auto; }
+body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; max-width: 880px; margin: 0 auto; }
 .box { background: #1e272e; padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #444; }
 h3 { margin-top: 0; color: #00d4ff; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
-button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; }
+button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: bold; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; color: #000; }
 button:active { transform: scale(0.95); }
 button.red { background: #ff4757; color: white; }
 button.green { background: #2ed573; color: black; }
@@ -21,13 +21,54 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .r3-live-box { background: #000; padding: 12px; border-radius: 8px; margin-top: 10px; font-size: 13px; color: #cbd5e1; border: 1px dashed #555; display: none; }
 .player-cb-label { background: #111; padding: 10px 16px; border-radius: 8px; border: 2px solid #00d4ff; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
 .player-cb-label input { width: 18px; height: 18px; cursor: pointer; }
+.scores-edit-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 10px; margin-top: 10px; }
+.score-edit-card { background: #111; border: 1px solid #444; border-radius: 10px; padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+.score-edit-card label { font-size: 13px; color: #d4af37; font-weight: 900; }
+.score-edit-row { display: flex; gap: 6px; }
+.score-edit-row input { width: 100%; padding: 8px; border-radius: 6px; border: 1px solid #666; background: #000; color: #fff; font-size: 16px; font-weight: bold; text-align: center; }
+.score-edit-row button { margin: 0; padding: 8px 12px; font-size: 12px; }
 </style>
 </head>
 <body>
 
 <div class="box">
-<h3>KROK 1: RESETOWANIE PUNKTÓW I WYBÓR KTO GRA</h3>
+<h3>KROK 1: RESETOWANIE PUNKTÓW, KOREKTA RĘCZNA I WYBÓR KTO GRA</h3>
 <button type="button" class="red" id="btnResetScores" onclick="window.resetScoresOnly && window.resetScoresOnly()">🗑️ WYZERUJ PUNKTY WSZYSTKIM GRACZOM</button>
+
+<div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
+<label style="color:#00d4ff; font-weight:bold; font-size:14px; display:block;">✏️ RĘCZNA KOREKTA PUNKTÓW (wpisz dowolną liczbę i kliknij USTAW):</label>
+<div class="scores-edit-grid">
+<div class="score-edit-card">
+<label>LILA</label>
+<div class="score-edit-row">
+<input type="number" id="manual-pts-Lila" value="0">
+<button type="button" class="gold" onclick="window.setPlayerScoreManually('Lila')">USTAW</button>
+</div>
+</div>
+<div class="score-edit-card">
+<label>KAJA</label>
+<div class="score-edit-row">
+<input type="number" id="manual-pts-Kaja" value="0">
+<button type="button" class="gold" onclick="window.setPlayerScoreManually('Kaja')">USTAW</button>
+</div>
+</div>
+<div class="score-edit-card">
+<label>DAREK</label>
+<div class="score-edit-row">
+<input type="number" id="manual-pts-Darek" value="0">
+<button type="button" class="gold" onclick="window.setPlayerScoreManually('Darek')">USTAW</button>
+</div>
+</div>
+<div class="score-edit-card">
+<label>JAŚ</label>
+<div class="score-edit-row">
+<input type="number" id="manual-pts-Jas" value="0">
+<button type="button" class="gold" onclick="window.setPlayerScoreManually('Jas')">USTAW</button>
+</div>
+</div>
+</div>
+</div>
+
 <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
 <label style="color:#d4af37; font-weight:bold; font-size:14px; display:block; margin-bottom:10px;">👥 ZAZNACZ KTO DZIŚ GRA (odznacz osobę nieobecną):</label>
 <div style="display:flex; gap:12px; flex-wrap:wrap;">
@@ -40,18 +81,18 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: WYBÓR PULI PYTAŃ (10 W Pełni Unikalnych Puli - Zero powtórek!)</h3>
+<h3>KROK 2: WYBÓR PULI PYTAŃ (10 W Pełni Unikalnych Puli we WSZYSTKICH RUNDACH 1-6!)</h3>
 <select id="poolSel">
-<option value="1">PULA 1 (Zestaw Ogólny #1)</option>
-<option value="2">PULA 2 (Zestaw Ogólny #2)</option>
-<option value="3">PULA 3 (Zestaw Ogólny #3)</option>
-<option value="4">PULA 4 (Zestaw Ogólny #4)</option>
-<option value="5">PULA 5 (Zestaw Ogólny #5)</option>
-<option value="6">PULA 6 (Zestaw Ogólny #6)</option>
-<option value="7">PULA 7 (Zestaw Ogólny #7)</option>
-<option value="8">PULA 8 (Zestaw Ogólny #8)</option>
-<option value="9">PULA 9 (Zestaw Ogólny #9)</option>
-<option value="10">PULA 10 (Zestaw Ogólny #10)</option>
+<option value="1">PULA 1 (Zestaw Ogólny #1 + 2x Rodzina)</option>
+<option value="2">PULA 2 (Zestaw Ogólny #2 + 2x Rodzina)</option>
+<option value="3">PULA 3 (Zestaw Ogólny #3 + 2x Rodzina)</option>
+<option value="4">PULA 4 (Zestaw Ogólny #4 + 2x Rodzina)</option>
+<option value="5">PULA 5 (Zestaw Ogólny #5 + 2x Rodzina)</option>
+<option value="6">PULA 6 (Zestaw Ogólny #6 + 2x Rodzina)</option>
+<option value="7">PULA 7 (Zestaw Ogólny #7 + 2x Rodzina)</option>
+<option value="8">PULA 8 (Zestaw Ogólny #8 + 2x Rodzina)</option>
+<option value="9">PULA 9 (Zestaw Ogólny #9 + 2x Rodzina)</option>
+<option value="10">PULA 10 (Zestaw Ogólny #10 + 2x Rodzina)</option>
 </select>
 <button type="button" class="purple" id="btnSendPool" onclick="window.sendPoolChoice && window.sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
 </div>
@@ -61,11 +102,11 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label>Wybierz rundę:</label>
 <select id="roundSel">
 <option value="1">Runda 1: ABCD Wyścig (12s po lektorze | 15/12/10/8 pkt | 15 pytań)</option>
-<option value="2">Runda 2: Odsłanianie Hasła (60s | 20/15/10/5 pkt | 5 haseł)</option>
+<option value="2">Runda 2: Odsłanianie Hasła (60s | Ostatnia litera ukryta do końca | 5 haseł)</option>
 <option value="3">Runda 3: Szybkie pisanie (20s po lektorze | 15/12/10/8 pkt | 15 pytań)</option>
-<option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 24 pytania)</option>
-<option value="5">Runda 5: Błyskawica Prawda/Fałsz (Stoper 20s Start/Stop | Wiek: 11/10/10/8 lat)</option>
-<option value="6">Runda 6: AWANTURA O PUNKTY - Koło i Licytacja (Finałowe 15 pytań)</option>
+<option value="4">Runda 4: Ryzyko - Wybieranie gracza (12s po lektorze | 24 pytania w tym 2x Rodzina)</option>
+<option value="5">Runda 5: Błyskawica Prawda/Fałsz (Stoper 20s Start/Stop | Unikalne na każdą pulę!)</option>
+<option value="6">Runda 6: KOŁO I TAJNE OBSTAWIANIE W CIEMNO (16 pytań unikalnych na każdą pulę!)</option>
 </select><br>
 <button type="button" class="green" id="btnStartRound" onclick="window.adminForceContinue && window.adminForceContinue()">▶️ START GRY / WYMUŚ START RUNDY</button>
 <button type="button" class="gold" id="btnNextQ" onclick="window.nextQuestion && window.nextQuestion()">⏭️ NASTĘPNE PYTANIE (Awaryjnie)</button>
@@ -126,7 +167,6 @@ let [q, ans] = l.split('|');
 return { q: q.trim(), a: ans.trim() === "1" };
 });
 
-// Algorytm gwarantujący, że dwie takie same kategorie NIGDY nie wystąpią bezpośrednio po sobie
 function arrangeNoAdjacentCategories(items, seed = 1) {
 let pool = (items || []).filter(Boolean);
 for (let i = pool.length - 1; i > 0; i--) {
@@ -143,7 +183,7 @@ result.push(pool.splice(idx, 1)[0]);
 return result;
 }
 
-// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 1 (10 PUL PO 15 PYTAŃ, ZERO DUPLIKATÓW Z R3/R4/R6) ---
+// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 1 (10 PUL PO 15 PYTAŃ) ---
 const masterR1 = parseR1(`
 Która planeta jest największa w Układzie Słonecznym?|Ziemia;Mars;Jowisz;Saturn|2
 Ile nóg ma typowy pająk?|Sześć;Osiem;Dziesięć;Dwanaście|1
@@ -157,7 +197,7 @@ Co jest głównym pożywieniem pandy wielkiej?|Mięso;Liście dębu;Bambus;Banan
 Ile dni ma rok przestępny?|365;366;364;360|1
 W jakiej wodzie żyją wieloryby w oceanach?|W słodkiej;W słonej;W źródlanej;W destylowanej|1
 Co ma najniższą temperaturę?|Kostka lodu;Wrzątek;Para wodna;Ciepła herbata|0
-Jak ma na imię młodsza siostra Elsy z Krainy Lodu?| Vaiana;Anna;Ariel;Mulan|1
+Jak ma na imię młodsza siostra Elsy z Krainy Lodu?|Vaiana;Anna;Ariel;Mulan|1
 Które z tych zwierząt należy do gromady gadów?|Żaba;Wąż;Pies;Bocian|1
 Jak nazywa się kontynent, na którym leży Polska?|Azja;Ameryka;Europa;Afryka|2
 Ile to jest 100 - 35?|65;75;55;45|0
@@ -182,7 +222,7 @@ W jakim starożytnym kraju narodziła się tradycja Igrzysk Olimpijskich?|We Wł
 Ile lat żyje przeciętnie zadbany kot domowy?|Tylko 2 lata;Około 12-16 lat;Ponad 80 lat;Dokładnie 50 lat|1
 Z jakiego kraju wywodzi się potrawa Sushi?|Z Chin;Z Japonii;Z Tajlandii;Z Indii|1
 Jak po angielsku powiesz 'Biblioteka'?|Bookstore;Library;School;Museum|1
-Jak nazywa się słynna wieża zegarowa w Londynie?|Eiffla;Big Ben (Elizabeth Tower);Krzywa Wieża; Empire State|1
+Jak nazywa się słynna wieża zegarowa w Londynie?|Eiffla;Big Ben (Elizabeth Tower);Krzywa Wieża;Empire State|1
 Z ilu województw składa się obecnie Polska?|14;15;16;17|2
 W której części Polski leżą góry Tatry?|Na północy;Na południu;Na zachodzie;W centrum|1
 Ile wynosi pierwiastek kwadratowy z 81?|7;8;9;10|2
@@ -296,7 +336,7 @@ Która rzeka przepływa przez Szczecin i wpływa do Zalewu Szczecińskiego?|Wis�
 Jak po angielsku powiesz liczbę 'Dziesięć'?|Five;Eight;Ten;Twelve|2
 Z czego pszczoły zbierają pyłek i słodki nektar na łące?|Z kamieni;Z kwiatów;Z mchu;Z piasku|1`);
 
-// --- BAZA 50 UNIKALNYCH HASEŁ DO RUNDY 2 (10 PUL PO 5 HASEŁ, BEZ PODPOWIEDZI W KATEGORII!) ---
+// --- BAZA 50 UNIKALNYCH HASEŁ DO RUNDY 2 (10 PUL PO 5 HASEŁ) ---
 const masterR2 = parseWheel(`
 ANIMACJA|KRAINA LODU
 DESERY|LODY WANILIOWE
@@ -349,7 +389,7 @@ HIMALAJE|MOUNT EVEREST
 INSTRUMENTY|FORTEPIAN I SKRZYPCE
 HISTORIA|ZAMEK W MALBORKU`);
 
-// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 3 (10 PUL PO 15 PYTAŃ, ZERO DUPLIKATÓW Z R1/R4/R6) ---
+// --- BAZA 150 UNIKALNYCH PYTAŃ DO RUNDY 3 (10 PUL PO 15 PYTAŃ) ---
 const masterR3 = parseR3(`
 Stolica Niemiec to...|Berlin
 Z jakiego owocu robi się suszone rodzynki?|Z winogron / Winogrona / Winogrono
@@ -495,20 +535,39 @@ Jak nazywa się obracająca się na podstawce kula będąca modelem Ziemi?|Globu
 Jak nazywa się posiłek jedzony wieczorem przed snem?|Kolacja
 Ile to jest 20 dodać 40?|60
 Jak nazywa się przyrząd ze szczecinką, na który nakładamy pastę do mycia zębów?|Szczoteczka / Szczoteczka do zębów
-Jakim kolorem powstaje po zmieszaniu farby żółtej i czerwonej?|Pomarańczowy / Pomarańczowym
+Jaki kolor powstaje po zmieszaniu farby żółtej i czerwonej?|Pomarańczowy / Pomarańczowym
 Ile minut ma pół godziny?|30 / Trzydzieści
 Jak nazywa się biały napój od krowy dodawany do płatków śniadaniowych?|Mleko
 Jak po angielsku powiesz liczbę 'Pięć'?|Five
 Co otwieramy nad głową na spacerze, gdy zaczyna padać ulewny deszcz?|Parasol / Parasolkę
 Jak nazywa się stolica Rosji?|Moskwa`);
 
-// --- BAZA 240 UNIKALNYCH PYTAŃ DO RUNDY 4 (10 PUL PO 24 PYTANIA = ZERO DUPLIKATÓW I ZERO PODPOWIEDZI W TREŚCI!) ---
-const masterR4 = parseR4(`
-PODRÓŻE|W jakim wyspiarskim państwie na Morzu Śródziemnym leży nadmorski kurort Paphos?|W Grecji;Na Cyprze;Na Malcie;We Włoszech|1
+// --- 20 UNIKALNYCH PYTAŃ Z KATEGORII RODZINA (PO 2 RÓŻNE NA KAŻDĄ Z 10 PUL!) ---
+const familyR4Questions = parseR4(`
 RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
 RODZINA|Jak ma na drugie imię Mama/Ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
 RODZINA|W jakim mieście urodziła się Mama/Ciocia Ola?|Katowice;Chorzów;Sosnowiec;Bytom|1
 RODZINA|Jak ma na nazwisko panieńskie Babcia Ela?|Lis;Wilk;Kot;Zając|1
+RODZINA|Jak ma na imię najmłodszy uśmiechnięty kuzyn w naszej rodzinie?|Kubuś;Bartuś;Tomek;Adaś|1
+RODZINA|Kto w naszej rodzinie jest rodzoną siostrą Mamy/Cioci Ani?|Ciocia Kasia;Mama/Ciocia Ola;Babcia Ela;Ciocia Basia|1
+RODZINA|W jakim mieście mieszka i pracuje wujek Krzysiek?|W Krakowie;W Katowicach;We Wrocławiu;W Poznaniu|1
+RODZINA|Jakiej marki samochodem jeździ obecnie wujek Krzysiek?|Toyota;Škoda (Scala);Ford;Opel|1
+RODZINA|Do której klasy chodzi obecnie Lila w roku szkolnym?|Do 3. klasy;Do 4. klasy;Do 5. klasy;Do 6. klasy|2
+RODZINA|Do której klasy chodzi obecnie Jaś?|Do 1. klasy;Do 2. klasy;Do 3. klasy;Do 4. klasy|1
+RODZINA|Którzy dwaj agenci z naszej drużyny chodzą do czwartej klasy?|Lila i Jaś;Kaja i Darek;Darek i Jaś;Lila i Kaja|1
+RODZINA|W jakim pięknym kraju nad Morzem Adriatyckim byliśmy razem na wrześniowych wakacjach?|W Hiszpanii;W Chorwacji;W Bułgarii;W Portugalii|1
+RODZINA|Jaką słoneczną wyspę odwiedziliśmy podczas wiosennej rodzinnej wycieczki w kwietniu?|Sycylię;Maltę;Kretę;Majorkę|1
+RODZINA|Czym zawodowo zajmuje się wujek Krzysiek w Katowicach?|Leczy zęby;Sterowaniem ruchem drogowym i sygnalizacją (ITS);Piecze chleb;Uczy w szkole|1
+RODZINA|Jak nazywa się dzielnica Katowic, z której pochodzi rodzinny dom z ogrodem?|Piotrowice;Załęże;Ligota;Brynow|1
+RODZINA|Kto w naszej rodzinie przygotowuje najlepsze domowe obiady i świąteczne wypieki dla wnuków?|Sąsiadka;Babcia Ela;Listonosz;Burmistrz|1
+RODZINA|Jakim rodzajem samochodu podróżowaliśmy razem po Chorwacji?|Czerwonym kabrioletem;Volkswagenem z automatyczną skrzynią;Ciężarówką; Autobusem piętrowym|1
+RODZINA|Ile łącznie wnucząt (waszej czwórki razem z małym Bartusiem) ma Babcia Ela?|Troje;Czworo;Pięcioro;Sześcioro|2
+RODZINA|W jakim śląskim mieście obok Katowic wujek Krzysiek ma swoje mieszkanie na ulicy Wolności?|W Gliwicach;W Rudzie Śląskiej;W Zabrzu;W Tychach|1
+RODZINA|Na jaką słoneczną wyspę leżącą na Morzu Śródziemnym wybraliśmy się w naszą wielką 10-osobową podróż?|Na Islandię;Na Cypr (do Paphos);Na Madagaskar;Na Grenlandię|1`);
+
+// --- 220 UNIKALNYCH PYTAŃ OGÓLNYCH DO RUNDY 4 (PO 22 NA KAŻDĄ Z 10 PUL + 2 RODZINNE = 24 PYTANIA NA PULĘ) ---
+const generalR4Questions = parseR4(`
+PODRÓŻE|W jakim wyspiarskim państwie na Morzu Śródziemnym leży nadmorski kurort Paphos?|W Grecji;Na Cyprze;Na Malcie;We Włoszech|1
 SPORT|Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?|9;10;11;12|2
 MATEMATYKA|Ile to jest (20 + 30) - 10?|40;30;50;60|0
 MATEMATYKA|((8 x 7) + 44) - 100 = ?|0;1;10;100|0
@@ -531,7 +590,7 @@ ANATOMIA|Z ilu zębów składa się pełne uzębienie dorosłego człowieka?|28;
 TECHNOLOGIA|Kto jest współzałożycielem firmy Microsoft?|Steve Jobs;Mark Zuckerberg;Bill Gates;Elon Musk|2
 LITERATURA|Który pisarz zasłynął baśniami o Małej Syrence i Calineczce?|Bracia Grimm;Hans Christian Andersen;Jan Brzechwa;Julian Tuwim|1
 SPORT|Co ile lat odbywają się Letnie Igrzyska Olimpijskie?|Co 2 lata;Co 3 lata;Co 4 lata;Co 5 lat|2
-PRZYRODA|Jak nazywają się drobne otwory w liściach roślin, przez które roślina wymienia gazy i paruje wodę?|Korzenie;Aparaty szparkowe;Słoje;Pąki|1
+PRZYRODA|Jak nazywają się drobne otwory w liściach roślin, przez które roślina wymienia gazy?|Korzenie;Aparaty szparkowe;Słoje;Pąki|1
 ASTRONOMIA|Która planeta słynie z najokazalszych pierścieni z lodu i skał?|Uran;Neptun;Jowisz;Saturn|3
 MATEMATYKA|Ile to jest 100 podzielone na 4?|20;25;30;50|1
 GEOGRAFIA|Które z tych państw graniczy z Polską przez góry od południa?|Niemcy;Czechy;Szwecja;Litwa|1
@@ -623,7 +682,7 @@ TECHNOLOGIA|Jak nazywa się technologia bezprzewodowego internetu domowego?|Blue
 BAJKI|Kto zamieszkiwał magiczną oliwną lampę znalezioną przez Aladyna w jaskini?|Zły czarnoksiężnik;Niebieski Dżin;Latający smok;Małpka Abu|1
 MATEMATYKA|Ile kwadransów (po 15 minut) mieści się w jednej pełnej godzinie?|2;3;4;6|2
 HISTORIA|Czego dotyczyło wielkie odkrycie polskiego astronoma Mikołaja Kopernika?|Odkrycia Ameryki;Że Ziemia i planety krążą wokół Słońca;Wynalezienia druku;Odkrycia prądu|1
-ZWIERZĘTA|Który zwinny drapieżnik wodny o smukłym ciele uwielbia polować na ryby w rzekach i ślizgać się po brzegu?|Kret;Wydra europejska;Jeż;Borsuk|1
+ZWIERZĘTA|Który zwinny drapieżnik wodny o smukłym ciele uwielbia polować na ryby w rzekach?|Kret;Wydra europejska;Jeż;Borsuk|1
 KOSMOS|Jak nazywa się czerwony łazik NASA, który wylądował na Marsie w 2012 roku?|Curiosity;Apollo;Voyager;Sputnik|0
 GEOGRAFIA|Jak nazywa się stolica Portugalii?|Madryt;Lizbona;Porto;Sewilla|1
 BAJKI|Jak nazywa się mała syrenka z czerwoną czupryną, córka króla Trytona?|Vaiana;Arielka;Dzwoneczek;Jasmina|1
@@ -726,35 +785,9 @@ KOSMOS|Jak nazywa się wielka galaktyka spiralna sąsiadująca z naszą Drogą M
 KULINARIA|Z jakich zielonych owoców z dużą pestką przygotowuje się meksykański sos guacamole?|Z ogórków;Z awokado;Z kiwi;Z limonki|1
 PRZYRODA|Które drzewo iglaste ma miękkie igły rosnące w pęczkach, które jesienią żółkną i opadają?|Świerk;Modrzew;Sosna;Cis|1
 TECHNOLOGIA|Jak nazywa się mała kamera zamontowana nad ekranem laptopa do rozmów wideo?|Projektor;Kamera internetowa (webcam);Skaner;Mikrofon|1
-ZWIERZĘTA|Który leśny ssak z czarno-białymi pasami na pyszczku kopie głębokie nory i zapada w sen zimowy?|Wilk;Borsuk;Sarna;Jeleń|1
-GEOGRAFIA|Jak nazywa się stolica Szkocji ze słynnym zamkiem na skale?|Londyn;Edynburg;Dublin;Cardiff|1
-BAJKI|Jak nazywa się mała wróżka towarzysząca Piotrusiowi Panu, która sypie magicznym pyłem?|Kopciuszek;Dzwoneczek (Tinker Bell);Roszpunka;Fiona|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Rzeka'?|Sea;Lake;River;Ocean|2
-SPORT|Ile kółek ma jeden but do jazdy na klasycznych wrotkach dwurzędowych?|Dwa;Trzy;Cztery;Pięć|2
-LITERATURA|Jak nazywał się bohater z planety B-612, który opiekował się jedną kapryśną różą?|Książę Kaspian;Mały Książę;Król Maciuś;Piotruś|1
-MATEMATYKA|Ile to jest 14 dodać 19?|31;33;35;37|1
-HISTORIA|W jakim mieście nad Motławą stoi zabytkowy drewniany dźwig portowy – Żuraw?|W Szczecinie;W Gdańsku;W Gdyni;W Kołobrzegu|1
-NAUKA|W jakich jednostkach mierzymy napięcie prądu elektrycznego w bateriach (np. 1,5 V)?|W watach;W woltach;W metrach;W litrach|1
-ZWIERZĘTA|Który duży wodny ptak ma pod dziobem rozciągliwą torbę, do której łapie ryby jak do siatki?|Łabędź;Pelikan;Mewa;Kormoran|1
-GEOGRAFIA|Na jakim kontynencie leżą państwa Brazylia, Argentyna i Peru?|W Ameryce Północnej;W Ameryce Południowej;W Afryce;W Europie|1
-BAJKI|Jakie zwierzęta wychowały w dżungli chłopca o imieniu Tarzan w filmie Disneya?|Lwy;Goryle;Słonie;Niedźwiedzie|1
-MUZYKA|Który z tych instrumentów uderza się pałeczkami i ma metalowe lub drewniane płytki?|Trąbka;Ksylofon (dzwonki);Gitara;Akordeon|1
-ANGIELSKI|Co oznacza angielskie słowo 'Cheese'?|Masło;Ser;Chleb;Szynka|1
-SPORT|W jakiej grze wbija się kijem małą białą piłeczkę do dołków na rozległym trawniku?|W krykiecie;W golfie;W polo;W tenisie|1
-PRZYRODA|Jak nazywa się największy dziko żyjący drapieżnik z rodziny psowatych w polskich lasach?|Lis;Wilk szary;Ryś;Szakal|1
-MATEMATYKA|Ile to jest 5 razy 16?|70;75;80;85|2
-KOSMOS|Jak nazywa się faza Księżyca, w której widzimy na niebie całą, idealnie okrągłą jasną tarczę?|Nów;Pierwsza kwadra;Pełnia;Zaćmienie|2
-KULINARIA|Z jakiego kraju wywodzi się ser mozzarella oraz zapiekane płaty makaronu lasagne?|Z Francji;Z Włoch;Z Hiszpanii;Z Grecji|1
-BIOLOGIA|Który organ w ludzkim ciele odpowiada za oczyszczanie krwi i produkcję żółci?|Płuca;Wątroba;Żołądek;Trzustka|1
-TECHNOLOGIA|Co oznacza skrót GPS w telefonie i nawigacji samochodowej?|System nawigacji satelitarnej;Głośnik przenośny;Pamięć wewnętrzna;Karta graficzna|0
-ZWIERZĘTA|Jak nazywa się morski skorupiak, który chowa swój miękki odwłok w pustych muszlach ślimaków?|Krab pustelnik;Homar;Krewetka;Langusta|0
-GEOGRAFIA|Jak nazywa się stolica Irlandii?|Belfast;Dublin;Cork;Glasgow|1
-BAJKI|Jak nazywał się wesoły niedźwiedź z 'Księgi dżungli', który uczył Mowgliego beztroskiego życia?|Bagheera;Baloo;Shere Khan;Kaa|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Las'?|Field;Desert;Forest;Beach|2
-SPORT|Ilu zawodników jednej drużyny pływa w basenie podczas meczu piłki wodnej?|5;7;9;11|1
-MATEMATYKA|Ile to jest 1000 podzielone przez 8?|100;120;125;150|2`);
+ZWIERZĘTA|Który leśny ssak z czarno-białymi pasami na pyszczku kopie głębokie nory i zapada w sen zimowy?|Wilk;Borsuk;Sarna;Jeleń|1`);
 
-// --- BAZA PYTAŃ DO RUNDY 6 (KOŁO FORTUNY + LICYTACJA, 80 UNIKALNYCH PYTAŃ) ---
+// --- ROZBUDOWANA BAZA 160 PYTAŃ DO RUNDY 6 (PO 20 PYTAŃ NA KAŻDĄ Z 8 KATEGORII = 10 ZUPEŁNIE ROZŁĄCZNYCH PUL!) ---
 const rawR6_Dedicated = parseR4(`
 KOSMOS|Jak nazywa się pas skał krążących między Marsem a Jowiszem?|Pas Oriona;Pas Planetoid (Asteroid);Droga Mleczna;Mgławica|1
 KOSMOS|Która planeta w Układzie Słonecznym jest najgorętsza przez gęste chmury?|Merkury;Wenus;Mars;Jowisz|1
@@ -764,8 +797,18 @@ KOSMOS|Jak nazywa się zjawisko, gdy Księżyc w dzień zasłania Słońce?|Peł
 KOSMOS|Która planeta słynie z pięknego niebieskiego koloru i najsilniejszych wiatrów?|Mars;Merkury;Neptun;Wenus|2
 KOSMOS|Jak nazywa się ubranie ochronne używane przez ludzi w przestrzeni kosmicznej?|Kombinezon nurka;Skafander astronauty;Zbroja;Fartuch|1
 KOSMOS|Co ciągnie się na niebie za przelatującą blisko Słońca kometą?|Tęcza;Świetlisty warkocz (ogon);Chmura deszczowa;Smuga dymu|1
-KOSMOS|Jak nazywał się słynny program kosmiczny NASA, w ramach którego ludzie polecieli na Księżyc?|Apollo;Wostok; Gemini;Atlantis|0
+KOSMOS|Jak nazywał się słynny program kosmiczny NASA, w ramach którego ludzie polecieli na Księżyc?|Apollo;Wostok;Gemini;Atlantis|0
 KOSMOS|Która gwiazda wskazuje podróżnikom na nocnym niebie kierunek północny?|Syriusz;Gwiazda Polarna;Alfa Centauri;Wega|1
+KOSMOS|Jak nazywa się największy księżyc Saturna posiadający gęstą atmosferę?|Fobos;Tytan;Europa;Io|1
+KOSMOS|Kto był pierwszym człowiekiem w historii, który poleciał w przestrzeń kosmiczną w 1961 roku?|Neil Armstrong;Jurij Gagarin;Mirosław Hermaszewski;John Glenn|1
+KOSMOS|Jak nazywa się polski astronauta, który odbył lot w kosmos w 1978 roku?|Piotr Żyła;Mirosław Hermaszewski;Mikołaj Kopernik;Jan Heweliusz|1
+KOSMOS|Czym jest Słońce pod względem astronomicznym?|Wielką planetą;Gwiazdą (żółtym karłem);Kometą;Meteorytem|1
+KOSMOS|Jak nazywa się słynny teleskop kosmiczny krążący na orbicie od 1990 roku?|Teleskop Hubble'a;Teleskop Edisona;Teleskop Newtona;Teleskop Tesli|0
+KOSMOS|Ile czasu potrzebuje Ziemia, aby wykonać jeden pełny obieg wokół Słońca?|Jedną dobę (24h);Jeden miesiąc;Jeden rok (365 dni);Dziesięć lat|2
+KOSMOS|Jak nazywa się skała z kosmosu, która spadła na powierzchnię Ziemi?|Asteroida;Meteoryt;Satelita;Kometa|1
+KOSMOS|Który z tych gwiazdozbiorów przypomina kształt wozu z dyszlem na północnym niebie?|Orion;Wielki Wóz (Wielka Niedźwiedzica);Kasjopeja;Skorpion|1
+KOSMOS|Jak nazywa się czarna strefa w kosmosie o tak silnej grawitacji, że nie ucieka z niej nawet światło?|Biała plama;Czarna dziura;Szara mgławica;Czerwony olbrzym|1
+KOSMOS|Ile księżyców posiada planeta Mars (Fobos i Deimos)?|Zero;Dwa;Cztery;Dwadzieścia|1
 BAJKI|Jak ma na imię zielony jednooki stwór z filmu 'Potwory i Spółka'?|Sulley;Mike Wazowski;Randall;Boo|1
 BAJKI|Jakim zwierzęciem jest król Julian z filmu 'Madagaskar'?|Małpą;Lemurem;Wiewiórką;Szopem|1
 BAJKI|W jakiej bajce główny bohater Czkawka trenuje czarnego smoka o imieniu Szczerbatek?|Shrek;Jak wytresować smoka;Merida Waleczna;Zaplątani|1
@@ -776,16 +819,36 @@ BAJKI|Jak ma na imię gburowaty sąsiad SpongeBoba, który gra na klarnecie?|Pat
 BAJKI|Kto uwięził długowłosą Roszpunkę w wysokiej wieży w lesie?|Zły Wilk;Matka Gothel;Czarownica z zachodu;Kapitan Hak|1
 BAJKI|Jak nazywa się niebieska rybka z problemami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Arielka;Dory;Kotwica;Perła|1
 BAJKI|Jakim zwierzęciem jest Pumba z filmu 'Król Lew' (przyjaciel surykatki Timona)?|Hieną;Guzcem;Antylopą;Pawianem|1
+BAJKI|Jak nazywa się zardzewiały holownik, najlepszy przyjaciel Zygzaka McQueena?|Sally;Złomek;Doc Hudson;Guido|1
+BAJKI|Jak ma na imię biały gruby robot medyczny z filmu 'Wielka Szóstka'?|Wall-E;Baymax;R2-D2;Optimus|1
+BAJKI|W jakim kraju rozgrywa się akcja filmu animowanego 'Coco' o chłopcu grającym na gitarze?|W Hiszpanii;W Meksyku;W Brazylii;We Włoszech|1
+BAJKI|Jak nazywa się zły brat Mufasy z blizną na oku w filmie 'Król Lew'?|Zazu;Skaza;Rafiki;Banzai|1
+BAJKI|Jakim zwierzęciem jest mistrz Po z filmu 'Kung Fu Panda'?|Tygrysem;Pandą wielką;Małpą;Żurawiem|1
+BAJKI|Jak ma na imię kameleon, wierny towarzysz Roszpunki z filmu 'Zaplątani'?|Maximus;Pascal;abiu;Rico|1
+BAJKI|Kto dowodzi czwórką pingwinów z Madagaskaru?|Kowalski;Skipper;Szeregowy;Rico|1
+BAJKI|Jak nazywa się czarownik, który wraz z kotem Klakierem poluje na Smerfy?| Baltazar;Gargamel;Merlin;Saruman|1
+BAJKI|W co zamieniła się kareta Kopciuszka o północy?|W myszkę;W dynię;W jabłko;W kamień|1
+BAJKI|Jak ma na imię mały chłopiec, właściciel zabawek Chudego i Buzza Astrala w 'Toy Story'?|Sid;Andy;Billy;Tommy|1
 ZWIERZĘTA|Który malutki ptaszek potrafi zawisać w powietrzu jak helikopter i latać do tyłu?|Wróbel;Koliber;Jaskółka;Sikorka|1
 ZWIERZĘTA|Jak nazywa się australijski torbacz, który śpi na drzewach i zjada liście eukaliptusa?|Panda;Koala;Grizzly;Leniwiec|1
 ZWIERZĘTA|Ile serc bije w ciele ośmiornicy?|Jedno;Dwa;Trzy;Cztery|2
 ZWIERZĘTA|Które zwierzę z Afryki ma potężny róg na nosie i grubą szarą skórę?|Hipopotam;Nosorożec;Bawół;Goryl|1
 ZWIERZĘTA|Jak nazywa się najwolniejszy ssak świata wiszący całymi dniami głową w dół na gałęziach?|Żółw;Leniwiec;Koala;Pancernik|1
-ZWIERZĘTA|Jak nazywa się afrykański dziki kot ze sterczącymi pędzelkami czarnych włosów na uszach (podobny do rysia)?|Pantera;Karakal;Jaguar;Puma|1
+ZWIERZĘTA|Jak nazywa się afrykański dziki kot ze sterczącymi pędzelkami czarnych włosów na uszach?|Pantera;Karakal;Jaguar;Puma|1
 ZWIERZĘTA|Jakiego koloru są pióra dorosłego flaminga brodzącego w płytkiej wodzie?|Białego;Różowego;Niebieskiego;Zielonego|1
 ZWIERZĘTA|Który gad potrafi w razie niebezpieczeństwa odrzucić swój ogon, aby zmylić drapieżnika?|Żółw błotny;Jaszczurka zwinka;Krokodyl;Żmija|1
 ZWIERZĘTA|Jak nazywa się największa jaszczurka na świecie żyjąca na wyspach Indonezji?|Kameleon;Waran z Komodo;Gekon;Legwan|1
 ZWIERZĘTA|Który ssak morski z długim spiralnym kłem na głowie nazywany jest 'jednorożcem morskim'?|Mors;Narwal;Foka;Kaszalot|1
+ZWIERZĘTA|Jak nazywa się australijskie zwierzę z dziobem kaczki i ogonem bobra, które składa jaja?|Kangur;Dziobak;Wombat;Emu|1
+ZWIERZĘTA|Który wąż dusi swoją zdobycz zamiast używać jadu i należy do największych na świecie?|Żmija zygzakowata;Pyton (lub Anakonda);Kobra;Grzechotnik|1
+ZWIERZĘTA|Jakiego koloru jest skóra niedźwiedzia polarnego pod jego białym futrem?|Różowego;Czarnego;Białego;Niebieskiego|1
+ZWIERZĘTA|Jak nazywa się samiec jelenia posiadający rozłożyste poroże (wieńce)?|Kozioł;Byk;Knur;Tryk|1
+ZWIERZĘTA|Który owad potrafi podnieść ciężar wielokrotnie większy od masy własnego ciała?|Mucha;Mrówka;Motyl;Komar|1
+ZWIERZĘTA|Jak nazywa się największy ptak drapieżny żyjący w Polsce (z białym ogonem)?|Jastrząb;Bielik;Pustułka;Kania|1
+ZWIERZĘTA|Która ryba potrafi wytwarzać silne wyładowania prądu elektrycznego w wodzie?|Szczupak;Węgorz elektryczny;Karp;Łosoś|1
+ZWIERZĘTA|Jak nazywa się dzika świnia żyjąca w polskich lasach (młode są w paski i nazywają się warchlaki)?|Łoś;Dzik;Daniel;Muflon|1
+ZWIERZĘTA|Czym żywi się wielki rekin wielorybi (największa ryba oceanów)?|Fokami;Planktonem i drobnymi rybkami;Wodorostami;Żółwiami|1
+ZWIERZĘTA|Który ptak ma najdłuższy dziób w stosunku do długości swojego ciała?|Wróbel;Pelikan (lub Koliber mieczodzioby);Gołąb;Sroka|1
 MATEMATYKA|Ile wynosi suma kątów wewnętrznych w każdym trójkącie?|90 stopni;180 stopni;270 stopni;360 stopni|1
 MATEMATYKA|Ile to jest 25 pomnożone przez 4?|80;90;100;120|2
 MATEMATYKA|Jak nazywa się czworokąt, który ma wszystkie 4 boki równej długości („kopnięty kwadrat”)?|Prostokąt;Trapez;Romb;Trójkąt|2
@@ -796,6 +859,16 @@ MATEMATYKA|Ile krawędzi ma sześcian (np. kostka do gry)?|6;8;10;12|3
 MATEMATYKA|Jeśli z 30 jabłek zjedzono jedną trzecią (1/3), to ile jabłek zostało w koszyku?|10;15;20;25|2
 MATEMATYKA|Jak nazywa się wynik dzielenia dwóch liczb?|Suma;Różnica;Iloraz;Iloczyn|2
 MATEMATYKA|Ile minut upływa między godziną 14:15 a 15:00?|30 minut;45 minut;50 minut;60 minut|1
+MATEMATYKA|Ile ścian ma tradycyjna kostka sześcienna?|4;6;8;10|1
+MATEMATYKA|Jaki jest obwód trójkąta równobocznego o boku 7 cm?|14 cm;21 cm;28 cm;49 cm|1
+MATEMATYKA|Ile wynosi 10 procent z liczby 500?|5;50;100;25|1
+MATEMATYKA|Jaką liczbą rzymską zapisuje się wartość 50?|X;L;C;V|1
+MATEMATYKA|Ile to jest 8 razy 12?|86;96;106;88|1
+MATEMATYKA|Która z tych liczb jest liczbą parzystą?|13;27;48;91|2
+MATEMATYKA|Ile milimetrów ma 5 centymetrów?|5 mm;50 mm;500 mm;5000 mm|1
+MATEMATYKA|Ile wynosi pole kwadratu o boku 8 cm?|16 cm²;32 cm²;64 cm²;80 cm²|2
+MATEMATYKA|Jeśli film zaczął się o 17:30 i trwał półtorej godziny, to o której się skończył?|O 18:30;O 19:00;O 19:30;O 20:00|1
+MATEMATYKA|Ile to jest 1000 odjąć 450?|450;550;650;500|1
 SPORT|Jak nazywa się legendarny polski skoczek narciarski z wąsem, zwany 'Orłem z Wisły'?|Kamil Stoch;Adam Małysz;Piotr Żyła;Dawid Kubacki|1
 SPORT|Jaki dystans (w przybliżeniu) muszą pokonać biegacze w maratonie?|10 km;21 km;42 km;100 km|2
 SPORT|W jakim sporcie olimpijskim zawodnicy w białych strojach i maskach walczą na szpady i florety?|W boksie;W szermierce;W judo;W łucznictwie|1
@@ -806,6 +879,16 @@ SPORT|Jakiego koloru jest pas mistrzowski w karate oraz judo?|Białego;Żółteg
 SPORT|Ile kręgli stoi na końcu toru na początku rzutu w klasycznym bowlingu?|6;8;10;12|2
 SPORT|Z ilu części (tercji) składa się mecz hokeja na lodzie?|Z dwóch;Z trzech;Z czterech;Z pięciu|1
 SPORT|Jak nazywa się sport wodny, w którym płynie się na desce z przyczepionym żaglem?|Kajakarstwo;Windsurfing;Wioślarstwo;Nurkowanie|1
+SPORT|Z jakiego odległości wykonuje się rzut karny w piłce nożnej?|Z 5 metrów;Z 9 metrów;Z 11 metrów;Z 16 metrów|2
+SPORT|W jakim sporcie na lodzie zawodnicy szczotkują lód przed sunącym granitowym kamieniem?|W hokeju;W curlingu;W bobslejach;W łyżwiarstwie|1
+SPORT|Ile maksymalnie odbić piłki może wykonać drużyna siatkarska przed przebiciem jej na drugą stronę?|Jedno;Dwa;Trzy;Cztery|2
+SPORT|Jak nazywa się polski skoczek narciarski z Zębu, trzykrotny mistrz olimpijski?|Adam Małysz;Kamil Stoch;Piotr Żyła;Maciej Kot|1
+SPORT|W jakiej dyscyplinie lekkoatletycznej wielkie rekordy biła Anita Włodarczyk?|W skoku wzwyż;W rzucie młotem;W pchnięciu kulą;W biegu przez płotki|1
+SPORT|Jak nazywa się wyścig samochodowy bolidów, w którym startował Robert Kubica?|Rajd Dakar;Formuła 1 (F1);NASCAR;MotoGP|1
+SPORT|Ile minut trwa jedna połowa meczu piłki ręcznej (szczypiorniaka)?|15 minut;20 minut;30 minut;45 minut|2
+SPORT|Jak nazywa się styl pływacki przypominający ruchy żaby?|Kraul;Styl klasyczny (żabka);Motylek;Grzbiet|1
+SPORT|Co otrzymuje zwycięzca pierwszego miejsca na Igrzyskach Olimpijskich?|Złoty puchar;Złoty medal;Złotą koronę;Złote berło|1
+SPORT|Ilu zawodników liczy jedna drużyna na boisku w piłce ręcznej (razem z bramkarzem)?|5;6;7;9|2
 GEOGRAFIA|Jak nazywa się największa wyspa na świecie (w większości pokryta lodem)?|Madagaskar;Islandia;Grenlandia;Wielka Brytania|2
 GEOGRAFIA|W jakim europejskim państwie znajdują się czynne wulkany Etna i Wezuwiusz?|W Hiszpanii;We Włoszech;W Grecji;W Portugalii|1
 GEOGRAFIA|Która potężna rzeka w Ameryce Południowej płynie przez dżunglę i niesie najwięcej wody?|Nil;Missisipi;Amazonka;Wisła|2
@@ -816,6 +899,16 @@ GEOGRAFIA|Które państwo z Ameryki Północnej ma czerwony liść klonu na swoj
 GEOGRAFIA|W jakim pasmie górskim w Polsce leży szczyt Śnieżka?|W Tatrach;W Karkonoszach;W Bieszczadach;W Pieninach|1
 GEOGRAFIA|Który kanał wodny łączy Morze Śródziemne z Morzem Czerwonym przy Egipcie?|Kanał Panamski;Kanał Sueski;Kanał La Manche;Kanał Gliwicki|1
 GEOGRAFIA|Jak nazywa się najgłębsze jezioro na świecie położone na Syberii?|Śniardwy;Bajkał;Wiktorii;Tanganika|1
+GEOGRAFIA|Jak nazywa się stolica Stanów Zjednoczonych (USA)?|Nowy Jork;Waszyngton;Los Angeles;Chicago|1
+GEOGRAFIA|W jakich górach w Polsce płyną tratwy flisackie przełomem Dunajca (pod Trzema Koronami)?|W Bieszczadach;W Pieninach;W Sudetach;W Górach Stołowych|1
+GEOGRAFIA|Które państwo kształtem na mapie przypomina długiego buta (kozaka)?|Hiszpania;Włochy;Grecja;Norwegia|1
+GEOGRAFIA|Jak nazywa się stolica Szwajcarii (choć największym miastem jest Zurych)?|Genewa;Berno;Bazylea;Lozanna|1
+GEOGRAFIA|Nad jakim oceanem leżą wybrzeża Portugalii i zachodniej Francji?|Nad Spokojnym;Nad Atlantyckim;Nad Indyjskim;Nad Arktycznym|1
+GEOGRAFIA|Jak nazywa się najwyższy szczyt w Afryce pokryty śniegiem na szczycie?|Mount Everest;Kilimandżaro;Mont Blanc; Elbrus|1
+GEOGRAFIA|W jakim polskim mieście nad Bałtykiem znajduje się najdłuższe drewniane molo?|W Gdańsku;W Sopocie;W Gdyni;W Ustce|1
+GEOGRAFIA|Która europejska rzeka przepływa przez aż cztery stolice: Wiedeń, Bratysławę, Budapeszt i Belgrad?|Ren;Dunaj;Łaba;Sekwana|1
+GEOGRAFIA|Jak nazywa się półwysep w Europie, na którym leżą Hiszpania i Portugalia?|Apelacyjny;Iberyjski (Pirenejski);Skandynawski;Bałkański|1
+GEOGRAFIA|Jak nazywa się stolica Chin?|Tokio;Pekin;Szanghaj;Tajpej|1
 ANGIELSKI|Co oznacza angielskie słowo 'Rainbow'?|Deszcz;Chmura;Tęcza;Piorun|2
 ANGIELSKI|Jak po angielsku powiesz słodki owoc 'Truskawka'?|Blueberry;Strawberry;Raspberry;Cherry|1
 ANGIELSKI|Co oznacza angielski zwrot 'Good night'?|Dzień dobry;Dobry wieczór;Dobranoc;Do widzenia|2
@@ -826,6 +919,16 @@ ANGIELSKI|Jak po angielsku powiesz liczbę 'Dwadzieścia'?|Twelve;Twenty;Two;Thi
 ANGIELSKI|Co oznacza przymiotnik 'Happy'?|Smutny;Zmęczony;Szczęśliwy (wesoły);Głodny|2
 ANGIELSKI|Jak po angielsku nazywa się pomieszczenie 'Kuchnia'?|Bedroom;Bathroom;Kitchen;Garden|2
 ANGIELSKI|Co oznacza czasownik 'To swim'?|Biegać;Pływać;Skakać;Latać|1
+ANGIELSKI|Jak po angielsku powiesz słowo 'Słownik'?|Calendar;Dictionary;Notebook;Magazine|1
+ANGIELSKI|Co oznacza angielskie słowo 'Umbrella'?|Płaszcz;Parasol;Kalosze;Kapelusz|1
+ANGIELSKI|Którą część ciała oznacza słowo 'Shoulder'?|Kolano;Ramię (bark);Łokieć;Kostka|1
+ANGIELSKI|Jak po angielsku powiesz 'Strażak'?|Policeman;Firefighter;Postman;Builder|1
+ANGIELSKI|Co oznacza przymiotnik 'Heavy'?|Lekki;Ciężki;Pusty;Miękki|1
+ANGIELSKI|Jak po angielsku nazywa się warzywo 'Ogórek'?|Tomato;Cucumber;Cabbage;Onion|1
+ANGIELSKI|Który dzień tygodnia to po angielsku 'Friday'?|Czwartek;Piątek;Sobota;Środa|1
+ANGIELSKI|Co oznacza słowo 'Mirror'?|Okno;Lustro;Obraz;Szafa|1
+ANGIELSKI|Jak po angielsku powiesz 'Wakacje'?|Weekend;Holidays (Vacation);Birthday;Morning|1
+ANGIELSKI|Co oznacza czasownik 'To sleep'?|Jeść;Spać;Czytać;Pisać|1
 HISTORIA|W którym roku Polska przyjęła chrzest za panowania księcia Mieszka I?|966;1000;1025;1410|0
 HISTORIA|Jak nazywali się dawni wojownicy ze Skandynawii pływający łodziami ze smoczymi głowami?|Rzymianie;Wikingowie;Samuraje;Spartanie|1
 HISTORIA|Kto udoskonalił i opatentował tradycyjną żarówkę elektryczną?|Albert Einstein;Thomas Edison;Nikola Tesla;Isaac Newton|1
@@ -835,9 +938,20 @@ HISTORIA|W jakim starożytnym kraju rządzili Faraonowie i budowano piramidy?|W 
 HISTORIA|Jak nazywał się wielki transatlantyk, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
 HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2
 HISTORIA|Kto był pierwszym koronowanym królem Polski w 1025 roku?|Mieszko I;Bolesław Chrobry;Kazimierz Wielki;Władysław Łokietek|1
-HISTORIA|Kto w XV wieku wynalazł w Europie czcionkę drukarską i wydrukował pierwszą Biblię?|Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1`);
+HISTORIA|Kto w XV wieku wynalazł w Europie czcionkę drukarską i wydrukował pierwszą Biblię?|Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1
+HISTORIA|Jak nazywał się włoski malarz i wynalazca, który namalował słynny obraz 'Mona Lisa'?|Michał Anioł;Leonardo da Vinci;Rafael;Picasso|1
+HISTORIA|W jakim mieście w 1000 roku odbył się słynny Zjazd z udziałem cesarza Ottona III i Bolesława Chrobrego?|W Krakowie;W Gnieźnie;W Warszawie;W Malborku|1
+HISTORIA|Jak nazywali się dawni japońscy wojownicy walczący mieczem zwanym kataną?|Rycerze;Samuraje;Gladiatorzy;Muszkieterowie|1
+HISTORIA|Który polski król widnieje na banknocie o nominale 100 złotych?|Mieszko I;Władysław Jagiełło;Kazimierz Wielki;Bolesław Chrobry|1
+HISTORIA|Jak nazywał się słynny niedźwiedź, który służył w polskiej armii generała Andersa podczas II wojny światowej?|Baryła;Wojtek;Misiek;Grom|1
+HISTORIA|W którym miesiącu obchodzimy w Polsce Narodowe Święto Niepodległości (11 dnia)?|W maju;W listopadzie;W sierpniu;W styczniu|1
+HISTORIA|Kto skonstruował pierwszy działający telefon w XIX wieku?|Thomas Edison;Alexander Graham Bell;Bracia Wright;James Watt|1
+HISTORIA|Jak nazywali się bracia, którzy w 1903 roku wykonali pierwszy udany lot samolotem silnikowym?|Bracia Grimm;Bracia Wright;Bracia Lumiere;Bracia Golec|1
+HISTORIA|W jakim polskim mieście znajduje się klasztor na Jasnej Górze, którego broniono podczas potopu szwedzkiego?|W Krakowie;W Częstochowie;W Toruniu;W Lublinie|1
+HISTORIA|Jak nazywała się legendarna księżniczka z Krakowa, która nie chciała wyjść za mąż za Niemca?|Dobrawa;Wanda;Kinga;Jadwiga|1`);
 
-const r5TFQuestionsByPlayer = {
+// --- ROZBUDOWANA BAZA 100 PYTAŃ PRAWDA/FAŁSZ NA KAŻDEGO GRACZA (PO 10 UNIKALNYCH PYTAŃ NA KAŻDĄ Z 10 PUL!) ---
+const r5TFMasterByPlayer = {
 Lila: parseTF(`
 Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?|1
 Czy stolica Australii to Sydney?|0
@@ -858,7 +972,88 @@ Czy planeta Wenus krąży wokół Słońca bliżej niż Ziemia?|1
 Czy słynne Koloseum zostało zbudowane w starożytnym Egipcie?|0
 Czy 25 procent z liczby 200 wynosi dokładnie 50?|1
 Czy pingwiny żyją naturalnie na wolności na Biegunie Północnym?|0
-Czy Fryderyk Chopin był wybitnym polskim kompozytorem i pianistą?|1`),
+Czy Fryderyk Chopin był wybitnym polskim kompozytorem i pianistą?|1
+Czy światło ze Słońca dociera do Ziemi w około 8 minut?|1
+Czy Brazylia jest największym państwem w Ameryce Południowej?|1
+Czy liczba 2 jest jedyną parzystą liczbą pierwszą?|1
+Czy pająki należą do gromady owadów?|0
+Czy w Rzymie znajduje się siedziba papieża – Watykan?|1
+Czy tlen stanowi około 99 procent powietrza, którym oddychamy (bez azotu)?|0
+Czy obwód prostokąta o bokach 3 cm i 5 cm wynosi 16 cm?|1
+Czy Maria Skłodowska-Curie odkryła pierwiastki polon i rad?|1
+Czy Ocean Atlantycki leży między Europą a Ameryką?|1
+Czy język hiszpański jest językiem urzędowym w Brazylii?|0
+Czy w układzie rzymskim litera C oznacza liczbę 100?|1
+Czy nietoperze posługują się echolokacją podczas nocnych lotów?|1
+Czy najwyższym szczytem całych Tatr (po słowackiej stronie) jest Gerlach?|1
+Czy woda wrze w wyższej temperaturze na szczycie Mount Everest niż nad morzem?|0
+Czy Mikołaj Kopernik urodził się w Toruniu?|1
+Czy kwadrat liczby 9 wynosi 18?|0
+Czy w ludzkim uchu znajduje się najmniejsza kość ciała – strzemiączko?|1
+Czy Kanada leży w Ameryce Południowej?|0
+Czy po angielsku słowo 'Autumn' oznacza jesień?|1
+Czy bursztyn tonie w bardzo słonej wodzie równie szybko jak ołów?|0
+Czy trójkąt równoboczny ma wszystkie trzy kąty po 60 stopni?|1
+Czy stolicą Turcji jest Stambuł?|0
+Czy chlorofil nadaje roślinom zielony kolor?|1
+Czy w 1410 roku odbyła się bitwa pod Wiedniem?|0
+Czy ułamek trzy czwarte to inaczej 75 procent?|1
+Czy wieloryby są ssakami i karmią młode mlekiem?|1
+Czy Sahara leży w południowej części Afryki?|0
+Czy po angielsku słowo 'Nephew' oznacza siostrzeńca lub bratanka?|1
+Czy żelazo rdzewieje pod wpływem wilgoci i tlenu?|1
+Czy w roku zwykłym luty ma 30 dni?|0
+Czy Japonia leży na wyspach na Oceanie Spokojnym?|1
+Czy pierwiastek kwadratowy z 100 wynosi 10?|1
+Czy ślimaki należą do grupy mięczaków?|1
+Czy Leonardo da Vinci namalował 'Słoneczniki'?|0
+Czy rzeka Odra uchodzi do Morza Czarnego?|0
+Czy w jednym kilometrze mieści się 1000 metrów?|1
+Czy krewetki i kraby są skorupiakami?|1
+Czy stolicą Szwecji jest Sztokholm?|1
+Czy liczba zero jest liczbą dodatnią?|0
+Czy po angielsku słowo 'Flight' oznacza lot samolotem?|1
+Czy ośmiornica ma niebieską krew?|1
+Czy Gniezno leży w województwie małopolskim?|0
+Czy wynik działania 15 razy 4 to 60?|1
+Czy dźwięk może rozchodzić się w próżni kosmicznej?|0
+Czy Grecja leży na Półwyspie Bałkańskim?|1
+Czy Jan Brzechwa napisał wiersz 'Kaczka Dziwaczka'?|1
+Czy kąt pełny ma 360 stopni?|1
+Czy po angielsku 'Century' oznacza tysiąc lat?|0
+Czy delfiny śpią z jednym okiem otwartym?|1
+Czy najwyższym budynkiem w Warszawie jest Zamek Królewski?|0
+Czy 100 podzielone przez 0,5 daje 200?|1
+Czy płazy mogą oddychać również przez wilgotną skórę?|1
+Czy stolicą Norwegii jest Helsinki?|0
+Czy pierwsza wojna światowa zakończyła się w 1918 roku?|1
+Czy po angielsku 'island' oznacza wyspę?|1
+Czy miedź jest metalem o czerwonawym odcieniu?|1
+Czy pole trójkąta liczymy mnożąc podstawę przez wysokość i dzieląc przez 2?|1
+Czy Madagaskar leży u wybrzeży Europy?|0
+Czy pszczoła królowa żyje dłużej niż zwykła pszczoła robotnica?|1
+Czy w języku polskim przymiotnik odpowiada na pytanie 'kto? co?'?|0
+Czy planeta Saturn ma mniejszą gęstość niż woda?|1
+Czy stolicą Egiptu jest Kair?|1
+Czy 3 do potęgi drugiej (3 kwadrat) to 6?|0
+Czy kora brzozy ma biały kolor?|1
+Czy po angielsku 'Foreigner' oznacza obcokrajowca?|1
+Czy Bieszczady leżą w północno-zachodniej Polsce?|0
+Czy ludzka skóra jest największym narządem ciała?|1
+Czy w starożytnym Rzymie używano cyfr arabskich zamiast rzymskich?|0
+Czy pół godziny to 1800 sekund?|1
+Czy kangur rudy jest największym torbaczem świata?|1
+Czy na Cyprze panuje klimat polarny?|0
+Czy po angielsku 'Success' oznacza sukces?|1
+Czy liczba 1000 w zapisie rzymskim to litera M?|1
+Czy sowy mają oczy przystosowane do widzenia w słabym świetle?|1
+Czy Wisła ma swoje źródła na Baraniej Górze w Beskidach?|1
+Czy 7 razy 9 daje 65?|0
+Czy kompas działa dzięki polu magnetycznemu Ziemi?|1
+Czy Henryk Sienkiewicz otrzymał literacką Nagrodę Nobla?|1
+Czy po angielsku 'Knowledge' oznacza wiedzę?|1
+Czy wszystkie metale są w temperaturze pokojowej ciałami stałymi?|0`),
+
 Kaja: parseTF(`
 Czy stolicą Hiszpanii jest Madryt?|1
 Czy nietoperze należą do gromady ptaków?|0
@@ -879,7 +1074,88 @@ Czy pająki mają sześć nóg tak samo jak owady?|0
 Czy 1000 gramów to dokładnie jeden kilogram?|1
 Czy Harry Potter uczył się magii w szkole o nazwie Hogwart?|1
 Czy Słońce jest ogromną planetą krążącą wokół Ziemi?|0
-Czy pszczoły wytwarzają miód z nektaru zbieranego z kwiatów?|1`),
+Czy pszczoły wytwarzają miód z nektaru zbieranego z kwiatów?|1
+Czy we Włoszech znajduje się słynne miasto Wenecja?|1
+Czy 50 razy 2 daje 100?|1
+Czy koliber jest największym ptakiem na świecie?|0
+Czy po angielsku słowo 'Teacher' oznacza ucznia?|0
+Czy w polskich Tatrach żyją kozice i świstaki?|1
+Czy prostokąt ma zawsze wszystkie cztery boki równej długości?|0
+Czy w piłce siatkowej drużyna na boisku liczy 6 graczy?|1
+Czy dąb rodzi owoce zwane żołędziami?|1
+Czy stolicą Francji jest Londyn?|0
+Czy po angielsku słowo 'Winter' oznacza zimę?|1
+Czy liczba 45 dzieli się bez reszty przez 5?|1
+Czy żółwie mają twardą skorupę chroniącą ich ciało?|1
+Czy nad Morzem Bałtyckim leży miasto Zakopane?|0
+Czy w bajce 'Kraina Lodu' siostra Elsy ma na imię Anna?|1
+Czy pół metra to 50 centymetrów?|1
+Czy mrówki mieszkają w ulu?|0
+Czy po angielsku słowo 'Kitchen' oznacza kuchnię?|1
+Czy zamek w Malborku został zbudowany z czerwonej cegły?|1
+Czy 9 razy 9 równa się 81?|1
+Czy wielbłądy mieszkają na mroźnej Antarktydzie?|0
+Czy tęcza pojawia się na niebie, gdy słońce oświetla krople deszczu?|1
+Czy stolicą Czech jest Praga?|1
+Czy po angielsku 'Strawberry' oznacza malinę?|0
+Czy kukułka sama buduje wielkie gniazda i wysiaduje pisklęta?|0
+Czy trzy kwadranse to 45 minut?|1
+Czy w Krakowie na Rynku Głównym stoi budynek Sukiennic?|1
+Czy rekin jest ssakiem morskim?|0
+Czy po angielsku słowo 'Friend' oznacza przyjaciela?|1
+Czy rok ma 12 miesięcy?|1
+Czy ziemniaki rosną na wysokich drzewach owocowych?|0
+Czy w Poznaniu symbolem miasta są dwa trykające się koziołki?|1
+Czy 120 odjąć 40 daje 80?|1
+Czy sowa poluje głównie w nocy?|1
+Czy po angielsku 'Bathroom' oznacza sypialnię?|0
+Czy czekoladę produkuje się z ziaren kakaowca?|1
+Czy Dunaj przepływa przez Polskę?|0
+Czy figura o ośmiu bokach to ośmiokąt?|1
+Czy Kopciuszek zgubił na balu kalosz?|0
+Czy po angielsku słowo 'Rainbow' oznacza tęczę?|1
+Czy jeże zapadają zimą w głęboki sen?|1
+Czy 6 razy 8 równa się 48?|1
+Czy w Gdańsku znajduje się zabytkowy dźwig portowy Żuraw?|1
+Czy flamingi mają zielone pióra?|0
+Czy po angielsku 'Butterfly' oznacza motyla?|1
+Czy dwie doby to łącznie 48 godzin?|1
+Czy Sahara jest największą gorącą pustynią na Ziemi?|1
+Czy wiewiórki żywią się głównie rybami?|0
+Czy po angielsku 'Holiday' oznacza wakacje lub święto?|1
+Czy ułamek jedna czwarta to mniej niż jedna druga?|1
+Czy stolicą Grecji są Ateny?|1
+Czy bociany zostają w Polsce na mroźną zimę?|0
+Czy po angielsku 'Mirror' oznacza lustro?|1
+Czy 300 podzielone przez 3 daje 100?|1
+Czy we Wrocławiu można spotkać figurki małych krasnali?|1
+Czy dżdżownice mają nogi i skrzydła?|0
+Czy po angielsku 'Cloud' oznacza chmurę?|1
+Czy w tenisie ziemnym odbija się piłkę rakietą nad siatką?|1
+Czy luty ma zawsze 31 dni?|0
+Czy panda wielka ma czarno-białe futro?|1
+Czy po angielsku 'eleven' oznacza liczbę dwanaście?|0
+Czy Toruń słynie z wypieku pierników i Mikołaja Kopernika?|1
+Czy 15 dodać 25 daje 40?|1
+Czy bobry ścinają drzewa swoimi mocnymi zębami?|1
+Czy po angielsku 'Mountain' oznacza rzekę?|0
+Czy Księżyc świeci światłem odbitym od Słońca?|1
+Czy w szachach bierka o nazwie Skoczek ma kształt głowy konia?|1
+Czy stolicą Niemiec jest Berlin?|1
+Czy po angielsku 'Squirrel' oznacza wiewiórkę?|1
+Czy 8 razy 4 daje 36?|0
+Czy kasztany rosną w kolczastych zielonych łupinach?|1
+Czy Pinokio był wystrugany z kawałka drewna?|1
+Czy po angielsku 'Garden' oznacza ogród?|1
+Czy w jednej tonie mieści się 1000 kilogramów?|1
+Czy morskie ośmiornice mają osiem ramion?|1
+Czy Giewont leży nad samym Morzem Bałtyckim?|0
+Czy po angielsku 'Bridge' oznacza most?|1
+Czy 100 odjąć 15 daje 85?|1
+Czy biedronka siedmiokropka jest pożytecznym owadem zjadającym mszyce?|1
+Czy Iga Świątek jest mistrzynią w skokach narciarskich?|0
+Czy po angielsku 'Smile' oznacza uśmiech?|1`),
+
 Darek: parseTF(`
 Czy tradycyjny mecz piłki nożnej składa się z dwóch połów po 45 minut?|1
 Czy w grze Minecraft obsydian powstaje po wylaniu wody na gorącą lawę?|1
@@ -900,7 +1176,88 @@ Czy żółwie morskie wychodzą na piaszczystą plażę, aby złożyć tam jaja?
 Czy w grze w szachy najważniejszą figurą, którą trzeba chronić, jest Król?|1
 Czy pustynia Sahara jest cała pokryta lodem i śniegiem?|0
 Czy 120 podzielone przez 10 daje wynik 12?|1
-Czy czerwona igła kompasu wskazuje kierunek północny?|1`),
+Czy czerwona igła kompasu wskazuje kierunek północny?|1
+Czy w grze Minecraft postać Creepera wybucha, gdy podejdzie zbyt blisko gracza?|1
+Czy w piłce nożnej rzut karny wykonuje się z odległości 11 metrów?|1
+Czy 8 razy 7 równa się 56?|1
+Czy po angielsku słowo 'Airplane' oznacza pociąg?|0
+Czy w Egipcie znajdują się starożytne piramidy i Sfinks?|1
+Czy wąż ma cztery łapy ukryte pod łuskami?|0
+Czy najwyższą górą świata jest Mount Everest?|1
+Czy w hokeju na lodzie mecz dzieli się na trzy tercje?|1
+Czy po angielsku słowo 'Fast' oznacza wolny?|0
+Czy 25 razy 4 daje dokładnie 100?|1
+Czy delfiny są ssakami, a nie rybami?|1
+Czy stolicą Wielkiej Brytanii jest Paryż?|0
+Czy w grze Super Mario brat głównego bohatera ma na imię Luigi?|1
+Czy kąt prosty ma 90 stopni?|1
+Czy po angielsku 'Goalkeeper' oznacza bramkarza?|1
+Czy modrzew gubi swoje igły na zimę?|1
+Czy w siatkówce można złapać piłkę w ręce i biec z nią przez boisko?|0
+Czy 144 podzielone przez 12 daje 12?|1
+Czy Mars jest nazywany Czerwoną Planetą?|1
+Czy po angielsku słowo 'Shark' oznacza rekina?|1
+Czy klocki LEGO zostały wymyślone w Danii?|1
+Czy w Polsce obowiązuje ruch lewostronny na drogach?|0
+Czy 30 dodać 45 daje 75?|1
+Czy skorpiony i pająki mają po osiem nóg?|1
+Czy po angielsku 'Thunder' oznacza grzmot (piorun)?|1
+Czy bałtyckie plaże są pokryte piaskiem?|1
+Czy w piłce nożnej za czerwoną kartkę zawodnik musi opuścić boisko?|1
+Czy 5 razy 15 daje 85?|0
+Czy leniwiec jest najszybszym zwierzęciem świata?|0
+Czy po angielsku 'Forest' oznacza pustynię?|0
+Czy Kamil Stoch zdobył złote medale olimpijskie w skokach narciarskich?|1
+Czy trójkąt ma trzy boki i trzy wierzchołki?|1
+Czy w grze Minecraft diamentowy kilof jest trwalszy niż drewniany?|1
+Czy po angielsku 'Winner' oznacza zwycięzcę?|1
+Czy Odra wpływa do Morza Śródziemnego?|0
+Czy 90 odjąć 35 daje 55?|1
+Czy niedźwiedź polarny mieszka w Arktyce?|1
+Czy w tenisie ziemnym turniej Wimbledon rozgrywany jest na trawie?|1
+Czy po angielsku 'Twenty' oznacza liczbę dwanaście?|0
+Czy żubr jest największym ssakiem lądowym żyjącym w Polsce?|1
+Czy w jednym kilometrze jest 100 metrów?|0
+Czy w filmie 'Auta' główny bohater nazywa się Zygzak McQueen?|1
+Czy po angielsku 'Helmet' oznacza kask ochronny?|1
+Czy 6 razy 9 daje 54?|1
+Czy na Księżycu jest powietrze, którym można oddychać bez skafandra?|0
+Czy w Krakowie znajduje się Zamek Królewski na Wawelu?|1
+Czy po angielsku 'Sword' oznacza tarczę?|0
+Czy kameleon potrafi zmieniać kolor skóry?|1
+Czy 200 podzielone przez 4 daje 50?|1
+Czy w biegach sztafetowych zawodnicy przekazują sobie pałeczkę?|1
+Czy kangury żyją na wolności w lasach w Polsce?|0
+Czy po angielsku 'Keyboard' oznacza klawiaturę?|1
+Czy obwód kwadratu o boku 10 cm wynosi 40 cm?|1
+Czy Titanic zatonął po zderzeniu z górą lodową?|1
+Czy po angielsku 'Heavy' oznacza lekki?|0
+Czy w kręglach (bowlingu) na początku rzutu stoi 10 kręgli?|1
+Czy 11 razy 11 daje 121?|1
+Czy sokół wędrowny to najszybszy ptak w locie nurkowym?|1
+Czy po angielsku 'Treasure' oznacza skarb?|1
+Czy Słońce wschodzi na zachodzie, a zachodzi na wschodzie?|0
+Czy w judo i karate czarny pas oznacza wysoki stopień mistrzowski?|1
+Czy 400 odjąć 150 daje 250?|1
+Czy ośmiornica potrafi wypuścić ciemny atrament w wodzie?|1
+Czy po angielsku 'Screen' oznacza ekran?|1
+Czy w Warszawie stoi Pałac Kultury i Nauki?|1
+Czy 7 razy 7 daje 42?|0
+Czy nietoperze śpią wisząc głową w dół?|1
+Czy po angielsku 'Team' oznacza drużynę?|1
+Czy bieg maratoński ma długość ponad 42 kilometrów?|1
+Czy woda w stanie stałym to para wodna?|0
+Czy po angielsku 'Bridge' oznacza most?|1
+Czy 16 dodać 24 daje 40?|1
+Czy waran z Komodo jest największą jaszczurką na świecie?|1
+Czy w koszykówce na boisku gra po 11 zawodników w jednej drużynie?|0
+Czy po angielsku 'Silver' oznacza złoto?|0
+Czy Kopernik udowodnił, że Ziemia krąży wokół Słońca?|1
+Czy 8 razy 8 daje 64?|1
+Czy nosorożec ma grubą skórę i róg na nosie?|1
+Czy po angielsku 'Level' oznacza poziom?|1
+Czy rok przestępny występuje co 4 lata?|1`),
+
 Jas: parseTF(`
 Czy krowa daje mleko, z którego robi się biały i żółty ser?|1
 Czy jeden tydzień ma osiem dni?|0
@@ -921,7 +1278,87 @@ Czy zimowego bałwana lepi się z białego śniegu?|1
 Czy dziesięć odjąć trzy równa się siedem?|1
 Czy biały bocian ma długi czerwony dziób i czerwone nogi?|1
 Czy samoloty pasażerskie pływają głęboko pod wodą?|0
-Czy po ciepłym lecie zawsze przychodzi kolorowa jesień?|1`)
+Czy po ciepłym lecie zawsze przychodzi kolorowa jesień?|1
+Czy kotki lubią mruczeć, gdy się je głaszcze?|1
+Czy pięć dodać pięć daje dziesięć?|1
+Czy kury znoszą w kurniku jajka?|1
+Czy po angielsku słowo 'Dog' oznacza psa?|1
+Czy trawa na łące wiosną jest koloru niebieskiego?|0
+Czy na czerwonym świetle przy przejściu dla pieszych trzeba stać?|1
+Czy wiewiórka ma rudą kitę i zbiera orzeszki?|1
+Czy rower ma zazwyczaj dwa koła i kierownicę?|1
+Czy cytryna jest bardzo słodka jak cukierek?|0
+Czy pszczoły robią w ulu pyszny słodki miód?|1
+Czy cztery odjąć jeden to trzy?|1
+Czy po angielsku słowo 'Red' oznacza kolor czerwony?|1
+Czy jeż ma na grzbiecie kłujące kolce?|1
+Czy zimą z nieba pada biały śnieg?|1
+Czy żyrafa ma bardzo krótką szyję?|0
+Czy Kubuś Puchatek najbardziej na świecie lubi jeść miodek?|1
+Czy sześć dodać cztery daje dziesięć?|1
+Czy po angielsku 'Milk' oznacza mleko?|1
+Czy ryby potrafią chodzić po drzewach w lesie?|0
+Czy król nosi na głowie złotą koronę?|1
+Czy zebra ma czarno-białe paski na ciele?|1
+Czy trzy dodać trzy daje osiem?|0
+Czy po angielsku 'Sun' oznacza słońce?|1
+Czy ślimak nosi swój domek (muszlę) na plecach?|1
+Czy latem chodzimy po plaży w grubych zimowych rękawiczkach?|0
+Czy z ziemniaków robi się frytki?|1
+Czy osiem odjąć dwa daje sześć?|1
+Czy po angielsku 'Apple' oznacza jabłko?|1
+Czy żaby są zielone, skaczą i kumkają w stawie?|1
+Czy samochód potrzebuje kierownicy i czterech kół do jazdy?|1
+Czy lody są gorące jak zupa prosto z garnka?|0
+Czy po angielsku 'One' oznacza cyfrę jeden?|1
+Czy biedronka jest czerwona i ma czarne kropki?|1
+Czy siedem dodać dwa daje dziewięć?|1
+Czy w nocy na ciemnym niebie świeci Księżyc i gwiazdy?|1
+Czy kaczki potrafią pływać po wodzie w stawie?|1
+Czy po angielsku 'Blue' oznacza kolor niebieski?|1
+Czy zamek z piasku buduje się na plaży łopatką i wiaderkiem?|1
+Czy pięć odjąć pięć daje zero?|1
+Czy niedźwiedzie są malutkie jak mrówki?|0
+Czy lekarz dentysta dba o to, żeby nasze ząbki były zdrowe?|1
+Czy po angielsku 'Car' oznacza samochód?|1
+Czy pomidor jest czerwony?|1
+Czy człowiek ma dwie ręce i dwie nogi?|1
+Czy dziesięć dodać dziesięć daje dwadzieścia?|1
+Czy pająk plecie w kącie pajęczynę?|1
+Czy po angielsku 'Green' oznacza kolor zielony?|1
+Czy na nartach zjeżdżamy latem po suchym piasku?|0
+Czy lew ma wielką grzywę i głośno ryczy?|1
+Czy cztery dodać cztery daje osiem?|1
+Czy po deszczu i słońcu na niebie pojawia się kolorowa tęcza?|1
+Czy po angielsku 'Fish' oznacza rybę?|1
+Czy kask na głowie chroni nas podczas jazdy na rowerze?|1
+Czy chleb piecze się w piekarni z mąki?|1
+Czy dziewięć odjąć cztery daje pięć?|1
+Czy pingwiny mieszkają w bardzo zimnej krainie pełnej lodu?|1
+Czy po angielsku 'Tree' oznacza drzewo?|1
+Czy parasol chroni nas przed deszczem?|1
+Czy świnka ma zakręcony ogonek i różowy ryjek?|1
+Czy dwa razy trzy daje sześć?|1
+Czy motyle mają kolorowe skrzydełka i latają nad kwiatkami?|1
+Czy po angielsku 'House' oznacza dom?|1
+Czy ogień jest zimny jak lód?|0
+Czy na urodzinowym torcie zdmuchujemy świeczki?|1
+Czy sześć odjąć dwa daje cztery?|1
+Czy Smerfy mają niebieski kolor skóry?|1
+Czy po angielsku 'Water' oznacza wodę?|1
+Czy dzięcioł stuka dziobem w drzewo?|1
+Czy pociąg zatrzymuje się na stacji kolejowej?|1
+Czy jeden dodać osiem daje dziewięć?|1
+Czy wielbłąd ma garby na grzbiecie i chodzi po pustyni?|1
+Czy po angielsku 'Boy' oznacza chłopca?|1
+Czy myjemy zęby szczoteczką i pastą rano oraz wieczorem?|1
+Czy słoń jest mniejszy od małej myszki?|0
+Czy pięć razy dwa daje dziesięć?|1
+Czy Święty Mikołaj nosi czerwoną czapkę i ma białą brodę?|1
+Czy po angielsku 'Star' oznacza gwiazdę?|1
+Czy jesienią z drzew spadają kolorowe liście?|1
+Czy trzy dodać cztery daje siedem?|1
+Czy krowa mówi 'muuu', a kotek mówi 'miau'?|1`)
 };
 
 const r5Order = ["Lila", "Kaja", "Darek", "Jas"];
@@ -934,37 +1371,66 @@ const roundTitlesSpeech = {
 3: "Runda trzecia: Szybkie pisanie",
 4: "Runda czwarta: Ryzyko i wybieranie gracza",
 5: "Runda piąta: Błyskawica Prawda czy Fałsz",
-6: "Runda szósta: Awantura o punkty"
+6: "Runda szósta: Koło i tajne obstawianie w ciemno"
 };
 
-// Budowanie 10 pełnych, całkowicie rozłącznych Puli Pytań (Pule 1 - 10)
+// Grupowanie 160 pytań Rundy 6 według kategorii (po 20 pytań w każdej z 8 kategorii)
+const r6ByCat = {};
+r6WheelCategories.forEach(c => {
+r6ByCat[c] = rawR6_Dedicated.filter(item => item.cat === c);
+});
+
+// Budowanie 10 pełnych, w 100% rozłącznych Puli Pytań (Pule 1 - 10) we WSZYSTKICH RUNDACH (1, 2, 3, 4, 5 i 6!)
 const allDBs = {};
 for (let p = 1; p <= 10; p++) {
 const r1Slice = [];
 const r3Slice = [];
 for (let i = 0; i < 15; i++) {
-r1Slice.push(masterR1[((p - 1) * 15 + i) % masterR1.length]);
-r3Slice.push(masterR3[((p - 1) * 15 + i) % masterR3.length]);
+r1Slice.push(masterR1[(p - 1) * 15 + i]);
+r3Slice.push(masterR3[(p - 1) * 15 + i]);
 }
 const r2Slice = [];
 for (let i = 0; i < 5; i++) {
-r2Slice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
+r2Slice.push(masterR2[(p - 1) * 5 + i]);
 }
-const r4Slice = [];
-for (let i = 0; i < 24; i++) {
-r4Slice.push(masterR4[((p - 1) * 24 + i) % masterR4.length]);
+
+// Runda 4: 22 unikalne pytania ogólne + dokładnie 2 unikalne pytania z kategorii RODZINA = 24 pytania!
+const r4GenSlice = [];
+for (let i = 0; i < 22; i++) {
+r4GenSlice.push(generalR4Questions[(p - 1) * 22 + i]);
 }
-const r6Rotated = [
-...rawR6_Dedicated.slice((p * 7) % rawR6_Dedicated.length),
-...rawR6_Dedicated.slice(0, (p * 7) % rawR6_Dedicated.length)
+const r4FamSlice = [
+familyR4Questions[(p - 1) * 2],
+familyR4Questions[(p - 1) * 2 + 1]
 ];
+const r4Combined = arrangeNoAdjacentCategories([...r4GenSlice, ...r4FamSlice], p);
+
+// Runda 5: Dla każdej z 10 pul wycinamy unikalną, niepowtarzającą się dziesiątkę pytań (i dokładamy drugą dziesiątkę z przesunięciem jako rezerwę)
+const r5PoolForPlayers = {};
+r5Order.forEach(pl => {
+const masterList = r5TFMasterByPlayer[pl] || [];
+const primary10 = masterList.slice((p - 1) * 10, p * 10);
+const reserve10 = masterList.slice((p % 10) * 10, ((p % 10) + 1) * 10);
+r5PoolForPlayers[pl] = [...primary10, ...reserve10];
+});
+
+// Runda 6: Każda z 10 pul dostaje swoje własne, unikalne pytania z każdej z 8 kategorii (zero powtórek między pulami!)
+const r6PoolQuestions = [];
+r6WheelCategories.forEach(c => {
+const catArr = r6ByCat[c] || [];
+const q1 = catArr[(p - 1) * 2];
+const q2 = catArr[(p - 1) * 2 + 1];
+if (q1) r6PoolQuestions.push(q1);
+if (q2) r6PoolQuestions.push(q2);
+});
 
 allDBs[p] = {
 1: r1Slice,
 2: arrangeNoAdjacentCategories(r2Slice, p),
 3: r3Slice,
-4: arrangeNoAdjacentCategories(r4Slice, p),
-6: r6Rotated
+4: r4Combined,
+5: r5PoolForPlayers,
+6: r6PoolQuestions
 };
 }
 
@@ -984,10 +1450,29 @@ let lastR5TFHandledKey = "";
 
 let suspenseTimer = null;
 let autoFlowTimer = null;
-let auctionMonitorInterval = null;
 let lastHandledStatus = "";
 let lastSpinHandled = 0;
 let lastSummaryReadyKey = "";
+let lastR6BlindResolvedKey = "";
+
+// Podgląd aktualnych punktów graczy w polach edycji ręcznej w Adminie
+onSnapshot(collection(db, "quizScores"), (snap) => {
+snap.forEach(d => {
+const inp = document.getElementById(`manual-pts-${d.id}`);
+if (inp && document.activeElement !== inp) {
+inp.value = d.data().points || 0;
+}
+});
+});
+
+async function setPlayerScoreManually(player) {
+try {
+const inp = document.getElementById(`manual-pts-${player}`);
+const newPts = parseInt(inp.value, 10) || 0;
+await setDoc(doc(db, "quizScores", player), { points: newPts }, { merge: true });
+statusEl.innerText = `✅ Ręcznie zmieniono punkty gracza ${player} na: ${newPts} PKT!`;
+} catch (err) { showError(err.message); }
+}
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
@@ -1037,7 +1522,7 @@ return { player: chosen, tieMsg: `REMIS LIDERÓW (${maxPts} PKT)! WYLOSOWANO: ${
 
 async function showGrandFinale() {
 try {
-clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
+clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "podium", activePlayers: getSelectedActivePlayers(), answerTick: Date.now()
 });
@@ -1046,7 +1531,7 @@ statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium
 }
 
 async function triggerRoundSummary(completedRound) {
-clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer); clearInterval(auctionMonitorInterval);
+clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 if (completedRound >= 6) {
 await showGrandFinale();
 return;
@@ -1103,18 +1588,16 @@ pool: currentPool
 
 async function sendNextR5TFQuestion() {
 const player = r5Order[r5PlayerIdx];
-const baseList = r5TFQuestionsByPlayer[player] || [];
-const offset = ((currentPool - 1) * 2) % Math.max(1, baseList.length);
-const qList = [...baseList.slice(offset), ...baseList.slice(0, offset)];
+const qList = (allDBs[currentPool] && allDBs[currentPool][5] && allDBs[currentPool][5][player]) || [];
 r5QIdx++;
 
 if (r5QIdx >= qList.length || r5TimeLeftMs <= 0) {
-await finishR5TFTurnForPlayer(r5TimeLeftMs <= 0 ? "KONIEC CZASU (0.0s)!" : "WSZYSTKIE 20 PYTAŃ UKOŃCZONE!");
+await finishR5TFTurnForPlayer(r5TimeLeftMs <= 0 ? "KONIEC CZASU (0.0s)!" : "WSZYSTKIE PYTANIA UKOŃCZONE!");
 return;
 }
 
 const qItem = qList[r5QIdx];
-statusEl.innerText = `⚡ Runda 5 [${player}]: Pytanie #${r5QIdx + 1}/20 | Pozostało czasu: ${(r5TimeLeftMs / 1000).toFixed(1)}s`;
+statusEl.innerText = `⚡ Runda 5 [${player}, Pula ${currentPool}]: Pytanie #${r5QIdx + 1}/20 | Pozostało czasu: ${(r5TimeLeftMs / 1000).toFixed(1)}s`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r5_tf_speaking",
@@ -1148,18 +1631,28 @@ startR5TFForPlayer(r5PlayerIdx + 1);
 }, 7500);
 }
 
-function pickR6QuestionByCategory(pool, catName) {
-const list = allDBs[pool][6];
-let idx = list.findIndex((item, i) => item.cat === catName && !usedR6Indices.includes(i));
-if (idx === -1) {
-idx = list.findIndex((item, i) => !usedR6Indices.includes(i));
+// Losowanie kategorii i pytania w Rundzie 6 wyłącznie z unikalnej puli danego zestawu!
+function pickR6QuestionFromPool(pool) {
+const list = allDBs[pool][6] || [];
+let availableIndices = [];
+for (let i = 0; i < list.length; i++) {
+if (!usedR6Indices.includes(i)) availableIndices.push(i);
 }
-if (idx === -1) {
+if (availableIndices.length === 0) {
 usedR6Indices = [];
-idx = 0;
+for (let i = 0; i < list.length; i++) availableIndices.push(i);
 }
-usedR6Indices.push(idx);
-return list[idx];
+// Filtrujemy, aby nie wypadła ta sama kategoria co przed chwilą
+const lastCatName = lastR6WheelSegment >= 0 ? r6WheelCategories[lastR6WheelSegment] : "";
+let nonSameCatIndices = availableIndices.filter(idx => list[idx].cat !== lastCatName);
+if (nonSameCatIndices.length === 0) nonSameCatIndices = availableIndices;
+
+const chosenIdx = nonSameCatIndices[Math.floor(Math.random() * nonSameCatIndices.length)];
+usedR6Indices.push(chosenIdx);
+const qObj = list[chosenIdx];
+const segIdx = r6WheelCategories.indexOf(qObj.cat);
+lastR6WheelSegment = segIdx >= 0 ? segIdx : 0;
+return { qData: qObj, segIdx: lastR6WheelSegment, catName: qObj.cat };
 }
 
 async function adminForceContinue() {
@@ -1216,7 +1709,7 @@ return;
 currentQIndex[r]++;
 
 if (r === 6) {
-if (currentQIndex[6] >= 15) {
+if (currentQIndex[6] >= 16) {
 await showGrandFinale();
 return;
 }
@@ -1227,20 +1720,12 @@ r4Controller = initRes.player;
 tieBanner = initRes.tieMsg;
 }
 
-let candidateSegments = [];
-for (let s = 0; s < r6WheelCategories.length; s++) {
-if (s !== lastR6WheelSegment) candidateSegments.push(s);
-}
-let segIdx = candidateSegments[Math.floor(Math.random() * candidateSegments.length)];
-lastR6WheelSegment = segIdx;
-
-let chosenCat = r6WheelCategories[segIdx];
-let qData = pickR6QuestionByCategory(currentPool, chosenCat);
+const picked = pickR6QuestionFromPool(currentPool);
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r6_wait_spin", round: 6, controller: r4Controller, tieMsg: tieBanner,
-wheelSegment: segIdx, category: chosenCat, question: qData.q, options: qData.o, correctIndex: qData.c,
-carryOver: r6CarryOverPool, r6Pot: r6CarryOverPool, r6TiedBidders: [], blocked: [], usedOptions: [],
+wheelSegment: picked.segIdx, category: picked.catName, question: picked.qData.q, options: picked.qData.o, correctIndex: picked.qData.c,
+carryOver: r6CarryOverPool, r6Pot: r6CarryOverPool, r6Bids: {}, r6LockedBidders: [], r6TiedBidders: [], blocked: [], usedOptions: [],
 activePlayers: activeList, speechTick: Date.now(), pool: currentPool
 });
 return;
@@ -1301,6 +1786,7 @@ await updateDoc(doc(db, "quizGame", "state"), { status: targetStatus, controller
 } catch (err) { showError(err.message); }
 }
 
+window.setPlayerScoreManually = setPlayerScoreManually;
 window.updateActivePlayersList = updateActivePlayersList;
 window.resetScoresOnly = resetScoresOnly;
 window.sendPoolChoice = sendPoolChoice;
@@ -1309,7 +1795,7 @@ window.adminForceContinue = adminForceContinue;
 window.showGrandFinale = showGrandFinale;
 window.startNominationPhase = startNominationPhase;
 
-statusEl.innerText = "✅ SYSTEM GOTOWY (10 wyczyszczonych, unikalnych Puli Pytań)! Wybierz kto dziś gra i kliknij START GRY.";
+statusEl.innerText = "✅ SYSTEM GOTOWY (10 w pełni unikalnych Puli w R1-R6 + 2x Rodzina)! Wybierz kto dziś gra i kliknij START GRY.";
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
@@ -1340,7 +1826,7 @@ if ((currentState.status === "setup_nomination" || currentState.status === "nomi
 document.getElementById('nominateUI').style.display = 'block';
 document.getElementById('n-curr').innerText = currentState.controller || r4Controller;
 statusEl.innerText = currentState.round === 6
-? `Status: Runda 6 (Awantura) - ${currentState.controller} kręci palcem kołem na swoim telefonie!`
+? `Status: Runda 6 (Koło) - ${currentState.controller} kręci palcem kołem na swoim telefonie!`
 : `Status: Runda 4 (Ryzyko) - ${currentState.controller} wybiera na telefonie kto odpowiada!`;
 }
 else if (currentState.status === "speaking") {
@@ -1415,126 +1901,78 @@ finishR5TFTurnForPlayer("CZAS 20.0s MINĄŁ!");
 }
 }
 
+// Po zakręceniu kołem w R6 -> otwieramy TAJNE OBSTAWIANIE W CIEMNO (r6_blind_bidding)
 if (currentState.round === 6 && currentState.status === "r6_spinning") {
 if (currentState.spinTick && currentState.spinTick !== lastSpinHandled) {
 lastSpinHandled = currentState.spinTick;
-statusEl.innerText = `🎡 Koło obraca się na TV i telefonie! Za 5s ruszy licytacja...`;
+statusEl.innerText = `🎡 Koło obraca się na TV i telefonie! Za 5s ruszy TAJNE OBSTAWIANIE W CIEMNO...`;
 setTimeout(async () => {
-let activeList = getSelectedActivePlayers();
-let initBids = {};
-activeList.forEach(p => { initBids[p] = 5; });
-let totalPot = (currentState.carryOver || 0) + (activeList.length * 5);
 let now = Date.now();
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_bidding",
-r6Bids: initBids,
-r6Pot: totalPot,
-r6HighestBidder: "WSZYSCY (PO 5 PKT)",
-r6HighestBid: 5,
-r6TiedBidders: [],
-r6MainSec: 12,
-r6Countdown: 0,
-auctionStartTime: now + 4500,
-bidTick: now,
+status: "r6_blind_bidding",
+r6Bids: {},
+r6LockedBidders: [],
+r6Pot: currentState.carryOver || 0,
 speechTick: now
 });
 }, 5000);
 }
 }
 
-if (currentState.round === 6 && currentState.status === "r6_bidding") {
-if (!auctionMonitorInterval) {
-auctionMonitorInterval = setInterval(async () => {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") {
-clearInterval(auctionMonitorInterval);
-auctionMonitorInterval = null;
-return;
-}
-const now = Date.now();
-const startT = currentState.auctionStartTime || now;
-const mainEndT = startT + 12000;
-const effectiveCloseT = Math.max(mainEndT + 5000, (currentState.bidTick || startT) + 8000);
-const remTotalMs = effectiveCloseT - now;
+// Monitorowanie Cichej Licytacji w Ciemno: gdy wszyscy wpiszą swoje tajne kwoty -> wyłaniamy zwycięzcę!
+if (currentState.round === 6 && currentState.status === "r6_blind_bidding") {
+const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0)
+? currentState.activePlayers
+: getSelectedActivePlayers();
+const lockedList = currentState.r6LockedBidders || [];
+statusEl.innerText = `🤫 Runda 6 (Tajne obstawianie w ciemno): Złożono ofert: ${lockedList.length}/${activeList.length} (${lockedList.join(", ") || "nikt"})`;
 
-if (now < mainEndT) {
-let mainSec = Math.min(12, Math.max(1, Math.ceil((mainEndT - now) / 1000)));
-if (currentState.r6MainSec !== mainSec || currentState.r6Countdown !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: mainSec, r6Countdown: 0 });
-}
-} else if (remTotalMs > 5000) {
-if (currentState.r6MainSec !== 0 || currentState.r6Countdown !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: 0, r6Countdown: 0 });
-}
-} else if (remTotalMs > 0) {
-let finalSec = Math.ceil(remTotalMs / 1000);
-if (currentState.r6Countdown !== finalSec || currentState.r6MainSec !== 0) {
-await updateDoc(doc(db, "quizGame", "state"), { r6MainSec: 0, r6Countdown: finalSec });
-}
-} else {
-clearInterval(auctionMonitorInterval);
-auctionMonitorInterval = null;
-
-let bids = currentState.r6Bids || {};
-let allPlayers = getSelectedActivePlayers();
-let maxBid = Math.max(...allPlayers.map(p => bids[p] || 5));
-let topPlayers = allPlayers.filter(p => (bids[p] || 5) === maxBid);
-
-let winnerPlayer = "";
-let wasRandomDraw = false;
-
-if (maxBid === 5) {
-winnerPlayer = allPlayers[Math.floor(Math.random() * allPlayers.length)];
-wasRandomDraw = true;
-}
-else if (topPlayers.length === 1) {
-winnerPlayer = topPlayers[0];
-}
-else {
-let prevTied = currentState.r6TiedBidders || [];
-if (prevTied.length > 0 && currentState.r6OvertimeMax === maxBid) {
-winnerPlayer = topPlayers[Math.floor(Math.random() * topPlayers.length)];
-wasRandomDraw = true;
-} else {
-let nowTie = Date.now();
-await updateDoc(doc(db, "quizGame", "state"), {
-r6TiedBidders: topPlayers,
-r6OvertimeMax: maxBid,
-r6HighestBidder: `REMIS: ${topPlayers.join(" / ").toUpperCase()}`,
-r6MainSec: 12,
-r6Countdown: 0,
-auctionStartTime: nowTie + 3500,
-bidTick: nowTie,
-tieBreakTick: nowTie
+const allSubmitted = activeList.length > 0 && activeList.every(p => lockedList.includes(p));
+if (allSubmitted) {
+const resolveKey = "blind_done_" + currentState.speechTick + "_" + lockedList.length;
+if (lastR6BlindResolvedKey !== resolveKey) {
+lastR6BlindResolvedKey = resolveKey;
+(async () => {
+try {
+const bids = currentState.r6Bids || {};
+let sumBids = 0;
+let maxBid = -1;
+activeList.forEach(p => {
+const val = parseInt(bids[p], 10) || 0;
+sumBids += val;
+if (val > maxBid) maxBid = val;
 });
-return;
+
+const topPlayers = activeList.filter(p => (parseInt(bids[p], 10) || 0) === maxBid);
+const wasRandomDraw = topPlayers.length > 1;
+const winnerPlayer = topPlayers[Math.floor(Math.random() * topPlayers.length)];
+
+// Odejmij każdemu graczowi dokładnie tyle punktów, ile zadeklarował w ciemno
+for (let p of activeList) {
+const bidVal = parseInt(bids[p], 10) || 0;
+if (bidVal > 0) {
+const ref = doc(db, "quizScores", p);
+const snap = await getDoc(ref);
+const cur = snap.exists() ? snap.data().points : 0;
+await setDoc(ref, { points: cur - bidVal }, { merge: true });
 }
 }
 
-for (let p of allPlayers) {
-let ref = doc(db, "quizScores", p);
-let snap = await getDoc(ref);
-let cur = snap.exists() ? snap.data().points : 0;
-await setDoc(ref, { points: cur - (bids[p] || 5) }, { merge: true });
-}
+// Jeśli wszyscy wpisali 0 pkt, do puli wpada bonusowe 10 pkt, żeby było o co grać
+const totalPot = (currentState.carryOver || 0) + (sumBids > 0 ? sumBids : 10);
 
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r6_sold",
 nominated: winnerPlayer,
 r6HighestBidder: winnerPlayer,
 r6HighestBid: maxBid,
+r6Pot: totalPot,
 r6RandomDrawn: wasRandomDraw,
-r6TiedBidders: [],
-r6MainSec: 0,
-r6Countdown: 0,
 speechTick: Date.now()
 });
+} catch (err) { showError(err.message); }
+})();
 }
-}, 350);
-}
-} else {
-if (auctionMonitorInterval) {
-clearInterval(auctionMonitorInterval);
-auctionMonitorInterval = null;
 }
 }
 
