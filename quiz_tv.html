@@ -78,8 +78,8 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .bid-card.highest { border-color: #00ff00; background: rgba(0, 255, 0, 0.15); box-shadow: 0 0 1.5vw rgba(0,255,0,0.4); transform: scale(1.05); }
 .bid-card.tied-high { border-color: var(--gold); background: rgba(212, 175, 55, 0.22); box-shadow: 0 0 1.5vw rgba(212,175,55,0.6); transform: scale(1.05); }
 .bid-pname { font-size: 1.2vw; font-weight: 900; color: #fff; }
-.bid-pval { font-size: 1.8vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
-.auction-call { font-size: 1.9vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.5s infinite; min-height: 2.8vw; }
+.bid-pval { font-size: 1.4vw; font-weight: 900; color: var(--cyan); margin-top: 0.2vw; }
+.auction-call { font-size: 1.75vw; font-weight: 900; color: #ff4757; text-transform: uppercase; text-shadow: 0 0 1.5vw #ff4757; animation: pulse 0.8s infinite; min-height: 2.8vw; }
 
 #round-summary-view { display: none; flex-direction: column; align-items: center; width: 100%; }
 .summary-list { display: flex; flex-direction: column; gap: 0.8vw; width: 90%; margin: 1vw 0; }
@@ -169,16 +169,16 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 
 <div id="r6-auction-box">
 <div class="pot-banner">
-<div class="pot-label" id="r6-pot-label">AKTUALNA PULA DO WYGRANIA</div>
-<div class="pot-val" id="r6-pot-val">20 PKT</div>
+<div class="pot-label" id="r6-pot-label">TAJNE OBSTAWIANIE W CIEMNO</div>
+<div class="pot-val" id="r6-pot-val">? PKT</div>
 </div>
 <div class="bids-grid">
-<div class="bid-card" id="bid-card-Lila"><div class="bid-pname">LILA</div><div class="bid-pval" id="bid-val-Lila">5</div></div>
-<div class="bid-card" id="bid-card-Kaja"><div class="bid-pname">KAJA</div><div class="bid-pval" id="bid-val-Kaja">5</div></div>
-<div class="bid-card" id="bid-card-Darek"><div class="bid-pname">DAREK</div><div class="bid-pval" id="bid-val-Darek">5</div></div>
-<div class="bid-card" id="bid-card-Jas"><div class="bid-pname">JAŚ</div><div class="bid-pval" id="bid-val-Jas">5</div></div>
+<div class="bid-card" id="bid-card-Lila"><div class="bid-pname">LILA</div><div class="bid-pval" id="bid-val-Lila">⏳</div></div>
+<div class="bid-card" id="bid-card-Kaja"><div class="bid-pname">KAJA</div><div class="bid-pval" id="bid-val-Kaja">⏳</div></div>
+<div class="bid-card" id="bid-card-Darek"><div class="bid-pname">DAREK</div><div class="bid-pval" id="bid-val-Darek">⏳</div></div>
+<div class="bid-card" id="bid-card-Jas"><div class="bid-pname">JAŚ</div><div class="bid-pval" id="bid-val-Jas">⏳</div></div>
 </div>
-<div class="auction-call" id="r6-auction-call">LICYTACJA TRWA!</div>
+<div class="auction-call" id="r6-auction-call">WPISZCIE SWOJE TAJNE KWOTY NA TELEFONACH!</div>
 </div>
 
 <div id="round-summary-view">
@@ -331,7 +331,6 @@ const r6Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "G
 const r6Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let currentWheelRotation = 0;
 let lastR6SpinHandled = 0;
-let lastR6CountdownSpoken = 0;
 
 function drawR6Wheel() {
 const canvas = document.getElementById('r6-wheel-canvas');
@@ -792,8 +791,6 @@ renderPodium(currentActivePlayers);
 }
 });
 
-let lastTieBreakSpoken = 0;
-
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
 const data = docSnap.data();
@@ -806,7 +803,7 @@ let roundNames = {
 3: "RUNDA 3: SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: WYBIERANIE (12s PO LEKTORZE | NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
 5: "RUNDA 5: BŁYSKAWICA PRAWDA / FAŁSZ (STOPER 20.0s START/STOP | +5 / -5 PKT)",
-6: "RUNDA 6: AWANTURA O PUNKTY (KOŁO KATEGORII + LICYTACJA PULI)"
+6: "RUNDA 6: KOŁO KATEGORII + TAJNE OBSTAWIANIE W CIEMNO"
 };
 document.getElementById('tv-round').innerText = data.status === "podium" ? "PODSUMOWANIE TELEWIZYJNE" : (roundNames[data.round] || "CZEKANIE NA START");
 
@@ -847,7 +844,6 @@ stopFireworks();
 stopVictoryFanfareLoop();
 }
 
-// Ukryj narożniki wyłączonych graczy
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 players.forEach(p => {
 let el = document.getElementById(`score-${p}`);
@@ -1051,49 +1047,77 @@ document.getElementById('r6-wheel-canvas').style.transform = `rotate(${currentWh
 return;
 }
 
-if (data.status === "r6_bidding" || data.status === "r6_sold") {
+// RUNDA 6: TAJNE OBSTAWIANIE W CIEMNO NA EKRANIE TV
+if (data.status === "r6_blind_bidding" || data.status === "r6_sold") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 qEl.style.display = "none";
 catEl.style.display = "block";
 catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
 r6AuctionBox.style.display = "flex";
 
-document.getElementById('r6-pot-label').innerText = data.carryOver > 0
-? `PULA DO WYGRANIA (W TYM KUMULACJA ${data.carryOver} PKT!)`
-: `AKTUALNA PULA DO WYGRANIA (WPISOWE PO 5 PKT)`;
-document.getElementById('r6-pot-val').innerText = `${data.r6Pot || 20} PKT`;
-
 const bids = data.r6Bids || {};
-const maxBidVal = Math.max(...currentActivePlayers.map(p => bids[p] || 5));
-const topBidders = currentActivePlayers.filter(p => (bids[p] || 5) === maxBidVal);
+const lockedList = data.r6LockedBidders || [];
+const callEl = document.getElementById('r6-auction-call');
+
+if (data.status === "r6_blind_bidding") {
+setBgMusicActive(true);
+document.getElementById('r6-pot-label').innerText = data.carryOver > 0
+? `TAJNE OBSTAWIANIE (W PULI KUMULACJA: +${data.carryOver} PKT!)`
+: `TAJNE OBSTAWIANIE W CIEMNO (WPISZCIE SWOJE STAWKI)`;
+document.getElementById('r6-pot-val').innerText = `🤫 ? PKT`;
 
 players.forEach(p => {
 const card = document.getElementById(`bid-card-${p}`);
 card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
-document.getElementById(`bid-val-${p}`).innerText = `${bids[p] || 5} PKT`;
 card.classList.remove('highest', 'tied-high');
-if (maxBidVal > 5 && topBidders.includes(p)) {
-card.classList.add(topBidders.length > 1 ? 'tied-high' : 'highest');
+const isLocked = lockedList.includes(p);
+document.getElementById(`bid-val-${p}`).innerText = isLocked ? "🔒 GOTOWY!" : "⏳ WPISUJE...";
+if (isLocked) card.classList.add('tied-high');
+});
+
+callEl.style.color = "var(--gold)";
+callEl.innerText = `🤫 WPISZCIE TAJNĄ STAWKĘ NA TELEFONACH (${lockedList.length}/${currentActivePlayers.length})!`;
+
+let blindStartKey = "r6_blind_start_" + data.speechTick;
+if (data.speechTick && lastSpokenKey !== blindStartKey) {
+lastSpokenKey = blindStartKey;
+speakPolishText(`Kategoria ${data.category}. Wpiszcie w tajemnicy na telefonach, ile punktów stawiacie!`);
+}
+} else {
+// r6_sold -> Odsłaniamy wszystkie tajne oferty!
+setBgMusicActive(false);
+stage.classList.add("success-glow");
+document.getElementById('r6-pot-label').innerText = `ŁĄCZNA PULA DO WYGRANIA W TYM PYTANIU`;
+document.getElementById('r6-pot-val').innerText = `${data.r6Pot || 10} PKT`;
+
+const maxBidVal = data.r6HighestBid || 0;
+players.forEach(p => {
+const card = document.getElementById(`bid-card-${p}`);
+card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
+const pBid = bids[p] !== undefined ? bids[p] : 0;
+document.getElementById(`bid-val-${p}`).innerText = `${pBid} PKT`;
+card.classList.remove('highest', 'tied-high');
+if (p === data.r6HighestBidder) {
+card.classList.add('highest');
+} else if (pBid === maxBidVal) {
+card.classList.add('tied-high');
 }
 });
 
-const callEl = document.getElementById('r6-auction-call');
-if (data.status === "r6_sold") {
-setBgMusicActive(false);
-stage.classList.add("success-glow");
 callEl.style.color = "#00ff00";
 if (data.r6RandomDrawn) {
-callEl.innerText = `🎲 BRAK PRZEBIĆ (PO 5 PKT)! WYLOSOWANO: ${data.r6HighestBidder.toUpperCase()} (PULA: ${data.r6Pot} PKT)!`;
+callEl.innerText = `🎲 REMIS NAJWYŻSZYCH OFERT (${maxBidVal} PKT)! WYLOSOWANO: ${data.r6HighestBidder.toUpperCase()} (PULA: ${data.r6Pot} PKT)!`;
 } else {
-callEl.innerText = `🔨 SPRZEDANE! ZA ${data.r6HighestBid} PKT ODPOWIADA ${data.r6HighestBidder.toUpperCase()} (PULA: ${data.r6Pot} PKT)!`;
+callEl.innerText = `🔨 NAJWIĘCEJ POSTAWIŁ(A) ${data.r6HighestBidder.toUpperCase()} (${maxBidVal} PKT)! GRA O PULĘ: ${data.r6Pot} PKT!`;
 }
+
 let soldKey = "r6_sold_" + data.speechTick;
 if (lastSpokenKey !== soldKey) {
 lastSpokenKey = soldKey;
 winSound.currentTime = 0; winSound.play().catch(()=>{});
 let spokenMsg = data.r6RandomDrawn
-? `Nikt nie przebił stawki, więc w drodze losowania odpowiada ${data.r6HighestBidder}. Pula wynosi ${data.r6Pot} punktów`
-: `Sprzedane! Za ${data.r6HighestBid} punktów odpowiada ${data.r6HighestBidder}. Pula wynosi ${data.r6Pot} punktów`;
+? `Mamy remis najwyższych ofert po ${maxBidVal} punktów! W drodze losowania odpowiada ${data.r6HighestBidder}. Pula wynosi ${data.r6Pot} punktów`
+: `Najwięcej postawił gracz ${data.r6HighestBidder}, dając ${maxBidVal} punktów! Gra o pulę ${data.r6Pot} punktów`;
 
 speakPolishText(spokenMsg, async () => {
 await updateDoc(doc(db, "quizGame", "state"), {
@@ -1101,38 +1125,6 @@ status: "speaking",
 speechTick: Date.now()
 });
 });
-}
-} else {
-let aucStartKey = "r6_auc_start_" + data.speechTick;
-if (data.speechTick && lastSpokenKey !== aucStartKey) {
-lastSpokenKey = aucStartKey;
-speakPolishText(`Kategoria ${data.category}. Rozpoczynamy licytację!`);
-}
-
-let tieTickVal = data.tieBreakTick || data.overtimeSpeechTick;
-if (tieTickVal && lastTieBreakSpoken !== tieTickVal) {
-lastTieBreakSpoken = tieTickVal;
-speakPolishText(`Mamy remis! Dogrywka tylko dla remisujących graczy!`);
-}
-
-const tiedList = data.r6TiedBidders || [];
-const tiePrefix = tiedList.length > 1 ? `🔥 DOGRYWKA (${tiedList.join(", ").toUpperCase()})! ` : "";
-
-if (data.r6Countdown && data.r6Countdown > 0) {
-callEl.style.color = "#ff4757";
-let leaderTxt = topBidders.length > 1 ? `REMIS PO ${maxBidVal} PKT` : `PROWADZI ${data.r6HighestBidder.toUpperCase()} (${maxBidVal} PKT)`;
-callEl.innerText = `${tiePrefix}⏳ CZY KTOŚ JESZCZE LICYTUJE? (${data.r6Countdown}s) - ${leaderTxt}`;
-if (data.r6Countdown === 5 && lastR6CountdownSpoken !== data.bidTick) {
-lastR6CountdownSpoken = data.bidTick;
-speakPolishText("Czy ktoś jeszcze licytuje?");
-}
-} else if (data.r6MainSec && data.r6MainSec > 0) {
-callEl.style.color = "#2ed573";
-let leaderTxt = maxBidVal === 5 ? "STAWKA WEJŚCIOWA: PO 5 PKT" : (topBidders.length > 1 ? `REMIS: ${topBidders.join(" i ").toUpperCase()} (${maxBidVal} PKT)` : `PROWADZI: ${data.r6HighestBidder.toUpperCase()} (${maxBidVal} PKT)`);
-callEl.innerText = `${tiePrefix}⏱️ CZAS NA LICYTACJĘ: ${data.r6MainSec}s | ${leaderTxt}`;
-} else {
-callEl.style.color = "var(--gold)";
-callEl.innerText = `${tiePrefix}🔥 PODBIJAJCIE STAWKĘ NA TELEFONACH!`;
 }
 }
 return;
@@ -1232,12 +1224,13 @@ tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(true);
 
 let totalLetters = (data.wheelOrder || []).length;
+let maxAutoReveal = Math.max(0, totalLetters - 1); // Ostatnia litera NIGDY nie pojawia się przed końcem czasu!
 revealedWheelCount = 0;
 renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
 
-let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+let intervalMs = Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal)));
 wheelRevealInterval = setInterval(() => {
-if (revealedWheelCount < totalLetters) {
+if (revealedWheelCount < maxAutoReveal) {
 revealedWheelCount++;
 renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
 }
