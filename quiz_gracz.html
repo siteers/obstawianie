@@ -67,19 +67,17 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
 .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
 .bid-info-row b { color: var(--gold); font-size: 19px; }
-.btn-match-leader {
-width: 100%; background: linear-gradient(135deg, var(--gold), #e67e22); color: #000;
-border: 2px solid #fff; border-radius: 12px; padding: 14px 8px; font-size: 16px;
-font-weight: 900; cursor: pointer; text-transform: uppercase;
-box-shadow: 0 0 18px rgba(212, 175, 55, 0.5); display: none;
+.blind-input {
+width: 100%; font-size: 26px; font-weight: 900; padding: 14px; text-align: center;
+border-radius: 12px; border: 3px solid var(--gold); background: #000; color: #fff;
+box-sizing: border-box; outline: none;
 }
-.btn-match-leader:active { transform: scale(0.95); }
-.btn-match-leader:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
-.bid-btns-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.btn-bid { background: linear-gradient(135deg, #2ed573, #059669); color: #000; border: 2px solid #fff; border-radius: 12px; padding: 18px 4px; font-size: 20px; font-weight: 900; cursor: pointer; box-shadow: 0 5px 15px rgba(46,213,115,0.3); }
-.btn-bid:active { transform: scale(0.93); }
-.btn-bid:disabled { opacity: 0.25; background: #333; color: #777; border-color: #555; pointer-events: none; box-shadow: none; }
-.auction-pad-timer { font-size: 16px; font-weight: 900; color: #ff4757; min-height: 24px; }
+.quick-bids-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.btn-quick-bid {
+background: #1e272e; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px;
+padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
+}
+.btn-quick-bid:active { background: var(--cyan); color: #000; }
 .locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
 .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
 .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
@@ -155,22 +153,24 @@ box-shadow: 0 0 18px rgba(212, 175, 55, 0.5); display: none;
 <div class="feedback-msg" id="spinFeedback"></div>
 </div>
 
+<!-- NOWY EKRAN TAJNEGO OBSTAWIANIA W CIEMNO W RUNDZIE 6 -->
 <div id="ui-r6-bid">
 <div class="bid-info-box">
-<div class="bid-info-row">KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
-<div class="bid-info-row">PULA DO WYGRANIA: <b id="pad-r6-pot">20 PKT</b></div>
-<div class="bid-info-row">NAJWYŻSZA OFERTA: <b id="pad-r6-leader" style="color:#00ff00;">---</b></div>
-<div class="bid-info-row">TWOJA STAWKA: <b id="pad-r6-mybid" style="color:#fff;">5 PKT</b> <span id="pad-r6-maxinfo" style="font-size:12px; color:#888;"></span></div>
+<div class="bid-info-row">WYLOSOWANA KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
+<div class="bid-info-row">KUMULACJA Z POPRZEDNICH: <b id="pad-r6-carry">0 PKT</b></div>
+<div class="bid-info-row">TWÓJ STAN KONTA: <b id="pad-r6-mypts" style="color:#2ed573;">0 PKT</b> <span id="pad-r6-maxinfo" style="font-size:12px; color:#888;"></span></div>
 </div>
-<div class="auction-pad-timer" id="pad-r6-countdown"></div>
+<div style="font-size:13px; color:#cbd5e1; font-weight:bold;">🤫 WPISZ TAJNĄ STAWKĘ (inni nie widzą ile dajesz! Wygrywa najwyższa oferta):</div>
+<input type="number" class="blind-input" id="blindBidInput" placeholder="Wpisz ile punktów stawiasz..." inputmode="numeric" min="0">
+<div class="quick-bids-grid">
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(0)">0 PKT</button>
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(10)">10 PKT</button>
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(25)">25 PKT</button>
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(50)">50 PKT</button>
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid('MAX')">MAX</button>
+</div>
 <div class="feedback-msg" id="r6BidFeedback"></div>
-<button class="btn-match-leader" id="btn-bid-match" onclick="placeBid(0)">🎯 WYRÓWNAJ DO LIDERA</button>
-<div class="bid-btns-grid">
-<button class="btn-bid" id="btn-bid-2" onclick="placeBid(2)">+2</button>
-<button class="btn-bid" id="btn-bid-5" onclick="placeBid(5)">+5</button>
-<button class="btn-bid" id="btn-bid-10" onclick="placeBid(10)">+10</button>
-<button class="btn-bid" id="btn-bid-20" onclick="placeBid(20)">+20</button>
-</div>
+<button class="btn-ready" style="padding:16px;" onclick="submitBlindBid()">🔒 ZATWIERDŹ TAJNY ZAKŁAD</button>
 </div>
 
 <div class="locked-msg" id="ui-locked">ZABLOKOWANE! Patrz na ekran.</div>
@@ -192,6 +192,7 @@ let r5LocalRunStart = 0;
 
 let currentWheelTick = null;
 let lastR3Question = null;
+let lastR6BlindSpeechTick = 0;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
@@ -323,51 +324,55 @@ spinTick: spinTickNow
 });
 };
 
-// NAPRAWIONA LICYTACJA: Inteligentne przebijanie od stawki lidera + przycisk "Wyrównaj do lidera"!
-window.placeBid = async (addAmount) => {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_bidding") return;
-const tiedList = currentState.r6TiedBidders || [];
-if (tiedList.length > 0 && !tiedList.includes(myName)) return;
+// Szybkie wypełnianie pola tajnej stawki
+window.setQuickBlindBid = (val) => {
+const maxAllowed = Math.max(0, myCurrentPoints + 100);
+const inp = document.getElementById('blindBidInput');
+if (!inp) return;
+document.getElementById('r6BidFeedback').innerText = "";
+if (val === 'MAX') {
+inp.value = maxAllowed;
+} else {
+inp.value = Math.min(maxAllowed, val);
+}
+};
 
-const stateRef = doc(db, "quizGame", "state");
-const snap = await getDoc(stateRef);
-const data = snap.data();
-if (data.status !== "r6_bidding") return;
-
-const activeList = getActivePlayers(data);
-let bids = data.r6Bids || {};
-const myOldBid = bids[myName] || 5;
-const currentMax = data.r6HighestBid || 5;
-
-// Bazą do podbicia jest zawsze wyższa wartość: albo nasza stawka, albo aktualna stawka lidera!
-// Dzięki temu kliknięcie +5 przy liderze mającym 60 pkt od razu daje 65 pkt (a kliknięcie Wyrównaj (+0) daje 60 pkt).
-const baseBid = Math.max(myOldBid, currentMax);
-let myNewBid = addAmount === 0 ? currentMax : (baseBid + addAmount);
-
-if (myNewBid <= myOldBid) {
-document.getElementById('r6BidFeedback').innerText = `⚠️ MASZ JUŻ NAJWYŻSZĄ STAWKĘ (${myOldBid} PKT)!`;
+// Zatwierdzanie tajnej stawki w ciemno (Runda 6)
+window.submitBlindBid = async () => {
+if (!currentState || currentState.round !== 6 || currentState.status !== "r6_blind_bidding") return;
+const inp = document.getElementById('blindBidInput');
+const rawVal = inp.value.trim();
+if (rawVal === "") {
+document.getElementById('r6BidFeedback').innerText = "⚠️ WPISZ KWOTĘ (NP. 0, 10, 25 PKT)!";
 return;
 }
+const bidAmount = parseInt(rawVal, 10);
+const maxAllowed = Math.max(0, myCurrentPoints + 100);
 
-const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
-if (myNewBid > maxAllowedBid) {
-document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! TWÓJ MAKSYMALNY ZAKŁAD TO ${maxAllowedBid} PKT!`;
+if (isNaN(bidAmount) || bidAmount < 0) {
+document.getElementById('r6BidFeedback').innerText = "⚠️ KWOTA NIE MOŻE BYĆ MNIEJSZA NIŻ 0 PKT!";
+return;
+}
+if (bidAmount > maxAllowed) {
+document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ POSTAWIĆ MAKSYMALNIE ${maxAllowed} PKT!`;
 return;
 }
 
 document.getElementById('r6BidFeedback').innerText = "";
-bids[myName] = myNewBid;
-let sumBids = 0;
-activeList.forEach(p => { sumBids += (bids[p] || 5); });
-let newPot = (data.carryOver || 0) + sumBids;
-let newHighestBid = Math.max(currentMax, myNewBid);
+const stateRef = doc(db, "quizGame", "state");
+const snap = await getDoc(stateRef);
+if (!snap.exists()) return;
+const data = snap.data();
+if (data.status !== "r6_blind_bidding") return;
+
+let bids = { ...(data.r6Bids || {}) };
+let locked = [...(data.r6LockedBidders || [])];
+if (!locked.includes(myName)) locked.push(myName);
+bids[myName] = bidAmount;
 
 await updateDoc(stateRef, {
 r6Bids: bids,
-r6Pot: newPot,
-r6HighestBidder: myName,
-r6HighestBid: newHighestBid,
-r6Countdown: 0,
+r6LockedBidders: locked,
 bidTick: Date.now()
 });
 };
@@ -701,72 +706,42 @@ padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 return;
 }
 
-if (currentState.round === 6 && (currentState.status === "r6_bidding" || currentState.status === "r6_sold")) {
+// RUNDA 6: TAJNE OBSTAWIANIE W CIEMNO
+if (currentState.round === 6 && (currentState.status === "r6_blind_bidding" || currentState.status === "r6_sold")) {
 if (currentState.status === "r6_sold") {
-document.getElementById('padStatus').innerText = "LICYTACJA ZAKOŃCZONA!";
+document.getElementById('padStatus').innerText = "TAJNE OFERTY ODSŁONIĘTE!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = currentState.r6RandomDrawn
-? `🎲 BRAK PRZEBIĆ! WYLOSOWANO: ${currentState.r6HighestBidder.toUpperCase()} (PULA: ${currentState.r6Pot} PKT)`
-: `🔨 SPRZEDANE!\nODPOWIADA: ${currentState.r6HighestBidder.toUpperCase()} (PULA: ${currentState.r6Pot} PKT)`;
+? `🎲 REMIS NAJWYŻSZYCH OFERT (${currentState.r6HighestBid} PKT)! WYLOSOWANO: ${currentState.r6HighestBidder.toUpperCase()}\nŁĄCZNA PULA: ${currentState.r6Pot} PKT`
+: `🔨 NAJWIĘCEJ POSTAWIŁ(A): ${currentState.r6HighestBidder.toUpperCase()} (${currentState.r6HighestBid} PKT)!\nŁĄCZNA PULA DO WYGRANIA: ${currentState.r6Pot} PKT`;
 return;
 }
 
-const tiedList = currentState.r6TiedBidders || [];
-if (tiedList.length > 0 && !tiedList.includes(myName)) {
-document.getElementById('padStatus').innerText = "DOGRYWKA LICYTACJI!";
+const lockedList = currentState.r6LockedBidders || [];
+if (lockedList.includes(myName)) {
+const myLockedVal = (currentState.r6Bids || {})[myName] || 0;
+document.getElementById('padStatus').innerText = "🔒 ZAKŁAD ZATWIERDZONY!";
+lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `DOGRYWKA POMIĘDZY:\n${tiedList.join(" i ").toUpperCase()}!`;
+lockedEl.innerText = `🤫 TWOJA TAJNA STAWKA: ${myLockedVal} PKT\nCZEKAMY NA POZOSTAŁYCH GRACZY (${lockedList.length}/${activeList.length})...`;
 return;
 }
 
-document.getElementById('padStatus').innerText = tiedList.length > 0 ? "🔥 DOGRYWKA! PRZEBIJ STAWKĘ!" : "AWANTURA O PUNKTY - LICYTUJ!";
+if (currentState.speechTick !== lastR6BlindSpeechTick) {
+lastR6BlindSpeechTick = currentState.speechTick;
+document.getElementById('blindBidInput').value = "";
+document.getElementById('r6BidFeedback').innerText = "";
+}
+
+document.body.classList.add('keyboard-mode');
+document.getElementById('padStatus').innerText = "🤫 TAJNE OBSTAWIANIE W CIEMNO!";
 document.getElementById('ui-r6-bid').style.display = 'flex';
 document.getElementById('pad-r6-cat').innerText = currentState.category || "";
-document.getElementById('pad-r6-pot').innerText = `${currentState.r6Pot || 20} PKT`;
-document.getElementById('pad-r6-leader').innerText = `${currentState.r6HighestBidder.toUpperCase()} (${currentState.r6HighestBid} PKT)`;
-
-const myBid = (currentState.r6Bids || {})[myName] || 5;
-const currentMax = currentState.r6HighestBid || 5;
-const baseBid = Math.max(myBid, currentMax);
-const maxAllowedBid = Math.max(5, myCurrentPoints + 100);
-
-document.getElementById('pad-r6-mybid').innerText = `${myBid} PKT`;
-document.getElementById('pad-r6-maxinfo').innerText = `( Twój max: ${maxAllowedBid} pkt )`;
-
-// Przycisk "Wyrównaj do lidera", gdy nasza stawka jest niższa niż najwyższa oferta
-const matchBtn = document.getElementById('btn-bid-match');
-if (matchBtn) {
-if (myBid < currentMax) {
-matchBtn.style.display = 'block';
-matchBtn.innerText = `🎯 WYRÓWNAJ DO LIDERA (${currentMax} PKT)`;
-matchBtn.disabled = (currentMax > maxAllowedBid);
-} else {
-matchBtn.style.display = 'none';
-}
-}
-
-// Przyciski +2, +5, +10, +20 pokazują i sprawdzają przebicie względem aktualnego lidera (baseBid)
-[2, 5, 10, 20].forEach(inc => {
-const btn = document.getElementById(`btn-bid-${inc}`);
-if (btn) {
-const targetVal = baseBid + inc;
-btn.innerText = myBid < currentMax ? `+${inc} (${targetVal})` : `+${inc}`;
-btn.disabled = (targetVal > maxAllowedBid);
-}
-});
-
-const cdEl = document.getElementById('pad-r6-countdown');
-if (currentState.r6Countdown > 0) {
-cdEl.style.color = "#ff4757";
-cdEl.innerText = `⏳ CZY KTOŚ JESZCZE LICYTUJE? (${currentState.r6Countdown}s)`;
-} else if (currentState.r6MainSec > 0) {
-cdEl.style.color = "#2ed573";
-cdEl.innerText = `⏱️ CZAS NA LICYTACJĘ: ${currentState.r6MainSec}s`;
-} else {
-cdEl.style.color = "var(--gold)";
-cdEl.innerText = `🔥 PRZEBICIE! KTO DA WIĘCEJ?`;
-}
+document.getElementById('pad-r6-carry').innerText = `${currentState.carryOver || 0} PKT`;
+const maxAllowed = Math.max(0, myCurrentPoints + 100);
+document.getElementById('pad-r6-mypts').innerText = `${myCurrentPoints} PKT`;
+document.getElementById('pad-r6-maxinfo').innerText = `( Max zakład: ${maxAllowed} pkt )`;
 return;
 }
 
@@ -801,6 +776,7 @@ lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
 return;
 }
 
+// RUNDA 2: OSTATNIA LITERA NIGDY NIE ODSŁANIA SIĘ PRZED KOŃCEM CZASU!
 if (currentState.status === "wheel_reading" && currentState.round === 2) {
 const winners = currentState.wheelWinners || [];
 const myRank = winners.indexOf(myName);
@@ -826,9 +802,10 @@ document.getElementById('wheelFeedback').innerText = "";
 buildWheelPadTiles(currentState.question);
 
 let totalLetters = (currentState.wheelOrder || []).length;
-let intervalMs = Math.max(1500, Math.floor(52000 / Math.max(1, totalLetters)));
+let maxAutoReveal = Math.max(0, totalLetters - 1); // Ostatnia litera zostaje zawsze zakryta!
+let intervalMs = Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal)));
 padWheelInterval = setInterval(() => {
-if (padRevealedCount < totalLetters) {
+if (padRevealedCount < maxAutoReveal) {
 padRevealedCount++;
 updateRevealedTilesOnPad();
 }
@@ -931,7 +908,7 @@ lbl.innerText = (currentState.options && currentState.options[i]) ? currentState
 }
 if (!currentState.nominated || currentState.nominated === myName) {
 let msg = currentState.round === 6
-? `WYLICYTOWAŁEŚ PYTANIE! GRASZ O ${currentState.r6Pot} PKT!`
+? `WYGRAŁEŚ OBSTAWIANIE! GRASZ O ${currentState.r6Pot} PKT!`
 : (!currentState.nominated ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!"));
 document.getElementById('padStatus').innerText = msg;
 document.getElementById('ui-abcd').style.display = 'grid';
