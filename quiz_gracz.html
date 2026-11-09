@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Cyber-Pad | Gracz</title>
+<title>Cyber-Pad | Gracz (7 Rund)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <style>
 :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
@@ -12,10 +12,12 @@ display: flex; flex-direction: column; align-items: center; justify-content: cen
 min-height: 100vh; text-align: center; box-sizing: border-box; touch-action: manipulation;
 }
 body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
-.login-box { background: #111; padding: 30px; border-radius: 20px; border: 1px solid var(--cyan); width: 85%; max-width: 350px; }
-select { width: 100%; padding: 15px; font-size: 20px; margin-bottom: 20px; border-radius: 10px; background: #000; color: #fff; }
-#gamePad { display: none; width: 94%; max-width: 420px; }
+.login-box { background: #111; padding: 26px; border-radius: 20px; border: 1px solid var(--cyan); width: 88%; max-width: 360px; box-sizing: border-box; }
+select { width: 100%; padding: 14px; font-size: 19px; margin-bottom: 14px; border-radius: 10px; background: #000; color: #fff; border: 1px solid var(--cyan); font-weight: bold; }
+.custom-nick-input { width: 100%; padding: 12px; font-size: 16px; margin-bottom: 18px; border-radius: 10px; background: #000; color: var(--gold); border: 1px dashed #666; box-sizing: border-box; text-align: center; font-weight: bold; }
+#gamePad { display: none; width: 94%; max-width: 430px; padding-bottom: 20px; }
 .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
+
 .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
 .btn-abcd {
 color: #fff; border-radius: 16px; padding: 18px 10px; cursor: pointer; transition: 0.15s;
@@ -30,45 +32,70 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 .btn-abcd .opt-label { font-size: 15px; font-weight: bold; color: #fff; line-height: 1.25; }
 .btn-abcd:active { transform: scale(0.95); filter: brightness(1.3); }
 .btn-abcd:disabled { opacity: 0.18; border-color: #555 !important; background: #111 !important; color: #666 !important; text-decoration: line-through; pointer-events: none; box-shadow: none !important; }
-.grid-tf { display: none; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 10px; }
-.btn-tf { border-radius: 18px; padding: 38px 10px; font-size: 24px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
+
+/* RUNDA 2: GORĄCA BOMBA PRAWDA/FAŁSZ */
+.bomb-pad-wrap { display: none; flex-direction: column; align-items: center; width: 100%; gap: 10px; }
+.bomb-pad-alert { background: rgba(255, 71, 87, 0.2); border: 2px solid #ff4757; border-radius: 14px; padding: 12px; width: 100%; box-sizing: border-box; font-weight: 900; color: #ff4757; font-size: 16px; animation: pulseBtn 0.6s infinite; }
+.bomb-q-preview { font-size: 17px; font-weight: bold; color: #fff; background: #111; padding: 14px; border-radius: 12px; border: 1px solid #444; width: 100%; box-sizing: border-box; }
+.grid-tf { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 4px; }
+.btn-tf { border-radius: 18px; padding: 34px 10px; font-size: 23px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
 .btn-tf-true { background: rgba(46, 213, 115, 0.35); border: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
 .btn-tf-false { background: rgba(255, 71, 87, 0.35); border: 4px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.4); }
 .btn-tf:active { transform: scale(0.93); filter: brightness(1.3); }
+
 .ready-area { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 10px; }
 .ready-info-box { background: rgba(0, 212, 255, 0.12); border: 2px solid var(--cyan); border-radius: 15px; padding: 18px; font-size: 17px; font-weight: bold; color: #fff; line-height: 1.4; width: 100%; box-sizing: border-box; }
-.btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 20px; font-weight: 900; padding: 22px 14px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulseBtn 1.1s infinite; }
+.btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 19px; font-weight: 900; padding: 20px 14px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulseBtn 1.1s infinite; }
 .btn-ready:active { transform: scale(0.95); }
 @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
-.wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+
+/* RUNDA 4: ODSŁANIANIE HASŁA (KAFELKI + CAŁE HASŁO BEZ KAR) */
+.wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
 .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
-.wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 14px; margin: 6px 0; width: 100%; }
+.wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; margin: 4px 0; width: 100%; }
 .wheel-pad-word { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
 .wheel-tile-input {
-width: 34px; height: 42px; background: #111; border: 2px solid #444; border-radius: 7px;
-color: #fff; font-size: 20px; font-weight: 900; text-align: center; text-transform: uppercase;
+width: 33px; height: 40px; background: #111; border: 2px solid #444; border-radius: 7px;
+color: #fff; font-size: 19px; font-weight: 900; text-align: center; text-transform: uppercase;
 padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret-color: transparent;
 }
 .wheel-tile-input:focus { border-color: var(--cyan); background: rgba(0, 212, 255, 0.15); box-shadow: 0 0 10px rgba(0, 212, 255, 0.5); transform: translateY(-2px); }
 .wheel-tile-input.revealed { background: var(--gold) !important; color: #000 !important; border-color: #fff !important; pointer-events: none; }
 .wheel-tile-input.filled { border-color: var(--cyan); color: var(--cyan); }
-.input-area { display: none; flex-direction: column; gap: 10px; }
-input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; }
-.btn-submit { background: var(--cyan); color: #000; font-size: 18px; font-weight: 900; padding: 16px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
+.full-phrase-box { width: 100%; margin-top: 8px; padding-top: 10px; border-top: 1px dashed #444; display: flex; flex-direction: column; gap: 8px; }
+.full-phrase-input { width: 100%; font-size: 17px; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid var(--gold); background: #000; color: #fff; text-transform: uppercase; box-sizing: border-box; font-weight: bold; }
+
+/* RUNDA 5: POSTAW NA MILION (ZAPADNIE NA TELEFONIE) */
+#ui-r5-million { display: none; flex-direction: column; gap: 10px; width: 100%; }
+.mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 12px; padding: 10px; font-size: 14px; font-weight: bold; }
+.mil-pad-card { background: #141c2b; border: 2px solid var(--cyan); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+.mil-pad-opt-title { font-size: 15px; font-weight: 900; color: #fff; text-align: left; }
+.mil-pad-controls { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
+.btn-mil-step { background: #1e293b; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px; padding: 8px 10px; font-size: 14px; font-weight: 900; cursor: pointer; flex: 1; }
+.btn-mil-step:active { background: var(--cyan); color: #000; }
+.mil-pad-val { font-size: 20px; font-weight: 900; color: var(--gold); min-width: 68px; text-align: center; }
+
+.input-area { display: none; flex-direction: column; gap: 10px; width: 100%; }
+input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; width: 100%; box-sizing: border-box; }
+.btn-submit { background: var(--cyan); color: #000; font-size: 17px; font-weight: 900; padding: 15px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
+.btn-submit.gold-btn { background: var(--gold); color: #000; }
 .btn-submit:active { transform: scale(0.97); }
-.nominate-area { display: none; flex-direction: column; gap: 10px; }
+
+.nominate-area { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
 .btn-nom.self-btn { background: #00d4ff; color: #000; box-shadow: 0 0 15px rgba(0,212,255,0.4); }
 .btn-nom:disabled { opacity: 0.25; background: #444; color: #888; text-decoration: line-through; pointer-events: none; box-shadow: none; }
+
 #ui-r6-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
 .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
 #pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
+
 #ui-r6-bid { display: none; flex-direction: column; gap: 10px; width: 100%; }
-.bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px; }
+.bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 12px; }
 .bid-info-row { font-size: 14px; color: #ccc; margin: 4px 0; }
-.bid-info-row b { color: var(--gold); font-size: 19px; }
+.bid-info-row b { color: var(--gold); font-size: 18px; }
 .blind-input {
-width: 100%; font-size: 26px; font-weight: 900; padding: 14px; text-align: center;
+width: 100%; font-size: 26px; font-weight: 900; padding: 12px; text-align: center;
 border-radius: 12px; border: 3px solid var(--gold); background: #000; color: #fff;
 box-sizing: border-box; outline: none;
 }
@@ -78,7 +105,8 @@ background: #1e272e; color: var(--cyan); border: 1px solid var(--cyan); border-r
 padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 }
 .btn-quick-bid:active { background: var(--cyan); color: #000; }
-.locked-msg { font-size: 19px; color: #ff4757; font-weight: bold; margin-top: 20px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); }
+
+.locked-msg { font-size: 18px; color: #ff4757; font-weight: bold; margin-top: 16px; display: none; border: 2px dashed #ff4757; padding: 20px; border-radius: 15px; background: rgba(255,0,0,0.1); white-space: pre-line; line-height: 1.4; }
 .locked-msg.win-msg { color: #00ff00; border-color: #00ff00; background: rgba(0,255,0,0.1); }
 .locked-msg.speak-msg { color: var(--cyan); border-color: var(--cyan); background: rgba(0,212,255,0.1); }
 .feedback-msg { font-size: 13px; color: #ff4757; font-weight: bold; min-height: 18px; }
@@ -87,18 +115,22 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <body>
 
 <div class="login-box" id="loginUI">
-<h2>WYBIERZ AGENTA</h2>
-<select id="agentSel">
-<option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-<option value="Lila">Lila</option><option value="Kaja">Kaja</option>
-<option value="Darek">Darek</option><option value="Jas">Jaś</option>
+<h2 style="margin-top:0; color:var(--cyan);">WYBIERZ SLOT GRACZA</h2>
+<select id="agentSel" onchange="onSlotSelectChange()">
+<option value="" disabled selected>-- WYBIERZ SLOT --</option>
+<option value="Lila" id="opt-slot-Lila">Slot 1: Lila</option>
+<option value="Kaja" id="opt-slot-Kaja">Slot 2: Kaja</option>
+<option value="Darek" id="opt-slot-Darek">Slot 3: Darek</option>
+<option value="Jas" id="opt-slot-Jas">Slot 4: Jaś (Ułatwienia)</option>
 </select>
+<input type="text" id="customNickInp" class="custom-nick-input" placeholder="Wpisz własne imię (opcjonalnie)">
 <button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
 </div>
 
 <div id="gamePad">
 <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Łączenie z grą...</div>
 
+<!-- RUNDA 1, 6, 7: KAFELKI ABCD -->
 <div class="grid-abcd" id="ui-abcd">
 <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
 <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
@@ -114,29 +146,56 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 </button>
 </div>
 
+<!-- GOTOWOŚĆ MIĘDZY RUNDAMI -->
 <div class="ready-area" id="ui-ready">
 <div class="ready-info-box" id="readyInfoText">Przygotuj się do kolejnego etapu!</div>
 <button class="btn-ready" id="btnReadyAction" onclick="confirmPlayerReady()">✅ JESTEM GOTOWY!</button>
 </div>
 
-<div class="grid-tf" id="ui-tf">
-<button class="btn-tf btn-tf-true" onclick="sendR5TFAnswer(true)">✅ PRAWDA</button>
-<button class="btn-tf btn-tf-false" onclick="sendR5TFAnswer(false)">❌ FAŁSZ</button>
+<!-- RUNDA 2: GORĄCA BOMBA PRAWDA / FAŁSZ -->
+<div class="bomb-pad-wrap" id="ui-bomb">
+<div class="bomb-pad-alert">💣 TRZYMASZ GORĄCĄ BOMBĘ! (-1 PKT / SEKUNDĘ)</div>
+<div class="bomb-q-preview" id="bombPadQuestion">...</div>
+<div class="grid-tf">
+<button class="btn-tf btn-tf-true" onclick="sendBombTFAnswer(true)">✅ PRAWDA</button>
+<button class="btn-tf btn-tf-false" onclick="sendBombTFAnswer(false)">❌ FAŁSZ</button>
+</div>
 </div>
 
+<!-- RUNDA 4: ODSŁANIANIE HASŁA (LITERY + CAŁE HASŁO BEZ KAR) -->
 <div class="wheel-pad-area" id="ui-wheel">
 <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
 <div class="wheel-pad-board" id="wheelPadBoard"></div>
+<button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ WPISANE LITERY</button>
+
+<div class="full-phrase-box">
+<div style="font-size:12px; color:var(--gold); font-weight:bold;">LUB WPISZ OD RAZU CAŁE HASŁO (BEZ ŻADNYCH KAR!):</div>
+<input type="text" class="full-phrase-input" id="fullPhraseInp" placeholder="Wpisz całe hasło naraz..." autocomplete="off">
+<button class="btn-submit gold-btn" onclick="submitFullPhraseGuess()">🚀 ZATWIERDŹ CAŁE HASŁO</button>
+</div>
 <div class="feedback-msg" id="wheelFeedback"></div>
-<button class="btn-submit" onclick="submitWheelTiles()">ZATWIERDŹ HASŁO</button>
 </div>
 
+<!-- RUNDA 3: SZYBKIE PISANIE -->
 <div class="input-area" id="ui-input">
 <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
 <div class="feedback-msg" id="r3Feedback"></div>
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
+<!-- RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI) -->
+<div id="ui-r5-million">
+<div class="mil-pad-header">
+<div style="color:var(--gold); font-size:16px;" id="milPadTitle">PYTANIE 1/5</div>
+<div style="margin-top:4px;">DO ROZDZIELENIA POZOSTAŁO: <b id="milPadUnallocated" style="color:#2ed573; font-size:19px;">100 PKT</b></div>
+<div style="font-size:12px; color:#cbd5e1; margin-top:2px;" id="milPadRuleInfo">Możesz obstawić maksymalnie 3 zapadnie (min. 1 musi zostać pusta!)</div>
+</div>
+<div id="milPadCardsContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
+<div class="feedback-msg" id="milPadFeedback"></div>
+<button class="btn-ready" style="padding:16px;" onclick="submitMillionBets()">🔒 ZATWIERDŹ ROZKŁAD PUNKTÓW</button>
+</div>
+
+<!-- RUNDA 6: RYZYKO - NOMINOWANIE -->
 <div class="nominate-area" id="ui-nominate">
 <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
 <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
@@ -146,6 +205,7 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
 </div>
 
+<!-- RUNDA 7: KRĘCENIE KOŁEM -->
 <div id="ui-r6-spin">
 <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
 <div class="pad-wheel-pointer"></div>
@@ -153,17 +213,17 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div class="feedback-msg" id="spinFeedback"></div>
 </div>
 
-<!-- NOWY EKRAN TAJNEGO OBSTAWIANIA W CIEMNO W RUNDZIE 6 -->
+<!-- RUNDA 7: TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT, 20 SEKUND) -->
 <div id="ui-r6-bid">
 <div class="bid-info-box">
 <div class="bid-info-row">WYLOSOWANA KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
-<div class="bid-info-row">KUMULACJA Z POPRZEDNICH: <b id="pad-r6-carry">0 PKT</b></div>
+<div class="bid-info-row">CZAS NA DECYZJĘ: <b id="pad-r6-timer" style="color:#ff4757;">20s</b> | KUMULACJA: <b id="pad-r6-carry">0 PKT</b></div>
 <div class="bid-info-row">TWÓJ STAN KONTA: <b id="pad-r6-mypts" style="color:#2ed573;">0 PKT</b> <span id="pad-r6-maxinfo" style="font-size:12px; color:#888;"></span></div>
 </div>
-<div style="font-size:13px; color:#cbd5e1; font-weight:bold;">🤫 WPISZ TAJNĄ STAWKĘ (inni nie widzą ile dajesz! Wygrywa najwyższa oferta):</div>
-<input type="number" class="blind-input" id="blindBidInput" placeholder="Wpisz ile punktów stawiasz..." inputmode="numeric" min="0">
+<div style="font-size:13px; color:#cbd5e1; font-weight:bold;">🤫 WPISZ TAJNĄ STAWKĘ (Minimum 5 pkt! Jeśli nie zdążysz w 20s, automat pobierze 5 pkt):</div>
+<input type="number" class="blind-input" id="blindBidInput" placeholder="Min. 5 pkt..." inputmode="numeric" min="5">
 <div class="quick-bids-grid">
-<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(0)">0 PKT</button>
+<button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(5)">5 PKT</button>
 <button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(10)">10 PKT</button>
 <button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(25)">25 PKT</button>
 <button type="button" class="btn-quick-bid" onclick="setQuickBlindBid(50)">50 PKT</button>
@@ -188,17 +248,52 @@ let myCurrentPoints = 0;
 let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
-let r5LocalRunStart = 0;
+let bidLocalTimer = null;
+
+let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
+function getDisplayName(pKey) {
+return playerNamesMap[pKey] || pKey;
+}
+
+function refreshLoginSlotNames() {
+["Lila", "Kaja", "Darek", "Jas"].forEach((k, idx) => {
+const opt = document.getElementById(`opt-slot-${k}`);
+if (opt) {
+opt.text = `Slot ${idx + 1}: ${getDisplayName(k)}${k === 'Jas' ? ' (Ułatwienia)' : ''}`;
+}
+});
+}
+
+window.onSlotSelectChange = () => {
+const selVal = document.getElementById('agentSel').value;
+if (selVal) {
+document.getElementById('customNickInp').value = getDisplayName(selVal);
+}
+};
+
+// Pobierz aktualne imiona graczy jeszcze przed zalogowaniem
+onSnapshot(doc(db, "quizGame", "state"), (snap) => {
+if (snap.exists() && snap.data().playerNames) {
+playerNamesMap = { ...playerNamesMap, ...snap.data().playerNames };
+refreshLoginSlotNames();
+}
+});
 
 let currentWheelTick = null;
 let lastR3Question = null;
 let lastR6BlindSpeechTick = 0;
+let lastMilSpeechTick = 0;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
 let targetLetters = [];
 
-const r6Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
+// Zmienne dla Rundy 5 (Postaw na milion)
+let localMilBets = [0, 0, 0, 0];
+let localMilTotalPool = 100;
+let localMilMaxTraps = 3;
+
+let r7Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r6Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let padWheelRot = 0;
 let isSpinningLocally = false;
@@ -211,14 +306,14 @@ return stateObj.activePlayers;
 return ["Lila", "Kaja", "Darek", "Jas"];
 }
 
-function drawPadWheel() {
+function drawPadWheel(catsList = r7Categories) {
 const canvas = document.getElementById('pad-wheel-canvas');
 if (!canvas) return;
 const ctx = canvas.getContext('2d');
 const cx = 200, cy = 200, r = 192;
-const arc = (Math.PI * 2) / r6Categories.length;
+const arc = (Math.PI * 2) / catsList.length;
 ctx.clearRect(0, 0, 400, 400);
-r6Categories.forEach((cat, i) => {
+catsList.forEach((cat, i) => {
 const startAngle = i * arc - Math.PI / 2 - arc / 2;
 const endAngle = startAngle + arc;
 ctx.beginPath();
@@ -257,7 +352,7 @@ return Math.atan2(clientY - cy, clientX - cx) * (180 / Math.PI);
 }
 
 function onWheelStart(clientX, clientY) {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+if (!currentState || currentState.round !== 7 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
 isDraggingWheel = true;
 document.getElementById('spinFeedback').innerText = "";
 padWheelEl.style.transition = "none";
@@ -305,12 +400,12 @@ window.addEventListener('mousemove', (e) => onWheelMove(e.clientX, e.clientY));
 window.addEventListener('mouseup', () => onWheelEnd());
 
 window.triggerWheelSpin = async (power = 7) => {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
+if (!currentState || currentState.round !== 7 || currentState.status !== "r6_wait_spin" || currentState.controller !== myName || isSpinningLocally) return;
 isSpinningLocally = true;
 const spinTickNow = Date.now();
 lastHandledSpinTickOnPad = spinTickNow;
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-const segAngle = 360 / r6Categories.length;
+const segAngle = 360 / r7Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
@@ -324,37 +419,37 @@ spinTick: spinTickNow
 });
 };
 
-// Szybkie wypełnianie pola tajnej stawki
+// Szybkie wypełnianie pola tajnej stawki (min 5 pkt nawet przy -100 pkt!)
 window.setQuickBlindBid = (val) => {
-const maxAllowed = Math.max(0, myCurrentPoints + 100);
+const maxAllowed = Math.max(5, myCurrentPoints + 100);
 const inp = document.getElementById('blindBidInput');
 if (!inp) return;
 document.getElementById('r6BidFeedback').innerText = "";
 if (val === 'MAX') {
 inp.value = maxAllowed;
 } else {
-inp.value = Math.min(maxAllowed, val);
+inp.value = Math.min(maxAllowed, Math.max(5, val));
 }
 };
 
-// Zatwierdzanie tajnej stawki w ciemno (Runda 6)
+// Zatwierdzanie tajnej stawki w ciemno (Runda 7)
 window.submitBlindBid = async () => {
-if (!currentState || currentState.round !== 6 || currentState.status !== "r6_blind_bidding") return;
+if (!currentState || currentState.round !== 7 || currentState.status !== "r6_blind_bidding") return;
 const inp = document.getElementById('blindBidInput');
 const rawVal = inp.value.trim();
 if (rawVal === "") {
-document.getElementById('r6BidFeedback').innerText = "⚠️ WPISZ KWOTĘ (NP. 0, 10, 25 PKT)!";
+document.getElementById('r6BidFeedback').innerText = "⚠️ WPISZ KWOTĘ (MINIMUM 5 PKT)!";
 return;
 }
 const bidAmount = parseInt(rawVal, 10);
-const maxAllowed = Math.max(0, myCurrentPoints + 100);
+const maxAllowed = Math.max(5, myCurrentPoints + 100);
 
-if (isNaN(bidAmount) || bidAmount < 0) {
-document.getElementById('r6BidFeedback').innerText = "⚠️ KWOTA NIE MOŻE BYĆ MNIEJSZA NIŻ 0 PKT!";
+if (isNaN(bidAmount) || bidAmount < 5) {
+document.getElementById('r6BidFeedback').innerText = "⚠️ MINIMALNA STAWKA TO 5 PKT!";
 return;
 }
 if (bidAmount > maxAllowed) {
-document.getElementById('r6BidFeedback').innerText = `⛔ LIMIT -100 PKT! MOŻESZ POSTAWIĆ MAKSYMALNIE ${maxAllowed} PKT!`;
+document.getElementById('r6BidFeedback').innerText = `⛔ MOŻESZ POSTAWIĆ MAKSYMALNIE ${maxAllowed} PKT!`;
 return;
 }
 
@@ -390,25 +485,101 @@ if (!readyList.includes(myName)) {
 readyList.push(myName);
 await updateDoc(stateRef, { readyPlayers: readyList });
 }
-return;
-}
-
-if (currentState.round === 5 && currentState.status === "r5_tf_wait_ready" && currentState.nominated === myName) {
-await updateDoc(stateRef, {
-status: "r5_tf_ready_first",
-speechTick: Date.now()
-});
 }
 };
 
-window.sendR5TFAnswer = async (boolChoice) => {
-if (!currentState || currentState.round !== 5 || currentState.status !== "r5_tf_running" || currentState.nominated !== myName) return;
-const elapsedMs = Math.max(100, Date.now() - (r5LocalRunStart || Date.now()));
-const newRemainingMs = Math.max(0, (currentState.r5TimeLeftMs || 20000) - elapsedMs);
+// RUNDA 2: GORĄCA BOMBA - ODPOWIEDŹ PRAWDA / FAŁSZ
+window.sendBombTFAnswer = async (boolChoice) => {
+if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_active" || currentState.nominated !== myName) return;
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_tf_answered",
+status: "r2_bomb_answered",
 r5GivenBool: boolChoice,
-r5TimeLeftMs: newRemainingMs,
+answerTick: Date.now()
+});
+};
+
+// RUNDA 5: POSTAW NA MILION - STEROWANIE ZAPADNIAMI NA TELEFONIE
+function buildMillionPadUI(optionsList, totalPts, maxTraps) {
+localMilTotalPool = totalPts;
+localMilMaxTraps = maxTraps;
+localMilBets = optionsList.map(() => 0);
+const letters = ["A", "B", "C", "D"];
+const container = document.getElementById('milPadCardsContainer');
+container.innerHTML = "";
+
+optionsList.forEach((optText, idx) => {
+const card = document.createElement('div');
+card.className = "mil-pad-card";
+card.innerHTML = `
+<div class="mil-pad-opt-title">${letters[idx]}: ${optText}</div>
+<div class="mil-pad-controls">
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -25)">-25</button>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -5)">-5</button>
+<div class="mil-pad-val" id="mil-pad-val-${idx}">0</div>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 5)">+5</button>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 25)">+25</button>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 'MAX')">MAX</button>
+</div>
+`;
+container.appendChild(card);
+});
+refreshMillionPadSummary();
+}
+
+function refreshMillionPadSummary() {
+const allocated = localMilBets.reduce((a, b) => a + b, 0);
+const rem = Math.max(0, localMilTotalPool - allocated);
+document.getElementById('milPadUnallocated').innerText = `${rem} PKT`;
+document.getElementById('milPadUnallocated').style.color = rem === 0 ? "#2ed573" : "#f1c40f";
+localMilBets.forEach((val, idx) => {
+const el = document.getElementById(`mil-pad-val-${idx}`);
+if (el) el.innerText = `${val} PKT`;
+});
+}
+
+window.adjustMilBet = (idx, delta) => {
+document.getElementById('milPadFeedback').innerText = "";
+const currentVal = localMilBets[idx] || 0;
+const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc + v, 0);
+const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
+
+let newVal = currentVal;
+if (delta === 'MAX') {
+newVal = maxPossibleHere;
+} else {
+newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
+}
+
+// Sprawdź limit obstawionych zapadni (minimum 1 zapadnia zawsze musi zostać pusta!)
+const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? newVal : v) > 0).length;
+if (newVal > 0 && activeTrapsCount > localMilMaxTraps) {
+document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
+return;
+}
+
+localMilBets[idx] = newVal;
+refreshMillionPadSummary();
+};
+
+window.submitMillionBets = async () => {
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
+const allocated = localMilBets.reduce((a, b) => a + b, 0);
+if (allocated !== localMilTotalPool) {
+document.getElementById('milPadFeedback').innerText = `⚠️ MUSISZ ROZDZIELIĆ DOKŁADNIE WSZYSTKIE PUNKTY (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
+return;
+}
+const activeTrapsCount = localMilBets.filter(v => v > 0).length;
+if (activeTrapsCount > localMilMaxTraps) {
+document.getElementById('milPadFeedback').innerText = `⛔ ZA DUŻO ZAPADNI! MAKSYMALNIE: ${localMilMaxTraps}!`;
+return;
+}
+
+const betsObj = {};
+localMilBets.forEach((v, i) => { betsObj[i] = v; });
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r5_mil_locked",
+milBets: betsObj,
 answerTick: Date.now()
 });
 };
@@ -433,6 +604,9 @@ if (unsubscribeSnapshot) unsubscribeSnapshot();
 unsubscribeSnapshot = onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
 currentState = docSnap.data();
+if (currentState.playerNames) {
+playerNamesMap = { ...playerNamesMap, ...currentState.playerNames };
+}
 updatePadUI();
 }, () => {
 setTimeout(window.forceSyncState, 1500);
@@ -441,7 +615,15 @@ setTimeout(window.forceSyncState, 1500);
 
 window.joinGame = async () => {
 myName = document.getElementById('agentSel').value;
-if(!myName) return alert("Musisz wybrać Agenta z listy!");
+if (!myName) return alert("Musisz wybrać slot gracza z listy!");
+const customNick = (document.getElementById('customNickInp').value || "").trim();
+if (customNick && customNick !== getDisplayName(myName)) {
+playerNamesMap[myName] = customNick;
+try {
+await setDoc(doc(db, "quizGame", "state"), { playerNames: playerNamesMap }, { merge: true });
+} catch (e) {}
+}
+
 document.getElementById('loginUI').style.display = 'none';
 document.getElementById('gamePad').style.display = 'block';
 
@@ -472,7 +654,7 @@ tileInputs = [];
 targetLetters = [];
 let globalIdx = 0;
 
-phrase.split(" ").forEach(word => {
+(phrase || "").split(" ").forEach(word => {
 const wDiv = document.createElement('div');
 wDiv.className = "wheel-pad-word";
 for (let ch of word) {
@@ -577,14 +759,18 @@ if (wasFocused) focusNextEditableTile(idx + 1);
 });
 }
 
-let lastR5TFTickSeen = 0;
+function hasPlayerWonWheel(winnersArr, pKey) {
+const dn = getDisplayName(pKey);
+return (winnersArr || []).some(w => w === pKey || w.startsWith(pKey + " ") || w.startsWith(dn + " "));
+}
 
 function updatePadUI() {
 document.getElementById('ui-abcd').style.display = 'none';
 document.getElementById('ui-ready').style.display = 'none';
-document.getElementById('ui-tf').style.display = 'none';
+document.getElementById('ui-bomb').style.display = 'none';
 document.getElementById('ui-wheel').style.display = 'none';
 document.getElementById('ui-input').style.display = 'none';
+document.getElementById('ui-r5-million').style.display = 'none';
 document.getElementById('ui-nominate').style.display = 'none';
 document.getElementById('ui-r6-spin').style.display = 'none';
 document.getElementById('ui-r6-bid').style.display = 'none';
@@ -595,6 +781,11 @@ document.body.classList.remove('keyboard-mode');
 
 if (!currentState) return;
 const activeList = getActivePlayers(currentState);
+
+if (currentState.wheelCategories && currentState.wheelCategories.length > 0) {
+r7Categories = currentState.wheelCategories;
+drawPadWheel(r7Categories);
+}
 
 if (!activeList.includes(myName)) {
 document.getElementById('padStatus').innerText = "GRACZ WYŁĄCZONY W TEJ GRZE";
@@ -628,65 +819,95 @@ document.getElementById('ui-ready').style.display = 'flex';
 return;
 }
 
-if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_tf_")) {
+// ============================================================================
+// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ)
+// ============================================================================
+if (currentState.round === 2 && (currentState.status === "r2_bomb_active" || currentState.status === "r2_bomb_exploded")) {
+const holderName = getDisplayName(currentState.nominated);
+if (currentState.status === "r2_bomb_exploded") {
+const victimName = getDisplayName(currentState.bombVictim || currentState.loser || currentState.nominated);
+document.getElementById('padStatus').innerText = `💥 BOMBA WYBUCHŁA! (TURA ${currentState.bombTurn || 1}/3)`;
+lockedEl.style.display = 'block';
+lockedEl.innerText = `💥 BUM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
+return;
+}
+
+if (currentState.nominated === myName) {
+document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3) - ODPOWIADAJ!`;
+document.getElementById('bombPadQuestion').innerText = currentState.question || "";
+document.getElementById('ui-bomb').style.display = 'flex';
+} else {
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3)`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()}!\nPRZYGOTUJ SIĘ - ZARAZ MOŻE TRAFIĆ DO CIEBIE!`;
+}
+return;
+}
+
+// ============================================================================
+// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI)
+// ============================================================================
+if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_mil_")) {
+const pName = getDisplayName(currentState.nominated);
 if (currentState.nominated !== myName) {
-document.getElementById('padStatus').innerText = `⚡ BŁYSKAWICA: GRA ${currentState.nominated.toUpperCase()}`;
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.status === "r5_tf_wait_ready"
-? `TERAZ KOLEJ NA GRACZA: ${currentState.nominated.toUpperCase()}!\nCZEKAMY AŻ KLIKNIE GOTOWOŚĆ...`
-: `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}!\nPOZOSTAŁO: ${((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1)}s`;
+lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts ?? 100} PKT)\nPATRZ NA TELEWIZOR!`;
 return;
 }
 
-const secStr = ((currentState.r5TimeLeftMs || 0) / 1000).toFixed(1);
-if (currentState.status === "r5_tf_wait_ready") {
-document.getElementById('padStatus').innerText = "⚡ TWOJA KOLEJ W BŁYSKAWICY!";
-document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej, <b style="color:var(--gold);">${myName.toUpperCase()}</b>!<br>Masz <b>20.0 sekund</b> na 20 pytań Prawda / Fałsz.<br>Zegar rusza dopiero po przeczytaniu pytania!`;
-document.getElementById('btnReadyAction').innerText = "⚡ JESTEM GOTOWY - ZACZYNAMY!";
-document.getElementById('ui-ready').style.display = 'flex';
-} else if (currentState.status === "r5_tf_ready_first") {
-document.getElementById('padStatus').innerText = "⚡ ZACZYNAMY!";
-lockedEl.classList.add('speak-msg');
-lockedEl.style.display = 'block';
-lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT PIERWSZE PYTANIE!";
-} else if (currentState.status === "r5_tf_speaking") {
-document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI (${secStr}s) - SŁUCHAJ PYTANIA!`;
-lockedEl.classList.add('speak-msg');
-lockedEl.style.display = 'block';
-lockedEl.innerText = `PYTANIE #${currentState.r5QNum}/20\nLEKTOR CZYTA PYTANIE...`;
-} else if (currentState.status === "r5_tf_running") {
-if (currentState.tick !== lastR5TFTickSeen) {
-lastR5TFTickSeen = currentState.tick;
-r5LocalRunStart = Date.now();
+if (currentState.status === "r5_mil_betting") {
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA KOLEJ!`;
+document.getElementById('ui-r5-million').style.display = 'flex';
+document.getElementById('milPadTitle').innerText = `PYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts} PKT)`;
+const maxT = currentState.milMaxTraps || 3;
+document.getElementById('milPadRuleInfo').innerText = maxT === 1
+? `FINAŁ VA BANQUE! Postaw całą kwotę na 1 wybraną zapadnię!`
+: `Możesz obstawić maksymalnie ${maxT} zapadnie (minimum 1 musi zostać pusta!)`;
+
+if (currentState.speechTick !== lastMilSpeechTick) {
+lastMilSpeechTick = currentState.speechTick;
+document.getElementById('milPadFeedback').innerText = "";
+buildMillionPadUI(currentState.options || [], currentState.milCurrentPts || 100, maxT);
 }
-document.getElementById('padStatus').innerText = `⏱️ CZAS LECI (${secStr}s) - PYTANIE #${currentState.r5QNum}/20!`;
-document.getElementById('ui-tf').style.display = 'grid';
-} else if (currentState.status === "r5_tf_feedback") {
-document.getElementById('padStatus').innerText = `⏸️ ZEGAR ZATRZYMANY (${secStr}s)`;
-if (currentState.r5LastCorrect) lockedEl.classList.add('win-msg');
+} else if (currentState.status === "r5_mil_dropping") {
+document.getElementById('padStatus').innerText = `⏳ OTWIERANIE ZAPADNI CO 3 SEKUNDY...`;
+lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.r5LastCorrect ? `✅ DOBRZE! (+5 PKT)\nZOSTAŁO: ${secStr}s` : `❌ BŁĄD! (-5 PKT)\nZOSTAŁO: ${secStr}s`;
-} else if (currentState.status === "r5_tf_player_summary") {
-document.getElementById('padStatus').innerText = "KONIEC TWOJEJ SERII!";
-lockedEl.classList.add('win-msg');
+lockedEl.innerText = `ZAPADNIE OTWIERAJĄ SIĘ NA EKRANIE TV!\nTRZYMAJ KCIUKI!`;
+} else if (currentState.status === "r5_mil_q_result") {
+const saved = currentState.milCurrentPts || 0;
+document.getElementById('padStatus').innerText = `WYNIK PYTANIA ${currentState.milQNum || 1}/5`;
+if (saved > 0) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `KONIEC TURY!\nTWÓJ BILANS: ${currentState.r5ScoreDelta >= 0 ? "+" : ""}${currentState.r5ScoreDelta} PKT!`;
+lockedEl.innerText = saved > 0 ? `✅ BRAWO! OCALAŁO: ${saved} PKT!` : `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!`;
+} else if (currentState.status === "r5_mil_player_summary") {
+const totalSaved = currentState.milSavedTotal || 0;
+document.getElementById('padStatus').innerText = `KONIEC TWOJEJ SERII!`;
+if (totalSaved > 0) lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `KONIEC GRY POSTAW NA MILION!\nZDOBYWASZ DO GŁÓWNEJ TABELI: +${totalSaved} PKT!`;
 }
 return;
 }
 
-if (currentState.round === 6 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
+// ============================================================================
+// RUNDA 7: KOŁO I TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT, ZEGAR 20s)
+// ============================================================================
+if (currentState.round === 7 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
 if (currentState.status === "r6_wait_spin") isSpinningLocally = false;
 document.getElementById('ui-r6-spin').style.display = 'flex';
 const instrEl = document.getElementById('spinInstruction');
+const ctrlName = getDisplayName(currentState.controller);
 if (currentState.status === "r6_wait_spin") {
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "TWOJA KOLEJ! ZAKRĘĆ KOŁEM!";
 instrEl.innerText = "ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!";
 } else {
 document.getElementById('padStatus').innerText = "KOŁO KATEGORII";
-instrEl.innerText = `CZEKAJ... TERAZ KOŁEM KRĘCI ${currentState.controller.toUpperCase()}!`;
+instrEl.innerText = `CZEKAJ... TERAZ KOŁEM KRĘCI ${ctrlName.toUpperCase()}!`;
 }
 } else {
 document.getElementById('padStatus').innerText = "🎡 KOŁO SIĘ OBRACA!";
@@ -694,7 +915,7 @@ instrEl.innerText = "LOSOWANIE KATEGORII...";
 if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
 lastHandledSpinTickOnPad = currentState.spinTick;
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
-const segAngle = 360 / r6Categories.length;
+const segAngle = 360 / r7Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
@@ -706,21 +927,22 @@ padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 return;
 }
 
-// RUNDA 6: TAJNE OBSTAWIANIE W CIEMNO
-if (currentState.round === 6 && (currentState.status === "r6_blind_bidding" || currentState.status === "r6_sold")) {
+if (currentState.round === 7 && (currentState.status === "r6_blind_bidding" || currentState.status === "r6_sold")) {
 if (currentState.status === "r6_sold") {
+clearInterval(bidLocalTimer);
+const highName = getDisplayName(currentState.r6HighestBidder);
 document.getElementById('padStatus').innerText = "TAJNE OFERTY ODSŁONIĘTE!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = currentState.r6RandomDrawn
-? `🎲 REMIS NAJWYŻSZYCH OFERT (${currentState.r6HighestBid} PKT)! WYLOSOWANO: ${currentState.r6HighestBidder.toUpperCase()}\nŁĄCZNA PULA: ${currentState.r6Pot} PKT`
-: `🔨 NAJWIĘCEJ POSTAWIŁ(A): ${currentState.r6HighestBidder.toUpperCase()} (${currentState.r6HighestBid} PKT)!\nŁĄCZNA PULA DO WYGRANIA: ${currentState.r6Pot} PKT`;
+? `🎲 REMIS NAJWYŻSZYCH OFERT (${currentState.r6HighestBid} PKT)! WYLOSOWANO: ${highName.toUpperCase()}\nŁĄCZNA PULA: ${currentState.r6Pot} PKT`
+: `🔨 NAJWIĘCEJ POSTAWIŁ(A): ${highName.toUpperCase()} (${currentState.r6HighestBid} PKT)!\nŁĄCZNA PULA DO WYGRANIA: ${currentState.r6Pot} PKT`;
 return;
 }
 
 const lockedList = currentState.r6LockedBidders || [];
 if (lockedList.includes(myName)) {
-const myLockedVal = (currentState.r6Bids || {})[myName] || 0;
+const myLockedVal = (currentState.r6Bids || {})[myName] || 5;
 document.getElementById('padStatus').innerText = "🔒 ZAKŁAD ZATWIERDZONY!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
@@ -730,18 +952,27 @@ return;
 
 if (currentState.speechTick !== lastR6BlindSpeechTick) {
 lastR6BlindSpeechTick = currentState.speechTick;
-document.getElementById('blindBidInput').value = "";
+document.getElementById('blindBidInput').value = "5";
 document.getElementById('r6BidFeedback').innerText = "";
+clearInterval(bidLocalTimer);
+let secLeft = currentState.r6BidTimeoutSec || 20;
+const tEl = document.getElementById('pad-r6-timer');
+if (tEl) tEl.innerText = `${secLeft}s`;
+bidLocalTimer = setInterval(() => {
+secLeft = Math.max(0, secLeft - 1);
+if (tEl) tEl.innerText = `${secLeft}s`;
+if (secLeft <= 0) clearInterval(bidLocalTimer);
+}, 1000);
 }
 
 document.body.classList.add('keyboard-mode');
-document.getElementById('padStatus').innerText = "🤫 TAJNE OBSTAWIANIE W CIEMNO!";
+document.getElementById('padStatus').innerText = "🤫 TAJNE OBSTAWIANIE W CIEMNO (20s)!";
 document.getElementById('ui-r6-bid').style.display = 'flex';
 document.getElementById('pad-r6-cat').innerText = currentState.category || "";
 document.getElementById('pad-r6-carry').innerText = `${currentState.carryOver || 0} PKT`;
-const maxAllowed = Math.max(0, myCurrentPoints + 100);
+const maxAllowed = Math.max(5, myCurrentPoints + 100);
 document.getElementById('pad-r6-mypts').innerText = `${myCurrentPoints} PKT`;
-document.getElementById('pad-r6-maxinfo').innerText = `( Max zakład: ${maxAllowed} pkt )`;
+document.getElementById('pad-r6-maxinfo').innerText = `( Min: 5 pkt | Max: ${maxAllowed} pkt )`;
 return;
 }
 
@@ -776,21 +1007,21 @@ lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
 return;
 }
 
-// RUNDA 2: OSTATNIA LITERA NIGDY NIE ODSŁANIA SIĘ PRZED KOŃCEM CZASU!
-if (currentState.status === "wheel_reading" && currentState.round === 2) {
+// ============================================================================
+// RUNDA 4: ODSŁANIANIE HASŁA (KAFELKI LUB CAŁE HASŁO NARAZ BEZ KAR!)
+// ============================================================================
+if (currentState.status === "wheel_reading" && currentState.round === 4) {
 const winners = currentState.wheelWinners || [];
-const myRank = winners.indexOf(myName);
-const ptsMap = [20, 15, 10, 5];
-if (myRank !== -1) {
+if (hasPlayerWonWheel(winners, myName)) {
 clearInterval(padWheelInterval);
 document.getElementById('padStatus').innerText = "BRAWO! ODGADŁEŚ HASŁO!";
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)! CZEKAJ NA POZOSTAŁYCH.`;
+lockedEl.innerText = `✅ HASŁO ZALICZONE!\nCZEKAMY NA POZOSTAŁYCH GRACZY...`;
 return;
 }
 document.body.classList.add('keyboard-mode');
-document.getElementById('padStatus').innerText = "WPISUJ BRAKUJĄCE LITERY W KAFELKI:";
+document.getElementById('padStatus').innerText = "WPISUJ LITERY W KAFELKI LUB CAŁE HASŁO NA DOLE:";
 document.getElementById('wheelPadCat').innerText = "KATEGORIA: " + (currentState.category || "");
 document.getElementById('ui-wheel').style.display = 'flex';
 
@@ -799,10 +1030,11 @@ currentWheelTick = currentState.tick;
 clearInterval(padWheelInterval);
 padRevealedCount = 0;
 document.getElementById('wheelFeedback').innerText = "";
+document.getElementById('fullPhraseInp').value = "";
 buildWheelPadTiles(currentState.question);
 
 let totalLetters = (currentState.wheelOrder || []).length;
-let maxAutoReveal = Math.max(0, totalLetters - 1); // Ostatnia litera zostaje zawsze zakryta!
+let maxAutoReveal = Math.max(0, totalLetters - 1);
 let intervalMs = Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal)));
 padWheelInterval = setInterval(() => {
 if (padRevealedCount < maxAutoReveal) {
@@ -810,41 +1042,38 @@ padRevealedCount++;
 updateRevealedTilesOnPad();
 }
 }, intervalMs);
-setTimeout(() => focusNextEditableTile(0), 100);
 }
 return;
 }
 
-if (currentState.status === "nominating") {
+// RUNDA 6: NOMINOWANIE W RYZYKU
+if (currentState.status === "nominating" && currentState.round === 6) {
+const ctrlName = getDisplayName(currentState.controller);
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
 document.getElementById('pad-cat').innerText = currentState.category || "";
-const allPlayers = [
-{ id: "Lila", label: "LILA" },
-{ id: "Kaja", label: "KAJA" },
-{ id: "Darek", label: "DAREK" },
-{ id: "Jas", label: "JAŚ" }
-];
-allPlayers.forEach(p => {
-let btn = document.getElementById(`nom-${p.id}`);
-if (!activeList.includes(p.id)) {
+const allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
+allPlayers.forEach(pid => {
+let btn = document.getElementById(`nom-${pid}`);
+if (!activeList.includes(pid)) {
 btn.style.display = 'none';
 return;
 }
 btn.style.display = 'block';
-let isBlocked = currentState.blocked && currentState.blocked.includes(p.id);
+let isBlocked = currentState.blocked && currentState.blocked.includes(pid);
 btn.disabled = isBlocked;
-if (p.id === myName) {
+const label = getDisplayName(pid).toUpperCase();
+if (pid === myName) {
 btn.classList.add('self-btn');
-btn.innerText = `${p.label} - BIORĘ NA SIEBIE! (±20 PKT)`;
+btn.innerText = `${label} - BIORĘ NA SIEBIE! (±20 PKT)`;
 } else {
 btn.classList.remove('self-btn');
-btn.innerText = `${p.label} (±10 PKT)`;
+btn.innerText = `${label} (±10 PKT)`;
 }
 });
 document.getElementById('ui-nominate').style.display = 'flex';
 } else {
-document.getElementById('padStatus').innerText = `${currentState.controller.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
+document.getElementById('padStatus').innerText = `${ctrlName.toUpperCase()} WYBIERA KTO ODPOWIADA...`;
 }
 return;
 }
@@ -856,13 +1085,14 @@ document.getElementById('typeAnswer').value = "";
 document.getElementById('r3Feedback').innerText = "";
 }
 
+// RUNDA 1: BRAK SPOILERA PRZED KOŃCEM CZASU!
 if (currentState.round === 1) {
 const myAns = (currentState.r1Answers || {})[myName];
-if (myAns) {
-document.getElementById('padStatus').innerText = "ODPOWIEDŹ ZAPISANA!";
-if (myAns.pts > 0) lockedEl.classList.add('win-msg');
+if (myAns !== undefined) {
+document.getElementById('padStatus').innerText = "🔒 ODPOWIEDŹ ZAREJESTROWANA!";
+lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = myAns.pts > 0 ? `DOBRZE! ZDOBYWASZ +${myAns.pts} PKT!\nCZEKAJ NA POZOSTAŁYCH GRACZY.` : `NIESTETY BŁĄD (0 PKT).\nCZEKAJ NA KONIEC CZASU.`;
+lockedEl.innerText = `🔒 TWOJA ODPOWIEDŹ ZOSTAŁA ZAPISANA!\nWYNIKI I PUNKTY POKAŻĄ SIĘ PO ZAKOŃCZENIU CZASU.`;
 return;
 }
 for(let i=0; i<4; i++) {
@@ -876,15 +1106,14 @@ document.getElementById('ui-abcd').style.display = 'grid';
 return;
 }
 
+// RUNDA 3: SZYBKIE PISANIE - BRAK SPOILERA PRZED KOŃCEM CZASU!
 if (currentState.round === 3) {
-const winners = currentState.r3Winners || [];
-const myRank = winners.indexOf(myName);
-const ptsMap = [15, 12, 10, 8];
-if (myRank !== -1) {
-document.getElementById('padStatus').innerText = "BRAWO! ODPOWIEDŹ ZALICZONA!";
-lockedEl.classList.add('win-msg');
+const mySub = (currentState.r3Submissions || {})[myName];
+if (mySub) {
+document.getElementById('padStatus').innerText = "🔒 ODPOWIEDŹ ZAREJESTROWANA!";
+lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `MIEJSCE #${myRank + 1} (+${ptsMap[myRank]} PKT)!\nCZEKAJ NA POZOSTAŁYCH.`;
+lockedEl.innerText = `🔒 WPISANA ODPOWIEDŹ ZOSTAŁA ZAPISANA!\nWYNIKI I PUNKTY POKAŻĄ SIĘ PO ZAKOŃCZENIU CZASU.`;
 return;
 }
 document.body.classList.add('keyboard-mode');
@@ -893,7 +1122,8 @@ document.getElementById('ui-input').style.display = 'flex';
 return;
 }
 
-if (currentState.round === 4 || currentState.round === 6) {
+// RUNDA 6 (RYZYKO) ORAZ RUNDA 7 (KOŁO)
+if (currentState.round === 6 || currentState.round === 7) {
 if (currentState.blocked && currentState.blocked.includes(myName)) {
 document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
 lockedEl.style.display = 'block';
@@ -907,7 +1137,7 @@ btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i)
 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
 }
 if (!currentState.nominated || currentState.nominated === myName) {
-let msg = currentState.round === 6
+let msg = currentState.round === 7
 ? `WYGRAŁEŚ OBSTAWIANIE! GRASZ O ${currentState.r6Pot} PKT!`
 : (!currentState.nominated ? "DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)" : (currentState.nominated === currentState.controller ? "GRASZ O ±20 PKT! ODPOWIADAJ!" : "ZOSTAŁEŚ WYBRANY (±10 PKT)! ODPOWIADAJ!"));
 document.getElementById('padStatus').innerText = msg;
@@ -915,7 +1145,7 @@ document.getElementById('ui-abcd').style.display = 'grid';
 } else {
 document.getElementById('padStatus').innerText = "KIBICUJ!";
 lockedEl.style.display = 'block';
-lockedEl.innerText = `TERAZ ODPOWIADA: ${currentState.nominated.toUpperCase()}`;
+lockedEl.innerText = `TERAZ ODPOWIADA: ${getDisplayName(currentState.nominated).toUpperCase()}`;
 }
 }
 }
@@ -927,38 +1157,23 @@ lockedEl.innerText = "PATRZ NA TELEWIZOR!";
 }
 }
 
+// RUNDA 4: ZATWIERDZANIE Z KAFELKÓW LITEROWYCH
 window.submitWheelTiles = async () => {
-if (!currentState || currentState.round !== 2 || currentState.status !== "wheel_reading") return;
+if (!currentState || currentState.round !== 4 || currentState.status !== "wheel_reading") return;
 updateRevealedTilesOnPad();
 const userBuilt = tileInputs.map(inp => inp.value).join("");
 const targetBuilt = targetLetters.join("");
 if (normalizeChar(userBuilt).length < normalizeChar(targetBuilt).length) {
-document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI!";
+document.getElementById('wheelFeedback').innerText = "⚠️ WYPEŁNIJ WSZYSTKIE PUSTE KAFELKI LUB WPISZ HASŁO NA DOLE!";
 focusNextEditableTile(0);
 return;
 }
 if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
-const stateRef = doc(db, "quizGame", "state");
-const snap = await getDoc(stateRef);
-const data = snap.data();
-const activeCount = getActivePlayers(data).length;
-let winners = data.wheelWinners || [];
-if (!winners.includes(myName)) {
-const ptsMap = [20, 15, 10, 5];
-let myPts = ptsMap[winners.length] || 5;
-winners.push(myName);
-const scoreRef = doc(db, "quizScores", myName);
-const scoreSnap = await getDoc(scoreRef);
-let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-if (winners.length >= activeCount) {
-await updateDoc(stateRef, { wheelWinners: winners, status: "wheel_results", answerTick: Date.now() });
+await updateDoc(doc(db, "quizGame", "state"), {
+r4FullGuess: { player: myName, text: currentState.question, ts: Date.now() }
+});
 } else {
-await updateDoc(stateRef, { wheelWinners: winners });
-}
-}
-} else {
-document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! POPRAW LITERY!";
+document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! SPRÓBUJ PONOWNIE (BEZ KAR)!";
 tileInputs.forEach(inp => {
 if (!inp.readOnly && !inp.classList.contains('revealed')) {
 inp.value = "";
@@ -969,80 +1184,71 @@ focusNextEditableTile(0);
 }
 };
 
-window.sendAnswer = async (index) => {
-if (currentState.status !== "reading") return;
-const isCorrect = (index === currentState.correctIndex);
-if (currentState.round === 1) {
-const stateRef = doc(db, "quizGame", "state");
-const snap = await getDoc(stateRef);
-const data = snap.data();
-const activeCount = getActivePlayers(data).length;
-let answers = data.r1Answers || {};
-let winners = data.r1Winners || [];
-if (answers[myName]) return;
-let myPts = 0;
-if (isCorrect) {
-const ptsMap = [15, 12, 10, 8];
-myPts = ptsMap[winners.length] || 8;
-winners.push(myName);
-const scoreRef = doc(db, "quizScores", myName);
-const scoreSnap = await getDoc(scoreRef);
-let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-}
-answers[myName] = { index, isCorrect, pts: myPts };
-if (Object.keys(answers).length >= activeCount) {
-await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners, status: "r1_results", answerTick: Date.now() });
-} else {
-await updateDoc(stateRef, { r1Answers: answers, r1Winners: winners });
-}
+// RUNDA 4: DODATKOWA OPCJA WPISANIA CAŁEGO HASŁA NARAZ (BEZ ŻADNYCH KAR!)
+window.submitFullPhraseGuess = async () => {
+if (!currentState || currentState.round !== 4 || currentState.status !== "wheel_reading") return;
+const inp = document.getElementById('fullPhraseInp');
+const guess = (inp.value || "").trim();
+if (!guess) {
+document.getElementById('wheelFeedback').innerText = "⚠️ WPISZ HASŁO W POLE TEKSTOWE!";
 return;
 }
-if (currentState.round === 4) {
+if (normalizeChar(guess) === normalizeChar(currentState.question || "")) {
+inp.value = "";
+document.getElementById('wheelFeedback').innerText = "";
+await updateDoc(doc(db, "quizGame", "state"), {
+r4FullGuess: { player: myName, text: guess, ts: Date.now() }
+});
+} else {
+document.getElementById('wheelFeedback').innerText = "❌ TO NIE TO HASŁO! PRÓBUJ DALEJ (ZERO KAR)!";
+inp.value = "";
+}
+};
+
+// WYSYŁANIE ODPOWIEDZI ABCD (RUNDY 1, 6, 7)
+window.sendAnswer = async (index) => {
+if (!currentState || currentState.status !== "reading") return;
+const isCorrect = (index === currentState.correctIndex);
+
+// RUNDA 1: ATOMOWY ZAPIS Z TIMESTAMPEM CO DO MILISEKUNDY (NAPRAWA GUBIENIA GRACZY!)
+if (currentState.round === 1) {
+if (currentState.r1Answers && currentState.r1Answers[myName] !== undefined) return;
+await updateDoc(doc(db, "quizGame", "state"), {
+[`r1Answers.${myName}`]: { opt: index, ts: Date.now() }
+});
+return;
+}
+
+if (currentState.round === 6) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
-} else if (currentState.round === 6) {
+} else if (currentState.round === 7) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r6", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
 }
 };
 
+// RUNDA 3: SZYBKIE PISANIE (BEZ SPOILERA - ATOMOWY ZAPIS Z TIMESTAMPEM)
 window.sendTypedAnswer = async () => {
+if (!currentState || currentState.status !== "reading" || currentState.round !== 3) return;
 const inputEl = document.getElementById('typeAnswer');
 const ans = inputEl.value.trim();
 if (!ans) return;
-if (currentState.status === "reading" && currentState.round === 3) {
-const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s));
+
+const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s)).filter(Boolean);
 const userNorm = normalizeChar(ans);
 const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
-if (isMatch) {
+
+// Jeśli gracz trafił w jeden z akceptowanych wariantów, przekazujemy kanoniczną odpowiedź do Admina, żeby zaliczyło 100% pewnie
+const canonicalText = isMatch ? (currentState.correctText || "").split("/")[0].trim() : ans;
 inputEl.value = "";
 document.getElementById('r3Feedback').innerText = "";
-const stateRef = doc(db, "quizGame", "state");
-const snap = await getDoc(stateRef);
-const data = snap.data();
-const activeCount = getActivePlayers(data).length;
-let winners = data.r3Winners || [];
-if (!winners.includes(myName)) {
-const ptsMap = [15, 12, 10, 8];
-let myPts = ptsMap[winners.length] || 8;
-winners.push(myName);
-const scoreRef = doc(db, "quizScores", myName);
-const scoreSnap = await getDoc(scoreRef);
-let curPts = scoreSnap.exists() ? scoreSnap.data().points : 0;
-await setDoc(scoreRef, { points: curPts + myPts }, { merge: true });
-if (winners.length >= activeCount) {
-await updateDoc(stateRef, { r3Winners: winners, status: "r3_results", answerTick: Date.now() });
-} else {
-await updateDoc(stateRef, { r3Winners: winners });
-}
-}
-} else {
-document.getElementById('r3Feedback').innerText = "❌ SPRAWDŹ PISOWNIĘ I SPRÓBUJ PONOWNIE!";
-}
-}
+
+await updateDoc(doc(db, "quizGame", "state"), {
+[`r3Submissions.${myName}`]: { text: canonicalText, ts: Date.now() }
+});
 };
 
 window.nominatePlayer = async (targetPlayer) => {
-if (currentState.status !== "nominating" || currentState.controller !== myName) return;
+if (!currentState || currentState.status !== "nominating" || currentState.controller !== myName) return;
 await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", nominated: targetPlayer, tieMsg: "", speechTick: Date.now() });
 };
 </script>
