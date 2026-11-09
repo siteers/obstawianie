@@ -6,6 +6,7 @@
 <style>
 :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
 body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
+body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) both; }
 
 #audio-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 9999; display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center; }
 #audio-btn { background: var(--cyan); color: #000; border: none; padding: 2vw 4vw; font-size: 2vw; font-weight: 900; border-radius: 1vw; cursor: pointer; text-transform: uppercase; box-shadow: 0 0 3vw rgba(0, 212, 255, 0.5); animation: pulse 1s infinite; }
@@ -15,6 +16,15 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 #voiceSelect { background: #111; color: var(--cyan); border: 1px solid #444; border-radius: 4px; font-size: 0.85vw; padding: 2px 6px; }
 
 #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 500; display: none; background: transparent; }
+
+@keyframes screenShake {
+0%, 100% { transform: translate(0, 0) rotate(0deg); }
+15% { transform: translate(-1.2vw, -0.8vw) rotate(-1.5deg); }
+30% { transform: translate(1.2vw, 0.6vw) rotate(1.5deg); }
+45% { transform: translate(-1vw, 0.8vw) rotate(-1deg); }
+60% { transform: translate(1vw, -0.6vw) rotate(1deg); }
+75% { transform: translate(-0.5vw, 0.4vw) rotate(-0.5deg); }
+}
 
 @keyframes pulseTimer {
 0% { transform: translateX(-50%) scale(1); }
@@ -28,13 +38,20 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 }
 
 @keyframes bombPulse {
-0%, 100% { transform: scale(1) rotate(-3deg); filter: drop-shadow(0 0 1.5vw #ff4757); }
-50% { transform: scale(1.18) rotate(3deg); filter: drop-shadow(0 0 3.5vw #ff0000); }
+0%, 100% { transform: scale(1) rotate(-4deg); filter: drop-shadow(0 0 1.5vw #ff4757); }
+50% { transform: scale(1.22) rotate(4deg); filter: drop-shadow(0 0 3.8vw #ff0000); }
 }
 
-@keyframes trapDrop {
-0% { transform: rotateX(0deg); opacity: 1; }
-100% { transform: rotateX(-85deg) translateY(3vw); opacity: 0.2; }
+@keyframes comicBoomPop {
+0% { transform: scale(0.1) rotate(-18deg); opacity: 0; }
+45% { transform: scale(1.18) rotate(4deg); opacity: 1; }
+70% { transform: scale(0.95) rotate(-2deg); opacity: 1; }
+100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes cashFallDown {
+0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
+100% { transform: translateY(7vw) scale(0.2) rotate(25deg); opacity: 0; }
 }
 
 .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 7.2vw; height: 7.2vw; display: none; align-items: center; justify-content: center; font-size: 2.7vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
@@ -52,13 +69,13 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .score-corner.blocked .blocked-tag { display: inline-block; }
 .score-corner.bomb-holder { border-color: #ff4757 !important; box-shadow: 0 0 3vw #ff4757 !important; background: rgba(90, 0, 15, 0.9) !important; }
 
-.center-stage { width: 52vw; max-width: 52vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 2vw 2.4vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+.center-stage { width: 58vw; max-width: 58vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 1.8vw 2.2vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
 .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
 .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
-.round-title { font-size: 1.1vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.18vw; margin-bottom: 0.6vw; font-weight: bold; }
-.question-text { font-size: 2.1vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.4vw; color: #fff; }
-.category-text { font-size: 1.9vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.3vw; margin-bottom: 1vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
+.round-title { font-size: 1.05vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.16vw; margin-bottom: 0.5vw; font-weight: bold; }
+.question-text { font-size: 2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.2vw; color: #fff; }
+.category-text { font-size: 1.8vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.28vw; margin-bottom: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
 
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
 .option { padding: 1.2vw; font-size: 1.55vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
@@ -68,20 +85,85 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
 .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
-/* RUNDA 2: GORĄCA BOMBA */
-#r2-bomb-box { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 1vw 0; }
-.bomb-icon { font-size: 6.5vw; animation: bombPulse 0.65s infinite; margin: 0.5vw 0; }
+/* RUNDA 2: GORĄCA BOMBA + KOMIKSOWE BOOM! */
+#r2-bomb-box { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.6vw 0; position: relative; }
+.bomb-icon { font-size: 6.5vw; animation: bombPulse 0.7s infinite; margin: 0.4vw 0; }
 .bomb-holder-banner { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; letter-spacing: 0.15vw; text-shadow: 0 0 1.2vw #ff4757; }
-.bomb-sub { font-size: 1.15vw; color: #cbd5e1; margin-top: 0.4vw; font-weight: bold; }
+.bomb-sub { font-size: 1.1vw; color: #cbd5e1; margin-top: 0.4vw; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION */
-#r5-million-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.8vw; }
-.mil-traps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10vw, 1fr)); gap: 1vw; width: 100%; margin-top: 0.8vw; perspective: 800px; }
-.mil-trap-card { background: linear-gradient(180deg, #1e293b, #0f172a); border: 0.25vw solid var(--cyan); border-radius: 1vw; padding: 1vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 8.5vw; transition: all 0.6s ease; transform-origin: top center; box-shadow: 0 0 1.5vw rgba(0,212,255,0.25); }
-.mil-trap-card.dropped { animation: trapDrop 0.7s forwards; border-color: #ff4757 !important; background: rgba(60, 0, 0, 0.4) !important; box-shadow: none !important; }
-.mil-trap-card.safe-winner { border-color: #2ed573 !important; background: rgba(46, 213, 115, 0.22) !important; box-shadow: 0 0 2.5vw rgba(46, 213, 115, 0.7) !important; transform: scale(1.04); }
-.mil-trap-title { font-size: 1.35vw; font-weight: 900; color: #fff; text-align: center; }
-.mil-trap-bet { font-size: 2vw; font-weight: 900; color: var(--gold); margin-top: 0.6vw; text-shadow: 0 0 1vw rgba(212,175,55,0.6); }
+#comic-boom-wrap { display: none; width: 28vw; height: 17vw; margin: 0.2vw auto; animation: comicBoomPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 2.5vw rgba(255, 71, 87, 0.9)); }
+#comic-boom-wrap svg { width: 100%; height: 100%; overflow: visible; }
+
+/* RUNDA 5: POSTAW NA MILION - STUDIO I ZAPADNIE 3D */
+#r5-million-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.6vw; }
+.mil-traps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11.5vw, 1fr)); gap: 1.2vw; width: 100%; margin-top: 0.5vw; }
+.mil-station { display: flex; flex-direction: column; align-items: center; perspective: 900px; }
+
+.mil-monitor {
+width: 100%; background: radial-gradient(circle at center, #0f3460 0%, #050b14 100%);
+border: 0.22vw solid #38bdf8; border-radius: 0.7vw; padding: 0.6vw 0.5vw;
+box-shadow: 0 0 1.2vw rgba(56, 189, 248, 0.45), inset 0 0 1vw rgba(0, 212, 255, 0.3);
+margin-bottom: 0.5vw; min-height: 4.2vw; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
+transform: rotateX(10deg);
+}
+.mil-monitor-badge { font-size: 0.75vw; font-weight: 900; color: #fff; background: linear-gradient(90deg, #b91c1c, #1d4ed8); padding: 0.1vw 0.5vw; border-radius: 0.3vw; border: 1px solid #fff; letter-spacing: 0.08vw; margin-bottom: 0.25vw; text-transform: uppercase; }
+.mil-monitor-ans { font-size: 1.2vw; font-weight: 900; color: #fff; text-shadow: 0 2px 4px #000; line-height: 1.15; }
+
+.mil-trap-frame {
+width: 100%; height: 9.2vw; background: #030508;
+border: 0.32vw solid #ffffff; border-radius: 0.8vw;
+box-shadow: 0 0 1.6vw rgba(255, 255, 255, 0.8), inset 0 0 2.5vw #000000;
+position: relative; padding: 0.4vw; box-sizing: border-box;
+display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+.mil-trap-frame.safe-winner {
+border-color: #2ed573 !important;
+box-shadow: 0 0 2.8vw #2ed573, inset 0 0 1.5vw rgba(46, 213, 115, 0.5) !important;
+}
+.mil-trap-pit {
+position: absolute; inset: 0; background: radial-gradient(circle at center, #1a0508 0%, #000000 85%);
+display: flex; align-items: center; justify-content: center;
+font-size: 1.3vw; font-weight: 900; color: #ff4757; letter-spacing: 0.1vw; z-index: 1;
+text-shadow: 0 0 0.8vw #ff0000;
+}
+.mil-trap-doors {
+position: absolute; inset: 0.35vw;
+background: linear-gradient(145deg, #b91c1c 0%, #7f1d1d 55%, #450a0a 100%);
+border: 0.18vw solid #111; border-radius: 0.45vw;
+box-shadow: inset 0 0 1.2vw rgba(0, 0, 0, 0.75);
+z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
+transition: transform 0.65s cubic-bezier(0.55, 0.05, 0.67, 0.19), opacity 0.55s ease;
+transform-origin: top center;
+}
+.mil-trap-doors::after {
+content: ""; position: absolute; left: 8%; right: 8%; top: 50%; height: 2px;
+background: rgba(0, 0, 0, 0.65); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12); pointer-events: none;
+}
+.mil-trap-frame.dropped .mil-trap-doors {
+transform: perspective(600px) rotateX(-88deg) translateY(3.5vw);
+opacity: 0.08;
+}
+.mil-trap-frame.dropped .mil-cash-wrap {
+animation: cashFallDown 0.6s ease-in forwards;
+}
+
+.mil-cash-wrap { z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.3vw; }
+.mil-cash-bundles { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25vw; max-width: 9.5vw; }
+.cash-bundle {
+width: 2vw; height: 1.15vw;
+background: linear-gradient(90deg, #cbd5e1 0%, #f8fafc 50%, #94a3b8 100%);
+border: 1px solid #334155; border-radius: 2px; position: relative;
+box-shadow: 0 3px 5px rgba(0,0,0,0.75);
+}
+.cash-bundle::before {
+content: ""; position: absolute; left: 36%; right: 36%; top: 0; bottom: 0;
+background: #dc2626;
+}
+.mil-bet-amount {
+font-size: 1.55vw; font-weight: 900; color: #ffd700;
+background: rgba(0, 0, 0, 0.82); padding: 0.2vw 0.7vw; border-radius: 0.4vw;
+border: 1px solid rgba(255, 215, 0, 0.5); text-shadow: 0 2px 4px #000;
+}
 
 .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
 .wheel-word { display: flex; gap: 0.4vw; }
@@ -135,8 +217,8 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
 #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-.winner-announcement { font-size: 2vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
-.status-msg { font-size: 2.3vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
+.winner-announcement { font-size: 1.9vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+.status-msg { font-size: 2.2vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
 
 .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
 .correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
@@ -184,11 +266,38 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="category-text" id="tv-cat">KATEGORIA</div>
 <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
 
-<!-- RUNDA 2: GORĄCA BOMBA -->
+<!-- RUNDA 2: GORĄCA BOMBA + KOMIKSOWE BOOM! -->
 <div id="r2-bomb-box">
 <div class="bomb-icon" id="r2-bomb-emoji">💣</div>
+<div id="comic-boom-wrap">
+<svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
+<!-- Niebieskie promienie w tle -->
+<polygon points="250,160 30,10 110,5" fill="#00d4ff" opacity="0.75"/>
+<polygon points="250,160 470,15 390,5" fill="#00d4ff" opacity="0.75"/>
+<polygon points="250,160 495,220 460,295" fill="#00d4ff" opacity="0.75"/>
+<polygon points="250,160 5,230 45,300" fill="#00d4ff" opacity="0.75"/>
+<!-- Białe obłoki dymu -->
+<circle cx="140" cy="145" r="78" fill="#ffffff" stroke="#111" stroke-width="6"/>
+<circle cx="355" cy="145" r="78" fill="#ffffff" stroke="#111" stroke-width="6"/>
+<circle cx="250" cy="100" r="88" fill="#ffffff" stroke="#111" stroke-width="6"/>
+<circle cx="250" cy="205" r="82" fill="#ffffff" stroke="#111" stroke-width="6"/>
+<circle cx="165" cy="200" r="65" fill="#ffffff"/>
+<circle cx="335" cy="200" r="65" fill="#ffffff"/>
+<!-- Pomarańczowo-czerwona gwiazda eksplozji w środku -->
+<polygon points="250,18 282,92 372,42 332,118 438,125 352,172 428,242 325,215 348,298 265,238 215,305 205,228 95,268 158,188 68,148 168,125 118,45 215,95" fill="#ff5e00" stroke="#ffd700" stroke-width="5"/>
+<!-- Żółte gwiazdki komiksowe -->
+<polygon points="65,55 78,80 105,82 84,100 90,126 65,112 40,126 46,100 25,82 52,80" fill="#ffd700" stroke="#111" stroke-width="4"/>
+<polygon points="435,45 446,68 472,70 452,86 458,110 435,96 412,110 418,86 398,70 424,68" fill="#ffd700" stroke="#111" stroke-width="4"/>
+<polygon points="105,275 114,292 135,295 119,308 124,326 105,316 86,326 91,308 75,295 96,292" fill="#ffd700" stroke="#111" stroke-width="4"/>
+<!-- Napis 3D BOOM! -->
+<g transform="rotate(-7 250 170)">
+<text x="256" y="204" font-family="Impact, 'Arial Black', sans-serif" font-size="112" font-weight="900" text-anchor="middle" fill="#000000" letter-spacing="4">BOOM!</text>
+<text x="246" y="194" font-family="Impact, 'Arial Black', sans-serif" font-size="112" font-weight="900" text-anchor="middle" fill="#ff1e27" stroke="#ffd700" stroke-width="7" paint-order="stroke" letter-spacing="4">BOOM!</text>
+</g>
+</svg>
+</div>
 <div class="bomb-holder-banner" id="r2-bomb-holder-txt">TRZYMA BOMBĘ: ...</div>
-<div class="bomb-sub">⏳ -1 PKT CO 2 SEKUNDY | DOBRZE: +5 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
+<div class="bomb-sub" id="r2-bomb-sub">⏳ -1 PKT CO 2 SEKUNDY PO LEKTORZE | DOBRZE: +10 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
 </div>
 
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
@@ -196,7 +305,7 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
 <div class="wheel-winners-list" id="tv-wheel-winners"></div>
 
-<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE) -->
+<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE 3D) -->
 <div id="r5-million-box">
 <div class="mil-traps-grid" id="r5-traps-container"></div>
 </div>
@@ -259,7 +368,7 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 
 const tickSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2568/2568-preview.mp3");
-tickSound.loop = true; tickSound.volume = 0.5;
+tickSound.loop = true; tickSound.volume = 0.55;
 const suspenseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2570/2570-preview.mp3");
 suspenseSound.loop = true; suspenseSound.volume = 1.0;
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
@@ -276,7 +385,7 @@ let utteranceQueue = [];
 
 let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
 function getDisplayName(pKey) {
-return playerNamesMap[pKey] || pKey;
+return playerNamesMap[pKey] || pKey || "";
 }
 function refreshTVPlayerNames() {
 ["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
@@ -534,6 +643,51 @@ gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
 whiteNoise.connect(filter);
 filter.connect(gain);
 gain.connect(audioCtx.destination);
+whiteNoise.start(now);
+}
+
+// POTĘŻNA EKSPLOZJA BOMBY W RUNDZIE 2 (ZAMIAST DŹWIĘKU Z RUNDY 1!)
+function playMassiveBombExplosion() {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+
+// 1. Niski sub-basowy grzmot uderzeniowy
+const subOsc = audioCtx.createOscillator();
+const subGain = audioCtx.createGain();
+subOsc.type = "sawtooth";
+subOsc.frequency.setValueAtTime(130, now);
+subOsc.frequency.exponentialRampToValueAtTime(22, now + 1.4);
+subGain.gain.setValueAtTime(0.95, now);
+subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.45);
+subOsc.connect(subGain);
+subGain.connect(audioCtx.destination);
+subOsc.start(now);
+subOsc.stop(now + 1.5);
+
+// 2. Długi huk eksplozji (szum przefiltrowany dolnoprzepustowo)
+const dur = 1.6;
+const bufferSize = Math.floor(audioCtx.sampleRate * dur);
+const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+const output = noiseBuffer.getChannelData(0);
+for (let i = 0; i < bufferSize; i++) {
+output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.45));
+}
+const whiteNoise = audioCtx.createBufferSource();
+whiteNoise.buffer = noiseBuffer;
+
+const filter = audioCtx.createBiquadFilter();
+filter.type = "lowpass";
+filter.frequency.setValueAtTime(1100, now);
+filter.frequency.exponentialRampToValueAtTime(65, now + dur);
+
+const nGain = audioCtx.createGain();
+nGain.gain.setValueAtTime(0.9, now);
+nGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+
+whiteNoise.connect(filter);
+filter.connect(nGain);
+nGain.connect(audioCtx.destination);
 whiteNoise.start(now);
 }
 
@@ -867,10 +1021,10 @@ drawR6Wheel(r7Categories);
 
 let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
-2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (-1 PKT/2s | +5 / -5 PKT | WYBUCH -10 PKT)",
+2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | -1 PKT/2s PO LEKTORZE | WYBUCH -10 PKT)",
 3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | LITERY LUB CAŁE HASŁO BEZ KAR!)",
-5: "RUNDA 5: 💰 POSTAW NA MILION (100 PKT | 5 PYTAŃ | ZAPADNIE CO 3 SEKUNDY)",
+5: "RUNDA 5: 💰 POSTAW NA MILION (100 PKT | 5 PYTAŃ | ZAPADNIE 3D CO 3 SEKUNDY)",
 6: "RUNDA 6: ⚡ RYZYKO - WYBIERANIE GRACZA (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
 7: "RUNDA 7: 🎡 KOŁO KATEGORII + TAJNE OBSTAWIANIE W CIEMNO (20s | MIN. 5 PKT)"
 };
@@ -906,6 +1060,7 @@ roundSummaryView.style.display = "none"; podiumView.style.display = "none";
 qEl.style.display = "block";
 qrContainer.style.display = (data.status === "idle") ? "block" : "none";
 stage.classList.remove("success-glow", "error-glow");
+document.body.classList.remove("shake-screen");
 
 if (data.status !== "podium") {
 stopFireworks();
@@ -927,7 +1082,7 @@ const letters = ["A", "B", "C", "D"];
 if (data.status === "round_summary") {
 clearInterval(timerInterval); clearInterval(wheelRevealInterval);
 timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
+tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
@@ -953,9 +1108,9 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (GOTOWOŚĆ, CZYTANIE, TYKANIE I WYBUCH)
+// RUNDA 2: GORĄCA BOMBA (GOTOWOŚĆ, CZYTANIE, TYKANIE I KOMIKSOWY WYBUCH BOOM!)
 // ============================================================================
-if (data.round === 2 && (data.status === "r2_bomb_wait_ready" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_running" || data.status === "r2_bomb_exploded")) {
+if (data.round === 2) {
 clearInterval(timerInterval);
 timerEl.style.display = 'none';
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -964,29 +1119,41 @@ catEl.style.display = "block";
 catEl.innerText = `🔥 GORĄCA BOMBA: TURA ${data.bombTurn || 1} / 3`;
 r2BombBox.style.display = "flex";
 
-const holderName = getDisplayName(data.nominated);
+const bombEmojiEl = document.getElementById('r2-bomb-emoji');
+const boomWrapEl = document.getElementById('comic-boom-wrap');
+const holderTxtEl = document.getElementById('r2-bomb-holder-txt');
+const holderName = getDisplayName(data.nominated || currentActivePlayers[0]);
+
+bombEmojiEl.style.display = "block";
+boomWrapEl.style.display = "none";
 
 if (data.status === "r2_bomb_wait_ready") {
 setBgMusicActive(true);
-tickSound.pause(); tickSound.currentTime = 0;
-document.getElementById('r2-bomb-emoji').innerText = "💣";
-document.getElementById('r2-bomb-holder-txt').innerText = `ZACZYNA: ${holderName.toUpperCase()}`;
-qEl.innerText = `TURA ${data.bombTurn || 1}/3 | Czekamy aż gracze klikną gotowość na telefonach...`;
+tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
+bombEmojiEl.innerText = "💣";
+bombEmojiEl.style.animationDuration = "0.8s";
+holderTxtEl.innerText = `ZACZYNA: ${holderName.toUpperCase()}!`;
+const readyList = data.readyPlayers || [];
+const readyNames = readyList.map(getDisplayName);
+qEl.innerText = `PRZYGOTOWANIE DO TURY ${data.bombTurn || 1}/3!`;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.length}): ${readyNames.length > 0 ? readyNames.join(", ").toUpperCase() : "KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!"}`;
 
 let bWaitKey = "r2_bwait_" + data.speechTick;
 if (lastSpokenKey !== bWaitKey) {
 lastSpokenKey = bWaitKey;
-speakPolishText(`Przed nami runda Gorąca Bomba, tura ${data.bombTurn}. Zaczyna gracz ${holderName}. Kliknijcie gotowość na telefonach.`);
+speakPolishText(`Gorąca Bomba, tura ${data.bombTurn || 1}. Jako pierwszy bombę dostaje ${holderName}. Kliknijcie gotowość na telefonach!`);
 }
-} else if (data.status === "r2_bomb_speaking") {
+} else if (data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
 setBgMusicActive(false);
 tickSound.pause(); tickSound.currentTime = 0;
-document.getElementById('r2-bomb-emoji').innerText = "💣";
-document.getElementById('r2-bomb-holder-txt').innerText = `TRZYMA BOMBĘ: ${holderName.toUpperCase()}`;
-qEl.innerText = data.question;
+bombEmojiEl.innerText = "💣";
+holderTxtEl.innerText = `⏸️ SŁUCHAJ PYTANIA (${holderName.toUpperCase()}) - ZEGAR STOI!`;
+qEl.innerText = data.question || "Przygotowanie pytania...";
 
 let bSpKey = "r2_bsp_" + data.speechTick;
-if (lastSpokenKey !== bSpKey) {
+if (lastSpokenKey !== bSpKey && data.question) {
 lastSpokenKey = bSpKey;
 speakPolishText(`${holderName}! ${data.question}`, async () => {
 await updateDoc(doc(db, "quizGame", "state"), {
@@ -997,56 +1164,64 @@ tick: Date.now()
 }
 } else if (data.status === "r2_bomb_running") {
 setBgMusicActive(false);
-document.getElementById('r2-bomb-emoji').innerText = "💣";
-document.getElementById('r2-bomb-holder-txt').innerText = `🔥 TRZYMA BOMBĘ: ${holderName.toUpperCase()} (-1 PKT / 2s)!`;
-qEl.innerText = data.question;
-
+bombEmojiEl.innerText = "💣";
 const progress = data.bombProgress || 0;
-const rate = 1.0 + (progress * 1.6); // Przyspieszające tykanie od 1.0x do 2.6x w miarę zbliżania się do wybuchu
+// Przyspieszanie pulsowania ikony bomby i dźwięku tykania im bliżej wybuchu!
+const animDur = Math.max(0.18, 0.75 - progress * 0.55);
+bombEmojiEl.style.animationDuration = `${animDur}s`;
+
+holderTxtEl.innerText = `🔥 TRZYMA BOMBĘ: ${holderName.toUpperCase()} (-1 PKT CO 2s)!`;
+qEl.innerText = data.question || "";
+
+const rate = 1.0 + (progress * 1.65);
 tickSound.playbackRate = rate;
 tickSound.play().catch(()=>{});
 } else if (data.status === "r2_bomb_exploded") {
-tickSound.pause(); tickSound.currentTime = 0;
+tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 stage.classList.add("error-glow");
-document.getElementById('r2-bomb-emoji').innerText = "💥";
+document.body.classList.add("shake-screen");
+bombEmojiEl.style.display = "none";
+boomWrapEl.style.display = "block";
+
 const victimName = getDisplayName(data.bombVictim || data.loser || data.nominated);
-document.getElementById('r2-bomb-holder-txt').innerText = `💥 BUM! WYBUCH W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
+holderTxtEl.innerText = `💥 WYBUCH W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
 qEl.innerText = `KONIEC TURY ${data.bombTurn || 1}/3!`;
 
 let expKey = "r2_exp_" + data.answerTick;
 if (lastPlayedResult !== expKey) {
 lastPlayedResult = expKey;
-playFireworkBoom();
-loseSound.currentTime = 0; loseSound.play().catch(()=>{});
+playMassiveBombExplosion();
 speakPolishText(`Bum! Bomba wybuchła w rękach gracza ${victimName}! Minus dziesięć punktów!`);
 }
+} else {
+qEl.innerText = data.question || "Przygotujcie się na Gorącą Bombę!";
 }
 return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI CO 3 SEKUNDY)
+// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI 3D CO 3 SEKUNDY)
 // ============================================================================
-if (data.round === 5 && data.status && data.status.startsWith("r5_mil_")) {
+if (data.round === 5) {
 clearInterval(timerInterval);
 timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0;
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-const pName = getDisplayName(data.nominated);
+const pName = getDisplayName(data.nominated || currentActivePlayers[0]);
 catEl.style.display = "block";
 catEl.innerText = `💰 POSTAW NA MILION: ${pName.toUpperCase()} | PYTANIE ${data.milQNum || 1}/5 | W GRZE: ${data.milCurrentPts ?? 100} PKT`;
 
 if (data.status === "r5_mil_wait_ready") {
 setBgMusicActive(true);
-qEl.innerText = `KOLEJ NA GRACZA: ${pName.toUpperCase()}!`;
+qEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!`;
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--gold)";
-winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "JESTEM GOTOWY" NA SWOIM TELEFONIE, ABY ROZPOCZEC SERIE 5 PYTAŃ!`;
+winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "STARTUJEMY" NA SWOIM TELEFONIE, ABY ROZPOCZĄĆ SERIĘ 5 PYTAŃ!`;
 let mWaitKey = "r5_mwait_" + data.speechTick;
 if (lastSpokenKey !== mWaitKey) {
 lastSpokenKey = mWaitKey;
-speakPolishText(`Teraz gra gracz ${pName}. Postaw na milion. Kliknij gotowość na swoim telefonie.`);
+speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz sto punktów na starcie. Kliknij gotowość na telefonie!`);
 }
 return;
 }
@@ -1069,7 +1244,7 @@ speakPolishText(`Koniec serii dla gracza ${pName}! Do głównej tabeli trafia ${
 return;
 }
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "Rozdziel punkty na zapadniach!";
 r5MillionBox.style.display = "flex";
 const trapsContainer = document.getElementById('r5-traps-container');
 trapsContainer.innerHTML = "";
@@ -1081,15 +1256,41 @@ const openTraps = data.milOpenTraps || [];
 optionsList.forEach((optText, idx) => {
 const isDropped = openTraps.includes(idx);
 const isResultWinner = (data.status === "r5_mil_q_result" && idx === data.correctIndex);
-const card = document.createElement('div');
-card.className = "mil-trap-card" + (isDropped ? " dropped" : "") + (isResultWinner ? " safe-winner" : "");
-const betVal = bets[idx] !== undefined ? bets[idx] : 0;
-const betDisplay = (data.status === "r5_mil_betting") ? "🔒 ? PKT" : `${betVal} PKT`;
-card.innerHTML = `
-<div class="mil-trap-title">${letters[idx]}: ${optText}</div>
-<div class="mil-trap-bet">${isDropped ? "💥 SPADŁO!" : betDisplay}</div>
+const betVal = bets[idx] !== undefined ? parseInt(bets[idx], 10) : 0;
+const isBettingPhase = (data.status === "r5_mil_betting");
+
+// Generowanie plików banknotów jak w Postaw na Milion
+let bundlesCount = 0;
+if (isBettingPhase) {
+bundlesCount = 2;
+} else if (betVal > 0) {
+bundlesCount = Math.min(10, Math.max(1, Math.ceil(betVal / 10)));
+}
+let bundlesHtml = "";
+for (let b = 0; b < bundlesCount; b++) {
+bundlesHtml += `<div class="cash-bundle"></div>`;
+}
+
+const betLabel = isBettingPhase ? "🔒 ? PKT" : `${betVal} PKT`;
+
+const station = document.createElement('div');
+station.className = "mil-station";
+station.innerHTML = `
+<div class="mil-monitor">
+<div class="mil-monitor-badge">POSTAW NA MILION</div>
+<div class="mil-monitor-ans">${letters[idx]}: ${optText}</div>
+</div>
+<div class="mil-trap-frame ${isDropped ? "dropped" : ""} ${isResultWinner ? "safe-winner" : ""}">
+<div class="mil-trap-pit">💥 PRZEPAŚĆ!</div>
+<div class="mil-trap-doors">
+<div class="mil-cash-wrap">
+<div class="mil-cash-bundles">${bundlesHtml}</div>
+<div class="mil-bet-amount">${betLabel}</div>
+</div>
+</div>
+</div>
 `;
-trapsContainer.appendChild(card);
+trapsContainer.appendChild(station);
 });
 
 if (data.status === "r5_mil_betting") {
@@ -1100,7 +1301,7 @@ winnerEl.style.color = "var(--gold)";
 winnerEl.innerText = `📱 ${pName.toUpperCase()} ROZDZIELA ${data.milCurrentPts} PKT NA ZAPADNIACH (MAX ZAPADNI: ${data.milMaxTraps})...`;
 
 let milQKey = "r5_mil_q_" + data.speechTick;
-if (lastSpokenKey !== milQKey) {
+if (lastSpokenKey !== milQKey && data.question) {
 lastSpokenKey = milQKey;
 let optsSpoken = optionsList.map((o, i) => `${letters[i]}: ${o}`).join(". ");
 speakPolishText(`${pName}, pytanie numer ${data.milQNum}. ${data.question}. ${optsSpoken}`);
@@ -1122,7 +1323,7 @@ stage.classList.add(saved > 0 ? "success-glow" : "error-glow");
 winnerEl.style.display = "block";
 winnerEl.style.color = saved > 0 ? "#00ff00" : "#ff4757";
 winnerEl.innerText = saved > 0
-? `✅ BRAWO! NA POPRAWNEJ ZAPADNI OCALAŁO: ${saved} PKT!`
+? `✅ BRAWO! NA ZAMKNIĘTEJ ZAPADNI OCALAŁO: ${saved} PKT!`
 : `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!`;
 
 let milResKey = "r5_mil_res_" + data.answerTick;
@@ -1196,7 +1397,7 @@ return;
 if (data.status === "r6_blind_bidding" || data.status === "r6_sold") {
 qEl.style.display = "none";
 catEl.style.display = "block";
-catEl.innerText = "WYLOSOWANA KATEGORIA: " + data.category;
+catEl.innerText = "WYLOSOWANA KATEGORIA: " + (data.category || "");
 r6AuctionBox.style.display = "flex";
 
 const bids = data.r6Bids || {};
@@ -1295,7 +1496,7 @@ speechTick: Date.now()
 return;
 }
 
-qEl.style.fontSize = "2.1vw";
+qEl.style.fontSize = "2vw";
 
 if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
 isSuspense = false;
@@ -1307,7 +1508,7 @@ setBgMusicActive(true);
 if (data.status === "setup_nomination" || data.status === "nominating") {
 const ctrlName = getDisplayName(data.controller);
 catEl.style.display = "block";
-catEl.innerText = "KATEGORIA: " + data.category;
+catEl.innerText = "KATEGORIA: " + (data.category || "");
 if (data.tieMsg) {
 winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
 winnerEl.innerText = data.tieMsg;
@@ -1337,13 +1538,13 @@ if ((data.round === 6 || data.round === 7) && data.category) {
 catEl.style.display = "block";
 catEl.innerText = "KATEGORIA: " + data.category;
 }
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--cyan)";
 winnerEl.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
 
 let spKey = "q_speak_" + data.speechTick;
-if (lastSpokenKey !== spKey) {
+if (lastSpokenKey !== spKey && data.question) {
 lastSpokenKey = spKey;
 speakPolishText(data.question, async () => {
 await updateDoc(doc(db, "quizGame", "state"), {
@@ -1361,7 +1562,7 @@ for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if
 qEl.style.display = "none";
 wheelBoard.style.display = "flex";
 wheelCat.style.display = "block";
-wheelCat.innerText = "KATEGORIA: " + data.category;
+wheelCat.innerText = "KATEGORIA: " + (data.category || "");
 wheelWinnersEl.style.display = "flex";
 
 let wSpeechKey = "wheel_cat_" + data.speechTick;
@@ -1443,7 +1644,7 @@ for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if
 qEl.style.display = "none";
 wheelBoard.style.display = "flex";
 wheelCat.style.display = "block";
-wheelCat.innerText = "KATEGORIA: " + data.category;
+wheelCat.innerText = "KATEGORIA: " + (data.category || "");
 wheelWinnersEl.style.display = "flex";
 
 renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
@@ -1476,7 +1677,7 @@ if (!hideLiveCornerScores) {
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 }
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 
 if ((data.round === 1 || data.round === 6 || data.round === 7) && data.options) {
 for(let i=0; i<4; i++) {
@@ -1516,7 +1717,7 @@ winnerEl.innerText = `ODPOWIADA: ${nomName.toUpperCase()} | GRA O PULĘ: ${data.
 if (data.tick !== currentTick) {
 currentTick = data.tick;
 clearInterval(timerInterval);
-tickSound.pause(); tickSound.currentTime = 0;
+tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 let timeLeft = data.round === 3 ? 20 : 12;
 timerEl.style.display = 'flex';
 timerEl.classList.remove('timer-alert');
@@ -1552,7 +1753,7 @@ tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 correctBanner.style.display = "block";
 correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
 
@@ -1591,9 +1792,9 @@ tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 correctBanner.style.display = "block";
-correctVal.innerText = data.correctText;
+correctVal.innerText = data.correctText || "";
 
 wheelWinnersEl.style.display = "flex";
 const winners = data.r3Winners || [];
@@ -1613,7 +1814,7 @@ else loseSound.play().catch(()=>{});
 lastPlayedResult = "r3_end_" + data.answerTick;
 }
 
-} else if (data.status === "verifying" || data.status.startsWith("results_pending_")) {
+} else if (data.status === "verifying" || (data.status && data.status.startsWith("results_pending_"))) {
 isSuspense = true;
 clearInterval(timerInterval); timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0;
@@ -1621,7 +1822,7 @@ tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(false);
 suspenseSound.play().catch(()=>{});
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 const fastName = getDisplayName(data.fastest);
 
 if (data.selectedIndex !== undefined && data.options) {
@@ -1642,7 +1843,7 @@ isSuspense = false;
 setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
-qEl.innerText = data.question;
+qEl.innerText = data.question || "";
 winnerEl.style.display = "block";
 
 if (data.status === "timeout") {
