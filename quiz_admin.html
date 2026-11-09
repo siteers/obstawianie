@@ -130,7 +130,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label>Wybierz rundę:</label>
 <select id="roundSel">
 <option value="1">Runda 1: Wyścig ABCD (12s po lektorze | 15/12/10/8 pkt | Bez spoilera + Fix listy)</option>
-<option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | -1 pkt/1s | Wybuch -10 pkt)</option>
+<option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | -1 pkt/2s po lektorze | Wybuch -10 pkt)</option>
 <option value="3">Runda 3: ✍️ Szybkie Pisanie (20s po lektorze | 15/12/10/8 pkt | Bez spoilera)</option>
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (60s | Litery pod ręką LUB całe hasło bez kar!)</option>
 <option value="5">Runda 5: 💰 POSTAW NA MILION (100 pkt | 5 pytań | Zapadnie co 3s | Ułatwienia dla Jasia)</option>
@@ -255,12 +255,105 @@ const familyR4Questions = parseR4(QDB.familyR4Questions);
 const generalR4Questions = parseR4(QDB.generalR4Questions);
 const rawR6_Dedicated = parseR4(QDB.rawR6_Dedicated);
 
-const millionStandardQ4Opts = parseR1(QDB.millionStandardQ4Opts);
-const millionStandardQ3Opts = parseR1(QDB.millionStandardQ3Opts);
-const millionStandardQ2Opts = parseR1(QDB.millionStandardQ2Opts);
-const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts);
-const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts);
-const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts);
+// Wbudowana gwarantowana baza do Rundy 5 (Postaw na milion), aby zawsze działała niezależnie od baza_pytan.js!
+const defaultMilStdQ4 = `
+Które miasto jest stolicą Australii?|Sydney;Melbourne;Canberra;Brisbane|2
+W którym roku odbyła się bitwa pod Grunwaldem?|1385;1410;1492;1525|1
+Jaki pierwiastek chemiczny ma symbol Au?|Srebro;Złoto;Miedź;Aluminium|1
+Ile strun ma klasyczna gitara akustyczna?|Cztery;Pięć;Sześć;Osiem|2
+Która planeta Układu Słonecznego słynie z Wielkiej Czerwonej Plamy?|Mars;Jowisz;Saturn;Wenus|1
+Kto napisał dramat 'Balladyna'?|Adam Mickiewicz;Juliusz Słowacki;Bolesław Prus;Henryk Sienkiewicz|1
+W jakim państwie leży góra Fudżi (Fuji)?|W Chinach;W Japonii;W Korei;W Tajlandii|1
+Ile wynosi pole kwadratu o obwodzie 20 cm?|16 cm²;20 cm²;25 cm²;100 cm²|2
+Który ocean jest największy na Ziemi?|Atlantycki;Indyjski;Spokojny (Pacyfik);Arktyczny|2
+Jak nazywa się przyrząd do pomiaru ciśnienia atmosferycznego?|Termometr;Barometr;Higrometr;Anemometr|1
+Który z tych ssaków składa jaja?|Kangur;Dziobak;Koala;Wydra|1
+W jakim mieście znajduje się muzeum Luwr?|W Rzymie;W Londynie;W Paryżu;W Madrycie|2
+Ile wynosi pierwiastek kwadratowy z liczby 169?|11;12;13;14|2
+Kto skomponował słynną 'Odę do radości' (hymn UE)?|Mozart;Chopin;Beethoven;Bach|2
+Nad jaką rzeką leży stolica Wielkiej Brytanii – Londyn?|Nad Sekwaną;Nad Tamizą;Nad Renem;Nad Dunajem|1
+W którym roku człowiek po raz pierwszy stanął na Księżycu?|1961;1965;1969;1974|2
+Który gaz stanowi największą część (ok. 78%) powietrza na Ziemi?|Tlen;Dwutlenek węgla;Azot;Wodór|2
+Jak nazywa się najmniejsze państwo na świecie?|Monako;San Marino;Watykan;Liechtenstein|2
+W jakim kraju znajduje się pustynia Atakama?|W Brazylii;W Chile;W Meksyku;W Egipcie|1
+Kto jest autorem powieści 'Stary człowiek i morze'?|Ernest Hemingway;George Orwell;Mark Twain;Jack London|0
+Jaki metal ma symbol chemiczny Ag?|Złoto;Srebro;Rtęć;Platyna|1
+W którym mieście stoją słynne Sukiennice?|W Warszawie;W Krakowie;W Poznaniu;W Gdańsku|1
+Ile stopni ma kąt prosty?|45 stopni;90 stopni;120 stopni;180 stopni|1
+Która planeta jest położona najbliżej Słońca?|Wenus;Merkury;Mars;Ziemia|1
+Jak nazywa się stolica Hiszpanii?|Barcelona;Madryt;Sewilla;Walencja|1
+Kto namalował obraz 'Słoneczniki'?|Claude Monet;Vincent van Gogh;Pablo Picasso;Rembrandt|1
+Ile boków ma siedmiokąt?|Pięć;Sześć;Siedem;Osiem|2
+W jakim sporcie używa się kamieni i szczotek na lodzie?|W hokeju;W curlingu;W saneczkarstwie;W łyżwiarstwie|1
+Które zwierzę jest symbolem Białowieskiego Parku Narodowego?|Łoś;Żubr;Niedźwiedź;Ryś|1
+Jak nazywa się najwyższy szczyt Karkonoszy?|Rysy;Śnieżka;Babia Góra;Trzy Korony|1
+Z jakiego państwa wywodzi się taniec flamenco?|Z Włoch;Z Hiszpanii;Z Portugalii;Z Grecji|1
+Ile minut liczy dokładnie półtorej godziny?|75 minut;90 minut;100 minut;120 minut|1
+Który zmysł odpowiada za równowagę (znajduje się w uchu wewnętrznym)?|Wzrok;Błędnik (zmysł równowagi);Węch;Dotyk|1
+Jak nazywa się waluta obowiązująca w Japonii?|Juan;Jen;Won;Bat|1
+W którym roku zakończyła się II wojna światowa?|1939;1944;1945;1948|2
+Kto napisał 'Pana Tadeusza'?|Juliusz Słowacki;Adam Mickiewicz;Cyprian Kamil Norwid;Aleksander Fredro|1`;
+
+const defaultMilStdQ3 = `
+Które z tych jezior w Polsce jest najgłębsze?|Śniardwy;Hańcza;Morskie Oko|1
+Ile kręgów szyjnych ma żyrafa (tyle samo co człowiek)?|Siedem;Dwanaście;Dwadzieścia|0
+W jakim kraju wynaleziono papier i kompas?|W Egipcie;W Chinach;W Grecji|1
+Która kość w ciele człowieka jest najdłuższa?|Kość ramienna;Kość udowa;Piszczel|1
+Jaką liczbą rzymską zapisuje się wartość 500?|C;D;M|1
+Który kontynent ma najwięcej państw?|Azja;Afryka;Ameryka Południowa|1
+W jakim mieście znajduje się Zamek Królewski na Wawelu?|W Warszawie;W Krakowie;W Malborku|1
+Który gaz jest lżejszy od powietrza i unosi balony?|Dwutlenek węgla;Hel;Tlen|1
+Ile wynosi 20 procent z liczby 150?|20;30;40|1
+Który kompozytor urodził się w Żelazowej Woli?|Fryderyk Chopin;Stanisław Moniuszko;Ignacy Jan Paderewski|0
+Na jakim kontynencie leży pustynia Sahara?|W Azji;W Afryce;W Australii|1
+Ile tercji ma mecz hokeja na lodzie?|Dwie;Trzy;Cztery|1`;
+
+const defaultMilStdQ2 = `
+Która rzeka w Polsce jest dłuższa?|Odra;Wisła|1
+Czy światło porusza się szybciej niż dźwięk?|Tak (Światło);Nie (Dźwięk)|0
+Które miasto leży bardziej na północ?|Gdańsk;Kraków|0
+Czy wieloryb oddycha za pomocą płuc czy skrzeli?|Za pomocą płuc;Za pomocą skrzeli|0
+W którym wieku wybuchła II wojna światowa?|W XIX wieku;W XX wieku|1
+Czy zero jest liczbą parzystą?|Tak;Nie|0
+Która planeta jest większa?|Ziemia;Jowisz|1
+Czy nietoperz jest ptakiem czy ssakiem?|Ptakiem;Ssakiem|1
+Po której stronie jezdni jeździ się w Wielkiej Brytanii i na Cyprze?|Po lewej;Po prawej|0
+Czy diament składa się z czystego węgla?|Tak;Nie|0
+Który ocean leży między Europą a Ameryką Północną?|Ocean Spokojny;Ocean Atlantycki|1
+Czy rok przestępny ma 366 dni?|Tak (366 dni);Nie (364 dni)|0`;
+
+const defaultMilJasQ4 = `
+Jakiego koloru jest dojrzały banan?|Niebieski;Żółty;Czerwony;Fioletowy|1
+Ile nóg ma każdy piesek i kotek?|Dwie;Trzy;Cztery;Sześć|2
+Kto mieszka w ulu i robi słodki miód?|Mrówka;Mucha;Pszczoła;Pająk|2
+Ile to jest 5 dodać 5?|Osiem;Dziewięć;Dziesięć;Dwanaście|2
+Jak ma na imię bałwanek z bajki 'Kraina Lodu'?|Sven;Olaf;Shrek;Simba|1
+W jakiej porze roku pada śnieg i lepimy bałwana?|Latem;Wiosną;Zimą;Jesienią|2
+Co daje nam krowa na pastwisku?|Miód;Białe mleko;Jajka;Wełnę|1
+Ile kół ma zwykły rower?|Jedno;Dwa;Cztery;Sześć|1
+Jak po angielsku nazywa się 'Kot'?|Dog;Cat;Bird;Fish|1
+Z czego robi się chrupiące frytki?|Z jabłek;Z ziemniaków;Z truskawek;Z ogórków|1
+Kto jeździ czerwonym wozem i gasi pożary?|Listonosz;Strażak;Kucharz;Malarz|1
+Jakiego koloru jest trawa wiosną na łące?|Czerwona;Zielona;Niebieska;Czarna|1`;
+
+const defaultMilJasQ3 = `
+Na jakim świetle przechodzimy przez pasy na ulicy?|Na czerwonym;Na zielonym;Na żółtym|1
+Z czego budujemy zamki na plaży nad morzem?|Z kamieni;Z piasku;Z trawy|1
+Które zwierzę ma bardzo długą trąbę i wielkie uszy?|Żyrafa;Słoń;Zebra|1
+Ile palców mamy u jednej ręki?|Trzy;Pięć;Dziesięć|1`;
+
+const defaultMilJasQ2 = `
+Czy lody są zimne czy gorące?|Zimne;Gorące|0
+Kto jest większy: słoń czy mała myszka?|Słoń;Mała myszka|0
+Czy ryby pływają w wodzie?|Tak, w wodzie;Nie, latają w chmurach|0
+Czy w nocy na niebie świeci Księżyc?|Tak, Księżyc;Nie, Słońce|0`;
+
+const millionStandardQ4Opts = parseR1(QDB.millionStandardQ4Opts || defaultMilStdQ4);
+const millionStandardQ3Opts = parseR1(QDB.millionStandardQ3Opts || defaultMilStdQ3);
+const millionStandardQ2Opts = parseR1(QDB.millionStandardQ2Opts || defaultMilStdQ2);
+const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || defaultMilJasQ4);
+const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || defaultMilJasQ3);
+const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || defaultMilJasQ2);
 
 const r5TFMasterByPlayer = {
 Lila: parseTF(BDB.Lila),
@@ -389,13 +482,18 @@ let r7CarryOverPool = 0;
 let currentState = null;
 let r6Controller = "";
 
-// Zmienne dla Rundy 2: GORĄCA BOMBA (3 tury, 60-120s, -1 pkt / 1s, +5/-5 pkt, wybuch -10 pkt)
+// Zmienne dla Rundy 2: GORĄCA BOMBA (3 tury, 60-120s, -1 pkt / 2s po lektorze, +5/-5 pkt, wybuch -10 pkt)
 let bombTurnNum = 0;
 let bombHolderIdx = 0;
 let bombPlayerQPos = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
-let bombSecondInterval = null;
+let bombTotalDurationMs = 75000;
+let bombRemainingMs = 75000;
+let bombActiveRunStartedAt = 0;
+let bombPenaltyTicker = null;
 let bombExplodeTimeout = null;
 let lastBombAnsKey = "";
+let lastBombReadyKey = "";
+let lastBombStartRunKey = "";
 
 // Zmienne dla Rundy 5: POSTAW NA MILION (100 pkt, 5 pytań, zapadnie co 3s)
 let milPlayerIdx = 0;
@@ -403,6 +501,7 @@ let milQIdx = 0;
 let milCurrentPoints = 100;
 let milTrapdoorTimer = null;
 let lastMilHandledKey = "";
+let lastMilReadyKey = "";
 
 // Timery globalne i klucze blokad
 let suspenseTimer = null;
@@ -425,8 +524,18 @@ clearTimeout(r1QuestionTimer); r1QuestionTimer = null;
 clearTimeout(r3QuestionTimer); r3QuestionTimer = null;
 clearTimeout(r7BiddingTimer); r7BiddingTimer = null;
 clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
-clearInterval(bombSecondInterval); bombSecondInterval = null;
+clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
 clearTimeout(milTrapdoorTimer); milTrapdoorTimer = null;
+}
+
+function pauseBombTimersOnly() {
+if (bombActiveRunStartedAt > 0) {
+const elapsed = Date.now() - bombActiveRunStartedAt;
+bombRemainingMs = Math.max(1500, bombRemainingMs - elapsed);
+bombActiveRunStartedAt = 0;
+}
+clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
+clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
 }
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
@@ -537,7 +646,7 @@ pool: currentPool
 });
 }
 
-// --- RUNDA 1: WYŚCIG ABCD (KOLEJKA TIMESTAMP + BRAK SPOILERA) ---
+// --- RUNDA 1: WYŚCIG ABCD ---
 async function finalizeR1Question() {
 if (!currentState || currentState.round !== 1) return;
 const r1Key = "r1_fin_" + currentState.speechTick;
@@ -576,7 +685,7 @@ answerTick: Date.now()
 });
 }
 
-// --- RUNDA 3: SZYBKIE PISANIE (BRAK SPOILERA DO KOŃCA) ---
+// --- RUNDA 3: SZYBKIE PISANIE ---
 function normalizeAnswerStr(s) {
 return (s || "").toString().trim().toLowerCase()
 .normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
@@ -622,8 +731,12 @@ answerTick: Date.now()
 });
 }
 
-// --- RUNDA 2: GORĄCA BOMBA (3 TURY PO 60-120s, -1 PKT / 1s, +5/-5 PKT, WYBUCH -10 PKT) ---
-async function startBombRoundTurn(turnIndex) {
+// ============================================================================
+// RUNDA 2: GORĄCA BOMBA
+// 1) Powiadomienie kto zaczyna i czekanie na GOTOWOŚĆ przed każdą z 3 tur!
+// 2) Czas bomby i kara -1 pkt co 2 sekundy lecą DOPIERO PO PRZECZYTANIU PYTANIA!
+// ============================================================================
+async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
 bombTurnNum = turnIndex;
 if (bombTurnNum > 3) {
@@ -632,27 +745,30 @@ return;
 }
 const activeList = getSelectedActivePlayers();
 bombHolderIdx = (bombTurnNum - 1) % activeList.length;
-const holder = activeList[bombHolderIdx];
-const durationSec = Math.floor(Math.random() * 61) + 60;
+const starter = activeList[bombHolderIdx];
 
-statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA) - Tura ${bombTurnNum}/3! Czas do wybuchu: ${durationSec}s. Zaczyna: ${getDisplayName(holder)}`;
+const durationSec = Math.floor(Math.random() * 61) + 60; // 60 - 120 sekund aktywnego tykania
+bombTotalDurationMs = durationSec * 1000;
+bombRemainingMs = bombTotalDurationMs;
+bombActiveRunStartedAt = 0;
 
-await sendBombQuestionToCurrentHolder(true);
+statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA) - Przygotowanie Tury ${bombTurnNum}/3! Zaczyna: ${getDisplayName(starter)}. Czekam na GOTOWOŚĆ graczy (lub kliknij START GRY)...`;
 
-bombSecondInterval = setInterval(async () => {
-if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_active") return;
-const curHolder = currentState.nominated;
-if (curHolder) {
-try { await changePlayerScoreDelta(curHolder, -1); } catch (e) {}
+await setDoc(doc(db, "quizGame", "state"), {
+status: "r2_bomb_wait_ready",
+round: 2,
+bombTurn: bombTurnNum,
+nominated: starter,
+readyPlayers: [],
+activePlayers: activeList,
+playerNames: playerNamesMap,
+speechTick: Date.now(),
+pool: currentPool
+});
 }
-}, 1000);
 
-bombExplodeTimeout = setTimeout(async () => {
-await explodeBombNow();
-}, durationSec * 1000);
-}
-
-async function sendBombQuestionToCurrentHolder(isNewTurn = false) {
+async function sendBombQuestionSpeaking() {
+pauseBombTimersOnly();
 const activeList = getSelectedActivePlayers();
 const holder = activeList[bombHolderIdx % activeList.length];
 const qList = (allDBs[currentPool] && allDBs[currentPool][2] && allDBs[currentPool][2][holder]) || [];
@@ -660,29 +776,57 @@ const qPos = (bombPlayerQPos[holder] || 0) % (qList.length || 1);
 bombPlayerQPos[holder] = (bombPlayerQPos[holder] || 0) + 1;
 const qItem = qList[qPos] || { q: "Czy Ziemia jest okrągła?", a: true };
 
-await setDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_active",
+const progressRatio = Math.min(0.95, Math.max(0, 1 - (bombRemainingMs / bombTotalDurationMs)));
+
+statusEl.innerText = `💣 Tura ${bombTurnNum}/3 | Lektor czyta pytanie dla: ${getDisplayName(holder)} (Pozostało czasu bomby: ${(bombRemainingMs/1000).toFixed(0)}s - zegar wstrzymany na czas czytania)`;
+
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r2_bomb_speaking",
 round: 2,
 bombTurn: bombTurnNum,
 nominated: holder,
 r5Age: r5Ages[holder] || 10,
 question: qItem.q,
 r5CorrectBool: qItem.a,
-activePlayers: activeList,
-playerNames: playerNamesMap,
-speechTick: Date.now(),
-pool: currentPool
-}, { merge: !isNewTurn });
+bombProgress: progressRatio,
+speechTick: Date.now()
+});
+}
+
+function activateBombTimersAfterSpeech() {
+pauseBombTimersOnly();
+bombActiveRunStartedAt = Date.now();
+const holder = currentState ? currentState.nominated : getSelectedActivePlayers()[bombHolderIdx];
+
+statusEl.innerText = `🔥 BOMBA TYKA u gracza ${getDisplayName(holder)}! (-1 pkt co 2 sekundy | Pozostało do wybuchu: ${(bombRemainingMs/1000).toFixed(1)}s)`;
+
+// Kara -1 pkt za każde 2 sekundy (2000 ms) trzymania bomby po przeczytaniu pytania
+bombPenaltyTicker = setInterval(async () => {
+if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running") return;
+const curHolder = currentState.nominated;
+if (curHolder) {
+try {
+await changePlayerScoreDelta(curHolder, -1);
+const elapsed = Date.now() - bombActiveRunStartedAt;
+const curRem = Math.max(0, bombRemainingMs - elapsed);
+const prog = Math.min(0.98, Math.max(0, 1 - (curRem / bombTotalDurationMs)));
+await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog });
+} catch (e) {}
+}
+}, 2000);
+
+bombExplodeTimeout = setTimeout(async () => {
+await explodeBombNow();
+}, bombRemainingMs);
 }
 
 async function explodeBombNow() {
-clearInterval(bombSecondInterval); bombSecondInterval = null;
-clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
+pauseBombTimersOnly();
 const activeList = getSelectedActivePlayers();
 const victim = (currentState && currentState.nominated) ? currentState.nominated : activeList[bombHolderIdx % activeList.length];
 
 await changePlayerScoreDelta(victim, -10);
-statusEl.innerText = `💥 BUM! Bomba wybuchła u gracza ${getDisplayName(victim)} (-10 PKT)! Tura ${bombTurnNum}/3 zakończona.`;
+statusEl.innerText = `💥 BUM! Bomba wybuchła u gracza ${getDisplayName(victim)} (-10 PKT)! Za 8 sekund ekran gotowości przed kolejną turą...`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_exploded",
@@ -694,11 +838,14 @@ speechTick: Date.now()
 });
 
 autoFlowTimer = setTimeout(() => {
-startBombRoundTurn(bombTurnNum + 1);
-}, 7000);
+prepareBombTurnWaitReady(bombTurnNum + 1);
+}, 8000);
 }
 
-// --- RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI CO 3 SEKUNDY) ---
+// ============================================================================
+// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI CO 3 SEKUNDY)
+// Z powiadomieniem kto gra i przyciskiem GOTOWOŚCI przed startem gracza!
+// ============================================================================
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
 const activeList = getSelectedActivePlayers();
@@ -710,10 +857,25 @@ return;
 }
 milQIdx = 0;
 milCurrentPoints = 100;
-await sendMillionQuestionToPlayer();
+const player = r5Order[milPlayerIdx];
+
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ na swoim telefonie (lub kliknij START GRY tutaj)...`;
+
+await setDoc(doc(db, "quizGame", "state"), {
+status: "r5_mil_wait_ready",
+round: 5,
+nominated: player,
+milQNum: 1,
+milCurrentPts: 100,
+activePlayers: activeList,
+playerNames: playerNamesMap,
+speechTick: Date.now(),
+pool: currentPool
+});
 }
 
 async function sendMillionQuestionToPlayer() {
+clearAllAdminTimers();
 const activeList = getSelectedActivePlayers();
 const player = r5Order[milPlayerIdx];
 const pQuestions = getMillionQuestionsForPlayer(player, currentPool, milPlayerIdx);
@@ -894,6 +1056,14 @@ speechTick: Date.now()
 
 // --- STEROWANIE GŁÓWNE ADMINA ---
 async function adminForceContinue() {
+if (currentState && currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
+await sendBombQuestionSpeaking();
+return;
+}
+if (currentState && currentState.round === 5 && currentState.status === "r5_mil_wait_ready") {
+await sendMillionQuestionToPlayer();
+return;
+}
 await nextQuestion();
 }
 
@@ -940,9 +1110,9 @@ let activeList = getSelectedActivePlayers();
 if (r === 2) {
 if (currentQIndex[2] === -1) {
 currentQIndex[2] = 0;
-await startBombRoundTurn(1);
+await prepareBombTurnWaitReady(1);
 } else {
-await startBombRoundTurn(bombTurnNum + 1);
+await prepareBombTurnWaitReady(bombTurnNum + 1);
 }
 return;
 }
@@ -1051,7 +1221,7 @@ window.startNominationPhase = startNominationPhase;
 if (!window.QUIZ_QUESTIONS_RAW || !window.BOMB_TF_RAW) {
 showError("Brak plików baza_pytan.js lub baza_bomba.js w tym samym folderze!");
 } else {
-statusEl.innerText = `✅ SYSTEM GOTOWY (7 Rund + 12 Puli załadowano z plików JS)! Wybierz kto dziś gra i kliknij START GRY.`;
+statusEl.innerText = `✅ SYSTEM GOTOWY (7 Rund + 12 Puli załadowano poprawnie)! Wybierz kto dziś gra i kliknij START GRY.`;
 }
 
 // --- NASŁUCHIWANIE STANU GRY W CZASIE RZECZYWISTYM ---
@@ -1110,11 +1280,33 @@ finalizeR1Question();
 }
 }
 
-// RUNDA 2: GORĄCA BOMBA - ODPOWIEDŹ GRACZA
+// RUNDA 2: GORĄCA BOMBA - GOTOWOŚĆ PRZED TURĄ, START PO LEKTORZE I ODPOWIEDŹ
+if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
+const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
+const readyList = currentState.readyPlayers || [];
+statusEl.innerText = `💣 Gorąca Bomba (Tura ${currentState.bombTurn}/3 - zaczyna ${getDisplayName(currentState.nominated)}) | Gotowi: ${readyList.length}/${activeList.length}`;
+if (activeList.length > 0 && activeList.every(p => readyList.includes(p))) {
+const bRKey = "bomb_rdy_" + currentState.bombTurn + "_" + currentState.speechTick;
+if (lastBombReadyKey !== bRKey) {
+lastBombReadyKey = bRKey;
+setTimeout(() => { sendBombQuestionSpeaking(); }, 800);
+}
+}
+}
+
+if (currentState.round === 2 && currentState.status === "r2_bomb_running") {
+const runKey = "bomb_run_" + currentState.tick;
+if (lastBombStartRunKey !== runKey) {
+lastBombStartRunKey = runKey;
+activateBombTimersAfterSpeech();
+}
+}
+
 if (currentState.round === 2 && currentState.status === "r2_bomb_answered") {
 const ansKey = "bomb_ans_" + currentState.answerTick;
 if (lastBombAnsKey !== ansKey) {
 lastBombAnsKey = ansKey;
+pauseBombTimersOnly();
 const player = currentState.nominated;
 const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
 const ptsDelta = isCorrect ? 5 : -5;
@@ -1126,7 +1318,7 @@ const activeList = getSelectedActivePlayers();
 bombHolderIdx = (bombHolderIdx + 1) % activeList.length;
 const nextHolder = activeList[bombHolderIdx];
 statusEl.innerText = `💣 ${getDisplayName(player)}: ${isCorrect ? "✅ DOBRZE (+5 pkt)" : "❌ ŹLE (-5 pkt)"}! Bomba leci do: ${getDisplayName(nextHolder)}!`;
-await sendBombQuestionToCurrentHolder(false);
+await sendBombQuestionSpeaking();
 } catch (e) { showError(e.message); }
 })();
 }
@@ -1148,7 +1340,7 @@ finalizeR3Question();
 }
 }
 
-// RUNDA 4: ODSŁANIANIE HASŁA (WSPARCIE DLA WPISANIA CAŁEGO HASŁA BEZ KAR)
+// RUNDA 4: ODSŁANIANIE HASŁA
 if (currentState.status === "wheel_reading" && currentState.round === 4) {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const winners = currentState.wheelWinners || [];
@@ -1182,7 +1374,15 @@ answerTick: Date.now()
 }
 }
 
-// RUNDA 5: POSTAW NA MILION - ZATWIERDZENIE ZAPADNI
+// RUNDA 5: POSTAW NA MILION - GOTOWOŚĆ GRACZA I ZATWIERDZENIE ZAPADNI
+if (currentState.round === 5 && currentState.status === "r5_mil_ready_go") {
+const mRKey = "mil_go_" + currentState.speechTick;
+if (lastMilReadyKey !== mRKey) {
+lastMilReadyKey = mRKey;
+sendMillionQuestionToPlayer();
+}
+}
+
 if (currentState.round === 5 && currentState.status === "r5_mil_locked") {
 const milKey = "mil_lock_" + currentState.answerTick;
 if (lastMilHandledKey !== milKey) {
