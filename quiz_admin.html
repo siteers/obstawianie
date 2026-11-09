@@ -130,10 +130,10 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label>Wybierz rundę:</label>
 <select id="roundSel">
 <option value="1">Runda 1: Wyścig ABCD (12s po lektorze | 15/12/10/8 pkt | Bez spoilera + Fix listy)</option>
-<option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | -1 pkt/2s po lektorze | Wybuch -10 pkt)</option>
+<option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | +10/-5 pkt | -1 pkt/2s po lektorze | Wybuch -10 pkt)</option>
 <option value="3">Runda 3: ✍️ Szybkie Pisanie (20s po lektorze | 15/12/10/8 pkt | Bez spoilera)</option>
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (60s | Litery pod ręką LUB całe hasło bez kar!)</option>
-<option value="5">Runda 5: 💰 POSTAW NA MILION (100 pkt | 5 pytań | Zapadnie co 3s | Ułatwienia dla Jasia)</option>
+<option value="5">Runda 5: 💰 POSTAW NA MILION (100 pkt | 5 pytań | Zapadnie 3D co 3s | Ułatwienia dla Jasia)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (12s | ±20 pkt sam / ±10 pkt rywal)</option>
 <option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (Min. 5 pkt | Stoper 20s | Automat 5 pkt)</option>
 </select><br>
@@ -255,7 +255,7 @@ const familyR4Questions = parseR4(QDB.familyR4Questions);
 const generalR4Questions = parseR4(QDB.generalR4Questions);
 const rawR6_Dedicated = parseR4(QDB.rawR6_Dedicated);
 
-// Wbudowana gwarantowana baza do Rundy 5 (Postaw na milion), aby zawsze działała niezależnie od baza_pytan.js!
+// Wbudowana gwarantowana baza do Rundy 5 (Postaw na milion), aby zawsze działała w 100%
 const defaultMilStdQ4 = `
 Które miasto jest stolicą Australii?|Sydney;Melbourne;Canberra;Brisbane|2
 W którym roku odbyła się bitwa pod Grunwaldem?|1385;1410;1492;1525|1
@@ -355,6 +355,13 @@ const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || defaultMilJasQ4);
 const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || defaultMilJasQ3);
 const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || defaultMilJasQ2);
 
+const fallbackBombTF = parseTF(`
+Czy Ziemia krąży wokół Słońca?|1
+Czy tydzień ma siedem dni?|1
+Czy lód jest zimny?|1
+Czy Słońce świeci w nocy?|0
+Czy ryby pływają w wodzie?|1`);
+
 const r5TFMasterByPlayer = {
 Lila: parseTF(BDB.Lila),
 Kaja: parseTF(BDB.Kaja),
@@ -364,11 +371,13 @@ Jas: parseTF(BDB.Jas)
 const extraTFAdultsAndHard = parseTF(BDB.Extra);
 
 ["Lila", "Kaja", "Darek", "Jas"].forEach(pl => {
-if (r5TFMasterByPlayer[pl].length > 0 && extraTFAdultsAndHard.length > 0) {
-while (r5TFMasterByPlayer[pl].length < 240) {
-const idx = r5TFMasterByPlayer[pl].length % extraTFAdultsAndHard.length;
-r5TFMasterByPlayer[pl].push(extraTFAdultsAndHard[idx]);
+if (!r5TFMasterByPlayer[pl] || r5TFMasterByPlayer[pl].length === 0) {
+r5TFMasterByPlayer[pl] = [...fallbackBombTF];
 }
+const sourceExtra = extraTFAdultsAndHard.length > 0 ? extraTFAdultsAndHard : r5TFMasterByPlayer[pl];
+while (r5TFMasterByPlayer[pl].length < 240) {
+const idx = r5TFMasterByPlayer[pl].length % sourceExtra.length;
+r5TFMasterByPlayer[pl].push(sourceExtra[idx]);
 }
 });
 
@@ -482,7 +491,7 @@ let r7CarryOverPool = 0;
 let currentState = null;
 let r6Controller = "";
 
-// Zmienne dla Rundy 2: GORĄCA BOMBA (3 tury, 60-120s, -1 pkt / 2s po lektorze, +5/-5 pkt, wybuch -10 pkt)
+// Zmienne dla Rundy 2: GORĄCA BOMBA (3 tury, 60-120s, -1 pkt / 2s po lektorze, +10/-5 pkt, wybuch -10 pkt)
 let bombTurnNum = 0;
 let bombHolderIdx = 0;
 let bombPlayerQPos = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
@@ -490,6 +499,7 @@ let bombTotalDurationMs = 75000;
 let bombRemainingMs = 75000;
 let bombActiveRunStartedAt = 0;
 let bombPenaltyTicker = null;
+let bombProgressTicker = null;
 let bombExplodeTimeout = null;
 let lastBombAnsKey = "";
 let lastBombReadyKey = "";
@@ -525,6 +535,7 @@ clearTimeout(r3QuestionTimer); r3QuestionTimer = null;
 clearTimeout(r7BiddingTimer); r7BiddingTimer = null;
 clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
 clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
+clearInterval(bombProgressTicker); bombProgressTicker = null;
 clearTimeout(milTrapdoorTimer); milTrapdoorTimer = null;
 }
 
@@ -536,6 +547,7 @@ bombActiveRunStartedAt = 0;
 }
 clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
 clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
+clearInterval(bombProgressTicker); bombProgressTicker = null;
 }
 
 onSnapshot(collection(db, "quizScores"), (snap) => {
@@ -733,8 +745,9 @@ answerTick: Date.now()
 
 // ============================================================================
 // RUNDA 2: GORĄCA BOMBA
-// 1) Powiadomienie kto zaczyna i czekanie na GOTOWOŚĆ przed każdą z 3 tur!
-// 2) Czas bomby i kara -1 pkt co 2 sekundy lecą DOPIERO PO PRZECZYTANIU PYTANIA!
+// - Ekran gotowości przed każdą z 3 tur i informacja kto zaczyna
+// - Zegar i kara -1 pkt co 2s ruszają DOPIERO PO PRZECZYTANIU PYTANIA
+// - Dobra odpowiedź: +10 pkt | Zła: -5 pkt | Wybuch: -10 pkt
 // ============================================================================
 async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
@@ -759,6 +772,8 @@ status: "r2_bomb_wait_ready",
 round: 2,
 bombTurn: bombTurnNum,
 nominated: starter,
+question: `Tura ${bombTurnNum}/3! Jako pierwszy bombę bierze: ${getDisplayName(starter)}!`,
+bombProgress: 0,
 readyPlayers: [],
 activePlayers: activeList,
 playerNames: playerNamesMap,
@@ -774,23 +789,26 @@ const holder = activeList[bombHolderIdx % activeList.length];
 const qList = (allDBs[currentPool] && allDBs[currentPool][2] && allDBs[currentPool][2][holder]) || [];
 const qPos = (bombPlayerQPos[holder] || 0) % (qList.length || 1);
 bombPlayerQPos[holder] = (bombPlayerQPos[holder] || 0) + 1;
-const qItem = qList[qPos] || { q: "Czy Ziemia jest okrągła?", a: true };
+const qItem = qList[qPos] || { q: "Czy Ziemia krąży wokół Słońca?", a: true };
 
 const progressRatio = Math.min(0.95, Math.max(0, 1 - (bombRemainingMs / bombTotalDurationMs)));
 
-statusEl.innerText = `💣 Tura ${bombTurnNum}/3 | Lektor czyta pytanie dla: ${getDisplayName(holder)} (Pozostało czasu bomby: ${(bombRemainingMs/1000).toFixed(0)}s - zegar wstrzymany na czas czytania)`;
+statusEl.innerText = `💣 Tura ${bombTurnNum}/3 | Lektor czyta pytanie dla: ${getDisplayName(holder)} (Pozostało do wybuchu: ${(bombRemainingMs/1000).toFixed(0)}s - zegar wstrzymany na czas czytania)`;
 
-await updateDoc(doc(db, "quizGame", "state"), {
+await setDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_speaking",
 round: 2,
 bombTurn: bombTurnNum,
 nominated: holder,
 r5Age: r5Ages[holder] || 10,
-question: qItem.q,
-r5CorrectBool: qItem.a,
+question: qItem.q || "Czy Ziemia krąży wokół Słońca?",
+r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
 bombProgress: progressRatio,
-speechTick: Date.now()
-});
+activePlayers: activeList,
+playerNames: playerNamesMap,
+speechTick: Date.now(),
+pool: currentPool
+}, { merge: true });
 }
 
 function activateBombTimersAfterSpeech() {
@@ -800,17 +818,25 @@ const holder = currentState ? currentState.nominated : getSelectedActivePlayers(
 
 statusEl.innerText = `🔥 BOMBA TYKA u gracza ${getDisplayName(holder)}! (-1 pkt co 2 sekundy | Pozostało do wybuchu: ${(bombRemainingMs/1000).toFixed(1)}s)`;
 
-// Kara -1 pkt za każde 2 sekundy (2000 ms) trzymania bomby po przeczytaniu pytania
+// Co 1 sekundę aktualizujemy bombProgress dla przyspieszającego tykania na TV
+bombProgressTicker = setInterval(async () => {
+if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running") return;
+const elapsed = Date.now() - bombActiveRunStartedAt;
+const curRem = Math.max(0, bombRemainingMs - elapsed);
+const prog = Math.min(0.98, Math.max(0, 1 - (curRem / bombTotalDurationMs)));
+statusEl.innerText = `🔥 BOMBA TYKA u gracza ${getDisplayName(currentState.nominated)}! Pozostało: ${(curRem/1000).toFixed(1)}s | Tempo tykania: ${Math.round(100 + prog * 160)}%`;
+try {
+await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog });
+} catch (e) {}
+}, 1000);
+
+// Kara -1 pkt za każde pełne 2 sekundy (2000 ms) trzymania bomby PO przeczytaniu pytania
 bombPenaltyTicker = setInterval(async () => {
 if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running") return;
 const curHolder = currentState.nominated;
 if (curHolder) {
 try {
 await changePlayerScoreDelta(curHolder, -1);
-const elapsed = Date.now() - bombActiveRunStartedAt;
-const curRem = Math.max(0, bombRemainingMs - elapsed);
-const prog = Math.min(0.98, Math.max(0, 1 - (curRem / bombTotalDurationMs)));
-await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog });
 } catch (e) {}
 }
 }, 2000);
@@ -826,13 +852,14 @@ const activeList = getSelectedActivePlayers();
 const victim = (currentState && currentState.nominated) ? currentState.nominated : activeList[bombHolderIdx % activeList.length];
 
 await changePlayerScoreDelta(victim, -10);
-statusEl.innerText = `💥 BUM! Bomba wybuchła u gracza ${getDisplayName(victim)} (-10 PKT)! Za 8 sekund ekran gotowości przed kolejną turą...`;
+statusEl.innerText = `💥 BOOM! Bomba wybuchła u gracza ${getDisplayName(victim)} (-10 PKT)! Za 8 sekund ekran gotowości przed kolejną turą...`;
 
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_exploded",
 loser: victim,
 bombVictim: victim,
 pointsChange: -10,
+bombProgress: 1,
 answerTick: Date.now(),
 speechTick: Date.now()
 });
@@ -843,8 +870,7 @@ prepareBombTurnWaitReady(bombTurnNum + 1);
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI CO 3 SEKUNDY)
-// Z powiadomieniem kto gra i przyciskiem GOTOWOŚCI przed startem gracza!
+// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI 3D CO 3 SEKUNDY)
 // ============================================================================
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
@@ -865,6 +891,7 @@ await setDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_wait_ready",
 round: 5,
 nominated: player,
+question: `Przygotuj się do gry przy zapadniach: ${getDisplayName(player)}!`,
 milQNum: 1,
 milCurrentPts: 100,
 activePlayers: activeList,
@@ -1056,13 +1083,16 @@ speechTick: Date.now()
 
 // --- STEROWANIE GŁÓWNE ADMINA ---
 async function adminForceContinue() {
-if (currentState && currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
+const selRound = parseInt(document.getElementById('roundSel').value) || 1;
+if (currentState && currentState.round === selRound) {
+if (selRound === 2 && currentState.status === "r2_bomb_wait_ready") {
 await sendBombQuestionSpeaking();
 return;
 }
-if (currentState && currentState.round === 5 && currentState.status === "r5_mil_wait_ready") {
+if (selRound === 5 && currentState.status === "r5_mil_wait_ready") {
 await sendMillionQuestionToPlayer();
 return;
+}
 }
 await nextQuestion();
 }
@@ -1280,7 +1310,7 @@ finalizeR1Question();
 }
 }
 
-// RUNDA 2: GORĄCA BOMBA - GOTOWOŚĆ PRZED TURĄ, START PO LEKTORZE I ODPOWIEDŹ
+// RUNDA 2: GORĄCA BOMBA - GOTOWOŚĆ PRZED TURĄ, START PO LEKTORZE I ODPOWIEDŹ (+10 / -5 PKT)
 if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const readyList = currentState.readyPlayers || [];
@@ -1309,7 +1339,7 @@ lastBombAnsKey = ansKey;
 pauseBombTimersOnly();
 const player = currentState.nominated;
 const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
-const ptsDelta = isCorrect ? 10 : -5;
+const ptsDelta = isCorrect ? 10 : -5; // +10 pkt za dobrą odpowiedź, -5 pkt za złą!
 
 (async () => {
 try {
@@ -1317,7 +1347,7 @@ await changePlayerScoreDelta(player, ptsDelta);
 const activeList = getSelectedActivePlayers();
 bombHolderIdx = (bombHolderIdx + 1) % activeList.length;
 const nextHolder = activeList[bombHolderIdx];
-statusEl.innerText = `💣 ${getDisplayName(player)}: ${isCorrect ? "✅ DOBRZE (+5 pkt)" : "❌ ŹLE (-5 pkt)"}! Bomba leci do: ${getDisplayName(nextHolder)}!`;
+statusEl.innerText = `💣 ${getDisplayName(player)}: ${isCorrect ? "✅ DOBRZE (+10 pkt)" : "❌ ŹLE (-5 pkt)"}! Bomba leci do: ${getDisplayName(nextHolder)}!`;
 await sendBombQuestionSpeaking();
 } catch (e) { showError(e.message); }
 })();
