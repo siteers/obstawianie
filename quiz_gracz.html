@@ -49,7 +49,7 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 .btn-ready:active { transform: scale(0.95); }
 @keyframes pulseBtn { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
 
-/* RUNDA 4: ODSŁANIANIE HASŁA (KAFELKI + CAŁE HASŁO BEZ KAR) */
+/* RUNDA 4: ODSŁANIANIE HASŁA */
 .wheel-pad-area { display: none; flex-direction: column; align-items: center; gap: 8px; width: 100%; }
 .wheel-pad-cat { font-size: 14px; color: var(--cyan); font-weight: 900; letter-spacing: 2px; text-transform: uppercase; }
 .wheel-pad-board { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 12px; margin: 4px 0; width: 100%; }
@@ -65,7 +65,7 @@ padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret
 .full-phrase-box { width: 100%; margin-top: 8px; padding-top: 10px; border-top: 1px dashed #444; display: flex; flex-direction: column; gap: 8px; }
 .full-phrase-input { width: 100%; font-size: 17px; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid var(--gold); background: #000; color: #fff; text-transform: uppercase; box-sizing: border-box; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION (ZAPADNIE NA TELEFONIE) */
+/* RUNDA 5: POSTAW NA MILION */
 #ui-r5-million { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 12px; padding: 10px; font-size: 14px; font-weight: bold; }
 .mil-pad-card { background: #141c2b; border: 2px solid var(--cyan); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
@@ -130,7 +130,6 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div id="gamePad">
 <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Łączenie z grą...</div>
 
-<!-- RUNDA 1, 6, 7: KAFELKI ABCD -->
 <div class="grid-abcd" id="ui-abcd">
 <button class="btn-abcd btn-color-0" id="pad-btn-0" onclick="sendAnswer(0)">
 <span class="opt-letter">A</span><span class="opt-label" id="pad-lbl-0"></span>
@@ -146,15 +145,14 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 </button>
 </div>
 
-<!-- GOTOWOŚĆ MIĘDZY RUNDAMI -->
 <div class="ready-area" id="ui-ready">
 <div class="ready-info-box" id="readyInfoText">Przygotuj się do kolejnego etapu!</div>
 <button class="btn-ready" id="btnReadyAction" onclick="confirmPlayerReady()">✅ JESTEM GOTOWY!</button>
 </div>
 
-<!-- RUNDA 2: GORĄCA BOMBA PRAWDA / FAŁSZ -->
+<!-- RUNDA 2: GORĄCA BOMBA -->
 <div class="bomb-pad-wrap" id="ui-bomb">
-<div class="bomb-pad-alert">💣 TRZYMASZ GORĄCĄ BOMBĘ! (-1 PKT / SEKUNDĘ)</div>
+<div class="bomb-pad-alert">💣 TRZYMASZ GORĄCĄ BOMBĘ! (-1 PKT / 2 SEKUNDY)</div>
 <div class="bomb-q-preview" id="bombPadQuestion">...</div>
 <div class="grid-tf">
 <button class="btn-tf btn-tf-true" onclick="sendBombTFAnswer(true)">✅ PRAWDA</button>
@@ -162,7 +160,7 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 </div>
 </div>
 
-<!-- RUNDA 4: ODSŁANIANIE HASŁA (LITERY + CAŁE HASŁO BEZ KAR) -->
+<!-- RUNDA 4: ODSŁANIANIE HASŁA -->
 <div class="wheel-pad-area" id="ui-wheel">
 <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
 <div class="wheel-pad-board" id="wheelPadBoard"></div>
@@ -176,14 +174,13 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div class="feedback-msg" id="wheelFeedback"></div>
 </div>
 
-<!-- RUNDA 3: SZYBKIE PISANIE -->
 <div class="input-area" id="ui-input">
 <input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
 <div class="feedback-msg" id="r3Feedback"></div>
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
-<!-- RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI) -->
+<!-- RUNDA 5: POSTAW NA MILION -->
 <div id="ui-r5-million">
 <div class="mil-pad-header">
 <div style="color:var(--gold); font-size:16px;" id="milPadTitle">PYTANIE 1/5</div>
@@ -195,7 +192,6 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <button class="btn-ready" style="padding:16px;" onclick="submitMillionBets()">🔒 ZATWIERDŹ ROZKŁAD PUNKTÓW</button>
 </div>
 
-<!-- RUNDA 6: RYZYKO - NOMINOWANIE -->
 <div class="nominate-area" id="ui-nominate">
 <h3 style="color:#d4af37; margin-bottom: 5px;">TY WYBIERASZ!</h3>
 <p style="font-size: 13px; margin-top: 0; color:#ccc;">Kategoria: <b id="pad-cat" style="color:#00d4ff;"></b></p>
@@ -205,7 +201,6 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <button class="btn-nom" id="nom-Jas" onclick="nominatePlayer('Jas')">JAŚ</button>
 </div>
 
-<!-- RUNDA 7: KRĘCENIE KOŁEM -->
 <div id="ui-r6-spin">
 <p id="spinInstruction" style="font-size:14px; color:var(--gold); font-weight:900; margin:0;">ZŁAP KOŁO PALCEM I ZAKRĘĆ NIM MOCNO!</p>
 <div class="pad-wheel-pointer"></div>
@@ -213,7 +208,6 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div class="feedback-msg" id="spinFeedback"></div>
 </div>
 
-<!-- RUNDA 7: TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT, 20 SEKUND) -->
 <div id="ui-r6-bid">
 <div class="bid-info-box">
 <div class="bid-info-row">WYLOSOWANA KATEGORIA: <b id="pad-r6-cat" style="color:var(--cyan);">---</b></div>
@@ -271,7 +265,6 @@ document.getElementById('customNickInp').value = getDisplayName(selVal);
 }
 };
 
-// Pobierz aktualne imiona graczy jeszcze przed zalogowaniem
 onSnapshot(doc(db, "quizGame", "state"), (snap) => {
 if (snap.exists() && snap.data().playerNames) {
 playerNamesMap = { ...playerNamesMap, ...snap.data().playerNames };
@@ -282,13 +275,11 @@ refreshLoginSlotNames();
 let currentWheelTick = null;
 let lastR3Question = null;
 let lastR6BlindSpeechTick = 0;
-let lastMilSpeechTick = 0;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
 let targetLetters = [];
 
-// Zmienne dla Rundy 5 (Postaw na milion)
 let localMilBets = [0, 0, 0, 0];
 let localMilTotalPool = 100;
 let localMilMaxTraps = 3;
@@ -419,7 +410,6 @@ spinTick: spinTickNow
 });
 };
 
-// Szybkie wypełnianie pola tajnej stawki (min 5 pkt nawet przy -100 pkt!)
 window.setQuickBlindBid = (val) => {
 const maxAllowed = Math.max(5, myCurrentPoints + 100);
 const inp = document.getElementById('blindBidInput');
@@ -432,7 +422,6 @@ inp.value = Math.min(maxAllowed, Math.max(5, val));
 }
 };
 
-// Zatwierdzanie tajnej stawki w ciemno (Runda 7)
 window.submitBlindBid = async () => {
 if (!currentState || currentState.round !== 7 || currentState.status !== "r6_blind_bidding") return;
 const inp = document.getElementById('blindBidInput');
@@ -485,12 +474,31 @@ if (!readyList.includes(myName)) {
 readyList.push(myName);
 await updateDoc(stateRef, { readyPlayers: readyList });
 }
+return;
+}
+
+if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
+const snap = await getDoc(stateRef);
+if (!snap.exists()) return;
+const data = snap.data();
+let readyList = data.readyPlayers || [];
+if (!readyList.includes(myName)) {
+readyList.push(myName);
+await updateDoc(stateRef, { readyPlayers: readyList });
+}
+return;
+}
+
+if (currentState.round === 5 && currentState.status === "r5_mil_wait_ready" && currentState.nominated === myName) {
+await updateDoc(stateRef, {
+status: "r5_mil_ready_go",
+speechTick: Date.now()
+});
 }
 };
 
-// RUNDA 2: GORĄCA BOMBA - ODPOWIEDŹ PRAWDA / FAŁSZ
 window.sendBombTFAnswer = async (boolChoice) => {
-if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_active" || currentState.nominated !== myName) return;
+if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running" || currentState.nominated !== myName) return;
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_answered",
 r5GivenBool: boolChoice,
@@ -498,7 +506,6 @@ answerTick: Date.now()
 });
 };
 
-// RUNDA 5: POSTAW NA MILION - STEROWANIE ZAPADNIAMI NA TELEFONIE
 function buildMillionPadUI(optionsList, totalPts, maxTraps) {
 localMilTotalPool = totalPts;
 localMilMaxTraps = maxTraps;
@@ -550,10 +557,9 @@ newVal = maxPossibleHere;
 newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
 }
 
-// Sprawdź limit obstawionych zapadni (minimum 1 zapadnia zawsze musi zostać pusta!)
 const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? newVal : v) > 0).length;
 if (newVal > 0 && activeTrapsCount > localMilMaxTraps) {
-document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
+document.getElementById('milPadFeedback').innerText = `⛔ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
 return;
 }
 
@@ -565,7 +571,7 @@ window.submitMillionBets = async () => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 if (allocated !== localMilTotalPool) {
-document.getElementById('milPadFeedback').innerText = `⚠️ MUSISZ ROZDZIELIĆ DOKŁADNIE WSZYSTKIE PUNKTY (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
+document.getElementById('milPadFeedback').innerText = `⚠️ ROZDZIEL WSZYSTKIE PUNKTY (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
 return;
 }
 const activeTrapsCount = localMilBets.filter(v => v > 0).length;
@@ -820,36 +826,81 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ)
+// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ) - CZEKANIE NA GOTOWOŚĆ I BIEŻĄCY STAN
 // ============================================================================
-if (currentState.round === 2 && (currentState.status === "r2_bomb_active" || currentState.status === "r2_bomb_exploded")) {
+if (currentState.round === 2 && (currentState.status === "r2_bomb_wait_ready" || currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_running" || currentState.status === "r2_bomb_exploded")) {
 const holderName = getDisplayName(currentState.nominated);
+
+if (currentState.status === "r2_bomb_wait_ready") {
+const readyList = currentState.readyPlayers || [];
+if (readyList.includes(myName)) {
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn}/3)`;
+lockedEl.classList.add('win-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `✅ GOTOWOŚĆ ZATWIERDZONA!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
+} else {
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - TURA ${currentState.bombTurn}/3`;
+document.getElementById('readyInfoText').innerHTML = `Zaczyna gracz: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Kliknij gotowość, aby ruszyć z bombą!`;
+document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY NA BOMBĘ!`;
+document.getElementById('ui-ready').style.display = 'flex';
+}
+return;
+}
+
 if (currentState.status === "r2_bomb_exploded") {
 const victimName = getDisplayName(currentState.bombVictim || currentState.loser || currentState.nominated);
-document.getElementById('padStatus').innerText = `💥 BOMBA WYBUCHŁA! (TURA ${currentState.bombTurn || 1}/3)`;
+document.getElementById('padStatus').innerText = `💥 BOMBA WYBUCHŁA!`;
 lockedEl.style.display = 'block';
 lockedEl.innerText = `💥 BUM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
 return;
 }
 
+if (currentState.status === "r2_bomb_speaking") {
+document.getElementById('padStatus').innerText = `🗣️ Lektor czyta pytanie dla: ${holderName.toUpperCase()}`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = currentState.nominated === myName
+? `SŁUCHAJ PYTANIA! ZEGAR RUSZY ZA CHWILĘ...`
+: `TERAZ BOMBĘ MA: ${holderName.toUpperCase()}\nSŁUCHAJCIE PYTANIA...`;
+return;
+}
+
+if (currentState.status === "r2_bomb_running") {
 if (currentState.nominated === myName) {
-document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3) - ODPOWIADAJ!`;
+document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA - ODPOWIADAJ!`;
 document.getElementById('bombPadQuestion').innerText = currentState.question || "";
 document.getElementById('ui-bomb').style.display = 'flex';
 } else {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3)`;
+document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()}!\nPRZYGOTUJ SIĘ - ZARAZ MOŻE TRAFIĆ DO CIEBIE!`;
+lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()} (-1 PKT / 2s)!`;
+}
 }
 return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI)
+// RUNDA 5: POSTAW NA MILION (ZAPADNIE)
 // ============================================================================
 if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_mil_")) {
 const pName = getDisplayName(currentState.nominated);
+
+if (currentState.status === "r5_mil_wait_ready") {
+if (currentState.nominated === myName) {
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA SERIA!`;
+document.getElementById('readyInfoText').innerHTML = `Twoja kolej w Postaw na Milion, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>100 punktów</b> do podziału na zapadnie.`;
+document.getElementById('btnReadyAction').innerText = `💰 STARTUJEMY!`;
+document.getElementById('ui-ready').style.display = 'flex';
+} else {
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPATRZ NA TELEWIZOR!`;
+}
+return;
+}
+
 if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
@@ -894,7 +945,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 7: KOŁO I TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT, ZEGAR 20s)
+// RUNDA 7: KOŁO I LICYTACJA W CIEMNO
 // ============================================================================
 if (currentState.round === 7 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
 if (currentState.status === "r6_wait_spin") isSpinningLocally = false;
@@ -1007,9 +1058,7 @@ lockedEl.innerText = "PRZYGOTUJ SIĘ! ZA MOMENT KTO PIERWSZY, TEN LEPSZY!";
 return;
 }
 
-// ============================================================================
-// RUNDA 4: ODSŁANIANIE HASŁA (KAFELKI LUB CAŁE HASŁO NARAZ BEZ KAR!)
-// ============================================================================
+// RUNDA 4: ODSŁANIANIE HASŁA
 if (currentState.status === "wheel_reading" && currentState.round === 4) {
 const winners = currentState.wheelWinners || [];
 if (hasPlayerWonWheel(winners, myName)) {
@@ -1085,7 +1134,7 @@ document.getElementById('typeAnswer').value = "";
 document.getElementById('r3Feedback').innerText = "";
 }
 
-// RUNDA 1: BRAK SPOILERA PRZED KOŃCEM CZASU!
+// RUNDA 1: ABCD (BEZ SPOILERA)
 if (currentState.round === 1) {
 const myAns = (currentState.r1Answers || {})[myName];
 if (myAns !== undefined) {
@@ -1101,12 +1150,12 @@ let lbl = document.getElementById(`pad-lbl-${i}`);
 btn.disabled = false;
 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
 }
-document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
+document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERJ ODPOWIEDŹ:";
 document.getElementById('ui-abcd').style.display = 'grid';
 return;
 }
 
-// RUNDA 3: SZYBKIE PISANIE - BRAK SPOILERA PRZED KOŃCEM CZASU!
+// RUNDA 3: SZYBKIE PISANIE (BEZ SPOILERA)
 if (currentState.round === 3) {
 const mySub = (currentState.r3Submissions || {})[myName];
 if (mySub) {
@@ -1122,7 +1171,6 @@ document.getElementById('ui-input').style.display = 'flex';
 return;
 }
 
-// RUNDA 6 (RYZYKO) ORAZ RUNDA 7 (KOŁO)
 if (currentState.round === 6 || currentState.round === 7) {
 if (currentState.blocked && currentState.blocked.includes(myName)) {
 document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
@@ -1144,6 +1192,7 @@ document.getElementById('padStatus').innerText = msg;
 document.getElementById('ui-abcd').style.display = 'grid';
 } else {
 document.getElementById('padStatus').innerText = "KIBICUJ!";
+lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `TERAZ ODPOWIADA: ${getDisplayName(currentState.nominated).toUpperCase()}`;
 }
@@ -1157,7 +1206,6 @@ lockedEl.innerText = "PATRZ NA TELEWIZOR!";
 }
 }
 
-// RUNDA 4: ZATWIERDZANIE Z KAFELKÓW LITEROWYCH
 window.submitWheelTiles = async () => {
 if (!currentState || currentState.round !== 4 || currentState.status !== "wheel_reading") return;
 updateRevealedTilesOnPad();
@@ -1184,7 +1232,6 @@ focusNextEditableTile(0);
 }
 };
 
-// RUNDA 4: DODATKOWA OPCJA WPISANIA CAŁEGO HASŁA NARAZ (BEZ ŻADNYCH KAR!)
 window.submitFullPhraseGuess = async () => {
 if (!currentState || currentState.round !== 4 || currentState.status !== "wheel_reading") return;
 const inp = document.getElementById('fullPhraseInp');
@@ -1205,12 +1252,10 @@ inp.value = "";
 }
 };
 
-// WYSYŁANIE ODPOWIEDZI ABCD (RUNDY 1, 6, 7)
 window.sendAnswer = async (index) => {
 if (!currentState || currentState.status !== "reading") return;
 const isCorrect = (index === currentState.correctIndex);
 
-// RUNDA 1: ATOMOWY ZAPIS Z TIMESTAMPEM CO DO MILISEKUNDY (NAPRAWA GUBIENIA GRACZY!)
 if (currentState.round === 1) {
 if (currentState.r1Answers && currentState.r1Answers[myName] !== undefined) return;
 await updateDoc(doc(db, "quizGame", "state"), {
@@ -1226,7 +1271,6 @@ await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r6", fa
 }
 };
 
-// RUNDA 3: SZYBKIE PISANIE (BEZ SPOILERA - ATOMOWY ZAPIS Z TIMESTAMPEM)
 window.sendTypedAnswer = async () => {
 if (!currentState || currentState.status !== "reading" || currentState.round !== 3) return;
 const inputEl = document.getElementById('typeAnswer');
@@ -1237,7 +1281,6 @@ const acceptedList = (currentState.correctText || "").split("/").map(s => normal
 const userNorm = normalizeChar(ans);
 const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
 
-// Jeśli gracz trafił w jeden z akceptowanych wariantów, przekazujemy kanoniczną odpowiedź do Admina, żeby zaliczyło 100% pewnie
 const canonicalText = isMatch ? (currentState.correctText || "").split("/")[0].trim() : ans;
 inputEl.value = "";
 document.getElementById('r3Feedback').innerText = "";
