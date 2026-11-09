@@ -65,7 +65,7 @@ padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret
 .full-phrase-box { width: 100%; margin-top: 8px; padding-top: 10px; border-top: 1px dashed #444; display: flex; flex-direction: column; gap: 8px; }
 .full-phrase-input { width: 100%; font-size: 17px; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid var(--gold); background: #000; color: #fff; text-transform: uppercase; box-sizing: border-box; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION - PANEL ROZDZIELANIA PUNKTÓW NA ZAPADNIE */
+/* RUNDA 5: POSTAW NA MILION - RĘCZNE WPISYWANIE + PRZYCISKI */
 #ui-r5-million { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 12px; font-size: 14px; font-weight: bold; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
 .mil-pad-qtext { font-size: 15px; color: #fff; margin: 6px 0; line-height: 1.3; }
@@ -81,11 +81,16 @@ box-shadow: 0 0 15px rgba(255, 255, 255, 0.35);
 }
 .mil-pad-top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .mil-pad-opt-title { font-size: 15px; font-weight: 900; color: #fff; text-align: left; flex: 1; }
-.mil-pad-val { font-size: 18px; font-weight: 900; color: #ffd700; background: rgba(0,0,0,0.75); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--gold); min-width: 72px; text-align: center; }
+.mil-input-wrap { display: flex; align-items: center; gap: 4px; background: rgba(0,0,0,0.85); padding: 4px 8px; border-radius: 10px; border: 2px solid var(--gold); }
+.mil-manual-input {
+width: 68px; background: transparent; border: none; color: #ffd700;
+font-size: 20px; font-weight: 900; text-align: center; outline: none; padding: 2px;
+}
+.mil-input-unit { font-size: 12px; font-weight: 900; color: #cbd5e1; }
 .mil-pad-controls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
 .btn-mil-step {
 background: #0f172a; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px;
-padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer; touch-action: manipulation;
+padding: 9px 2px; font-size: 13px; font-weight: 900; cursor: pointer; touch-action: manipulation;
 }
 .btn-mil-step.zero-btn { color: #ff4757; border-color: #ff4757; }
 .btn-mil-step.max-btn { color: var(--gold); border-color: var(--gold); background: rgba(212,175,55,0.15); }
@@ -196,13 +201,13 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
-<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE I PRZYCISKI ROZDZIELANIA PUNKTÓW) -->
+<!-- RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + SZYBKIE PRZYCISKI) -->
 <div id="ui-r5-million">
 <div class="mil-pad-header">
 <div style="color:var(--gold); font-size:15px;" id="milPadTitle">PYTANIE 1/5</div>
 <div class="mil-pad-qtext" id="milPadQuestionText">...</div>
-<div style="margin-top:4px;">DO ROZDZIELENIA POZOSTAŁO: <b id="milPadUnallocated" style="color:#f1c40f; font-size:20px;">100 PKT</b></div>
-<div style="font-size:12px; color:#cbd5e1; margin-top:3px;" id="milPadRuleInfo">Możesz obstawić maksymalnie 3 zapadnie (min. 1 musi zostać pusta!)</div>
+<div style="margin-top:4px;">DO ROZDZIELENIA POZOSTAŁO: <b id="milPadUnallocated" style="color:#f1c40f; font-size:20px;">200 PKT</b></div>
+<div style="font-size:12px; color:#cbd5e1; margin-top:3px;" id="milPadRuleInfo">Możesz wpisać punkty ręcznie lub użyć przycisków (min. 1 zapadnia musi zostać pusta!)</div>
 </div>
 <div id="milPadCardsContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
 <div class="feedback-msg" id="milPadFeedback"></div>
@@ -289,7 +294,6 @@ refreshLoginSlotNames();
 }
 });
 
-// Wszystkie zmienne śledzące ticki (w tym zadeklarowane lastMilSpeechTick!)
 let currentWheelTick = null;
 let lastR3Question = null;
 let lastR6BlindSpeechTick = 0;
@@ -300,7 +304,7 @@ let tileInputs = [];
 let targetLetters = [];
 
 let localMilBets = [0, 0, 0, 0];
-let localMilTotalPool = 100;
+let localMilTotalPool = 200;
 let localMilMaxTraps = 3;
 
 let r7Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
@@ -514,7 +518,7 @@ answerTick: Date.now()
 };
 
 // ============================================================================
-// RUNDA 5: BUDOWANIE KART ZAPADNI I ROZDZIELANIE PUNKTÓW NA TELEFONIE
+// RUNDA 5: BUDOWANIE KART ZAPADNI (RĘCZNE WPISYWANIE + SZYBKIE PRZYCISKI)
 // ============================================================================
 function buildMillionPadUI(optionsList, totalPts, maxTraps) {
 localMilTotalPool = totalPts;
@@ -531,13 +535,19 @@ card.id = `mil-pad-card-${idx}`;
 card.innerHTML = `
 <div class="mil-pad-top-row">
 <div class="mil-pad-opt-title">🖥️ ${letters[idx]}: ${optText}</div>
-<div class="mil-pad-val" id="mil-pad-val-${idx}">0 PKT</div>
+<div class="mil-input-wrap">
+<input type="number" class="mil-manual-input" id="mil-pad-inp-${idx}" value="0" min="0" inputmode="numeric"
+onfocus="if(this.value==='0') this.value='';"
+onblur="if(this.value==='') { this.value='0'; window.onMilManualInput(${idx}, '0'); }"
+oninput="window.onMilManualInput(${idx}, this.value)">
+<span class="mil-input-unit">PKT</span>
+</div>
 </div>
 <div class="mil-pad-controls">
 <button type="button" class="btn-mil-step zero-btn" onclick="adjustMilBet(${idx}, 'ZERO')">0</button>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -25)">-25</button>
-<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -5)">-5</button>
-<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 5)">+5</button>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -10)">-10</button>
+<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 10)">+10</button>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 25)">+25</button>
 <button type="button" class="btn-mil-step max-btn" onclick="adjustMilBet(${idx}, 'MAX')">MAX</button>
 </div>
@@ -547,17 +557,19 @@ container.appendChild(card);
 refreshMillionPadSummary();
 }
 
-function refreshMillionPadSummary() {
+function refreshMillionPadSummary(skipInputIdx = -1) {
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
-const rem = Math.max(0, localMilTotalPool - allocated);
+const rem = localMilTotalPool - allocated;
 const unallocEl = document.getElementById('milPadUnallocated');
 if (unallocEl) {
 unallocEl.innerText = `${rem} PKT`;
-unallocEl.style.color = rem === 0 ? "#2ed573" : "#f1c40f";
+unallocEl.style.color = rem === 0 ? "#2ed573" : (rem < 0 ? "#ff4757" : "#f1c40f");
 }
 localMilBets.forEach((val, idx) => {
-const el = document.getElementById(`mil-pad-val-${idx}`);
-if (el) el.innerText = `${val} PKT`;
+const inp = document.getElementById(`mil-pad-inp-${idx}`);
+if (inp && idx !== skipInputIdx) {
+inp.value = val;
+}
 const card = document.getElementById(`mil-pad-card-${idx}`);
 if (card) {
 if (val > 0) card.classList.add('active-trap');
@@ -565,6 +577,36 @@ else card.classList.remove('active-trap');
 }
 });
 }
+
+window.onMilManualInput = (idx, rawVal) => {
+document.getElementById('milPadFeedback').innerText = "";
+let parsed = parseInt(rawVal, 10);
+if (isNaN(parsed) || parsed < 0) parsed = 0;
+
+const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc + v, 0);
+const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
+
+// Sprawdzenie czy nie przekroczono liczby dozwolonych zapadni
+const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? parsed : v) > 0).length;
+if (parsed > 0 && activeTrapsCount > localMilMaxTraps) {
+document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
+localMilBets[idx] = 0;
+const inp = document.getElementById(`mil-pad-inp-${idx}`);
+if (inp) inp.value = 0;
+refreshMillionPadSummary();
+return;
+}
+
+if (parsed > maxPossibleHere) {
+parsed = maxPossibleHere;
+document.getElementById('milPadFeedback').innerText = `ℹ️ Automatycznie dopasowano do pozostałej puli (${maxPossibleHere} PKT).`;
+const inp = document.getElementById(`mil-pad-inp-${idx}`);
+if (inp) inp.value = parsed;
+}
+
+localMilBets[idx] = parsed;
+refreshMillionPadSummary(idx);
+};
 
 window.adjustMilBet = (idx, delta) => {
 document.getElementById('milPadFeedback').innerText = "";
@@ -595,7 +637,10 @@ window.submitMillionBets = async () => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 if (allocated !== localMilTotalPool) {
-document.getElementById('milPadFeedback').innerText = `⚠️ ROZDZIEL WSZYSTKIE PUNKTY NA ZAPADNIACH (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
+const diff = localMilTotalPool - allocated;
+document.getElementById('milPadFeedback').innerText = diff > 0
+? `⚠️ ROZDZIEL WSZYSTKIE PUNKTY! ZOSTAŁO JESZCZE: ${diff} PKT!`
+: `⚠️ WPISANO ZA DUŻO O ${Math.abs(diff)} PKT! SUMA MUSI WYNOSIĆ ${localMilTotalPool} PKT!`;
 return;
 }
 const activeTrapsCount = localMilBets.filter(v => v > 0).length;
@@ -905,15 +950,16 @@ return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (ZAPADNIE I PRZYCISKI ROZDZIELANIA PUNKTÓW)
+// RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + PRZYCISKI)
 // ============================================================================
 if (currentState.round === 5) {
 const pName = getDisplayName(currentState.nominated);
+const currentPoolPts = currentState.milCurrentPts !== undefined ? currentState.milCurrentPts : 200;
 
 if (currentState.status === "r5_mil_wait_ready") {
 if (currentState.nominated === myName) {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA KOLEJ!`;
-document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej przy zapadniach, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>100 punktów</b> i 5 pytań.`;
+document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej przy zapadniach, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>${currentPoolPts} punktów</b> i 5 pytań.`;
 document.getElementById('btnReadyAction').innerText = `💰 STARTUJEMY!`;
 document.getElementById('ui-ready').style.display = 'flex';
 } else {
@@ -929,7 +975,7 @@ if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts ?? 100} PKT)\nOBSERWUJ ZAPADNIE NA TELEWIZORZE!`;
+lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentPoolPts} PKT)\nOBSERWUJ ZAPADNIE NA TELEWIZORZE!`;
 return;
 }
 
@@ -937,18 +983,18 @@ if (currentState.status === "r5_mil_betting") {
 document.body.classList.add('keyboard-mode');
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - ROZDZIEL PUNKTY!`;
 document.getElementById('ui-r5-million').style.display = 'flex';
-document.getElementById('milPadTitle').innerText = `PYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts} PKT)`;
+document.getElementById('milPadTitle').innerText = `PYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentPoolPts} PKT)`;
 document.getElementById('milPadQuestionText').innerText = currentState.question || "";
 const maxT = currentState.milMaxTraps || 3;
 document.getElementById('milPadRuleInfo').innerText = maxT === 1
-? `FINAŁ VA BANQUE! Postaw całą kwotę na 1 wybraną zapadnię!`
-: `Możesz obstawić maksymalnie ${maxT} zapadnie (minimum 1 musi zostać pusta!)`;
+? `FINAŁ VA BANQUE! Wpisz lub postaw całą kwotę (${currentPoolPts} PKT) na 1 wybraną zapadnię!`
+: `Wpisz punkty ręcznie lub użyj przycisków (max ${maxT} zapadnie, min. 1 musi zostać pusta!)`;
 
 const containerEl = document.getElementById('milPadCardsContainer');
 if (currentState.speechTick !== lastMilSpeechTick || containerEl.children.length === 0) {
 lastMilSpeechTick = currentState.speechTick;
 document.getElementById('milPadFeedback').innerText = "";
-buildMillionPadUI(currentState.options || [], currentState.milCurrentPts || 100, maxT);
+buildMillionPadUI(currentState.options || [], currentPoolPts, maxT);
 }
 return;
 } else if (currentState.status === "r5_mil_dropping" || currentState.status === "r5_mil_locked") {
