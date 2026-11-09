@@ -455,7 +455,12 @@ return;
 window.speechSynthesis.cancel();
 
 let cleanText = (textToRead || "")
+// Zabezpieczamy konkretne działania i liczby przed dziwną odmianą przez przeglądarkę
+.replace(/(\d+)\s*\+\s*(\d+)/g, "$1 dodać $2")
+.replace(/(\d+)\s*\-\s*(\d+)/g, "$1 odjąć $2")
+.replace(/(\d+)\s*x\s*(\d+)/g, "$1 razy $2")
 .replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
+.replace(/(\d+)\s*\/\s*(\d+)/g, "$1 podzielić przez $2")
 .replace(/:\s*$/, "")
 .replace(/:/g, ", ")
 .replace(/\bpkt\b/gi, "punktów")
