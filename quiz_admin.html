@@ -1309,7 +1309,7 @@ lastBombAnsKey = ansKey;
 pauseBombTimersOnly();
 const player = currentState.nominated;
 const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
-const ptsDelta = isCorrect ? 5 : -5;
+const ptsDelta = isCorrect ? 10 : -5;
 
 (async () => {
 try {
