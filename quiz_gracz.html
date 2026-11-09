@@ -15,8 +15,8 @@ body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
 .login-box { background: #111; padding: 26px; border-radius: 20px; border: 1px solid var(--cyan); width: 88%; max-width: 360px; box-sizing: border-box; }
 select { width: 100%; padding: 14px; font-size: 19px; margin-bottom: 14px; border-radius: 10px; background: #000; color: #fff; border: 1px solid var(--cyan); font-weight: bold; }
 .custom-nick-input { width: 100%; padding: 12px; font-size: 16px; margin-bottom: 18px; border-radius: 10px; background: #000; color: var(--gold); border: 1px dashed #666; box-sizing: border-box; text-align: center; font-weight: bold; }
-#gamePad { display: none; width: 94%; max-width: 430px; padding-bottom: 20px; }
-.status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
+#gamePad { display: none; width: 94%; max-width: 440px; padding-bottom: 24px; }
+.status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
 
 .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
 .btn-abcd {
@@ -35,8 +35,8 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 
 /* RUNDA 2: GORĄCA BOMBA PRAWDA/FAŁSZ */
 .bomb-pad-wrap { display: none; flex-direction: column; align-items: center; width: 100%; gap: 10px; }
-.bomb-pad-alert { background: rgba(255, 71, 87, 0.2); border: 2px solid #ff4757; border-radius: 14px; padding: 12px; width: 100%; box-sizing: border-box; font-weight: 900; color: #ff4757; font-size: 16px; animation: pulseBtn 0.6s infinite; }
-.bomb-q-preview { font-size: 17px; font-weight: bold; color: #fff; background: #111; padding: 14px; border-radius: 12px; border: 1px solid #444; width: 100%; box-sizing: border-box; }
+.bomb-pad-alert { background: rgba(255, 71, 87, 0.22); border: 2px solid #ff4757; border-radius: 14px; padding: 12px; width: 100%; box-sizing: border-box; font-weight: 900; color: #ff4757; font-size: 15px; animation: pulseBtn 0.55s infinite; }
+.bomb-q-preview { font-size: 17px; font-weight: bold; color: #fff; background: #111; padding: 14px; border-radius: 12px; border: 1px solid #444; width: 100%; box-sizing: border-box; line-height: 1.35; }
 .grid-tf { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; width: 100%; margin-top: 4px; }
 .btn-tf { border-radius: 18px; padding: 34px 10px; font-size: 23px; font-weight: 900; color: #fff; cursor: pointer; text-transform: uppercase; text-shadow: 0 2px 5px rgba(0,0,0,0.8); transition: 0.12s; }
 .btn-tf-true { background: rgba(46, 213, 115, 0.35); border: 4px solid #2ed573; box-shadow: 0 0 20px rgba(46, 213, 115, 0.4); }
@@ -65,15 +65,31 @@ padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret
 .full-phrase-box { width: 100%; margin-top: 8px; padding-top: 10px; border-top: 1px dashed #444; display: flex; flex-direction: column; gap: 8px; }
 .full-phrase-input { width: 100%; font-size: 17px; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid var(--gold); background: #000; color: #fff; text-transform: uppercase; box-sizing: border-box; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION */
+/* RUNDA 5: POSTAW NA MILION - PANEL ROZDZIELANIA PUNKTÓW NA ZAPADNIE */
 #ui-r5-million { display: none; flex-direction: column; gap: 10px; width: 100%; }
-.mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 12px; padding: 10px; font-size: 14px; font-weight: bold; }
-.mil-pad-card { background: #141c2b; border: 2px solid var(--cyan); border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 8px; }
-.mil-pad-opt-title { font-size: 15px; font-weight: 900; color: #fff; text-align: left; }
-.mil-pad-controls { display: flex; align-items: center; justify-content: space-between; gap: 5px; }
-.btn-mil-step { background: #1e293b; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px; padding: 8px 10px; font-size: 14px; font-weight: 900; cursor: pointer; flex: 1; }
-.btn-mil-step:active { background: var(--cyan); color: #000; }
-.mil-pad-val { font-size: 20px; font-weight: 900; color: var(--gold); min-width: 68px; text-align: center; }
+.mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 12px; font-size: 14px; font-weight: bold; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
+.mil-pad-qtext { font-size: 15px; color: #fff; margin: 6px 0; line-height: 1.3; }
+.mil-pad-card {
+background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+border: 2px solid #475569; border-radius: 14px; padding: 10px;
+display: flex; flex-direction: column; gap: 8px; transition: 0.2s;
+}
+.mil-pad-card.active-trap {
+border-color: #ffffff;
+background: linear-gradient(145deg, #7f1d1d 0%, #450a0a 100%);
+box-shadow: 0 0 15px rgba(255, 255, 255, 0.35);
+}
+.mil-pad-top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.mil-pad-opt-title { font-size: 15px; font-weight: 900; color: #fff; text-align: left; flex: 1; }
+.mil-pad-val { font-size: 18px; font-weight: 900; color: #ffd700; background: rgba(0,0,0,0.75); padding: 4px 10px; border-radius: 8px; border: 1px solid var(--gold); min-width: 72px; text-align: center; }
+.mil-pad-controls { display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px; }
+.btn-mil-step {
+background: #0f172a; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 8px;
+padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer; touch-action: manipulation;
+}
+.btn-mil-step.zero-btn { color: #ff4757; border-color: #ff4757; }
+.btn-mil-step.max-btn { color: var(--gold); border-color: var(--gold); background: rgba(212,175,55,0.15); }
+.btn-mil-step:active { transform: scale(0.93); background: var(--cyan); color: #000; }
 
 .input-area { display: none; flex-direction: column; gap: 10px; width: 100%; }
 input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; width: 100%; box-sizing: border-box; }
@@ -152,7 +168,7 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 
 <!-- RUNDA 2: GORĄCA BOMBA -->
 <div class="bomb-pad-wrap" id="ui-bomb">
-<div class="bomb-pad-alert">💣 TRZYMASZ GORĄCĄ BOMBĘ! (-1 PKT / 2 SEKUNDY)</div>
+<div class="bomb-pad-alert">💣 TRZYMASZ GORĄCĄ BOMBĘ! (-1 PKT CO 2s)</div>
 <div class="bomb-q-preview" id="bombPadQuestion">...</div>
 <div class="grid-tf">
 <button class="btn-tf btn-tf-true" onclick="sendBombTFAnswer(true)">✅ PRAWDA</button>
@@ -180,16 +196,17 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
 </div>
 
-<!-- RUNDA 5: POSTAW NA MILION -->
+<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE I PRZYCISKI ROZDZIELANIA PUNKTÓW) -->
 <div id="ui-r5-million">
 <div class="mil-pad-header">
-<div style="color:var(--gold); font-size:16px;" id="milPadTitle">PYTANIE 1/5</div>
-<div style="margin-top:4px;">DO ROZDZIELENIA POZOSTAŁO: <b id="milPadUnallocated" style="color:#2ed573; font-size:19px;">100 PKT</b></div>
-<div style="font-size:12px; color:#cbd5e1; margin-top:2px;" id="milPadRuleInfo">Możesz obstawić maksymalnie 3 zapadnie (min. 1 musi zostać pusta!)</div>
+<div style="color:var(--gold); font-size:15px;" id="milPadTitle">PYTANIE 1/5</div>
+<div class="mil-pad-qtext" id="milPadQuestionText">...</div>
+<div style="margin-top:4px;">DO ROZDZIELENIA POZOSTAŁO: <b id="milPadUnallocated" style="color:#f1c40f; font-size:20px;">100 PKT</b></div>
+<div style="font-size:12px; color:#cbd5e1; margin-top:3px;" id="milPadRuleInfo">Możesz obstawić maksymalnie 3 zapadnie (min. 1 musi zostać pusta!)</div>
 </div>
 <div id="milPadCardsContainer" style="display:flex; flex-direction:column; gap:8px;"></div>
 <div class="feedback-msg" id="milPadFeedback"></div>
-<button class="btn-ready" style="padding:16px;" onclick="submitMillionBets()">🔒 ZATWIERDŹ ROZKŁAD PUNKTÓW</button>
+<button class="btn-ready" style="padding:16px;" onclick="submitMillionBets()">🔒 ZATWIERDŹ ROZKŁAD NA ZAPADNIACH</button>
 </div>
 
 <div class="nominate-area" id="ui-nominate">
@@ -246,7 +263,7 @@ let bidLocalTimer = null;
 
 let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
 function getDisplayName(pKey) {
-return playerNamesMap[pKey] || pKey;
+return playerNamesMap[pKey] || pKey || "";
 }
 
 function refreshLoginSlotNames() {
@@ -272,9 +289,11 @@ refreshLoginSlotNames();
 }
 });
 
+// Wszystkie zmienne śledzące ticki (w tym zadeklarowane lastMilSpeechTick!)
 let currentWheelTick = null;
 let lastR3Question = null;
 let lastR6BlindSpeechTick = 0;
+let lastMilSpeechTick = 0;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
@@ -465,19 +484,7 @@ window.confirmPlayerReady = async () => {
 if (!currentState || !myName) return;
 const stateRef = doc(db, "quizGame", "state");
 
-if (currentState.status === "round_summary") {
-const snap = await getDoc(stateRef);
-if (!snap.exists()) return;
-const data = snap.data();
-let readyList = data.readyPlayers || [];
-if (!readyList.includes(myName)) {
-readyList.push(myName);
-await updateDoc(stateRef, { readyPlayers: readyList });
-}
-return;
-}
-
-if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
+if (currentState.status === "round_summary" || (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready")) {
 const snap = await getDoc(stateRef);
 if (!snap.exists()) return;
 const data = snap.data();
@@ -506,6 +513,9 @@ answerTick: Date.now()
 });
 };
 
+// ============================================================================
+// RUNDA 5: BUDOWANIE KART ZAPADNI I ROZDZIELANIE PUNKTÓW NA TELEFONIE
+// ============================================================================
 function buildMillionPadUI(optionsList, totalPts, maxTraps) {
 localMilTotalPool = totalPts;
 localMilMaxTraps = maxTraps;
@@ -517,15 +527,19 @@ container.innerHTML = "";
 optionsList.forEach((optText, idx) => {
 const card = document.createElement('div');
 card.className = "mil-pad-card";
+card.id = `mil-pad-card-${idx}`;
 card.innerHTML = `
-<div class="mil-pad-opt-title">${letters[idx]}: ${optText}</div>
+<div class="mil-pad-top-row">
+<div class="mil-pad-opt-title">🖥️ ${letters[idx]}: ${optText}</div>
+<div class="mil-pad-val" id="mil-pad-val-${idx}">0 PKT</div>
+</div>
 <div class="mil-pad-controls">
+<button type="button" class="btn-mil-step zero-btn" onclick="adjustMilBet(${idx}, 'ZERO')">0</button>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -25)">-25</button>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, -5)">-5</button>
-<div class="mil-pad-val" id="mil-pad-val-${idx}">0</div>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 5)">+5</button>
 <button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 25)">+25</button>
-<button type="button" class="btn-mil-step" onclick="adjustMilBet(${idx}, 'MAX')">MAX</button>
+<button type="button" class="btn-mil-step max-btn" onclick="adjustMilBet(${idx}, 'MAX')">MAX</button>
 </div>
 `;
 container.appendChild(card);
@@ -536,11 +550,19 @@ refreshMillionPadSummary();
 function refreshMillionPadSummary() {
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 const rem = Math.max(0, localMilTotalPool - allocated);
-document.getElementById('milPadUnallocated').innerText = `${rem} PKT`;
-document.getElementById('milPadUnallocated').style.color = rem === 0 ? "#2ed573" : "#f1c40f";
+const unallocEl = document.getElementById('milPadUnallocated');
+if (unallocEl) {
+unallocEl.innerText = `${rem} PKT`;
+unallocEl.style.color = rem === 0 ? "#2ed573" : "#f1c40f";
+}
 localMilBets.forEach((val, idx) => {
 const el = document.getElementById(`mil-pad-val-${idx}`);
 if (el) el.innerText = `${val} PKT`;
+const card = document.getElementById(`mil-pad-card-${idx}`);
+if (card) {
+if (val > 0) card.classList.add('active-trap');
+else card.classList.remove('active-trap');
+}
 });
 }
 
@@ -551,7 +573,9 @@ const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc 
 const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
 
 let newVal = currentVal;
-if (delta === 'MAX') {
+if (delta === 'ZERO') {
+newVal = 0;
+} else if (delta === 'MAX') {
 newVal = maxPossibleHere;
 } else {
 newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
@@ -559,7 +583,7 @@ newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
 
 const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? newVal : v) > 0).length;
 if (newVal > 0 && activeTrapsCount > localMilMaxTraps) {
-document.getElementById('milPadFeedback').innerText = `⛔ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
+document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
 return;
 }
 
@@ -571,7 +595,7 @@ window.submitMillionBets = async () => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 if (allocated !== localMilTotalPool) {
-document.getElementById('milPadFeedback').innerText = `⚠️ ROZDZIEL WSZYSTKIE PUNKTY (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
+document.getElementById('milPadFeedback').innerText = `⚠️ ROZDZIEL WSZYSTKIE PUNKTY NA ZAPADNIACH (ZOSTAŁO: ${localMilTotalPool - allocated} PKT)!`;
 return;
 }
 const activeTrapsCount = localMilBets.filter(v => v > 0).length;
@@ -826,21 +850,21 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ) - CZEKANIE NA GOTOWOŚĆ I BIEŻĄCY STAN
+// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ)
 // ============================================================================
-if (currentState.round === 2 && (currentState.status === "r2_bomb_wait_ready" || currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_running" || currentState.status === "r2_bomb_exploded")) {
+if (currentState.round === 2) {
 const holderName = getDisplayName(currentState.nominated);
 
 if (currentState.status === "r2_bomb_wait_ready") {
 const readyList = currentState.readyPlayers || [];
 if (readyList.includes(myName)) {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn}/3)`;
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3)`;
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `✅ GOTOWOŚĆ ZATWIERDZONA!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
 } else {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - TURA ${currentState.bombTurn}/3`;
-document.getElementById('readyInfoText').innerHTML = `Zaczyna gracz: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Kliknij gotowość, aby ruszyć z bombą!`;
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - TURA ${currentState.bombTurn || 1}/3`;
+document.getElementById('readyInfoText').innerHTML = `Tura ${currentState.bombTurn || 1}/3!<br>Jako pierwszy bombę dostaje: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Zegar (-1 pkt co 2s) rusza po przeczytaniu pytania!`;
 document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY NA BOMBĘ!`;
 document.getElementById('ui-ready').style.display = 'flex';
 }
@@ -849,54 +873,54 @@ return;
 
 if (currentState.status === "r2_bomb_exploded") {
 const victimName = getDisplayName(currentState.bombVictim || currentState.loser || currentState.nominated);
-document.getElementById('padStatus').innerText = `💥 BOMBA WYBUCHŁA!`;
+document.getElementById('padStatus').innerText = `💥 BOOM! BOMBA WYBUCHŁA!`;
 lockedEl.style.display = 'block';
-lockedEl.innerText = `💥 BUM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
+lockedEl.innerText = `💥 BOOM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
 return;
 }
 
-if (currentState.status === "r2_bomb_speaking") {
-document.getElementById('padStatus').innerText = `🗣️ Lektor czyta pytanie dla: ${holderName.toUpperCase()}`;
+if (currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_active") {
+document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI - SŁUCHAJ PYTANIA!`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = currentState.nominated === myName
-? `SŁUCHAJ PYTANIA! ZEGAR RUSZY ZA CHWILĘ...`
-: `TERAZ BOMBĘ MA: ${holderName.toUpperCase()}\nSŁUCHAJCIE PYTANIA...`;
+? `💣 MASZ BOMBĘ!\nSŁUCHAJ PYTANIA: "${currentState.question || ""}"\nZA CHWILĘ ODBLOKUJĄ SIĘ PRZYCISKI!`
+: `TERAZ BOMBĘ MA: ${holderName.toUpperCase()}\nLEKTOR CZYTA PYTANIE...`;
 return;
 }
 
 if (currentState.status === "r2_bomb_running") {
 if (currentState.nominated === myName) {
-document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA - ODPOWIADAJ!`;
+document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA - ODPOWIADAJ SZYBKO!`;
 document.getElementById('bombPadQuestion').innerText = currentState.question || "";
 document.getElementById('ui-bomb').style.display = 'flex';
 } else {
-document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA`;
+document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA W GRZE`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()} (-1 PKT / 2s)!`;
-}
+lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()} (-1 PKT CO 2s)!\nPRZYGOTUJ SIĘ - ZARAZ MOŻE TRAFIĆ DO CIEBIE!`;
 }
 return;
 }
+}
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (ZAPADNIE)
+// RUNDA 5: POSTAW NA MILION (ZAPADNIE I PRZYCISKI ROZDZIELANIA PUNKTÓW)
 // ============================================================================
-if (currentState.round === 5 && currentState.status && currentState.status.startsWith("r5_mil_")) {
+if (currentState.round === 5) {
 const pName = getDisplayName(currentState.nominated);
 
 if (currentState.status === "r5_mil_wait_ready") {
 if (currentState.nominated === myName) {
-document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA SERIA!`;
-document.getElementById('readyInfoText').innerHTML = `Twoja kolej w Postaw na Milion, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>100 punktów</b> do podziału na zapadnie.`;
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA KOLEJ!`;
+document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej przy zapadniach, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>100 punktów</b> i 5 pytań.`;
 document.getElementById('btnReadyAction').innerText = `💰 STARTUJEMY!`;
 document.getElementById('ui-ready').style.display = 'flex';
 } else {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPATRZ NA TELEWIZOR!`;
+lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nCZEKAMY AŻ KLIKNIE START...`;
 }
 return;
 }
@@ -905,43 +929,49 @@ if (currentState.nominated !== myName) {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts ?? 100} PKT)\nPATRZ NA TELEWIZOR!`;
+lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts ?? 100} PKT)\nOBSERWUJ ZAPADNIE NA TELEWIZORZE!`;
 return;
 }
 
 if (currentState.status === "r5_mil_betting") {
-document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA KOLEJ!`;
+document.body.classList.add('keyboard-mode');
+document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - ROZDZIEL PUNKTY!`;
 document.getElementById('ui-r5-million').style.display = 'flex';
 document.getElementById('milPadTitle').innerText = `PYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentState.milCurrentPts} PKT)`;
+document.getElementById('milPadQuestionText').innerText = currentState.question || "";
 const maxT = currentState.milMaxTraps || 3;
 document.getElementById('milPadRuleInfo').innerText = maxT === 1
 ? `FINAŁ VA BANQUE! Postaw całą kwotę na 1 wybraną zapadnię!`
 : `Możesz obstawić maksymalnie ${maxT} zapadnie (minimum 1 musi zostać pusta!)`;
 
-if (currentState.speechTick !== lastMilSpeechTick) {
+const containerEl = document.getElementById('milPadCardsContainer');
+if (currentState.speechTick !== lastMilSpeechTick || containerEl.children.length === 0) {
 lastMilSpeechTick = currentState.speechTick;
 document.getElementById('milPadFeedback').innerText = "";
 buildMillionPadUI(currentState.options || [], currentState.milCurrentPts || 100, maxT);
 }
-} else if (currentState.status === "r5_mil_dropping") {
+return;
+} else if (currentState.status === "r5_mil_dropping" || currentState.status === "r5_mil_locked") {
 document.getElementById('padStatus').innerText = `⏳ OTWIERANIE ZAPADNI CO 3 SEKUNDY...`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `ZAPADNIE OTWIERAJĄ SIĘ NA EKRANIE TV!\nTRZYMAJ KCIUKI!`;
+return;
 } else if (currentState.status === "r5_mil_q_result") {
 const saved = currentState.milCurrentPts || 0;
 document.getElementById('padStatus').innerText = `WYNIK PYTANIA ${currentState.milQNum || 1}/5`;
 if (saved > 0) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = saved > 0 ? `✅ BRAWO! OCALAŁO: ${saved} PKT!` : `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!`;
+return;
 } else if (currentState.status === "r5_mil_player_summary") {
 const totalSaved = currentState.milSavedTotal || 0;
 document.getElementById('padStatus').innerText = `KONIEC TWOJEJ SERII!`;
 if (totalSaved > 0) lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `KONIEC GRY POSTAW NA MILION!\nZDOBYWASZ DO GŁÓWNEJ TABELI: +${totalSaved} PKT!`;
-}
 return;
+}
 }
 
 // ============================================================================
@@ -1150,7 +1180,7 @@ let lbl = document.getElementById(`pad-lbl-${i}`);
 btn.disabled = false;
 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
 }
-document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERJ ODPOWIEDŹ:";
+document.getElementById('padStatus').innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
 document.getElementById('ui-abcd').style.display = 'grid';
 return;
 }
