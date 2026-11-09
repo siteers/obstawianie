@@ -74,7 +74,7 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 .bomb-holder-banner { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; letter-spacing: 0.15vw; text-shadow: 0 0 1.2vw #ff4757; }
 .bomb-sub { font-size: 1.15vw; color: #cbd5e1; margin-top: 0.4vw; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION (ZAPADNIE) */
+/* RUNDA 5: POSTAW NA MILION */
 #r5-million-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.8vw; }
 .mil-traps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10vw, 1fr)); gap: 1vw; width: 100%; margin-top: 0.8vw; perspective: 800px; }
 .mil-trap-card { background: linear-gradient(180deg, #1e293b, #0f172a); border: 0.25vw solid var(--cyan); border-radius: 1vw; padding: 1vw; display: flex; flex-direction: column; align-items: center; justify-content: space-between; min-height: 8.5vw; transition: all 0.6s ease; transform-origin: top center; box-shadow: 0 0 1.5vw rgba(0,212,255,0.25); }
@@ -188,7 +188,7 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div id="r2-bomb-box">
 <div class="bomb-icon" id="r2-bomb-emoji">💣</div>
 <div class="bomb-holder-banner" id="r2-bomb-holder-txt">TRZYMA BOMBĘ: ...</div>
-<div class="bomb-sub">⏳ -1 PKT ZA KAŻDĄ SEKUNDĘ | DOBRZE: +5 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
+<div class="bomb-sub">⏳ -1 PKT CO 2 SEKUNDY | DOBRZE: +5 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
 </div>
 
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
@@ -196,7 +196,7 @@ body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; o
 <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
 <div class="wheel-winners-list" id="tv-wheel-winners"></div>
 
-<!-- RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI) -->
+<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE) -->
 <div id="r5-million-box">
 <div class="mil-traps-grid" id="r5-traps-container"></div>
 </div>
@@ -858,7 +858,6 @@ refreshTVPlayerNames();
 
 currentActivePlayers = (data.activePlayers && data.activePlayers.length > 0) ? data.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
 
-// Blokada spoilera punktowego w narożnikach w trakcie odpowiadania w Rundzie 1 i 3
 hideLiveCornerScores = ((data.round === 1 || data.round === 3) && (data.status === "speaking" || data.status === "reading"));
 
 if (data.wheelCategories && data.wheelCategories.length > 0) {
@@ -868,7 +867,7 @@ drawR6Wheel(r7Categories);
 
 let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
-2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (-1 PKT/1s | +5 / -5 PKT | WYBUCH -10 PKT)",
+2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (-1 PKT/2s | +5 / -5 PKT | WYBUCH -10 PKT)",
 3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | LITERY LUB CAŁE HASŁO BEZ KAR!)",
 5: "RUNDA 5: 💰 POSTAW NA MILION (100 PKT | 5 PYTAŃ | ZAPADNIE CO 3 SEKUNDY)",
@@ -919,13 +918,12 @@ let el = document.getElementById(`score-${p}`);
 el.style.display = currentActivePlayers.includes(p) ? "block" : "none";
 if (data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
 else el.classList.remove('blocked');
-if (data.round === 2 && data.status === "r2_bomb_active" && data.nominated === p) el.classList.add('bomb-holder');
+if (data.round === 2 && (data.status === "r2_bomb_active" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_running") && data.nominated === p) el.classList.add('bomb-holder');
 else el.classList.remove('bomb-holder');
 });
 
 const letters = ["A", "B", "C", "D"];
 
-// PODSUMOWANIE PO RUNDZIE
 if (data.status === "round_summary") {
 clearInterval(timerInterval); clearInterval(wheelRevealInterval);
 timerEl.style.display = 'none';
@@ -955,9 +953,9 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ, 3 TURY WYBUCHÓW)
+// RUNDA 2: GORĄCA BOMBA (GOTOWOŚĆ, CZYTANIE, TYKANIE I WYBUCH)
 // ============================================================================
-if (data.round === 2 && (data.status === "r2_bomb_active" || data.status === "r2_bomb_exploded")) {
+if (data.round === 2 && (data.status === "r2_bomb_wait_ready" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_running" || data.status === "r2_bomb_exploded")) {
 clearInterval(timerInterval);
 timerEl.style.display = 'none';
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -966,19 +964,47 @@ catEl.style.display = "block";
 catEl.innerText = `🔥 GORĄCA BOMBA: TURA ${data.bombTurn || 1} / 3`;
 r2BombBox.style.display = "flex";
 
-if (data.status === "r2_bomb_active") {
-setBgMusicActive(false);
-tickSound.play().catch(()=>{});
-document.getElementById('r2-bomb-emoji').innerText = "💣";
 const holderName = getDisplayName(data.nominated);
-document.getElementById('r2-bomb-holder-txt').innerText = `🔥 BOMBĘ TRZYMA: ${holderName.toUpperCase()}!`;
+
+if (data.status === "r2_bomb_wait_ready") {
+setBgMusicActive(true);
+tickSound.pause(); tickSound.currentTime = 0;
+document.getElementById('r2-bomb-emoji').innerText = "💣";
+document.getElementById('r2-bomb-holder-txt').innerText = `ZACZYNA: ${holderName.toUpperCase()}`;
+qEl.innerText = `TURA ${data.bombTurn || 1}/3 | Czekamy aż gracze klikną gotowość na telefonach...`;
+
+let bWaitKey = "r2_bwait_" + data.speechTick;
+if (lastSpokenKey !== bWaitKey) {
+lastSpokenKey = bWaitKey;
+speakPolishText(`Przed nami runda Gorąca Bomba, tura ${data.bombTurn}. Zaczyna gracz ${holderName}. Kliknijcie gotowość na telefonach.`);
+}
+} else if (data.status === "r2_bomb_speaking") {
+setBgMusicActive(false);
+tickSound.pause(); tickSound.currentTime = 0;
+document.getElementById('r2-bomb-emoji').innerText = "💣";
+document.getElementById('r2-bomb-holder-txt').innerText = `TRZYMA BOMBĘ: ${holderName.toUpperCase()}`;
 qEl.innerText = data.question;
 
-let bombSpKey = "r2_bomb_q_" + data.speechTick;
-if (lastSpokenKey !== bombSpKey) {
-lastSpokenKey = bombSpKey;
-speakPolishText(`${holderName}! ${data.question}`);
+let bSpKey = "r2_bsp_" + data.speechTick;
+if (lastSpokenKey !== bSpKey) {
+lastSpokenKey = bSpKey;
+speakPolishText(`${holderName}! ${data.question}`, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r2_bomb_running",
+tick: Date.now()
+});
+});
 }
+} else if (data.status === "r2_bomb_running") {
+setBgMusicActive(false);
+document.getElementById('r2-bomb-emoji').innerText = "💣";
+document.getElementById('r2-bomb-holder-txt').innerText = `🔥 TRZYMA BOMBĘ: ${holderName.toUpperCase()} (-1 PKT / 2s)!`;
+qEl.innerText = data.question;
+
+const progress = data.bombProgress || 0;
+const rate = 1.0 + (progress * 1.6); // Przyspieszające tykanie od 1.0x do 2.6x w miarę zbliżania się do wybuchu
+tickSound.playbackRate = rate;
+tickSound.play().catch(()=>{});
 } else if (data.status === "r2_bomb_exploded") {
 tickSound.pause(); tickSound.currentTime = 0;
 stage.classList.add("error-glow");
@@ -1010,6 +1036,20 @@ for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if
 const pName = getDisplayName(data.nominated);
 catEl.style.display = "block";
 catEl.innerText = `💰 POSTAW NA MILION: ${pName.toUpperCase()} | PYTANIE ${data.milQNum || 1}/5 | W GRZE: ${data.milCurrentPts ?? 100} PKT`;
+
+if (data.status === "r5_mil_wait_ready") {
+setBgMusicActive(true);
+qEl.innerText = `KOLEJ NA GRACZA: ${pName.toUpperCase()}!`;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "JESTEM GOTOWY" NA SWOIM TELEFONIE, ABY ROZPOCZEC SERIE 5 PYTAŃ!`;
+let mWaitKey = "r5_mwait_" + data.speechTick;
+if (lastSpokenKey !== mWaitKey) {
+lastSpokenKey = mWaitKey;
+speakPolishText(`Teraz gra gracz ${pName}. Postaw na milion. Kliknij gotowość na swoim telefonie.`);
+}
+return;
+}
 
 if (data.status === "r5_mil_player_summary") {
 setBgMusicActive(false);
@@ -1117,7 +1157,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 7: KOŁO KATEGORII I TAJNE OBSTAWIANIE W CIEMNO (20s, MIN. 5 PKT)
+// RUNDA 7: KOŁO KATEGORII I LICYTACJA W CIEMNO
 // ============================================================================
 if (data.status === "r6_wait_spin" || data.status === "r6_spinning") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
@@ -1182,7 +1222,6 @@ if (isLocked) card.classList.add('tied-high');
 callEl.style.color = "var(--gold)";
 callEl.innerText = `🤫 WPISZCIE TAJNĄ STAWKĘ NA TELEFONACH (${lockedList.length}/${currentActivePlayers.length})!`;
 
-// Stoper 20s na tajną licytację na ekranie TV
 if (data.speechTick !== currentTick) {
 currentTick = data.speechTick;
 clearInterval(timerInterval);
@@ -1264,7 +1303,6 @@ clearInterval(timerInterval); clearInterval(wheelRevealInterval);
 timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
 setBgMusicActive(true);
-for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
 if (data.status === "setup_nomination" || data.status === "nominating") {
 const ctrlName = getDisplayName(data.controller);
@@ -1314,9 +1352,7 @@ status: "reading", tick: Date.now()
 });
 }
 
-// ============================================================================
-// RUNDA 4: ODSŁANIANIE HASŁA (60s, LITERY LUB CAŁE HASŁO BEZ KAR)
-// ============================================================================
+// RUNDA 4: ODSŁANIANIE HASŁA
 } else if (data.status === "wheel_reading") {
 isSuspense = false;
 suspenseSound.pause(); suspenseSound.currentTime = 0;
@@ -1429,9 +1465,7 @@ winSound.play().catch(()=>{});
 lastPlayedResult = "wheel_end_" + data.answerTick;
 }
 
-// ============================================================================
-// CZYTANIE I ODPOWIADANIE (RUNDY 1, 3, 6, 7 - BEZ SPOILERA W R1 I R3!)
-// ============================================================================
+// CZYTANIE I ODPOWIADANIE (RUNDY 1, 3, 6, 7)
 } else if (data.status === "reading") {
 isSuspense = false;
 clearInterval(wheelRevealInterval);
@@ -1511,9 +1545,7 @@ tickSound.play().catch(()=>{});
 }, 1000);
 }
 
-// ============================================================================
-// WYNIKI RUNDY 1 (PEŁNA POSORTOWANA LISTA ZWYCIĘZCÓW CO DO MILISEKUNDY!)
-// ============================================================================
+// WYNIKI RUNDY 1
 } else if (data.status === "r1_results") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0;
@@ -1552,9 +1584,7 @@ else loseSound.play().catch(()=>{});
 lastPlayedResult = "r1_end_" + data.answerTick;
 }
 
-// ============================================================================
-// WYNIKI RUNDY 3 (SZYBKIE PISANIE - ODSŁONIĘCIE PO CZASIE)
-// ============================================================================
+// WYNIKI RUNDY 3
 } else if (data.status === "r3_results") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0;
