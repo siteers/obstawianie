@@ -508,7 +508,7 @@ let lastBombStartRunKey = "";
 // Zmienne dla Rundy 5: POSTAW NA MILION (100 pkt, 5 pytań, zapadnie co 3s)
 let milPlayerIdx = 0;
 let milQIdx = 0;
-let milCurrentPoints = 100;
+let milCurrentPoints = 200;
 let milTrapdoorTimer = null;
 let lastMilHandledKey = "";
 let lastMilReadyKey = "";
@@ -882,7 +882,7 @@ await triggerRoundSummary(5);
 return;
 }
 milQIdx = 0;
-milCurrentPoints = 100;
+milCurrentPoints = 200;
 const player = r5Order[milPlayerIdx];
 
 statusEl.innerText = `💰 Runda 5 (Postaw na Milion): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ na swoim telefonie (lub kliknij START GRY tutaj)...`;
@@ -893,7 +893,7 @@ round: 5,
 nominated: player,
 question: `Przygotuj się do gry przy zapadniach: ${getDisplayName(player)}!`,
 milQNum: 1,
-milCurrentPts: 100,
+milCurrentPts: 200,
 activePlayers: activeList,
 playerNames: playerNamesMap,
 speechTick: Date.now(),
