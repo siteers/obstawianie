@@ -133,7 +133,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | +10/-5 pkt | -1 pkt/2s po lektorze | Wybuch -10 pkt)</option>
 <option value="3">Runda 3: ✍️ Szybkie Pisanie (20s po lektorze | 15/12/10/8 pkt | Bez spoilera)</option>
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (60s | Litery pod ręką LUB całe hasło bez kar!)</option>
-<option value="5">Runda 5: 💰 POSTAW NA MILION (100 pkt | 5 pytań | Zapadnie 3D co 3s | Ułatwienia dla Jasia)</option>
+<option value="5">Runda 5: 💰 POSTAW NA MILION (200 pkt | 45s na pytanie | Nierozłożone przepadają!)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (12s | ±20 pkt sam / ±10 pkt rywal)</option>
 <option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (Min. 5 pkt | Stoper 20s | Automat 5 pkt)</option>
 </select><br>
@@ -491,7 +491,7 @@ let r7CarryOverPool = 0;
 let currentState = null;
 let r6Controller = "";
 
-// Zmienne dla Rundy 2: GORĄCA BOMBA (3 tury, 60-120s, -1 pkt / 2s po lektorze, +10/-5 pkt, wybuch -10 pkt)
+// Zmienne dla Rundy 2: GORĄCA BOMBA
 let bombTurnNum = 0;
 let bombHolderIdx = 0;
 let bombPlayerQPos = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
@@ -505,13 +505,15 @@ let lastBombAnsKey = "";
 let lastBombReadyKey = "";
 let lastBombStartRunKey = "";
 
-// Zmienne dla Rundy 5: POSTAW NA MILION (100 pkt, 5 pytań, zapadnie co 3s)
+// Zmienne dla Rundy 5: POSTAW NA MILION (200 pkt, 5 pytań, 45s na pytanie, zapadnie co 3s)
 let milPlayerIdx = 0;
 let milQIdx = 0;
 let milCurrentPoints = 200;
 let milTrapdoorTimer = null;
+let milBettingTimeout = null;
 let lastMilHandledKey = "";
 let lastMilReadyKey = "";
+let lastMilTimeoutResolvedKey = "";
 
 // Timery globalne i klucze blokad
 let suspenseTimer = null;
@@ -537,6 +539,7 @@ clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
 clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
 clearInterval(bombProgressTicker); bombProgressTicker = null;
 clearTimeout(milTrapdoorTimer); milTrapdoorTimer = null;
+clearTimeout(milBettingTimeout); milBettingTimeout = null;
 }
 
 function pauseBombTimersOnly() {
@@ -745,9 +748,6 @@ answerTick: Date.now()
 
 // ============================================================================
 // RUNDA 2: GORĄCA BOMBA
-// - Ekran gotowości przed każdą z 3 tur i informacja kto zaczyna
-// - Zegar i kara -1 pkt co 2s ruszają DOPIERO PO PRZECZYTANIU PYTANIA
-// - Dobra odpowiedź: +10 pkt | Zła: -5 pkt | Wybuch: -10 pkt
 // ============================================================================
 async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
@@ -760,7 +760,7 @@ const activeList = getSelectedActivePlayers();
 bombHolderIdx = (bombTurnNum - 1) % activeList.length;
 const starter = activeList[bombHolderIdx];
 
-const durationSec = Math.floor(Math.random() * 61) + 60; // 60 - 120 sekund aktywnego tykania
+const durationSec = Math.floor(Math.random() * 61) + 60;
 bombTotalDurationMs = durationSec * 1000;
 bombRemainingMs = bombTotalDurationMs;
 bombActiveRunStartedAt = 0;
@@ -818,7 +818,6 @@ const holder = currentState ? currentState.nominated : getSelectedActivePlayers(
 
 statusEl.innerText = `🔥 BOMBA TYKA u gracza ${getDisplayName(holder)}! (-1 pkt co 2 sekundy | Pozostało do wybuchu: ${(bombRemainingMs/1000).toFixed(1)}s)`;
 
-// Co 1 sekundę aktualizujemy bombProgress dla przyspieszającego tykania na TV
 bombProgressTicker = setInterval(async () => {
 if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running") return;
 const elapsed = Date.now() - bombActiveRunStartedAt;
@@ -830,7 +829,6 @@ await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog });
 } catch (e) {}
 }, 1000);
 
-// Kara -1 pkt za każde pełne 2 sekundy (2000 ms) trzymania bomby PO przeczytaniu pytania
 bombPenaltyTicker = setInterval(async () => {
 if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running") return;
 const curHolder = currentState.nominated;
@@ -870,7 +868,7 @@ prepareBombTurnWaitReady(bombTurnNum + 1);
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI 3D CO 3 SEKUNDY)
+// RUNDA 5: POSTAW NA MILION (200 PKT, LIMIT 45s NA PYTANIE, NIEROZŁOŻONE PRZEPADAJĄ!)
 // ============================================================================
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
@@ -901,6 +899,47 @@ pool: currentPool
 });
 }
 
+async function resolveMillionTimeout() {
+if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting") return;
+const tKey = "mil_to_" + currentState.speechTick;
+if (lastMilTimeoutResolvedKey === tKey) return;
+lastMilTimeoutResolvedKey = tKey;
+clearTimeout(milBettingTimeout); milBettingTimeout = null;
+
+try {
+const snap = await getDoc(doc(db, "quizGame", "state"));
+const latest = snap.exists() ? snap.data() : currentState;
+if (latest.status !== "r5_mil_betting") return;
+
+const optsCount = (latest.options || []).length;
+const rawBets = latest.milLiveBets || latest.milBets || {};
+const maxTraps = latest.milMaxTraps || 3;
+const sanitizedBets = {};
+let sumAllocated = 0;
+let activeTraps = 0;
+
+for (let i = 0; i < optsCount; i++) {
+let v = parseInt(rawBets[i], 10) || 0;
+if (v < 0) v = 0;
+if (v > 0) {
+if (activeTraps >= maxTraps) {
+v = 0;
+} else {
+activeTraps++;
+}
+}
+if (sumAllocated + v > milCurrentPoints) {
+v = Math.max(0, milCurrentPoints - sumAllocated);
+}
+sanitizedBets[i] = v;
+sumAllocated += v;
+}
+
+const lostUnallocated = Math.max(0, milCurrentPoints - sumAllocated);
+await startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
+} catch (err) { showError(err.message); }
+}
+
 async function sendMillionQuestionToPlayer() {
 clearAllAdminTimers();
 const activeList = getSelectedActivePlayers();
@@ -914,8 +953,9 @@ return;
 
 const qObj = pQuestions[milQIdx];
 const maxTrapsAllowed = milQIdx < 3 ? 3 : (milQIdx === 3 ? 2 : 1);
+const nowTick = Date.now();
 
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT (Max zapadni: ${maxTrapsAllowed})`;
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT | Limit: 45s (Max zapadni: ${maxTrapsAllowed})`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_betting",
@@ -924,19 +964,29 @@ nominated: player,
 milQNum: milQIdx + 1,
 milCurrentPts: milCurrentPoints,
 milMaxTraps: maxTrapsAllowed,
+milTimeoutSec: 45,
+milLostUnallocated: 0,
 question: qObj.q,
 options: qObj.o,
 correctIndex: qObj.c,
 milBets: {},
+milLiveBets: {},
 milOpenTraps: [],
 activePlayers: activeList,
 playerNames: playerNamesMap,
-speechTick: Date.now(),
+tick: nowTick,
+speechTick: nowTick,
 pool: currentPool
 });
+
+clearTimeout(milBettingTimeout);
+milBettingTimeout = setTimeout(() => {
+resolveMillionTimeout();
+}, 45500);
 }
 
-async function startMillionTrapdoorSequence(betsObj) {
+async function startMillionTrapdoorSequence(betsObj, lostUnallocated = 0) {
+clearTimeout(milBettingTimeout); milBettingTimeout = null;
 if (!currentState || currentState.round !== 5) return;
 const optsCount = (currentState.options || []).length;
 const correctIdx = currentState.correctIndex;
@@ -949,9 +999,14 @@ wrongIndices.sort(() => Math.random() - 0.5);
 const openedSoFar = [];
 let step = 0;
 
+if (lostUnallocated > 0) {
+statusEl.innerText = `⏰ CZAS MINĄŁ! Gracz nie zdążył rozdzielić ${lostUnallocated} PKT (przepadają bezpowrotnie!). Otwieramy zapadnie...`;
+}
+
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_dropping",
 milBets: betsObj,
+milLostUnallocated: lostUnallocated,
 milOpenTraps: [],
 speechTick: Date.now()
 });
@@ -960,7 +1015,7 @@ function dropNextTrap() {
 if (step < wrongIndices.length) {
 openedSoFar.push(wrongIndices[step]);
 step++;
-statusEl.innerText = `💰 Otwieranie zapadni ${step}/${wrongIndices.length}...`;
+statusEl.innerText = `💰 Otwieranie zapadni ${step}/${wrongIndices.length}...${lostUnallocated > 0 ? ` (Przepadło przez czas: ${lostUnallocated} PKT)` : ""}`;
 updateDoc(doc(db, "quizGame", "state"), {
 milOpenTraps: [...openedSoFar],
 answerTick: Date.now()
@@ -969,11 +1024,12 @@ milTrapdoorTimer = setTimeout(dropNextTrap, 3000);
 } else {
 const savedPts = parseInt(betsObj[correctIdx], 10) || 0;
 milCurrentPoints = savedPts;
-statusEl.innerText = `💰 Wynik pytania ${milQIdx + 1}/5: Ocalało ${milCurrentPoints} PKT!`;
+statusEl.innerText = `💰 Wynik pytania ${milQIdx + 1}/5: Ocalało ${milCurrentPoints} PKT!${lostUnallocated > 0 ? ` (Nierozłożone ${lostUnallocated} PKT przepadło)` : ""}`;
 
 updateDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_q_result",
 milCurrentPts: milCurrentPoints,
+milLostUnallocated: lostUnallocated,
 answerTick: Date.now()
 });
 
@@ -1006,7 +1062,7 @@ startMillionForPlayer(milPlayerIdx + 1);
 }, 6500);
 }
 
-// --- RUNDA 7: KOŁO I TAJNE OBSTAWIANIE W CIEMNO (MIN 5 PKT, STOPER 20s, AUTOMAT 5 PKT) ---
+// --- RUNDA 7: KOŁO I TAJNE OBSTAWIANIE W CIEMNO ---
 function pickR7QuestionFromPool(pool) {
 const list = allDBs[pool][7] || [];
 let availableIndices = [];
@@ -1310,7 +1366,7 @@ finalizeR1Question();
 }
 }
 
-// RUNDA 2: GORĄCA BOMBA - GOTOWOŚĆ PRZED TURĄ, START PO LEKTORZE I ODPOWIEDŹ (+10 / -5 PKT)
+// RUNDA 2: GORĄCA BOMBA
 if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const readyList = currentState.readyPlayers || [];
@@ -1339,7 +1395,7 @@ lastBombAnsKey = ansKey;
 pauseBombTimersOnly();
 const player = currentState.nominated;
 const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
-const ptsDelta = isCorrect ? 10 : -5; // +10 pkt za dobrą odpowiedź, -5 pkt za złą!
+const ptsDelta = isCorrect ? 10 : -5;
 
 (async () => {
 try {
@@ -1417,7 +1473,12 @@ if (currentState.round === 5 && currentState.status === "r5_mil_locked") {
 const milKey = "mil_lock_" + currentState.answerTick;
 if (lastMilHandledKey !== milKey) {
 lastMilHandledKey = milKey;
-startMillionTrapdoorSequence(currentState.milBets || {});
+clearTimeout(milBettingTimeout); milBettingTimeout = null;
+const lockedBets = currentState.milBets || {};
+let sumLocked = 0;
+Object.values(lockedBets).forEach(v => { sumLocked += (parseInt(v, 10) || 0); });
+const lostPts = Math.max(0, milCurrentPoints - sumLocked);
+startMillionTrapdoorSequence(lockedBets, lostPts);
 }
 }
 
