@@ -446,6 +446,30 @@ window.speechSynthesis.onvoiceschanged = initPolishVoices;
 setTimeout(initPolishVoices, 300);
 }
 
+const numberWordsMap = {
+0: "zero", 1: "jeden", 2: "dwa", 3: "trzy", 4: "cztery", 5: "pięć",
+6: "sześć", 7: "siedem", 8: "osiem", 9: "dziewięć", 10: "dziesięć",
+11: "jedenaście", 12: "dwanaście", 13: "trzynaście", 14: "czternaście",
+15: "piętnaście", 16: "szesnaście", 17: "siedemnaście", 18: "osiemnaście",
+19: "dziewiętnaście", 20: "dwadzieścia", 25: "dwadzieścia pięć",
+30: "trzydzieści", 40: "czterdzieści", 45: "czterdzieści pięć", 50: "pięćdziesiąt",
+60: "sześćdziesiąt", 70: "siedemdziesiąt", 80: "osiemdziesiąt", 90: "dziewięćdziesiąt",
+100: "sto", 200: "dwieście"
+};
+
+function numToCardinalWord(numStr) {
+const n = parseInt(numStr, 10);
+if (numberWordsMap[n]) return numberWordsMap[n];
+if (n > 20 && n < 100) {
+const tens = Math.floor(n / 10) * 10;
+const units = n % 10;
+if (numberWordsMap[tens] && numberWordsMap[units]) {
+return `${numberWordsMap[tens]} ${numberWordsMap[units]}`;
+}
+}
+return numStr;
+}
+
 function speakPolishText(textToRead, onDoneCallback) {
 clearTimeout(speechSafetyTimer);
 if (!('speechSynthesis' in window)) {
@@ -455,12 +479,11 @@ return;
 window.speechSynthesis.cancel();
 
 let cleanText = (textToRead || "")
-// Zabezpieczamy konkretne działania i liczby przed dziwną odmianą przez przeglądarkę
-.replace(/(\d+)\s*\+\s*(\d+)/g, "$1 dodać $2")
-.replace(/(\d+)\s*\-\s*(\d+)/g, "$1 odjąć $2")
-.replace(/(\d+)\s*x\s*(\d+)/g, "$1 razy $2")
-.replace(/(\d+)\s*:\s*(\d+)/g, "$1 podzielić przez $2")
-.replace(/(\d+)\s*\/\s*(\d+)/g, "$1 podzielić przez $2")
+// Rozpisanie działań matematycznych słownie, aby przeglądarka nigdy nie mówiła "piętnastego"
+.replace(/(\d+)\s*\+\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} dodać ${numToCardinalWord(b)}`)
+.replace(/(\d+)\s*\-\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} odjąć ${numToCardinalWord(b)}`)
+.replace(/(\d+)\s*[xX\*]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} razy ${numToCardinalWord(b)}`)
+.replace(/(\d+)\s*[:\/]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} podzielić przez ${numToCardinalWord(b)}`)
 .replace(/:\s*$/, "")
 .replace(/:/g, ", ")
 .replace(/\bpkt\b/gi, "punktów")
@@ -651,13 +674,12 @@ gain.connect(audioCtx.destination);
 whiteNoise.start(now);
 }
 
-// POTĘŻNA EKSPLOZJA BOMBY W RUNDZIE 2 (ZAMIAST DŹWIĘKU Z RUNDY 1!)
+// POTĘŻNA EKSPLOZJA BOMBY W RUNDZIE 2
 function playMassiveBombExplosion() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 const now = audioCtx.currentTime;
 
-// 1. Niski sub-basowy grzmot uderzeniowy
 const subOsc = audioCtx.createOscillator();
 const subGain = audioCtx.createGain();
 subOsc.type = "sawtooth";
@@ -670,7 +692,6 @@ subGain.connect(audioCtx.destination);
 subOsc.start(now);
 subOsc.stop(now + 1.5);
 
-// 2. Długi huk eksplozji (szum przefiltrowany dolnoprzepustowo)
 const dur = 1.6;
 const bufferSize = Math.floor(audioCtx.sampleRate * dur);
 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
@@ -1029,7 +1050,7 @@ let roundNames = {
 2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | -1 PKT/2s PO LEKTORZE | WYBUCH -10 PKT)",
 3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | LITERY LUB CAŁE HASŁO BEZ KAR!)",
-5: "RUNDA 5: 💰 POSTAW NA MILION (100 PKT | 5 PYTAŃ | ZAPADNIE 3D CO 3 SEKUNDY)",
+5: "RUNDA 5: 💰 POSTAW NA MILION (200 PKT | 45s NA PYTANIE | NIEROZŁOŻONE PRZEPADAJĄ!)",
 6: "RUNDA 6: ⚡ RYZYKO - WYBIERANIE GRACZA (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
 7: "RUNDA 7: 🎡 KOŁO KATEGORII + TAJNE OBSTAWIANIE W CIEMNO (20s | MIN. 5 PKT)"
 };
@@ -1171,7 +1192,6 @@ tick: Date.now()
 setBgMusicActive(false);
 bombEmojiEl.innerText = "💣";
 const progress = data.bombProgress || 0;
-// Przyspieszanie pulsowania ikony bomby i dźwięku tykania im bliżej wybuchu!
 const animDur = Math.max(0.18, 0.75 - progress * 0.55);
 bombEmojiEl.style.animationDuration = `${animDur}s`;
 
@@ -1205,19 +1225,19 @@ return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (100 PKT Z ZAPADNIAMI 3D CO 3 SEKUNDY)
+// RUNDA 5: POSTAW NA MILION (200 PKT, 45s NA PYTANIE, ZAPADNIE 3D CO 3 SEKUNDY)
 // ============================================================================
 if (data.round === 5) {
-clearInterval(timerInterval);
-timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
 const pName = getDisplayName(data.nominated || currentActivePlayers[0]);
+const curPoolPts = data.milCurrentPts ?? 200;
 catEl.style.display = "block";
-catEl.innerText = `💰 POSTAW NA MILION: ${pName.toUpperCase()} | PYTANIE ${data.milQNum || 1}/5 | W GRZE: ${data.milCurrentPts ?? 100} PKT`;
+catEl.innerText = `💰 POSTAW NA MILION: ${pName.toUpperCase()} | PYTANIE ${data.milQNum || 1}/5 | W GRZE: ${curPoolPts} PKT`;
 
 if (data.status === "r5_mil_wait_ready") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(true);
 qEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!`;
 winnerEl.style.display = "block";
@@ -1226,12 +1246,14 @@ winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "STARTUJEMY" NA SWOIM
 let mWaitKey = "r5_mwait_" + data.speechTick;
 if (lastSpokenKey !== mWaitKey) {
 lastSpokenKey = mWaitKey;
-speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie. Kliknij gotowość na telefonie!`);
+speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie i czterdzieści pięć sekund na każde pytanie. Kliknij gotowość na telefonie!`);
 }
 return;
 }
 
 if (data.status === "r5_mil_player_summary") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(false);
 stage.classList.add(data.milSavedTotal > 0 ? "success-glow" : "error-glow");
 qEl.innerText = `KONIEC GRY POSTAW NA MILION DLA GRACZA: ${pName.toUpperCase()}!`;
@@ -1264,12 +1286,11 @@ const isResultWinner = (data.status === "r5_mil_q_result" && idx === data.correc
 const betVal = bets[idx] !== undefined ? parseInt(bets[idx], 10) : 0;
 const isBettingPhase = (data.status === "r5_mil_betting");
 
-// Generowanie plików banknotów jak w Postaw na Milion
 let bundlesCount = 0;
 if (isBettingPhase) {
 bundlesCount = 2;
 } else if (betVal > 0) {
-bundlesCount = Math.min(10, Math.max(1, Math.ceil(betVal / 10)));
+bundlesCount = Math.min(10, Math.max(1, Math.ceil(betVal / 20)));
 }
 let bundlesHtml = "";
 for (let b = 0; b < bundlesCount; b++) {
@@ -1303,15 +1324,43 @@ setBgMusicActive(true);
 lastTrapCountSound = 0;
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--gold)";
-winnerEl.innerText = `📱 ${pName.toUpperCase()} ROZDZIELA ${data.milCurrentPts} PKT NA ZAPADNIACH (MAX ZAPADNI: ${data.milMaxTraps})...`;
+winnerEl.innerText = `📱 ${pName.toUpperCase()} ROZDZIELA ${curPoolPts} PKT NA ZAPADNIACH (MAX ZAPADNI: ${data.milMaxTraps} | 45s - NIEROZŁOŻONE PRZEPADAJĄ!)...`;
+
+if (data.speechTick !== currentTick) {
+currentTick = data.speechTick;
+clearInterval(timerInterval);
+tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
+let timeLeft = data.milTimeoutSec || 45;
+timerEl.style.display = 'flex';
+timerEl.classList.remove('timer-alert');
+timerEl.innerText = timeLeft;
+
+timerInterval = setInterval(() => {
+timeLeft--;
+if (timeLeft <= 0) {
+clearInterval(timerInterval);
+tickSound.pause(); tickSound.currentTime = 0;
+timerEl.innerText = "0";
+} else {
+timerEl.innerText = timeLeft;
+if (timeLeft <= 5) {
+timerEl.classList.add('timer-alert');
+setBgMusicActive(false);
+tickSound.play().catch(()=>{});
+}
+}
+}, 1000);
+}
 
 let milQKey = "r5_mil_q_" + data.speechTick;
 if (lastSpokenKey !== milQKey && data.question) {
 lastSpokenKey = milQKey;
 let optsSpoken = optionsList.map((o, i) => `${letters[i]}: ${o}`).join(". ");
-speakPolishText(`${pName}, pytanie numer ${data.milQNum}. ${data.question}. ${optsSpoken}`);
+speakPolishText(`${pName}, pytanie numer ${data.milQNum}. Masz czterdzieści pięć sekund. ${data.question}. ${optsSpoken}`);
 }
 } else if (data.status === "r5_mil_dropping") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
 setBgMusicActive(false);
 suspenseSound.play().catch(()=>{});
 if (openTraps.length > lastTrapCountSound) {
@@ -1320,16 +1369,20 @@ playFireworkBoom();
 }
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = `⏳ OTWIERAMY KOLEJNE ZAPADNIE CO 3 SEKUNDY...`;
+const lostTxt = data.milLostUnallocated > 0 ? ` (⏰ PRZEPADŁO PRZEZ CZAS: -${data.milLostUnallocated} PKT!)` : "";
+winnerEl.innerText = `⏳ OTWIERAMY KOLEJNE ZAPADNIE CO 3 SEKUNDY...${lostTxt}`;
 } else if (data.status === "r5_mil_q_result") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
 suspenseSound.pause(); suspenseSound.currentTime = 0;
 const saved = data.milCurrentPts || 0;
+const lostTxt = data.milLostUnallocated > 0 ? ` (PRZEPADŁO PRZEZ CZAS: ${data.milLostUnallocated} PKT)` : "";
 stage.classList.add(saved > 0 ? "success-glow" : "error-glow");
 winnerEl.style.display = "block";
 winnerEl.style.color = saved > 0 ? "#00ff00" : "#ff4757";
 winnerEl.innerText = saved > 0
-? `✅ BRAWO! NA ZAMKNIĘTEJ ZAPADNI OCALAŁO: ${saved} PKT!`
-: `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!`;
+? `✅ BRAWO! NA ZAMKNIĘTEJ ZAPADNI OCALAŁO: ${saved} PKT!${lostTxt}`
+: `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!${lostTxt}`;
 
 let milResKey = "r5_mil_res_" + data.answerTick;
 if (lastPlayedResult !== milResKey) {
