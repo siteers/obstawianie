@@ -323,7 +323,13 @@ return stateObj.activePlayers;
 return ["Lila", "Kaja", "Darek", "Jas"];
 }
 
+let lastDrawnCatsKey = "";
+
 function drawPadWheel(catsList = r7Categories) {
+const key = (catsList || []).join("|");
+if (key === lastDrawnCatsKey) return; // Nie resetuj canvasu w trakcie animacji!
+lastDrawnCatsKey = key;
+
 const canvas = document.getElementById('pad-wheel-canvas');
 if (!canvas) return;
 const ctx = canvas.getContext('2d');
@@ -421,14 +427,20 @@ if (!currentState || currentState.round !== 7 || currentState.status !== "r6_wai
 isSpinningLocally = true;
 const spinTickNow = Date.now();
 lastHandledSpinTickOnPad = spinTickNow;
-padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
+
 const segAngle = 360 / r7Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 padWheelRot += power * 360 + diff;
+
+// Wymuszenie reflow przed nałożeniem transition, aby przeglądarka mobilna płynnie zakręciła kołem
+padWheelEl.style.transition = "none";
+void padWheelEl.offsetWidth;
+padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
+
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r6_spinning",
 spinPower: power,
