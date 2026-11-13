@@ -132,8 +132,8 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="1">Runda 1: Wyścig ABCD (12s po lektorze | 15/12/10/8 pkt | Bez spoilera + Fix listy)</option>
 <option value="2">Runda 2: 🔥 GORĄCA BOMBA (Prawda/Fałsz | 3 tury po 1-2 min | +10/-5 pkt | -1 pkt/2s po lektorze | Wybuch -10 pkt)</option>
 <option value="3">Runda 3: ✍️ Szybkie Pisanie (20s po lektorze | 15/12/10/8 pkt | Bez spoilera)</option>
-<option value="4">Runda 4: 🔤 Odsłanianie Hasła (60s | Litery pod ręką LUB całe hasło bez kar!)</option>
-<option value="5">Runda 5: 💰 POSTAW NA MILION (200 pkt | 45s na pytanie | Nierozłożone przepadają!)</option>
+<option value="4">Runda 4: 🔤 Odsłanianie Hasła (60s | 15/12/10/8 pkt | Litery lub całe hasło bez kar!)</option>
+<option value="5">Runda 5: 💰 POSTAW NA MILION (200 pkt | 45s po lektorze | Nierozłożone przepadają!)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (12s | ±20 pkt sam / ±10 pkt rywal)</option>
 <option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (Min. 5 pkt | Stoper 20s | Automat 5 pkt)</option>
 </select><br>
@@ -505,7 +505,7 @@ let lastBombAnsKey = "";
 let lastBombReadyKey = "";
 let lastBombStartRunKey = "";
 
-// Zmienne dla Rundy 5: POSTAW NA MILION (200 pkt, 5 pytań, 45s na pytanie, zapadnie co 3s)
+// Zmienne dla Rundy 5: POSTAW NA MILION (200 pkt, 5 pytań, 45s po lektorze, zapadnie co 3s)
 let milPlayerIdx = 0;
 let milQIdx = 0;
 let milCurrentPoints = 200;
@@ -514,6 +514,7 @@ let milBettingTimeout = null;
 let lastMilHandledKey = "";
 let lastMilReadyKey = "";
 let lastMilTimeoutResolvedKey = "";
+let lastMilBettingStartKey = "";
 
 // Timery globalne i klucze blokad
 let suspenseTimer = null;
@@ -868,7 +869,7 @@ prepareBombTurnWaitReady(bombTurnNum + 1);
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (200 PKT, LIMIT 45s NA PYTANIE, NIEROZŁOŻONE PRZEPADAJĄ!)
+// RUNDA 5: POSTAW NA MILION (200 PKT, 45s PO LEKTORZE, NIEROZŁOŻONE PRZEPADAJĄ!)
 // ============================================================================
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
@@ -899,9 +900,34 @@ pool: currentPool
 });
 }
 
+function sanitizeMillionBets(rawBets, optsCount, maxTraps, availablePoints) {
+const sanitizedBets = {};
+let sumAllocated = 0;
+let activeTraps = 0;
+
+for (let i = 0; i < optsCount; i++) {
+let v = parseInt((rawBets || {})[i], 10) || 0;
+if (v < 0) v = 0;
+if (v > 0) {
+if (activeTraps >= maxTraps) {
+v = 0;
+} else {
+activeTraps++;
+}
+}
+if (sumAllocated + v > availablePoints) {
+v = Math.max(0, availablePoints - sumAllocated);
+}
+sanitizedBets[i] = v;
+sumAllocated += v;
+}
+const lostUnallocated = Math.max(0, availablePoints - sumAllocated);
+return { sanitizedBets, lostUnallocated };
+}
+
 async function resolveMillionTimeout() {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting") return;
-const tKey = "mil_to_" + currentState.speechTick;
+const tKey = "mil_to_" + (currentState.tick || currentState.speechTick);
 if (lastMilTimeoutResolvedKey === tKey) return;
 lastMilTimeoutResolvedKey = tKey;
 clearTimeout(milBettingTimeout); milBettingTimeout = null;
@@ -912,30 +938,12 @@ const latest = snap.exists() ? snap.data() : currentState;
 if (latest.status !== "r5_mil_betting") return;
 
 const optsCount = (latest.options || []).length;
-const rawBets = latest.milLiveBets || latest.milBets || {};
+const rawBets = (latest.milLiveBets && Object.keys(latest.milLiveBets).length > 0)
+? latest.milLiveBets
+: (latest.milBets || {});
 const maxTraps = latest.milMaxTraps || 3;
-const sanitizedBets = {};
-let sumAllocated = 0;
-let activeTraps = 0;
 
-for (let i = 0; i < optsCount; i++) {
-let v = parseInt(rawBets[i], 10) || 0;
-if (v < 0) v = 0;
-if (v > 0) {
-if (activeTraps >= maxTraps) {
-v = 0;
-} else {
-activeTraps++;
-}
-}
-if (sumAllocated + v > milCurrentPoints) {
-v = Math.max(0, milCurrentPoints - sumAllocated);
-}
-sanitizedBets[i] = v;
-sumAllocated += v;
-}
-
-const lostUnallocated = Math.max(0, milCurrentPoints - sumAllocated);
+const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(rawBets, optsCount, maxTraps, milCurrentPoints);
 await startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 } catch (err) { showError(err.message); }
 }
@@ -955,10 +963,10 @@ const qObj = pQuestions[milQIdx];
 const maxTrapsAllowed = milQIdx < 3 ? 3 : (milQIdx === 3 ? 2 : 1);
 const nowTick = Date.now();
 
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT | Limit: 45s (Max zapadni: ${maxTrapsAllowed})`;
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | Lektor czyta pytanie (stoper 45s ruszy po lektorze)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_betting",
+status: "r5_mil_speaking",
 round: 5,
 nominated: player,
 milQNum: milQIdx + 1,
@@ -978,8 +986,14 @@ tick: nowTick,
 speechTick: nowTick,
 pool: currentPool
 });
+}
 
+function activateMillionTimerAfterSpeech() {
 clearTimeout(milBettingTimeout);
+const player = r5Order[milPlayerIdx];
+const maxTrapsAllowed = currentState ? (currentState.milMaxTraps || 3) : 3;
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT | Limit: 45s (Max zapadni: ${maxTrapsAllowed})`;
+
 milBettingTimeout = setTimeout(() => {
 resolveMillionTimeout();
 }, 45500);
@@ -1137,7 +1151,7 @@ speechTick: Date.now()
 } catch (err) { showError(err.message); }
 }
 
-// --- STEROWANIE GŁÓWNE ADMINA ---
+// --- STEROWANIE GŁÓWNE ADMINA (ZABEZPIECZONE PRZED PRZYPADKOWYM PRZESKOKIEM GRACZA) ---
 async function adminForceContinue() {
 const selRound = parseInt(document.getElementById('roundSel').value) || 1;
 if (currentState && currentState.round === selRound) {
@@ -1145,8 +1159,20 @@ if (selRound === 2 && currentState.status === "r2_bomb_wait_ready") {
 await sendBombQuestionSpeaking();
 return;
 }
+if (selRound === 2 && currentState.status === "r2_bomb_speaking") {
+await updateDoc(doc(db, "quizGame", "state"), { status: "r2_bomb_running", tick: Date.now() });
+return;
+}
 if (selRound === 5 && currentState.status === "r5_mil_wait_ready") {
 await sendMillionQuestionToPlayer();
+return;
+}
+if (selRound === 5 && currentState.status === "r5_mil_speaking") {
+await updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_betting", tick: Date.now() });
+return;
+}
+if (selRound === 5 && currentState.status === "r5_mil_betting") {
+await resolveMillionTimeout();
 return;
 }
 }
@@ -1154,7 +1180,7 @@ await nextQuestion();
 }
 
 async function resetScoresOnly() {
-if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom i przywrócić całą czwórkę do gry?")) return;
+if(!confirm("Czy na pewno chcesz wyzerować punkty wszystkim graczom i przywrłosić całą czwórkę do gry?")) return;
 try {
 clearAllAdminTimers();
 document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
@@ -1460,7 +1486,7 @@ answerTick: Date.now()
 }
 }
 
-// RUNDA 5: POSTAW NA MILION - GOTOWOŚĆ GRACZA I ZATWIERDZENIE ZAPADNI
+// RUNDA 5: POSTAW NA MILION - GOTOWOŚĆ, START STOPERA PO LEKTORZE I ZATWIERDZENIE ZAPADNI
 if (currentState.round === 5 && currentState.status === "r5_mil_ready_go") {
 const mRKey = "mil_go_" + currentState.speechTick;
 if (lastMilReadyKey !== mRKey) {
@@ -1469,16 +1495,24 @@ sendMillionQuestionToPlayer();
 }
 }
 
+if (currentState.round === 5 && currentState.status === "r5_mil_betting") {
+const bStartKey = "mil_bet_start_" + currentState.tick;
+if (lastMilBettingStartKey !== bStartKey) {
+lastMilBettingStartKey = bStartKey;
+activateMillionTimerAfterSpeech();
+}
+}
+
 if (currentState.round === 5 && currentState.status === "r5_mil_locked") {
 const milKey = "mil_lock_" + currentState.answerTick;
 if (lastMilHandledKey !== milKey) {
 lastMilHandledKey = milKey;
 clearTimeout(milBettingTimeout); milBettingTimeout = null;
-const lockedBets = currentState.milBets || {};
-let sumLocked = 0;
-Object.values(lockedBets).forEach(v => { sumLocked += (parseInt(v, 10) || 0); });
-const lostPts = Math.max(0, milCurrentPoints - sumLocked);
-startMillionTrapdoorSequence(lockedBets, lostPts);
+const optsCount = (currentState.options || []).length;
+const maxTraps = currentState.milMaxTraps || 3;
+const rawBets = currentState.milBets || currentState.milLiveBets || {};
+const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(rawBets, optsCount, maxTraps, milCurrentPoints);
+startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 }
 }
 
