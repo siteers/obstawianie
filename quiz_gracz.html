@@ -298,7 +298,7 @@ refreshLoginSlotNames();
 let currentWheelTick = null;
 let lastR3Question = null;
 let lastR6BlindSpeechTick = 0;
-let lastMilSpeechTick = 0;
+let lastMilBetTick = 0;
 let padWheelInterval = null;
 let padRevealedCount = 0;
 let tileInputs = [];
@@ -523,16 +523,21 @@ answerTick: Date.now()
 // ============================================================================
 // RUNDA 5: BUDOWANIE KART ZAPADNI (RĘCZNE WPISYWANIE + SZYBKIE PRZYCISKI + STOPER 45s)
 // ============================================================================
-function syncLiveMillionBetsToFirebase() {
+function syncLiveMillionBetsToFirebase(immediate = false) {
 clearTimeout(milLiveSyncTimer);
-milLiveSyncTimer = setTimeout(async () => {
+const doSync = async () => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const betsObj = {};
 localMilBets.forEach((v, i) => { betsObj[i] = v; });
 try {
 await updateDoc(doc(db, "quizGame", "state"), { milLiveBets: betsObj });
 } catch (e) {}
-}, 150);
+};
+if (immediate) {
+doSync();
+} else {
+milLiveSyncTimer = setTimeout(doSync, 120);
+}
 }
 
 function buildMillionPadUI(optionsList, totalPts, maxTraps) {
@@ -602,7 +607,6 @@ if (isNaN(parsed) || parsed < 0) parsed = 0;
 const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc + v, 0);
 const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
 
-// Sprawdzenie czy nie przekroczono liczby dozwolonych zapadni
 const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? parsed : v) > 0).length;
 if (parsed > 0 && activeTrapsCount > localMilMaxTraps) {
 document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
@@ -653,8 +657,14 @@ window.submitMillionBets = async (isAutoTimeout = false) => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 
-// Przy ręcznym kliknięciu przed końcem czasu wymagamy rozłożenia pełnej puli
-if (!isAutoTimeout) {
+// Przy auto-timeoucie wysyłamy natychmiast ostatni stan milLiveBets, a Admin rozlicza resztę przez resolveMillionTimeout
+if (isAutoTimeout) {
+clearInterval(milLocalCountdown);
+clearTimeout(milLiveSyncTimer);
+syncLiveMillionBetsToFirebase(true);
+return;
+}
+
 if (allocated !== localMilTotalPool) {
 const diff = localMilTotalPool - allocated;
 document.getElementById('milPadFeedback').innerText = diff > 0
@@ -666,7 +676,6 @@ const activeTrapsCount = localMilBets.filter(v => v > 0).length;
 if (activeTrapsCount > localMilMaxTraps) {
 document.getElementById('milPadFeedback').innerText = `⛔ ZA DUŻO ZAPADNI! MAKSYMALNIE: ${localMilMaxTraps}!`;
 return;
-}
 }
 
 clearInterval(milLocalCountdown);
@@ -975,7 +984,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + PRZYCISKI + STOPER 45s)
+// RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + PRZYCISKI + STOPER 45s PO LEKTORZE)
 // ============================================================================
 if (currentState.round === 5) {
 const pName = getDisplayName(currentState.nominated);
@@ -985,7 +994,7 @@ if (currentState.status === "r5_mil_wait_ready") {
 clearInterval(milLocalCountdown);
 if (currentState.nominated === myName) {
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - TWOJA KOLEJ!`;
-document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej przy zapadniach, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>${currentPoolPts} punktów</b>, 5 pytań i <b>45 sekund</b> na każde pytanie (nierozłożone punkty przepadają!).`;
+document.getElementById('readyInfoText').innerHTML = `Teraz Twoja kolej przy zapadniach, <b style="color:var(--gold);">${pName.toUpperCase()}</b>!<br>Masz na starcie <b>${currentPoolPts} punktów</b>, 5 pytań i <b>45 sekund</b> po każdym pytaniu (nierozłożone punkty przepadają!).`;
 document.getElementById('btnReadyAction').innerText = `💰 STARTUJEMY!`;
 document.getElementById('ui-ready').style.display = 'flex';
 } else {
@@ -1006,6 +1015,15 @@ lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANI
 return;
 }
 
+if (currentState.status === "r5_mil_speaking") {
+clearInterval(milLocalCountdown);
+document.getElementById('padStatus').innerText = `🗣️ SŁUCHAJ PYTANIA NA TV (ZEGAR STOI)!`;
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = `🗣️ LEKTOR CZYTA PYTANIE ${currentState.milQNum || 1}/5:\n"${currentState.question || ""}"\n\nPO PRZECZYTANIU ODBLOKUJĄ SIĘ ZAPADNIE I RUSZY STOPER 45 SEKUND!`;
+return;
+}
+
 if (currentState.status === "r5_mil_betting") {
 document.body.classList.add('keyboard-mode');
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - ROZDZIEL PUNKTY!`;
@@ -1018,8 +1036,9 @@ document.getElementById('milPadRuleInfo').innerText = maxT === 1
 : `Wpisz punkty ręcznie lub użyj przycisków (max ${maxT} zapadnie, min. 1 musi zostać pusta!)`;
 
 const containerEl = document.getElementById('milPadCardsContainer');
-if (currentState.speechTick !== lastMilSpeechTick || containerEl.children.length === 0) {
-lastMilSpeechTick = currentState.speechTick;
+const betTickKey = currentState.tick || currentState.speechTick;
+if (betTickKey !== lastMilBetTick || containerEl.children.length === 0) {
+lastMilBetTick = betTickKey;
 document.getElementById('milPadFeedback').innerText = "";
 buildMillionPadUI(currentState.options || [], currentPoolPts, maxT);
 
