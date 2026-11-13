@@ -49,9 +49,10 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 100% { transform: scale(1) rotate(0deg); opacity: 1; }
 }
 
-@keyframes cashFallDown {
-0% { transform: translateY(0) scale(1) rotate(0deg); opacity: 1; }
-100% { transform: translateY(7vw) scale(0.2) rotate(25deg); opacity: 0; }
+@keyframes cashPlunge3D {
+0% { transform: translate3d(0, 0, 15px) scale(1) rotateZ(0deg); opacity: 1; }
+35% { transform: translate3d(0, 2.2vw, -20px) scale(0.75) rotateZ(14deg); opacity: 0.95; }
+100% { transform: translate3d(0, 9.5vw, -160px) scale(0.15) rotateZ(48deg); opacity: 0; }
 }
 
 .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 7.2vw; height: 7.2vw; display: none; align-items: center; justify-content: center; font-size: 2.7vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
@@ -69,13 +70,13 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 .score-corner.blocked .blocked-tag { display: inline-block; }
 .score-corner.bomb-holder { border-color: #ff4757 !important; box-shadow: 0 0 3vw #ff4757 !important; background: rgba(90, 0, 15, 0.9) !important; }
 
-.center-stage { width: 58vw; max-width: 58vw; text-align: center; background: rgba(15,23,42,0.92); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 1.8vw 2.2vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
+.center-stage { width: 64vw; max-width: 64vw; text-align: center; background: rgba(10, 18, 36, 0.94); border: 0.25vw solid var(--gold); border-radius: 1.8vw; padding: 1.6vw 2vw; box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); transition: 0.4s; z-index: 10; margin-top: 2vw; box-sizing: border-box; }
 .center-stage.success-glow { box-shadow: 0 0 5vw rgba(0, 255, 0, 0.6); border-color: #00ff00; }
 .center-stage.error-glow { box-shadow: 0 0 5vw rgba(255, 71, 87, 0.6); border-color: var(--error); }
 
 .round-title { font-size: 1.05vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.16vw; margin-bottom: 0.5vw; font-weight: bold; }
-.question-text { font-size: 2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.2vw; color: #fff; }
-.category-text { font-size: 1.8vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.28vw; margin-bottom: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
+.question-text { font-size: 2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1vw; color: #fff; }
+.category-text { font-size: 1.8vw; font-weight: 900; color: #00d4ff; text-transform: uppercase; letter-spacing: 0.28vw; margin-bottom: 0.6vw; display: none; text-shadow: 0 0 1.5vw #00d4ff; }
 
 .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; display: none; }
 .option { padding: 1.2vw; font-size: 1.55vw; border-radius: 0.9vw; font-weight: 900; transition: 0.3s; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
@@ -94,75 +95,286 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 #comic-boom-wrap { display: none; width: 28vw; height: 17vw; margin: 0.2vw auto; animation: comicBoomPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 2.5vw rgba(255, 71, 87, 0.9)); }
 #comic-boom-wrap svg { width: 100%; height: 100%; overflow: visible; }
 
-/* RUNDA 5: POSTAW NA MILION - STUDIO I ZAPADNIE 3D */
-#r5-million-box { display: none; flex-direction: column; align-items: center; width: 100%; margin-top: 0.6vw; }
-.mil-traps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(11.5vw, 1fr)); gap: 1.2vw; width: 100%; margin-top: 0.5vw; }
-.mil-station { display: flex; flex-direction: column; align-items: center; perspective: 900px; }
+/* ============================================================================
+   RUNDA 5: POSTAW NA MILION - REALISTYCZNE STUDIO 3D I ZAPADNIE Z PERSPEKTYWĄ
+   ============================================================================ */
+#r5-million-box {
+display: none; flex-direction: column; align-items: center; width: 100%;
+margin-top: 0.2vw; padding: 1.2vw 0.5vw 1.8vw 0.5vw; box-sizing: border-box;
+background:
+radial-gradient(ellipse at 50% 115%, rgba(0, 212, 255, 0.32) 0%, rgba(15, 23, 42, 0.92) 58%, transparent 80%),
+linear-gradient(180deg, rgba(5, 11, 20, 0) 0%, rgba(14, 30, 64, 0.65) 100%);
+border-radius: 1.6vw;
+position: relative;
+perspective: 1100px;
+}
 
+/* Zakrzywiona krawędź stołu studyjnego w tle */
+#r5-million-box::before {
+content: ""; position: absolute; left: 3%; right: 3%; bottom: 0.6vw; height: 11.5vw;
+background: linear-gradient(180deg, rgba(203, 213, 225, 0.16) 0%, rgba(30, 41, 59, 0.55) 45%, rgba(2, 6, 23, 0.95) 100%);
+border-top: 0.22vw solid rgba(0, 212, 255, 0.55);
+border-bottom: 0.3vw solid rgba(0, 212, 255, 0.85);
+border-radius: 50% 50% 1.4vw 1.4vw / 2.2vw 2.2vw 1vw 1vw;
+box-shadow: 0 1.2vw 3vw rgba(0, 0, 0, 0.9), 0 0 2.5vw rgba(0, 212, 255, 0.28), inset 0 0.4vw 1.2vw rgba(255,255,255,0.18);
+transform: rotateX(28deg);
+pointer-events: none; z-index: 0;
+}
+
+.mil-traps-grid {
+display: flex; justify-content: center; align-items: flex-end;
+gap: 1.5vw; width: 100%; padding: 0.4vw 0.5vw; box-sizing: border-box;
+transform-style: preserve-3d; z-index: 2;
+}
+
+.mil-station {
+flex: 1; max-width: 13.8vw; min-width: 11vw;
+display: flex; flex-direction: column; align-items: center;
+transform-style: preserve-3d; transition: transform 0.45s ease;
+}
+
+/* Ułożenie w półkole (łuk telewizyjny jak w prawdziwym studiu!) */
+.mil-traps-grid.count-4 .mil-station:nth-child(1) { transform: translateY(1.1vw) rotateZ(-8deg) rotateY(10deg); }
+.mil-traps-grid.count-4 .mil-station:nth-child(2) { transform: translateY(-0.2vw) rotateZ(-2.5deg) rotateY(3deg); }
+.mil-traps-grid.count-4 .mil-station:nth-child(3) { transform: translateY(-0.2vw) rotateZ(2.5deg) rotateY(-3deg); }
+.mil-traps-grid.count-4 .mil-station:nth-child(4) { transform: translateY(1.1vw) rotateZ(8deg) rotateY(-10deg); }
+
+.mil-traps-grid.count-3 .mil-station:nth-child(1) { transform: translateY(0.8vw) rotateZ(-7deg) rotateY(8deg); }
+.mil-traps-grid.count-3 .mil-station:nth-child(2) { transform: translateY(-0.3vw) rotateZ(0deg); }
+.mil-traps-grid.count-3 .mil-station:nth-child(3) { transform: translateY(0.8vw) rotateZ(7deg) rotateY(-8deg); }
+
+.mil-traps-grid.count-2 .mil-station:nth-child(1) { transform: translateY(0.3vw) rotateZ(-5deg) rotateY(6deg); max-width: 16.5vw; }
+.mil-traps-grid.count-2 .mil-station:nth-child(2) { transform: translateY(0.3vw) rotateZ(5deg) rotateY(-6deg); max-width: 16.5vw; }
+
+/* Ekran LCD nad zapadnią */
 .mil-monitor {
-width: 100%; background: radial-gradient(circle at center, #0f3460 0%, #050b14 100%);
-border: 0.22vw solid #38bdf8; border-radius: 0.7vw; padding: 0.6vw 0.5vw;
-box-shadow: 0 0 1.2vw rgba(56, 189, 248, 0.45), inset 0 0 1vw rgba(0, 212, 255, 0.3);
-margin-bottom: 0.5vw; min-height: 4.2vw; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
-transform: rotateX(10deg);
+width: 100%;
+background:
+radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.4) 0%, transparent 55%),
+linear-gradient(160deg, #0a1931 0%, #0f3460 52%, #040814 100%);
+border: 0.22vw solid #cbd5e1;
+outline: 0.14vw solid #0284c7;
+border-radius: 0.55vw;
+box-shadow:
+0 0.8vw 1.6vw rgba(0, 0, 0, 0.9),
+0 0 1.5vw rgba(0, 212, 255, 0.45),
+inset 0 0 1.2vw rgba(0, 212, 255, 0.35);
+display: flex; flex-direction: column; justify-content: space-between;
+min-height: 5.5vw; box-sizing: border-box; overflow: hidden;
+transform: rotateX(-12deg) translateZ(12px);
+transform-origin: bottom center;
+position: relative;
 }
-.mil-monitor-badge { font-size: 0.75vw; font-weight: 900; color: #fff; background: linear-gradient(90deg, #b91c1c, #1d4ed8); padding: 0.1vw 0.5vw; border-radius: 0.3vw; border: 1px solid #fff; letter-spacing: 0.08vw; margin-bottom: 0.25vw; text-transform: uppercase; }
-.mil-monitor-ans { font-size: 1.2vw; font-weight: 900; color: #fff; text-shadow: 0 2px 4px #000; line-height: 1.15; }
+/* Błysk szklanej matrycy ekranu */
+.mil-monitor::before {
+content: ""; position: absolute; top: -40%; left: -30%; width: 70%; height: 180%;
+background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
+transform: rotate(25deg); pointer-events: none;
+}
 
-.mil-trap-frame {
-width: 100%; height: 9.2vw; background: #030508;
-border: 0.32vw solid #ffffff; border-radius: 0.8vw;
-box-shadow: 0 0 1.6vw rgba(255, 255, 255, 0.8), inset 0 0 2.5vw #000000;
-position: relative; padding: 0.4vw; box-sizing: border-box;
-display: flex; align-items: center; justify-content: center; overflow: hidden;
+.mil-monitor-screen {
+padding: 0.55vw 0.45vw 0.4vw 0.45vw;
+display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;
 }
+.mil-monitor-letter {
+font-size: 0.8vw; font-weight: 900; color: #38bdf8; letter-spacing: 0.15vw;
+text-transform: uppercase; margin-bottom: 0.15vw; text-shadow: 0 0 0.5vw #00d4ff;
+}
+.mil-monitor-ans {
+font-size: 1.12vw; font-weight: 900; color: #ffffff;
+text-shadow: 0 2px 6px #000, 0 0 8px rgba(0, 212, 255, 0.6);
+line-height: 1.15; text-transform: uppercase; word-break: break-word;
+}
+/* Srebrno-złoty pasek z kwotą na dole monitora (jak na zdjęciu z TV!) */
+.mil-monitor- amount-bar, .mil-monitor-amount-bar {
+width: 100%;
+background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 50%, #94a3b8 100%);
+color: #0f172a; font-size: 1.05vw; font-weight: 900;
+padding: 0.18vw 0; text-align: center;
+border-top: 2px solid #fff;
+letter-spacing: 0.06vw;
+box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+}
+.mil-monitor-amount-bar.active-bet {
+background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #f59e0b 100%);
+color: #000; text-shadow: 0 1px 0 rgba(255,255,255,0.7);
+}
+
+/* Metalowe wsporniki łączące monitor ze stołem */
+.mil-neck {
+width: 55%; height: 0.65vw;
+display: flex; justify-content: space-between; padding: 0 0.6vw; box-sizing: border-box;
+z-index: 1;
+}
+.mil-neck::before, .mil-neck::after {
+content: ""; width: 0.45vw; height: 100%;
+background: linear-gradient(90deg, #1e293b, #64748b, #0f172a);
+box-shadow: 0 0 6px #000;
+}
+
+/* RAMA ZAPADNI WBUDOWANA W BLAT STOŁU 3D */
+.mil-trap-frame {
+width: 100%; height: 9.6vw;
+background: #020408;
+border: 0.35vw solid #00e5ff;
+outline: 0.22vw solid #0f172a;
+border-radius: 0.75vw;
+box-shadow:
+0 0 1.8vw rgba(0, 229, 255, 0.9),
+0 1.2vw 2vw rgba(0, 0, 0, 0.95),
+inset 0 0 2.5vw #000000;
+position: relative; box-sizing: border-box;
+display: flex; align-items: center; justify-content: center;
+transform: rotateX(34deg);
+transform-origin: top center;
+transform-style: preserve-3d;
+overflow: hidden;
+transition: border-color 0.35s, box-shadow 0.35s;
+}
+
+/* Gdy na zapadni leżą pieniądze – mocniejszy blask ramy */
+.mil-trap-frame.has-cash {
+border-color: #38bdf8;
+box-shadow:
+0 0 2.4vw #00e5ff,
+0 0 0.6vw #ffffff,
+0 1.2vw 2vw rgba(0, 0, 0, 0.95),
+inset 0 0 2vw #000;
+}
+
+/* Gdy zapadnia się otwiera i spada – czerwony alarm LED */
+.mil-trap-frame.dropped {
+border-color: #ff1e27 !important;
+box-shadow:
+0 0 2.8vw #ff1e27,
+0 1.2vw 2vw rgba(0, 0, 0, 0.95),
+inset 0 0 3.5vw rgba(255, 0, 0, 0.75) !important;
+}
+
+/* Gdy zapadnia ocalała jako poprawna – szmaragdowy blask */
 .mil-trap-frame.safe-winner {
 border-color: #2ed573 !important;
-box-shadow: 0 0 2.8vw #2ed573, inset 0 0 1.5vw rgba(46, 213, 115, 0.5) !important;
-}
-.mil-trap-pit {
-position: absolute; inset: 0; background: radial-gradient(circle at center, #1a0508 0%, #000000 85%);
-display: flex; align-items: center; justify-content: center;
-font-size: 1.3vw; font-weight: 900; color: #ff4757; letter-spacing: 0.1vw; z-index: 1;
-text-shadow: 0 0 0.8vw #ff0000;
-}
-.mil-trap-doors {
-position: absolute; inset: 0.35vw;
-background: linear-gradient(145deg, #b91c1c 0%, #7f1d1d 55%, #450a0a 100%);
-border: 0.18vw solid #111; border-radius: 0.45vw;
-box-shadow: inset 0 0 1.2vw rgba(0, 0, 0, 0.75);
-z-index: 2; display: flex; flex-direction: column; align-items: center; justify-content: center;
-transition: transform 0.65s cubic-bezier(0.55, 0.05, 0.67, 0.19), opacity 0.55s ease;
-transform-origin: top center;
-}
-.mil-trap-doors::after {
-content: ""; position: absolute; left: 8%; right: 8%; top: 50%; height: 2px;
-background: rgba(0, 0, 0, 0.65); box-shadow: 0 1px 0 rgba(255, 255, 255, 0.12); pointer-events: none;
-}
-.mil-trap-frame.dropped .mil-trap-doors {
-transform: perspective(600px) rotateX(-88deg) translateY(3.5vw);
-opacity: 0.08;
-}
-.mil-trap-frame.dropped .mil-cash-wrap {
-animation: cashFallDown 0.6s ease-in forwards;
+box-shadow:
+0 0 3.2vw #2ed573,
+0 0 0.8vw #ffffff,
+0 1.2vw 2vw rgba(0, 0, 0, 0.95),
+inset 0 0 2vw rgba(46, 213, 115, 0.55) !important;
 }
 
-.mil-cash-wrap { z-index: 3; display: flex; flex-direction: column; align-items: center; gap: 0.3vw; }
-.mil-cash-bundles { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.25vw; max-width: 9.5vw; }
-.cash-bundle {
-width: 2vw; height: 1.15vw;
-background: linear-gradient(90deg, #cbd5e1 0%, #f8fafc 50%, #94a3b8 100%);
-border: 1px solid #334155; border-radius: 2px; position: relative;
-box-shadow: 0 3px 5px rgba(0,0,0,0.75);
+/* Głęboki szyb pod zapadnią */
+.mil-trap-pit {
+position: absolute; inset: 0;
+background:
+repeating-linear-gradient(0deg, rgba(255, 30, 39, 0.12) 0px, rgba(255, 30, 39, 0.12) 2px, transparent 2px, transparent 10px),
+radial-gradient(circle at center, #3b040c 0%, #050203 70%, #000000 100%);
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+font-size: 1.25vw; font-weight: 900; color: #ff4757; letter-spacing: 0.12vw;
+z-index: 1; text-shadow: 0 0 1vw #ff0000;
+box-shadow: inset 0 0 2.5vw #000;
 }
-.cash-bundle::before {
-content: ""; position: absolute; left: 36%; right: 36%; top: 0; bottom: 0;
-background: #dc2626;
+
+/* PODWÓJNE SKRZYDŁA DRZWI ZAPADNI (LEWE I PRAWE) */
+.mil-trap-doors {
+position: absolute; inset: 0.28vw;
+z-index: 2; display: flex;
+transform-style: preserve-3d;
+pointer-events: none;
 }
+.mil-door-leaf {
+flex: 1; height: 100%;
+background:
+radial-gradient(circle at 50% 40%, rgba(220, 38, 38, 0.35), transparent 70%),
+linear-gradient(135deg, #7f1d1d 0%, #450a0a 55%, #2a0404 100%);
+border: 0.12vw solid #1e293b;
+box-shadow: inset 0 0 1.2vw rgba(0, 0, 0, 0.85);
+transition: transform 0.55s cubic-bezier(0.6, 0.04, 0.98, 0.335), filter 0.45s ease;
+position: relative;
+}
+.mil-door-leaf.left-leaf {
+border-right: 2px solid #090d16;
+border-radius: 0.35vw 0 0 0.35vw;
+transform-origin: left center;
+}
+.mil-door-leaf.right-leaf {
+border-left: 1px solid rgba(255,255,255,0.12);
+border-radius: 0 0.35vw 0.35vw 0;
+transform-origin: right center;
+}
+/* Metalowe nity / linie technologiczne na skrzydłach zapadni */
+.mil-door-leaf::after {
+content: ""; position: absolute; top: 15%; bottom: 15%; width: 3px;
+background: rgba(0, 0, 0, 0.5);
+}
+.mil-door-leaf.left-leaf::after { right: 0.35vw; }
+.mil-door-leaf.right-leaf::after { left: 0.35vw; }
+
+/* Otwarcie obu skrzydeł w dół do szybu! */
+.mil-trap-frame.dropped .mil-door-leaf.left-leaf {
+transform: perspective(500px) rotateY(-78deg);
+filter: brightness(0.25);
+}
+.mil-trap-frame.dropped .mil-door-leaf.right-leaf {
+transform: perspective(500px) rotateY(78deg);
+filter: brightness(0.25);
+}
+
+/* KONTENER NA TRÓJWYMIAROWE PACZKI BANKNOTÓW NA ZAPADNI */
+.mil-cash-stage {
+position: absolute; inset: 0.4vw; z-index: 4;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+transform-style: preserve-3d; pointer-events: none;
+}
+.mil-trap-frame.dropped .mil-cash-stage {
+animation: cashPlunge3D 0.62s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+}
+
+.mil-cash-bundles {
+display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
+gap: 0.38vw 0.45vw; max-width: 11.2vw; padding: 0.2vw;
+transform: translateZ(14px);
+}
+
+/* Trójwymiarowa sztabka / plik banknotów z widoczną wysokością 3D */
+.cash-bundle-3d {
+width: 2.35vw; height: 1.3vw;
+background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 45%, #94a3b8 100%);
+border: 1px solid #475569;
+border-radius: 2px;
+position: relative;
+/* Warstwowy cień tworzący grubość stosu banknotów 3D */
+box-shadow:
+0 1px 0 #94a3b8,
+0 2px 0 #64748b,
+0 3px 0 #94a3b8,
+0 4px 0 #475569,
+0 5px 0 #334155,
+0 6px 0 #1e293b,
+0 9px 10px rgba(0, 0, 0, 0.9);
+transform: rotateZ(var(--rot, 0deg));
+transition: transform 0.25s;
+}
+/* Czerwono-złota banderola wokół pliku banknotów */
+.cash-bundle-3d::before {
+content: ""; position: absolute; left: 33%; right: 33%; top: -1px; bottom: -6px;
+background: linear-gradient(180deg, #ef4444 0%, #b91c1c 65%, #7f1d1d 100%);
+border-left: 1px solid rgba(255,215,0,0.6);
+border-right: 1px solid rgba(255,215,0,0.6);
+box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+/* Nadruk nominału na banknocie */
+.cash-bundle-3d::after {
+content: "100"; position: absolute; left: 3px; top: 2px;
+font-size: 0.48vw; font-weight: 900; color: #1e293b; opacity: 0.75; font-family: monospace;
+}
+
 .mil-bet-amount {
-font-size: 1.55vw; font-weight: 900; color: #ffd700;
-background: rgba(0, 0, 0, 0.82); padding: 0.2vw 0.7vw; border-radius: 0.4vw;
-border: 1px solid rgba(255, 215, 0, 0.5); text-shadow: 0 2px 4px #000;
+margin-top: 0.35vw;
+font-size: 1.35vw; font-weight: 900; color: #ffd700;
+background: rgba(2, 6, 23, 0.9); padding: 0.15vw 0.65vw; border-radius: 0.4vw;
+border: 1px solid #ffd700;
+box-shadow: 0 4px 10px rgba(0,0,0,0.9), 0 0 10px rgba(255, 215, 0, 0.35);
+text-shadow: 0 2px 4px #000;
+transform: translateZ(20px);
 }
 
 .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
@@ -217,7 +429,7 @@ border: 1px solid rgba(255, 215, 0, 0.5); text-shadow: 0 2px 4px #000;
 #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
 #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-.winner-announcement { font-size: 1.9vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.8vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+.winner-announcement { font-size: 1.8vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.7vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
 .status-msg { font-size: 2.2vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
 
 .correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
@@ -300,9 +512,9 @@ border: 1px solid rgba(255, 215, 0, 0.5); text-shadow: 0 2px 4px #000;
 <div class="category-text" id="tv-wheel-cat" style="margin-top: 1vw; margin-bottom: 0;"></div>
 <div class="wheel-winners-list" id="tv-wheel-winners"></div>
 
-<!-- RUNDA 5: POSTAW NA MILION (ZAPADNIE 3D) -->
+<!-- RUNDA 5: POSTAW NA MILION (REALISTYCZNE STUDIO 3D) -->
 <div id="r5-million-box">
-<div class="mil-traps-grid" id="r5-traps-container"></div>
+<div class="mil-traps-grid count-4" id="r5-traps-container"></div>
 </div>
 
 <!-- RUNDA 7: KOŁO I LICYTACJA W CIEMNO -->
@@ -517,8 +729,13 @@ let r7Categories = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEO
 const r6Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e22", "#1abc9c", "#fd79a8"];
 let currentWheelRotation = 0;
 let lastR6SpinHandled = 0;
+let lastDrawnTVWheelKey = "";
 
 function drawR6Wheel(catsList = r7Categories) {
+const key = (catsList || []).join("|");
+if (key === lastDrawnTVWheelKey) return;
+lastDrawnTVWheelKey = key;
+
 const canvas = document.getElementById('r6-wheel-canvas');
 if (!canvas) return;
 const ctx = canvas.getContext('2d');
@@ -1218,7 +1435,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (200 PKT, 45s PO LEKTORZE, ZAPADNIE 3D CO 3 SEKUNDY)
+// RUNDA 5: POSTAW NA MILION (REALISTYCZNE STUDIO 3D Z PÓŁOKRĄGŁYM STOŁEM)
 // ============================================================================
 if (data.round === 5) {
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -1270,8 +1487,11 @@ const trapsContainer = document.getElementById('r5-traps-container');
 trapsContainer.innerHTML = "";
 
 const optionsList = data.options || [];
+trapsContainer.className = `mil-traps-grid count-${optionsList.length || 4}`;
+
 const bets = data.milBets || {};
 const openTraps = data.milOpenTraps || [];
+const tiltAngles = [-9, 7, -5, 11, -7, 5, 9, -6, 4, -8, 6, -4];
 
 optionsList.forEach((optText, idx) => {
 const isDropped = openTraps.includes(idx);
@@ -1281,31 +1501,40 @@ const isBettingPhase = (data.status === "r5_mil_betting" || data.status === "r5_
 
 let bundlesCount = 0;
 if (isBettingPhase) {
-bundlesCount = 2;
+bundlesCount = 3;
 } else if (betVal > 0) {
-bundlesCount = Math.min(10, Math.max(1, Math.ceil(betVal / 20)));
+bundlesCount = Math.min(12, Math.max(1, Math.ceil(betVal / 18)));
 }
 let bundlesHtml = "";
 for (let b = 0; b < bundlesCount; b++) {
-bundlesHtml += `<div class="cash-bundle"></div>`;
+const rot = tiltAngles[(idx * 3 + b) % tiltAngles.length];
+bundlesHtml += `<div class="cash-bundle-3d" style="--rot:${rot}deg;"></div>`;
 }
 
 const betLabel = isBettingPhase ? "🔒 ? PKT" : `${betVal} PKT`;
+const hasCashClass = (!isBettingPhase && betVal > 0) ? "has-cash" : "";
+const barActiveClass = (!isBettingPhase && betVal > 0) ? "active-bet" : "";
 
 const station = document.createElement('div');
 station.className = "mil-station";
 station.innerHTML = `
 <div class="mil-monitor">
-<div class="mil-monitor-badge">POSTAW NA MILION</div>
-<div class="mil-monitor-ans">${letters[idx]}: ${optText}</div>
+<div class="mil-monitor-screen">
+<div class="mil-monitor-letter">ZAPADNIA ${letters[idx]}</div>
+<div class="mil-monitor-ans">${optText}</div>
 </div>
-<div class="mil-trap-frame ${isDropped ? "dropped" : ""} ${isResultWinner ? "safe-winner" : ""}">
+<div class="mil-monitor-amount-bar ${barActiveClass}">${betLabel}</div>
+</div>
+<div class="mil-neck"></div>
+<div class="mil-trap-frame ${hasCashClass} ${isDropped ? "dropped" : ""} ${isResultWinner ? "safe-winner" : ""}">
 <div class="mil-trap-pit">💥 PRZEPAŚĆ!</div>
 <div class="mil-trap-doors">
-<div class="mil-cash-wrap">
-<div class="mil-cash-bundles">${bundlesHtml}</div>
-<div class="mil-bet-amount">${betLabel}</div>
+<div class="mil-door-leaf left-leaf"></div>
+<div class="mil-door-leaf right-leaf"></div>
 </div>
+<div class="mil-cash-stage">
+<div class="mil-cash-bundles">${bundlesHtml}</div>
+${(!isBettingPhase && betVal > 0) ? `<div class="mil-bet-amount">${betVal} PKT</div>` : ""}
 </div>
 </div>
 `;
@@ -1445,14 +1674,16 @@ qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
 if (data.spinTick && data.spinTick !== lastR6SpinHandled) {
 lastR6SpinHandled = data.spinTick;
 playWheelTicks();
+const wheelCanvasEl = document.getElementById('r6-wheel-canvas');
 const segAngle = 360 / r7Categories.length;
 const extraSpins = (data.spinPower || 7) * 360;
 const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
-const curMod = currentWheelRotation % 360;
+const curMod = ((currentWheelRotation % 360) + 360) % 360;
 let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 currentWheelRotation += extraSpins + diff;
-document.getElementById('r6-wheel-canvas').style.transform = `rotate(${currentWheelRotation}deg)`;
+void wheelCanvasEl.offsetWidth;
+wheelCanvasEl.style.transform = `rotate(${currentWheelRotation}deg)`;
 }
 }
 return;
