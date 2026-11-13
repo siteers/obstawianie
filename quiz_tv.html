@@ -37,9 +37,25 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
 }
 
-@keyframes bombPulse {
-0%, 100% { transform: scale(1) rotate(-4deg); filter: drop-shadow(0 0 1.5vw #ff4757); }
-50% { transform: scale(1.22) rotate(4deg); filter: drop-shadow(0 0 3.8vw #ff0000); }
+/* DYNAMICZNE PĘCZNIENIE I DRGANIE BOMBY 3D */
+@keyframes bomb3DThrob {
+0%, 100% {
+transform: scale(var(--b-scale, 0.9)) rotate(calc(var(--b-wobble, 2deg) * -1));
+}
+25% {
+transform: scale(calc(var(--b-scale, 0.9) * 1.05)) translate(-0.15vw, 0.1vw) rotate(var(--b-wobble, 2deg));
+}
+50% {
+transform: scale(calc(var(--b-scale, 0.9) * 1.11)) translate(0.15vw, -0.15vw) rotate(calc(var(--b-wobble, 2deg) * -0.8));
+}
+75% {
+transform: scale(calc(var(--b-scale, 0.9) * 1.04)) translate(-0.1vw, -0.1vw) rotate(var(--b-wobble, 2deg));
+}
+}
+
+@keyframes sparkFlicker {
+0%, 100% { transform: scale(1) rotate(0deg); }
+50% { transform: scale(1.35) rotate(28deg); }
 }
 
 @keyframes comicBoomPop {
@@ -86,11 +102,40 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 .opt-color-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; color: #fff; box-shadow: 0 0 1vw rgba(255, 71, 87, 0.3); }
 .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
-/* RUNDA 2: GORĄCA BOMBA + KOMIKSOWE BOOM! */
-#r2-bomb-box { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.6vw 0; position: relative; }
-.bomb-icon { font-size: 6.5vw; animation: bombPulse 0.7s infinite; margin: 0.4vw 0; }
-.bomb-holder-banner { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; letter-spacing: 0.15vw; text-shadow: 0 0 1.2vw #ff4757; }
-.bomb-sub { font-size: 1.1vw; color: #cbd5e1; margin-top: 0.4vw; font-weight: bold; }
+/* ============================================================================
+   RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM) + KOMIKSOWE BOOM!
+   ============================================================================ */
+#r2-bomb-box {
+display: none; flex-direction: column; align-items: center; justify-content: center;
+margin: 0.4vw 0; position: relative; min-height: 18.5vw;
+}
+#r2-bomb-stage {
+position: relative; width: 22vw; height: 15.5vw;
+display: flex; align-items: center; justify-content: center;
+margin: 0.4vw auto;
+}
+#r2-bomb-3d-wrap {
+width: 15.5vw; height: 15.5vw;
+--b-scale: 0.88;
+--b-wobble: 2deg;
+--b-glow: 1.2vw;
+--b-glow-color: rgba(0, 212, 255, 0.55);
+animation: bomb3DThrob 0.75s infinite ease-in-out;
+filter: drop-shadow(0 1vw 1.5vw rgba(0,0,0,0.85)) drop-shadow(0 0 var(--b-glow) var(--b-glow-color));
+transition: filter 0.3s ease;
+will-change: transform, filter;
+}
+#r2-bomb-3d-wrap svg {
+width: 100%; height: 100%; overflow: visible;
+}
+.spark- flicker-group {
+animation: sparkFlicker 0.14s infinite alternate;
+transform-origin: center;
+transform-box: fill-box;
+}
+
+.bomb-holder-banner { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; letter-spacing: 0.15vw; text-shadow: 0 0 1.2vw #ff4757; margin-top: 0.5vw; z-index: 5; }
+.bomb-sub { font-size: 1.1vw; color: #cbd5e1; margin-top: 0.35vw; font-weight: bold; z-index: 5; }
 
 #comic-boom-wrap { display: none; width: 28vw; height: 17vw; margin: 0.2vw auto; animation: comicBoomPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 2.5vw rgba(255, 71, 87, 0.9)); }
 #comic-boom-wrap svg { width: 100%; height: 100%; overflow: visible; }
@@ -109,7 +154,6 @@ position: relative;
 perspective: 1100px;
 }
 
-/* Zakrzywiona krawędź stołu studyjnego w tle */
 #r5-million-box::before {
 content: ""; position: absolute; left: 3%; right: 3%; bottom: 0.6vw; height: 11.5vw;
 background: linear-gradient(180deg, rgba(203, 213, 225, 0.16) 0%, rgba(30, 41, 59, 0.55) 45%, rgba(2, 6, 23, 0.95) 100%);
@@ -133,7 +177,6 @@ display: flex; flex-direction: column; align-items: center;
 transform-style: preserve-3d; transition: transform 0.45s ease;
 }
 
-/* Ułożenie w półkole (łuk telewizyjny jak w prawdziwym studiu!) */
 .mil-traps-grid.count-4 .mil-station:nth-child(1) { transform: translateY(1.1vw) rotateZ(-8deg) rotateY(10deg); }
 .mil-traps-grid.count-4 .mil-station:nth-child(2) { transform: translateY(-0.2vw) rotateZ(-2.5deg) rotateY(3deg); }
 .mil-traps-grid.count-4 .mil-station:nth-child(3) { transform: translateY(-0.2vw) rotateZ(2.5deg) rotateY(-3deg); }
@@ -146,7 +189,6 @@ transform-style: preserve-3d; transition: transform 0.45s ease;
 .mil-traps-grid.count-2 .mil-station:nth-child(1) { transform: translateY(0.3vw) rotateZ(-5deg) rotateY(6deg); max-width: 16.5vw; }
 .mil-traps-grid.count-2 .mil-station:nth-child(2) { transform: translateY(0.3vw) rotateZ(5deg) rotateY(-6deg); max-width: 16.5vw; }
 
-/* Ekran LCD nad zapadnią */
 .mil-monitor {
 width: 100%;
 background:
@@ -165,7 +207,6 @@ transform: rotateX(-12deg) translateZ(12px);
 transform-origin: bottom center;
 position: relative;
 }
-/* Błysk szklanej matrycy ekranu */
 .mil-monitor::before {
 content: ""; position: absolute; top: -40%; left: -30%; width: 70%; height: 180%;
 background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
@@ -185,8 +226,7 @@ font-size: 1.12vw; font-weight: 900; color: #ffffff;
 text-shadow: 0 2px 6px #000, 0 0 8px rgba(0, 212, 255, 0.6);
 line-height: 1.15; text-transform: uppercase; word-break: break-word;
 }
-/* Srebrno-złoty pasek z kwotą na dole monitora (jak na zdjęciu z TV!) */
-.mil-monitor- amount-bar, .mil-monitor-amount-bar {
+.mil-monitor-amount-bar {
 width: 100%;
 background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 50%, #94a3b8 100%);
 color: #0f172a; font-size: 1.05vw; font-weight: 900;
@@ -200,7 +240,6 @@ background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #f59e0b 100%);
 color: #000; text-shadow: 0 1px 0 rgba(255,255,255,0.7);
 }
 
-/* Metalowe wsporniki łączące monitor ze stołem */
 .mil-neck {
 width: 55%; height: 0.65vw;
 display: flex; justify-content: space-between; padding: 0 0.6vw; box-sizing: border-box;
@@ -212,7 +251,6 @@ background: linear-gradient(90deg, #1e293b, #64748b, #0f172a);
 box-shadow: 0 0 6px #000;
 }
 
-/* RAMA ZAPADNI WBUDOWANA W BLAT STOŁU 3D */
 .mil-trap-frame {
 width: 100%; height: 9.6vw;
 background: #020408;
@@ -232,7 +270,6 @@ overflow: hidden;
 transition: border-color 0.35s, box-shadow 0.35s;
 }
 
-/* Gdy na zapadni leżą pieniądze – mocniejszy blask ramy */
 .mil-trap-frame.has-cash {
 border-color: #38bdf8;
 box-shadow:
@@ -242,7 +279,6 @@ box-shadow:
 inset 0 0 2vw #000;
 }
 
-/* Gdy zapadnia się otwiera i spada – czerwony alarm LED */
 .mil-trap-frame.dropped {
 border-color: #ff1e27 !important;
 box-shadow:
@@ -251,7 +287,6 @@ box-shadow:
 inset 0 0 3.5vw rgba(255, 0, 0, 0.75) !important;
 }
 
-/* Gdy zapadnia ocalała jako poprawna – szmaragdowy blask */
 .mil-trap-frame.safe-winner {
 border-color: #2ed573 !important;
 box-shadow:
@@ -261,7 +296,6 @@ box-shadow:
 inset 0 0 2vw rgba(46, 213, 115, 0.55) !important;
 }
 
-/* Głęboki szyb pod zapadnią */
 .mil-trap-pit {
 position: absolute; inset: 0;
 background:
@@ -273,7 +307,6 @@ z-index: 1; text-shadow: 0 0 1vw #ff0000;
 box-shadow: inset 0 0 2.5vw #000;
 }
 
-/* PODWÓJNE SKRZYDŁA DRZWI ZAPADNI (LEWE I PRAWE) */
 .mil-trap-doors {
 position: absolute; inset: 0.28vw;
 z-index: 2; display: flex;
@@ -300,7 +333,6 @@ border-left: 1px solid rgba(255,255,255,0.12);
 border-radius: 0 0.35vw 0.35vw 0;
 transform-origin: right center;
 }
-/* Metalowe nity / linie technologiczne na skrzydłach zapadni */
 .mil-door-leaf::after {
 content: ""; position: absolute; top: 15%; bottom: 15%; width: 3px;
 background: rgba(0, 0, 0, 0.5);
@@ -308,7 +340,6 @@ background: rgba(0, 0, 0, 0.5);
 .mil-door-leaf.left-leaf::after { right: 0.35vw; }
 .mil-door-leaf.right-leaf::after { left: 0.35vw; }
 
-/* Otwarcie obu skrzydeł w dół do szybu! */
 .mil-trap-frame.dropped .mil-door-leaf.left-leaf {
 transform: perspective(500px) rotateY(-78deg);
 filter: brightness(0.25);
@@ -318,7 +349,6 @@ transform: perspective(500px) rotateY(78deg);
 filter: brightness(0.25);
 }
 
-/* KONTENER NA TRÓJWYMIAROWE PACZKI BANKNOTÓW NA ZAPADNI */
 .mil-cash-stage {
 position: absolute; inset: 0.4vw; z-index: 4;
 display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -334,14 +364,12 @@ gap: 0.38vw 0.45vw; max-width: 11.2vw; padding: 0.2vw;
 transform: translateZ(14px);
 }
 
-/* Trójwymiarowa sztabka / plik banknotów z widoczną wysokością 3D */
 .cash-bundle-3d {
 width: 2.35vw; height: 1.3vw;
 background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 45%, #94a3b8 100%);
 border: 1px solid #475569;
 border-radius: 2px;
 position: relative;
-/* Warstwowy cień tworzący grubość stosu banknotów 3D */
 box-shadow:
 0 1px 0 #94a3b8,
 0 2px 0 #64748b,
@@ -353,7 +381,6 @@ box-shadow:
 transform: rotateZ(var(--rot, 0deg));
 transition: transform 0.25s;
 }
-/* Czerwono-złota banderola wokół pliku banknotów */
 .cash-bundle-3d::before {
 content: ""; position: absolute; left: 33%; right: 33%; top: -1px; bottom: -6px;
 background: linear-gradient(180deg, #ef4444 0%, #b91c1c 65%, #7f1d1d 100%);
@@ -361,7 +388,6 @@ border-left: 1px solid rgba(255,215,0,0.6);
 border-right: 1px solid rgba(255,215,0,0.6);
 box-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
-/* Nadruk nominału na banknocie */
 .cash-bundle-3d::after {
 content: "100"; position: absolute; left: 3px; top: 2px;
 font-size: 0.48vw; font-weight: 900; color: #1e293b; opacity: 0.75; font-family: monospace;
@@ -478,9 +504,102 @@ transform: translateZ(20px);
 <div class="category-text" id="tv-cat">KATEGORIA</div>
 <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
 
-<!-- RUNDA 2: GORĄCA BOMBA + KOMIKSOWE BOOM! -->
+<!-- RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM) + KOMIKSOWE BOOM! -->
 <div id="r2-bomb-box">
-<div class="bomb-icon" id="r2-bomb-emoji">💣</div>
+<div id="r2-bomb-stage">
+<div id="r2-bomb-3d-wrap">
+<svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
+<defs>
+<!-- Trójwymiarowy, metaliczno-granatowy gradient kuli bomby (jak na referencji!) -->
+<radialGradient id="bombSphere3D" cx="34%" cy="30%" r="68%">
+<stop offset="0%" stop-color="#486591"/>
+<stop offset="22%" stop-color="#1e2f52"/>
+<stop offset="62%" stop-color="#0b1326"/>
+<stop offset="92%" stop-color="#040710"/>
+<stop offset="100%" stop-color="#000000"/>
+</radialGradient>
+<!-- Czerwony żar ciśnienia rozgrzewający bombę od środka przed wybuchem -->
+<radialGradient id="bombHeatGlow" cx="50%" cy="55%" r="55%">
+<stop offset="0%" stop-color="#ff2a00" stop-opacity="0.95"/>
+<stop offset="55%" stop-color="#ff0000" stop-opacity="0.45"/>
+<stop offset="100%" stop-color="#ff0000" stop-opacity="0"/>
+</radialGradient>
+<linearGradient id="bombCapGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+<stop offset="0%" stop-color="#0a1122"/>
+<stop offset="35%" stop-color="#2c426e"/>
+<stop offset="70%" stop-color="#0f1b33"/>
+<stop offset="100%" stop-color="#050912"/>
+</linearGradient>
+<linearGradient id="fuseCordGrad" x1="0%" y1="100%" x2="100%" y2="0%">
+<stop offset="0%" stop-color="#d97706"/>
+<stop offset="50%" stop-color="#fbbf24"/>
+<stop offset="100%" stop-color="#fef08a"/>
+</linearGradient>
+</defs>
+
+<!-- Białe komiksowe obłoki dymu i kolce w tle (rosnące wraz z ciśnieniem) -->
+<g id="bomb-smoke-group" opacity="0.35">
+<polygon points="160,185 32,120 75,165 25,215 90,220" fill="#000"/>
+<polygon points="160,185 292,115 248,165 298,215 235,220" fill="#000"/>
+<circle cx="78" cy="212" r="46" fill="#ffffff" stroke="#111" stroke-width="5"/>
+<circle cx="242" cy="212" r="46" fill="#ffffff" stroke="#111" stroke-width="5"/>
+<circle cx="115" cy="245" r="50" fill="#ffffff" stroke="#111" stroke-width="5"/>
+<circle cx="205" cy="245" r="50" fill="#ffffff" stroke="#111" stroke-width="5"/>
+<circle cx="160" cy="252" r="54" fill="#ffffff" stroke="#111" stroke-width="5"/>
+<circle cx="95" cy="222" r="38" fill="#ffffff"/>
+<circle cx="225" cy="222" r="38" fill="#ffffff"/>
+<circle cx="160" cy="238" r="45" fill="#ffffff"/>
+<!-- Komiksowe gwiazdki i wykrzyknik ostrzegawczy -->
+<polygon points="36,130 42,143 56,145 45,154 48,168 36,161 24,168 27,154 16,145 30,143" fill="#ffd700" stroke="#111" stroke-width="2.5"/>
+<polygon points="282,182 287,192 298,194 290,201 292,212 282,206 272,212 274,201 266,194 277,192" fill="#ffd700" stroke="#111" stroke-width="2.5"/>
+<g id="bomb-exclam" transform="translate(275, 88) rotate(14)">
+<polygon points="0,0 14,0 10,36 4,36" fill="#111"/>
+<circle cx="7" cy="48" r="6.5" fill="#111"/>
+</g>
+</g>
+
+<!-- Główna kula bomby 3D -->
+<circle cx="155" cy="182" r="88" fill="url(#bombSphere3D)" stroke="#050811" stroke-width="6"/>
+<!-- Warstwa żaru ciśnieniowego (rozjaśnia się od 0 do 0.9 wraz z upływem czasu) -->
+<circle id="bomb-heat-overlay" cx="155" cy="182" r="86" fill="url(#bombHeatGlow)" opacity="0"/>
+
+<!-- Lustrzane refleksy 3D na kuli -->
+<ellipse cx="118" cy="135" rx="26" ry="14" transform="rotate(-32 118 135)" fill="#7dd3fc" opacity="0.48"/>
+<ellipse cx="112" cy="132" rx="12" ry="6.5" transform="rotate(-32 112 132)" fill="#ffffff" opacity="0.92"/>
+<circle cx="96" cy="156" r="5.5" fill="#ffffff" opacity="0.75"/>
+<!--Boczny komiksowy szew / detal na kuli -->
+<path d="M 108 104 Q 90 132 95 162" fill="none" stroke="#040814" stroke-width="4" stroke-linecap="round"/>
+
+<!-- Komiksowy emblemat "BAM!" na korpusie bomby -->
+<g transform="translate(182, 198) rotate(-22)">
+<polygon points="0,-42 13,-18 40,-30 25,-6 52,4 22,16 32,40 6,25 -10,46 -14,20 -44,28 -25,4 -48,-12 -20,-16 -26,-40 -4,-20" fill="#ef4444" stroke="#111" stroke-width="3.5"/>
+<polygon points="0,-32 10,-13 31,-22 19,-4 40,3 17,12 24,30 4,19 -8,35 -11,15 -34,21 -19,3 -36,-9 -15,-12 -20,-30 -3,-15" fill="#f97316"/>
+<text x="2" y="11" font-family="Impact, 'Arial Black', sans-serif" font-size="31" font-weight="900" text-anchor="middle" fill="#fef08a" stroke="#111" stroke-width="4" paint-order="stroke" letter-spacing="1.5">BAM!</text>
+</g>
+
+<!-- Szyjka / kołnierz bomby 3D -->
+<g transform="translate(132, 92) rotate(-14)">
+<rect x="-22" y="-12" width="44" height="24" rx="7" fill="url(#bombCapGrad)" stroke="#050811" stroke-width="5"/>
+<ellipse cx="0" cy="-12" rx="22" ry="6.5" fill="#1e2f52" stroke="#050811" stroke-width="4"/>
+<path d="M -12 -6 L -12 8" stroke="#60a5fa" stroke-width="2.5" opacity="0.45" stroke-linecap="round"/>
+</g>
+
+<!-- Lont bomby (wypala się na żywo dzięki stroke-dashoffset!) -->
+<path id="bomb-fuse-bg" d="M 128 80 Q 152 24 218 58" fill="none" stroke="#111111" stroke-width="15" stroke-linecap="round"/>
+<path id="bomb-fuse-cord" d="M 128 80 Q 152 24 218 58" fill="none" stroke="url(#fuseCordGrad)" stroke-width="9.5" stroke-linecap="round"/>
+
+<!-- Płonąca, migocząca iskra wędrująca po loncie do korpusu bomby -->
+<g id="bomb-spark-group" transform="translate(218, 58)">
+<g class="spark-flicker-group">
+<circle cx="0" cy="0" r="28" fill="#ff2a00" opacity="0.4"/>
+<polygon points="0,-30 7,-9 28,-19 13,-1 31,11 9,10 15,30 0,14 -15,30 -9,10 -31,11 -13,-1 -28,-19 -7,-9" fill="#ff5e00" stroke="#ff0000" stroke-width="1.5"/>
+<polygon points="0,-19 5,-5 19,-11 8,0 20,7 6,6 9,19 0,9 -9,19 -6,6 -20,7 -8,0 -19,-11 -5,-5" fill="#ffff00"/>
+<circle cx="0" cy="0" r="6.5" fill="#ffffff"/>
+</g>
+</g>
+</svg>
+</div>
+
 <div id="comic-boom-wrap">
 <svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
 <polygon points="250,160 30,10 110,5" fill="#00d4ff" opacity="0.75"/>
@@ -502,6 +621,7 @@ transform: translateZ(20px);
 <text x="246" y="194" font-family="Impact, 'Arial Black', sans-serif" font-size="112" font-weight="900" text-anchor="middle" fill="#ff1e27" stroke="#ffd700" stroke-width="7" paint-order="stroke" letter-spacing="4">BOOM!</text>
 </g>
 </svg>
+</div>
 </div>
 <div class="bomb-holder-banner" id="r2-bomb-holder-txt">TRZYMA BOMBĘ: ...</div>
 <div class="bomb-sub" id="r2-bomb-sub">⏳ -1 PKT CO 2 SEKUNDY PO LEKTORZE | DOBRZE: +10 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
@@ -540,7 +660,7 @@ transform: translateZ(20px);
 <div id="round-summary-view">
 <div class="podium-title" id="summary-header" style="font-size: 2.3vw; margin-bottom: 1vw;">📊 PODSUMOWANIE RUNDY 📊</div>
 <div class="summary-list" id="summary-list-container"></div>
-<div class="next-round-banner" id="summary-next-banner">PRZYGOTUJCIE SIĘ NA KOLEJNĄ RUNDĘ!</div>
+<div class="next-round-banner" id="summary-next-banner">PRZYGOTUJCIE SIĘ! NASTĘPNA: KOLEJNA RUNDA!</div>
 <div class="ready-status-bar" id="summary-ready-bar">KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!</div>
 </div>
 
@@ -613,6 +733,53 @@ const roundOrdinalsFeminine = {
 6: "szóstej",
 7: "siódmej"
 };
+
+// FUNKCJA AKTUALIZUJĄCA WIZUALNĄ WIELKOŚĆ, ŻAR I WYPALANIE LONTU BOMBY 3D (0.0 -> 1.0)
+function updateBomb3DVisuals(progress = 0) {
+const p = Math.min(0.98, Math.max(0, progress));
+const wrap = document.getElementById('r2-bomb-3d-wrap');
+if (!wrap) return;
+
+// 1. Pęcznienie bomby od 0.88x aż do 1.55x!
+const scaleVal = (0.88 + p * 0.67).toFixed(3);
+// 2. Narastające drgania (kąt wychylenia) i przyspieszający puls
+const wobbleDeg = (2 + p * 8).toFixed(1);
+const animDur = Math.max(0.14, 0.78 - p * 0.62).toFixed(2);
+
+wrap.style.setProperty('--b-scale', scaleVal);
+wrap.style.setProperty('--b-wobble', `${wobbleDeg}deg`);
+wrap.style.animationDuration = `${animDur}s`;
+
+// 3. Zmiana poświaty z błękitno-pomarańczowej na wściekle czerwoną
+const glowSize = (1.2 + p * 3.4).toFixed(2);
+const rCol = 255;
+const gCol = Math.round(180 * (1 - p));
+wrap.style.setProperty('--b-glow', `${glowSize}vw`);
+wrap.style.setProperty('--b-glow-color', `rgba(${rCol}, ${gCol}, 20, ${(0.55 + p * 0.45).toFixed(2)})`);
+
+// 4. Rozżarzenie korpusu bomby i pojawianie się dymu w tle
+const heatEl = document.getElementById('bomb-heat-overlay');
+if (heatEl) heatEl.setAttribute('opacity', (p * 0.88).toFixed(2));
+
+const smokeGroup = document.getElementById('bomb-smoke-group');
+if (smokeGroup) smokeGroup.setAttribute('opacity', (0.28 + p * 0.72).toFixed(2));
+
+// 5. Skracanie lontu na żywo i przesuwanie iskry po krzywej Beziera do szyjki bomby
+const fuseCord = document.getElementById('bomb-fuse-cord');
+const fuseBg = document.getElementById('bomb-fuse-bg');
+const sparkGroup = document.getElementById('bomb-spark-group');
+
+if (fuseCord && fuseBg && sparkGroup && fuseCord.getTotalLength) {
+const totalLen = fuseCord.getTotalLength();
+const remLen = Math.max(1, totalLen * (1 - p));
+fuseCord.style.strokeDasharray = `${remLen} ${totalLen}`;
+fuseBg.style.strokeDasharray = `${remLen} ${totalLen}`;
+
+const pt = fuseCord.getPointAtLength(remLen);
+const sparkScale = (0.9 + p * 0.65).toFixed(2);
+sparkGroup.setAttribute('transform', `translate(${pt.x.toFixed(1)}, ${pt.y.toFixed(1)}) scale(${sparkScale})`);
+}
+}
 
 function initPolishVoices() {
 if (!('speechSynthesis' in window)) return;
@@ -1344,7 +1511,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA
+// RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM)
 // ============================================================================
 if (data.round === 2) {
 clearInterval(timerInterval);
@@ -1355,19 +1522,18 @@ catEl.style.display = "block";
 catEl.innerText = `🔥 GORĄCA BOMBA: TURA ${data.bombTurn || 1} / 3`;
 r2BombBox.style.display = "flex";
 
-const bombEmojiEl = document.getElementById('r2-bomb-emoji');
+const bomb3DWrapEl = document.getElementById('r2-bomb-3d-wrap');
 const boomWrapEl = document.getElementById('comic-boom-wrap');
 const holderTxtEl = document.getElementById('r2-bomb-holder-txt');
 const holderName = getDisplayName(data.nominated || currentActivePlayers[0]);
 
-bombEmojiEl.style.display = "block";
+bomb3DWrapEl.style.display = "block";
 boomWrapEl.style.display = "none";
 
 if (data.status === "r2_bomb_wait_ready") {
 setBgMusicActive(true);
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
-bombEmojiEl.innerText = "💣";
-bombEmojiEl.style.animationDuration = "0.8s";
+updateBomb3DVisuals(0);
 holderTxtEl.innerText = `ZACZYNA: ${holderName.toUpperCase()}!`;
 const readyList = data.readyPlayers || [];
 const readyNames = readyList.map(getDisplayName);
@@ -1384,7 +1550,7 @@ speakPolishText(`Gorąca Bomba, tura ${data.bombTurn || 1}. Jako pierwszy bombę
 } else if (data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
 setBgMusicActive(false);
 tickSound.pause(); tickSound.currentTime = 0;
-bombEmojiEl.innerText = "💣";
+updateBomb3DVisuals(data.bombProgress || 0);
 holderTxtEl.innerText = `⏸️ SŁUCHAJ PYTANIA (${holderName.toUpperCase()}) - ZEGAR STOI!`;
 qEl.innerText = data.question || "Przygotowanie pytania...";
 
@@ -1400,10 +1566,8 @@ tick: Date.now()
 }
 } else if (data.status === "r2_bomb_running") {
 setBgMusicActive(false);
-bombEmojiEl.innerText = "💣";
 const progress = data.bombProgress || 0;
-const animDur = Math.max(0.18, 0.75 - progress * 0.55);
-bombEmojiEl.style.animationDuration = `${animDur}s`;
+updateBomb3DVisuals(progress);
 
 holderTxtEl.innerText = `🔥 TRZYMA BOMBĘ: ${holderName.toUpperCase()} (-1 PKT CO 2s)!`;
 qEl.innerText = data.question || "";
@@ -1415,7 +1579,7 @@ tickSound.play().catch(()=>{});
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 stage.classList.add("error-glow");
 document.body.classList.add("shake-screen");
-bombEmojiEl.style.display = "none";
+bomb3DWrapEl.style.display = "none";
 boomWrapEl.style.display = "block";
 
 const victimName = getDisplayName(data.bombVictim || data.loser || data.nominated);
@@ -1429,6 +1593,7 @@ playMassiveBombExplosion();
 speakPolishText(`Bum! Bomba wybuchła w rękach gracza ${victimName}! Minus dziesięć punktów!`);
 }
 } else {
+updateBomb3DVisuals(0);
 qEl.innerText = data.question || "Przygotujcie się na Gorącą Bombę!";
 }
 return;
