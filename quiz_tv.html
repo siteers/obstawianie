@@ -271,25 +271,20 @@ border: 1px solid rgba(255, 215, 0, 0.5); text-shadow: 0 2px 4px #000;
 <div class="bomb-icon" id="r2-bomb-emoji">💣</div>
 <div id="comic-boom-wrap">
 <svg viewBox="0 0 500 320" xmlns="http://www.w3.org/2000/svg">
-<!-- Niebieskie promienie w tle -->
 <polygon points="250,160 30,10 110,5" fill="#00d4ff" opacity="0.75"/>
 <polygon points="250,160 470,15 390,5" fill="#00d4ff" opacity="0.75"/>
 <polygon points="250,160 495,220 460,295" fill="#00d4ff" opacity="0.75"/>
 <polygon points="250,160 5,230 45,300" fill="#00d4ff" opacity="0.75"/>
-<!-- Białe obłoki dymu -->
 <circle cx="140" cy="145" r="78" fill="#ffffff" stroke="#111" stroke-width="6"/>
 <circle cx="355" cy="145" r="78" fill="#ffffff" stroke="#111" stroke-width="6"/>
 <circle cx="250" cy="100" r="88" fill="#ffffff" stroke="#111" stroke-width="6"/>
 <circle cx="250" cy="205" r="82" fill="#ffffff" stroke="#111" stroke-width="6"/>
 <circle cx="165" cy="200" r="65" fill="#ffffff"/>
 <circle cx="335" cy="200" r="65" fill="#ffffff"/>
-<!-- Pomarańczowo-czerwona gwiazda eksplozji w środku -->
 <polygon points="250,18 282,92 372,42 332,118 438,125 352,172 428,242 325,215 348,298 265,238 215,305 205,228 95,268 158,188 68,148 168,125 118,45 215,95" fill="#ff5e00" stroke="#ffd700" stroke-width="5"/>
-<!-- Żółte gwiazdki komiksowe -->
 <polygon points="65,55 78,80 105,82 84,100 90,126 65,112 40,126 46,100 25,82 52,80" fill="#ffd700" stroke="#111" stroke-width="4"/>
 <polygon points="435,45 446,68 472,70 452,86 458,110 435,96 412,110 418,86 398,70 424,68" fill="#ffd700" stroke="#111" stroke-width="4"/>
 <polygon points="105,275 114,292 135,295 119,308 124,326 105,316 86,326 91,308 75,295 96,292" fill="#ffd700" stroke="#111" stroke-width="4"/>
-<!-- Napis 3D BOOM! -->
 <g transform="rotate(-7 250 170)">
 <text x="256" y="204" font-family="Impact, 'Arial Black', sans-serif" font-size="112" font-weight="900" text-anchor="middle" fill="#000000" letter-spacing="4">BOOM!</text>
 <text x="246" y="194" font-family="Impact, 'Arial Black', sans-serif" font-size="112" font-weight="900" text-anchor="middle" fill="#ff1e27" stroke="#ffd700" stroke-width="7" paint-order="stroke" letter-spacing="4">BOOM!</text>
@@ -479,7 +474,6 @@ return;
 window.speechSynthesis.cancel();
 
 let cleanText = (textToRead || "")
-// Rozpisanie działań matematycznych słownie, aby przeglądarka nigdy nie mówiła "piętnastego"
 .replace(/(\d+)\s*\+\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} dodać ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*\-\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} odjąć ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*[xX\*]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} razy ${numToCardinalWord(b)}`)
@@ -674,7 +668,6 @@ gain.connect(audioCtx.destination);
 whiteNoise.start(now);
 }
 
-// POTĘŻNA EKSPLOZJA BOMBY W RUNDZIE 2
 function playMassiveBombExplosion() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
@@ -1049,8 +1042,8 @@ let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | -1 PKT/2s PO LEKTORZE | WYBUCH -10 PKT)",
 3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
-4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | LITERY LUB CAŁE HASŁO BEZ KAR!)",
-5: "RUNDA 5: 💰 POSTAW NA MILION (200 PKT | 45s NA PYTANIE | NIEROZŁOŻONE PRZEPADAJĄ!)",
+4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | 15 / 12 / 10 / 8 PKT | BEZ KAR!)",
+5: "RUNDA 5: 💰 POSTAW NA MILION (200 PKT | 45s PO LEKTORZE | NIEROZŁOŻONE PRZEPADAJĄ!)",
 6: "RUNDA 6: ⚡ RYZYKO - WYBIERANIE GRACZA (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
 7: "RUNDA 7: 🎡 KOŁO KATEGORII + TAJNE OBSTAWIANIE W CIEMNO (20s | MIN. 5 PKT)"
 };
@@ -1134,7 +1127,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (GOTOWOŚĆ, CZYTANIE, TYKANIE I KOMIKSOWY WYBUCH BOOM!)
+// RUNDA 2: GORĄCA BOMBA
 // ============================================================================
 if (data.round === 2) {
 clearInterval(timerInterval);
@@ -1225,7 +1218,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (200 PKT, 45s NA PYTANIE, ZAPADNIE 3D CO 3 SEKUNDY)
+// RUNDA 5: POSTAW NA MILION (200 PKT, 45s PO LEKTORZE, ZAPADNIE 3D CO 3 SEKUNDY)
 // ============================================================================
 if (data.round === 5) {
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
@@ -1246,7 +1239,7 @@ winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "STARTUJEMY" NA SWOIM
 let mWaitKey = "r5_mwait_" + data.speechTick;
 if (lastSpokenKey !== mWaitKey) {
 lastSpokenKey = mWaitKey;
-speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie i czterdzieści pięć sekund na każde pytanie. Kliknij gotowość na telefonie!`);
+speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie i czterdzieści pięć sekund po każdym pytaniu. Kliknij gotowość na telefonie!`);
 }
 return;
 }
@@ -1284,7 +1277,7 @@ optionsList.forEach((optText, idx) => {
 const isDropped = openTraps.includes(idx);
 const isResultWinner = (data.status === "r5_mil_q_result" && idx === data.correctIndex);
 const betVal = bets[idx] !== undefined ? parseInt(bets[idx], 10) : 0;
-const isBettingPhase = (data.status === "r5_mil_betting");
+const isBettingPhase = (data.status === "r5_mil_betting" || data.status === "r5_mil_speaking");
 
 let bundlesCount = 0;
 if (isBettingPhase) {
@@ -1319,15 +1312,35 @@ station.innerHTML = `
 trapsContainer.appendChild(station);
 });
 
-if (data.status === "r5_mil_betting") {
+if (data.status === "r5_mil_speaking") {
+clearInterval(timerInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false);
+lastTrapCountSound = 0;
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = `🗣️ LEKTOR CZYTA PYTANIE I OPCJE... PO PRZECZYTANIU RUSZY STOPER 45 SEKUND!`;
+
+let milQKey = "r5_mil_q_" + data.speechTick;
+if (lastSpokenKey !== milQKey && data.question) {
+lastSpokenKey = milQKey;
+let optsSpoken = optionsList.map((o, i) => `${letters[i]}: ${o}`).join(". ");
+speakPolishText(`${pName}, pytanie numer ${data.milQNum}. ${data.question}. ${optsSpoken}. Masz czterdzieści pięć sekund!`, async () => {
+await updateDoc(doc(db, "quizGame", "state"), {
+status: "r5_mil_betting",
+tick: Date.now()
+});
+});
+}
+} else if (data.status === "r5_mil_betting") {
 setBgMusicActive(true);
 lastTrapCountSound = 0;
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--gold)";
 winnerEl.innerText = `📱 ${pName.toUpperCase()} ROZDZIELA ${curPoolPts} PKT NA ZAPADNIACH (MAX ZAPADNI: ${data.milMaxTraps} | 45s - NIEROZŁOŻONE PRZEPADAJĄ!)...`;
 
-if (data.speechTick !== currentTick) {
-currentTick = data.speechTick;
+if (data.tick !== currentTick) {
+currentTick = data.tick;
 clearInterval(timerInterval);
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 let timeLeft = data.milTimeoutSec || 45;
@@ -1350,13 +1363,6 @@ tickSound.play().catch(()=>{});
 }
 }
 }, 1000);
-}
-
-let milQKey = "r5_mil_q_" + data.speechTick;
-if (lastSpokenKey !== milQKey && data.question) {
-lastSpokenKey = milQKey;
-let optsSpoken = optionsList.map((o, i) => `${letters[i]}: ${o}`).join(". ");
-speakPolishText(`${pName}, pytanie numer ${data.milQNum}. Masz czterdzieści pięć sekund. ${data.question}. ${optsSpoken}`);
 }
 } else if (data.status === "r5_mil_dropping") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
@@ -1630,10 +1636,10 @@ speakPolishText(`Kategoria ${data.category}`);
 }
 
 const winners = data.wheelWinners || [];
-const ptsMap = [20, 15, 10, 5];
+const ptsMap = [15, 12, 10, 8];
 const medals = ["🥇", "🥈", "🥉", "🏅"];
 wheelWinnersEl.innerHTML = winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 5} PKT)`;
+const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
 return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
 }).join("");
 
@@ -1708,10 +1714,10 @@ wheelWinnersEl.style.display = "flex";
 renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
 
 const winners = data.wheelWinners || [];
-const ptsMap = [20, 15, 10, 5];
+const ptsMap = [15, 12, 10, 8];
 const medals = ["🥇", "🥈", "🥉", "🏅"];
 wheelWinnersEl.innerHTML = winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 5} PKT)`;
+const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
 return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
 }).join("");
 
