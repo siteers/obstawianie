@@ -1547,7 +1547,7 @@ if (lastSpokenKey !== bWaitKey) {
 lastSpokenKey = bWaitKey;
 const turnWordsFem = { 1: "pierwsza", 2: "druga", 3: "trzecia" };
 const turnSpoken = turnWordsFem[data.bombTurn || 1] || (data.bombTurn || 1);
-speakPolishText(`Gorąca Bomba, tura ${turnSpoken}. Jako pierwszy bombę dostaje ${holderName}. Kliknijcie gotowość na telefonach!`);
+speakPolishText(`Gorąca Bomba, tura ${turnSpoken}. Jako pierwszy bombę dostaje gracz ${holderName}. Kliknijcie gotowość na telefonach!`);
 }
 } else if (data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
 setBgMusicActive(false);
