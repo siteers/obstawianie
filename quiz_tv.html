@@ -1545,7 +1545,9 @@ winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.
 let bWaitKey = "r2_bwait_" + data.speechTick;
 if (lastSpokenKey !== bWaitKey) {
 lastSpokenKey = bWaitKey;
-speakPolishText(`Gorąca Bomba, tura ${data.bombTurn || 1}. Jako pierwszy bombę dostaje ${holderName}. Kliknijcie gotowość na telefonach!`);
+const turnWordsFem = { 1: "pierwsza", 2: "druga", 3: "trzecia" };
+const turnSpoken = turnWordsFem[data.bombTurn || 1] || (data.bombTurn || 1);
+speakPolishText(`Gorąca Bomba, tura ${turnSpoken}. Jako pierwszy bombę dostaje ${holderName}. Kliknijcie gotowość na telefonach!`);
 }
 } else if (data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
 setBgMusicActive(false);
