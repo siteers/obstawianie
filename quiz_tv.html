@@ -128,7 +128,7 @@ will-change: transform, filter;
 #r2-bomb-3d-wrap svg {
 width: 100%; height: 100%; overflow: visible;
 }
-.spark- flicker-group {
+.spark-flicker-group {
 animation: sparkFlicker 0.14s infinite alternate;
 transform-origin: center;
 transform-box: fill-box;
@@ -510,7 +510,6 @@ transform: translateZ(20px);
 <div id="r2-bomb-3d-wrap">
 <svg viewBox="0 0 320 310" xmlns="http://www.w3.org/2000/svg">
 <defs>
-<!-- Trójwymiarowy, metaliczno-granatowy gradient kuli bomby (jak na referencji!) -->
 <radialGradient id="bombSphere3D" cx="34%" cy="30%" r="68%">
 <stop offset="0%" stop-color="#486591"/>
 <stop offset="22%" stop-color="#1e2f52"/>
@@ -518,7 +517,6 @@ transform: translateZ(20px);
 <stop offset="92%" stop-color="#040710"/>
 <stop offset="100%" stop-color="#000000"/>
 </radialGradient>
-<!-- Czerwony żar ciśnienia rozgrzewający bombę od środka przed wybuchem -->
 <radialGradient id="bombHeatGlow" cx="50%" cy="55%" r="55%">
 <stop offset="0%" stop-color="#ff2a00" stop-opacity="0.95"/>
 <stop offset="55%" stop-color="#ff0000" stop-opacity="0.45"/>
@@ -537,7 +535,6 @@ transform: translateZ(20px);
 </linearGradient>
 </defs>
 
-<!-- Białe komiksowe obłoki dymu i kolce w tle (rosnące wraz z ciśnieniem) -->
 <g id="bomb-smoke-group" opacity="0.35">
 <polygon points="160,185 32,120 75,165 25,215 90,220" fill="#000"/>
 <polygon points="160,185 292,115 248,165 298,215 235,220" fill="#000"/>
@@ -549,7 +546,6 @@ transform: translateZ(20px);
 <circle cx="95" cy="222" r="38" fill="#ffffff"/>
 <circle cx="225" cy="222" r="38" fill="#ffffff"/>
 <circle cx="160" cy="238" r="45" fill="#ffffff"/>
-<!-- Komiksowe gwiazdki i wykrzyknik ostrzegawczy -->
 <polygon points="36,130 42,143 56,145 45,154 48,168 36,161 24,168 27,154 16,145 30,143" fill="#ffd700" stroke="#111" stroke-width="2.5"/>
 <polygon points="282,182 287,192 298,194 290,201 292,212 282,206 272,212 274,201 266,194 277,192" fill="#ffd700" stroke="#111" stroke-width="2.5"/>
 <g id="bomb-exclam" transform="translate(275, 88) rotate(14)">
@@ -558,37 +554,29 @@ transform: translateZ(20px);
 </g>
 </g>
 
-<!-- Główna kula bomby 3D -->
 <circle cx="155" cy="182" r="88" fill="url(#bombSphere3D)" stroke="#050811" stroke-width="6"/>
-<!-- Warstwa żaru ciśnieniowego (rozjaśnia się od 0 do 0.9 wraz z upływem czasu) -->
 <circle id="bomb-heat-overlay" cx="155" cy="182" r="86" fill="url(#bombHeatGlow)" opacity="0"/>
 
-<!-- Lustrzane refleksy 3D na kuli -->
 <ellipse cx="118" cy="135" rx="26" ry="14" transform="rotate(-32 118 135)" fill="#7dd3fc" opacity="0.48"/>
 <ellipse cx="112" cy="132" rx="12" ry="6.5" transform="rotate(-32 112 132)" fill="#ffffff" opacity="0.92"/>
 <circle cx="96" cy="156" r="5.5" fill="#ffffff" opacity="0.75"/>
-<!--Boczny komiksowy szew / detal na kuli -->
 <path d="M 108 104 Q 90 132 95 162" fill="none" stroke="#040814" stroke-width="4" stroke-linecap="round"/>
 
-<!-- Komiksowy emblemat "BAM!" na korpusie bomby -->
 <g transform="translate(182, 198) rotate(-22)">
 <polygon points="0,-42 13,-18 40,-30 25,-6 52,4 22,16 32,40 6,25 -10,46 -14,20 -44,28 -25,4 -48,-12 -20,-16 -26,-40 -4,-20" fill="#ef4444" stroke="#111" stroke-width="3.5"/>
 <polygon points="0,-32 10,-13 31,-22 19,-4 40,3 17,12 24,30 4,19 -8,35 -11,15 -34,21 -19,3 -36,-9 -15,-12 -20,-30 -3,-15" fill="#f97316"/>
 <text x="2" y="11" font-family="Impact, 'Arial Black', sans-serif" font-size="31" font-weight="900" text-anchor="middle" fill="#fef08a" stroke="#111" stroke-width="4" paint-order="stroke" letter-spacing="1.5">BAM!</text>
 </g>
 
-<!-- Szyjka / kołnierz bomby 3D -->
 <g transform="translate(132, 92) rotate(-14)">
 <rect x="-22" y="-12" width="44" height="24" rx="7" fill="url(#bombCapGrad)" stroke="#050811" stroke-width="5"/>
 <ellipse cx="0" cy="-12" rx="22" ry="6.5" fill="#1e2f52" stroke="#050811" stroke-width="4"/>
 <path d="M -12 -6 L -12 8" stroke="#60a5fa" stroke-width="2.5" opacity="0.45" stroke-linecap="round"/>
 </g>
 
-<!-- Lont bomby (wypala się na żywo dzięki stroke-dashoffset!) -->
 <path id="bomb-fuse-bg" d="M 128 80 Q 152 24 218 58" fill="none" stroke="#111111" stroke-width="15" stroke-linecap="round"/>
 <path id="bomb-fuse-cord" d="M 128 80 Q 152 24 218 58" fill="none" stroke="url(#fuseCordGrad)" stroke-width="9.5" stroke-linecap="round"/>
 
-<!-- Płonąca, migocząca iskra wędrująca po loncie do korpusu bomby -->
 <g id="bomb-spark-group" transform="translate(218, 58)">
 <g class="spark-flicker-group">
 <circle cx="0" cy="0" r="28" fill="#ff2a00" opacity="0.4"/>
@@ -624,7 +612,7 @@ transform: translateZ(20px);
 </div>
 </div>
 <div class="bomb-holder-banner" id="r2-bomb-holder-txt">TRZYMA BOMBĘ: ...</div>
-<div class="bomb-sub" id="r2-bomb-sub">⏳ -1 PKT CO 2 SEKUNDY PO LEKTORZE | DOBRZE: +10 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
+<div class="bomb-sub" id="r2-bomb-sub">⏳ CZAS LECI NON-STOP (-1 PKT CO 2s) | DOBRZE: +10 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
 </div>
 
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
@@ -734,15 +722,12 @@ const roundOrdinalsFeminine = {
 7: "siódmej"
 };
 
-// FUNKCJA AKTUALIZUJĄCA WIZUALNĄ WIELKOŚĆ, ŻAR I WYPALANIE LONTU BOMBY 3D (0.0 -> 1.0)
 function updateBomb3DVisuals(progress = 0) {
 const p = Math.min(0.98, Math.max(0, progress));
 const wrap = document.getElementById('r2-bomb-3d-wrap');
 if (!wrap) return;
 
-// 1. Pęcznienie bomby od 0.88x aż do 1.55x!
 const scaleVal = (0.88 + p * 0.67).toFixed(3);
-// 2. Narastające drgania (kąt wychylenia) i przyspieszający puls
 const wobbleDeg = (2 + p * 8).toFixed(1);
 const animDur = Math.max(0.14, 0.78 - p * 0.62).toFixed(2);
 
@@ -750,21 +735,18 @@ wrap.style.setProperty('--b-scale', scaleVal);
 wrap.style.setProperty('--b-wobble', `${wobbleDeg}deg`);
 wrap.style.animationDuration = `${animDur}s`;
 
-// 3. Zmiana poświaty z błękitno-pomarańczowej na wściekle czerwoną
 const glowSize = (1.2 + p * 3.4).toFixed(2);
 const rCol = 255;
 const gCol = Math.round(180 * (1 - p));
 wrap.style.setProperty('--b-glow', `${glowSize}vw`);
 wrap.style.setProperty('--b-glow-color', `rgba(${rCol}, ${gCol}, 20, ${(0.55 + p * 0.45).toFixed(2)})`);
 
-// 4. Rozżarzenie korpusu bomby i pojawianie się dymu w tle
 const heatEl = document.getElementById('bomb-heat-overlay');
 if (heatEl) heatEl.setAttribute('opacity', (p * 0.88).toFixed(2));
 
 const smokeGroup = document.getElementById('bomb-smoke-group');
 if (smokeGroup) smokeGroup.setAttribute('opacity', (0.28 + p * 0.72).toFixed(2));
 
-// 5. Skracanie lontu na żywo i przesuwanie iskry po krzywej Beziera do szyjki bomby
 const fuseCord = document.getElementById('bomb-fuse-cord');
 const fuseBg = document.getElementById('bomb-fuse-bg');
 const sparkGroup = document.getElementById('bomb-spark-group');
@@ -857,6 +839,9 @@ let cleanText = (textToRead || "")
 .replace(/(\d+)\s*\-\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} odjąć ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*[xX\*]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} razy ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*[:\/]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} podzielić przez ${numToCardinalWord(b)}`)
+.replace(/\btura\s+1\b/gi, "tura pierwsza")
+.replace(/\btura\s+2\b/gi, "tura druga")
+.replace(/\btura\s+3\b/gi, "tura trzecia")
 .replace(/:\s*$/, "")
 .replace(/:/g, ", ")
 .replace(/\bpkt\b/gi, "punktów")
@@ -1424,7 +1409,7 @@ drawR6Wheel(r7Categories);
 
 let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
-2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | -1 PKT/2s PO LEKTORZE | WYBUCH -10 PKT)",
+2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | CZAS LECI NON-STOP | WYBUCH -10 PKT)",
 3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | 15 / 12 / 10 / 8 PKT | BEZ KAR!)",
 5: "RUNDA 5: 💰 POSTAW NA MILION (200 PKT | 45s PO LEKTORZE | NIEROZŁOŻONE PRZEPADAJĄ!)",
@@ -1511,7 +1496,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM)
+// RUNDA 2: GORĄCA BOMBA 3D (1 WIELKA TURA 2:30 - 3:00 MIN, CZAS LECI NON-STOP!)
 // ============================================================================
 if (data.round === 2) {
 clearInterval(timerInterval);
@@ -1519,7 +1504,7 @@ timerEl.style.display = 'none';
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 
 catEl.style.display = "block";
-catEl.innerText = `🔥 GORĄCA BOMBA: TURA ${data.bombTurn || 1} / 3`;
+catEl.innerText = `🔥 GORĄCA BOMBA: WIELKA TURA FINAŁOWA`;
 r2BombBox.style.display = "flex";
 
 const bomb3DWrapEl = document.getElementById('r2-bomb-3d-wrap');
@@ -1534,10 +1519,10 @@ if (data.status === "r2_bomb_wait_ready") {
 setBgMusicActive(true);
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 updateBomb3DVisuals(0);
-holderTxtEl.innerText = `ZACZYNA: ${holderName.toUpperCase()}!`;
+holderTxtEl.innerText = `ZACZYNA GRACZ: ${holderName.toUpperCase()}!`;
 const readyList = data.readyPlayers || [];
 const readyNames = readyList.map(getDisplayName);
-qEl.innerText = `PRZYGOTOWANIE DO TURY ${data.bombTurn || 1}/3!`;
+qEl.innerText = `PRZYGOTOWANIE DO GORĄCEJ BOMBY!`;
 winnerEl.style.display = "block";
 winnerEl.style.color = "var(--cyan)";
 winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.length}): ${readyNames.length > 0 ? readyNames.join(", ").toUpperCase() : "KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!"}`;
@@ -1545,28 +1530,9 @@ winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.
 let bWaitKey = "r2_bwait_" + data.speechTick;
 if (lastSpokenKey !== bWaitKey) {
 lastSpokenKey = bWaitKey;
-const turnWordsFem = { 1: "pierwsza", 2: "druga", 3: "trzecia" };
-const turnSpoken = turnWordsFem[data.bombTurn || 1] || (data.bombTurn || 1);
-speakPolishText(`Gorąca Bomba, tura ${turnSpoken}. Jako pierwszy bombę dostaje gracz ${holderName}. Kliknijcie gotowość na telefonach!`);
+speakPolishText(`Runda druga: Gorąca Bomba! Jako pierwszy bombę dostaje gracz ${holderName}. Uwaga: czas do wybuchu płynie bez przerwy! Kliknijcie gotowość na telefonach!`);
 }
-} else if (data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
-setBgMusicActive(false);
-tickSound.pause(); tickSound.currentTime = 0;
-updateBomb3DVisuals(data.bombProgress || 0);
-holderTxtEl.innerText = `⏸️ SŁUCHAJ PYTANIA (${holderName.toUpperCase()}) - ZEGAR STOI!`;
-qEl.innerText = data.question || "Przygotowanie pytania...";
-
-let bSpKey = "r2_bsp_" + data.speechTick;
-if (lastSpokenKey !== bSpKey && data.question) {
-lastSpokenKey = bSpKey;
-speakPolishText(`${holderName}! ${data.question}`, async () => {
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_running",
-tick: Date.now()
-});
-});
-}
-} else if (data.status === "r2_bomb_running") {
+} else if (data.status === "r2_bomb_running" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_active") {
 setBgMusicActive(false);
 const progress = data.bombProgress || 0;
 updateBomb3DVisuals(progress);
@@ -1577,7 +1543,15 @@ qEl.innerText = data.question || "";
 const rate = 1.0 + (progress * 1.65);
 tickSound.playbackRate = rate;
 tickSound.play().catch(()=>{});
+
+// Lektor czyta nowe pytanie od razu po przekazaniu bomby, a zegar i tykanie lecą równolegle!
+let bSpKey = "r2_bsp_" + data.speechTick;
+if (lastSpokenKey !== bSpKey && data.question) {
+lastSpokenKey = bSpKey;
+speakPolishText(`${holderName}! ${data.question}`);
+}
 } else if (data.status === "r2_bomb_exploded") {
+window.speechSynthesis && window.speechSynthesis.cancel();
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 stage.classList.add("error-glow");
 document.body.classList.add("shake-screen");
@@ -1586,7 +1560,7 @@ boomWrapEl.style.display = "block";
 
 const victimName = getDisplayName(data.bombVictim || data.loser || data.nominated);
 holderTxtEl.innerText = `💥 WYBUCH W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
-qEl.innerText = `KONIEC TURY ${data.bombTurn || 1}/3!`;
+qEl.innerText = `KONIEC RUNDY Z BOMBĄ!`;
 
 let expKey = "r2_exp_" + data.answerTick;
 if (lastPlayedResult !== expKey) {
