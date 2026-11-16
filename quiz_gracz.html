@@ -109,7 +109,7 @@ input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radiu
 
 #ui-r6-spin { display: none; flex-direction: column; align-items: center; gap: 10px; touch-action: none; user-select: none; }
 .pad-wheel-pointer { width: 0; height: 0; border-left: 14px solid transparent; border-right: 14px solid transparent; border-top: 24px solid #fff; margin-bottom: -10px; z-index: 20; filter: drop-shadow(0 0 6px var(--gold)); }
-#pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; }
+#pad-wheel-canvas { width: 290px; height: 290px; border-radius: 50%; border: 4px solid var(--gold); box-shadow: 0 0 25px rgba(212,175,55,0.4); cursor: grab; touch-action: none; will-change: transform; }
 
 #ui-r6-bid { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .bid-info-box { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 12px; }
@@ -315,6 +315,7 @@ const r6Colors = ["#e74c3c", "#3498db", "#2ecc71", "#f1c40f", "#9b59b6", "#e67e2
 let padWheelRot = 0;
 let isSpinningLocally = false;
 let lastHandledSpinTickOnPad = 0;
+let lastDrawnCatsKey = "";
 
 function getActivePlayers(stateObj) {
 if (stateObj && stateObj.activePlayers && stateObj.activePlayers.length > 0) {
@@ -323,11 +324,9 @@ return stateObj.activePlayers;
 return ["Lila", "Kaja", "Darek", "Jas"];
 }
 
-let lastDrawnCatsKey = "";
-
 function drawPadWheel(catsList = r7Categories) {
 const key = (catsList || []).join("|");
-if (key === lastDrawnCatsKey) return; // Nie resetuj canvasu w trakcie animacji!
+if (key === lastDrawnCatsKey) return; // Nie czyść canvasu, jeśli kategorie się nie zmieniły (chroni animację obrotu!)
 lastDrawnCatsKey = key;
 
 const canvas = document.getElementById('pad-wheel-canvas');
@@ -435,7 +434,7 @@ let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 padWheelRot += power * 360 + diff;
 
-// Wymuszenie reflow przed nałożeniem transition, aby przeglądarka mobilna płynnie zakręciła kołem
+// Wymuszenie reflow przed nałożeniem transition dla płynnego obrotu na iOS/Android
 padWheelEl.style.transition = "none";
 void padWheelEl.offsetWidth;
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
@@ -669,7 +668,6 @@ window.submitMillionBets = async (isAutoTimeout = false) => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
 
-// Przy auto-timeoucie wysyłamy natychmiast ostatni stan milLiveBets, a Admin rozlicza resztę przez resolveMillionTimeout
 if (isAutoTimeout) {
 clearInterval(milLocalCountdown);
 clearTimeout(milLiveSyncTimer);
@@ -941,7 +939,7 @@ return;
 }
 
 // ============================================================================
-// RUNDA 2: GORĄCA BOMBA (PRAWDA / FAŁSZ)
+// RUNDA 2: GORĄCA BOMBA (1 WIELKA TURA 2:30-3:00 MIN, CZAS LECI NON-STOP!)
 // ============================================================================
 if (currentState.round === 2) {
 const holderName = getDisplayName(currentState.nominated);
@@ -949,13 +947,13 @@ const holderName = getDisplayName(currentState.nominated);
 if (currentState.status === "r2_bomb_wait_ready") {
 const readyList = currentState.readyPlayers || [];
 if (readyList.includes(myName)) {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (TURA ${currentState.bombTurn || 1}/3)`;
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (1 WIELKA TURA)`;
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `✅ GOTOWOŚĆ ZATWIERDZONA!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
 } else {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - TURA ${currentState.bombTurn || 1}/3`;
-document.getElementById('readyInfoText').innerHTML = `Tura ${currentState.bombTurn || 1}/3!<br>Jako pierwszy bombę dostaje: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Zegar (-1 pkt co 2s) rusza po przeczytaniu pytania!`;
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - PRZYGOTOWANIE`;
+document.getElementById('readyInfoText').innerHTML = `Wielka Tura z Bombą (2:30 - 3:00 min)!<br>Jako pierwszy bombę dostaje gracz: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Uwaga: czas do wybuchu leci bez przerwy!`;
 document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY NA BOMBĘ!`;
 document.getElementById('ui-ready').style.display = 'flex';
 }
@@ -970,17 +968,7 @@ lockedEl.innerText = `💥 BOOM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.
 return;
 }
 
-if (currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_active") {
-document.getElementById('padStatus').innerText = `⏸️ ZEGAR STOI - SŁUCHAJ PYTANIA!`;
-lockedEl.classList.add('speak-msg');
-lockedEl.style.display = 'block';
-lockedEl.innerText = currentState.nominated === myName
-? `💣 MASZ BOMBĘ!\nSŁUCHAJ PYTANIA: "${currentState.question || ""}"\nZA CHWILĘ ODBLOKUJĄ SIĘ PRZYCISKI!`
-: `TERAZ BOMBĘ MA: ${holderName.toUpperCase()}\nLEKTOR CZYTA PYTANIE...`;
-return;
-}
-
-if (currentState.status === "r2_bomb_running") {
+if (currentState.status === "r2_bomb_running" || currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_active") {
 if (currentState.nominated === myName) {
 document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA - ODPOWIADAJ SZYBKO!`;
 document.getElementById('bombPadQuestion').innerText = currentState.question || "";
@@ -989,7 +977,7 @@ document.getElementById('ui-bomb').style.display = 'flex';
 document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA W GRZE`;
 lockedEl.classList.add('speak-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()} (-1 PKT CO 2s)!\nPRZYGOTUJ SIĘ - ZARAZ MOŻE TRAFIĆ DO CIEBIE!`;
+lockedEl.innerText = `🔥 TERAZ BOMBĘ TRZYMA: ${holderName.toUpperCase()} (-1 PKT CO 2s)!\nPRZYGOTUJ SIĘ - ZARAZ TRAFI DO CIEBIE!`;
 }
 return;
 }
@@ -1122,13 +1110,16 @@ document.getElementById('padStatus').innerText = "🎡 KOŁO SIĘ OBRACA!";
 instrEl.innerText = "LOSOWANIE KATEGORII...";
 if (currentState.spinTick && currentState.spinTick !== lastHandledSpinTickOnPad) {
 lastHandledSpinTickOnPad = currentState.spinTick;
-padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
 const segAngle = 360 / r7Categories.length;
 const targetMod = (360 - (currentState.wheelSegment * segAngle)) % 360;
 const curMod = ((padWheelRot % 360) + 360) % 360;
 let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 padWheelRot += (currentState.spinPower || 7) * 360 + diff;
+
+padWheelEl.style.transition = "none";
+void padWheelEl.offsetWidth;
+padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
 padWheelEl.style.transform = `rotate(${padWheelRot}deg)`;
 }
 }
