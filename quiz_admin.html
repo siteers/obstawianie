@@ -136,7 +136,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (5 haseł | 60s | Litery lub całe hasło bez kar!)</option>
 <option value="5">Runda 5: 💰 POSTAW NA MILION (Po 5 pytań na gracza | 45s po lektorze | Losowe ABCD)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (24 pytania | ±20 pkt sam / ±10 pkt rywal)</option>
-<option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (16 pytań | Stoper 20s | Min. 5 pkt)</option>
+<option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (16 pytań | Stoper 20s | Sprawiedliwe losowanie remisów)</option>
 </select><br>
 <button type="button" class="green" id="btnStartRound" onclick="window.adminForceContinue && window.adminForceContinue()">▶️ START GRY / WYMUŚ START RUNDY</button>
 <button type="button" class="gold" id="btnNextQ" onclick="window.nextQuestion && window.nextQuestion()">⏭️ NASTĘPNE PYTANIE / TURA (Awaryjnie)</button>
@@ -191,7 +191,14 @@ text,
 isCorrect: idx === qObj.c
 }));
 for (let i = pairs.length - 1; i > 0; i--) {
-const j = Math.floor(Math.random() * (i + 1));
+let j = 0;
+if (window.crypto && window.crypto.getRandomValues) {
+const randArr = new Uint32Array(1);
+window.crypto.getRandomValues(randArr);
+j = randArr[0] % (i + 1);
+} else {
+j = Math.floor(Math.random() * (i + 1));
+}
 [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
 }
 const newCorrectIdx = pairs.findIndex(p => p.isCorrect);
@@ -215,10 +222,8 @@ const ansVariants = answerText.split('/').map(a => a.trim()).filter(Boolean);
 ansVariants.forEach(ans => {
 const normAns = stripPolishChars(ans).replace(/[^a-z0-9]/g, "");
 if (normAns.length < 4) return;
-// Rdzeń słowa (np. "czosnek" -> "czosn", "pomidor" -> "pomidor")
 const stem = normAns.slice(0, Math.max(4, normAns.length - 2));
 
-// Jeśli w nawiasie jest słowo zawierające rdzeń odpowiedzi (np. "(robi się masło czosnkowe)"), usuwamy nawias!
 cleaned = cleaned.replace(/\(([^)]+)\)/g, (fullMatch, inside) => {
 if (stripPolishChars(inside).includes(stem)) {
 return "";
@@ -227,7 +232,6 @@ return fullMatch;
 });
 });
 
-// Ręczne korekty najczęstszych "oczywistych" pytań z bazy
 cleaned = cleaned
 .replace(/masło czosnkowe/gi, "aromatyczne masło ziołowe")
 .replace(/zupę pomidorową/gi, "czerwoną zupę z ryżem lub makaronem")
@@ -491,7 +495,6 @@ Czy rekiny żyją w słonych morzach i oceanach?|1
 Czy zegar służy do mierzenia temperatury?|0
 Czy wiewiórka zbiera orzechy i żołędzie na zimę?|1`);
 
-// Budujemy jedną wielką pulę unikalnych pytań dla dzieci/dorosłych i osobny zestaw ułatwiony dla Jasia
 const allUniqueBombQuestions = [];
 const seenBombQSet = new Set();
 
@@ -529,7 +532,6 @@ jasUniqueBombQuestions.push(item);
 }
 });
 
-// Globalny zestaw zużytych pytań w bieżącej sesji, żeby NIGDY nie powtórzyło się pytanie (nawet między Kają a Darkiem!)
 let usedBombQuestionsInSession = new Set();
 
 function pickNextUniqueBombQuestion(playerKey) {
@@ -537,10 +539,8 @@ const sourcePool = (playerKey === "Jas" && jasUniqueBombQuestions.length > 0)
 ? jasUniqueBombQuestions
 : allUniqueBombQuestions;
 
-// Szukamy wszystkich pytań, które jeszcze nie padły w tej grze u żadnego gracza
 let unused = sourcePool.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
 
-// Jeśli jakimś cudem po kilkuset pytaniach wszystkie zużyto, czyścimy pamięć
 if (unused.length === 0) {
 usedBombQuestionsInSession.clear();
 unused = [...sourcePool];
@@ -656,6 +656,45 @@ let r7CarryOverPool = 0;
 let currentState = null;
 let r6Controller = "";
 
+// Pamięć wygranych losowań przy remisie w R6/R7 (gwarantuje sprawiedliwą rotację!)
+let r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
+let lastR7TieWinner = "";
+
+function pickFairRandomTieWinner(tiedPlayers) {
+if (!tiedPlayers || tiedPlayers.length === 0) return "Lila";
+if (tiedPlayers.length === 1) return tiedPlayers[0];
+
+// 1. Szukamy najmniejszej liczby wygranych losowań wśród aktualnie remisujących
+let minWins = Infinity;
+tiedPlayers.forEach(p => {
+const w = r7TieWinCounts[p] || 0;
+if (w < minWins) minWins = w;
+});
+
+// 2. Bierzemy tylko tych graczy, którzy wygrywali losowanie najrzadziej
+let candidates = tiedPlayers.filter(p => (r7TieWinCounts[p] || 0) === minWins);
+
+// 3. Jeśli nadal jest więcej niż 1 kandydat, wykluczamy osobę, która wygrała poprzedni remis
+if (candidates.length > 1 && lastR7TieWinner && candidates.includes(lastR7TieWinner)) {
+candidates = candidates.filter(p => p !== lastR7TieWinner);
+}
+
+// 4. Kryptograficzne losowanie spośród odfiltrowanych kandydatów
+let chosenIndex = 0;
+if (window.crypto && window.crypto.getRandomValues) {
+const randArr = new Uint32Array(1);
+window.crypto.getRandomValues(randArr);
+chosenIndex = randArr[0] % candidates.length;
+} else {
+chosenIndex = Math.floor(Math.random() * candidates.length);
+}
+
+const winner = candidates[chosenIndex];
+r7TieWinCounts[winner] = (r7TieWinCounts[winner] || 0) + 1;
+lastR7TieWinner = winner;
+return winner;
+}
+
 // ============================================================================
 // ZMIENNE DLA RUNDY 2: GORĄCA BOMBA (1 TURA, 2:30 - 3:00 MIN, CZAS LECI NON-STOP!)
 // ============================================================================
@@ -663,7 +702,7 @@ let bombTurnNum = 0;
 let bombHolderIdx = 0;
 let bombQuestionsAskedCount = 0;
 let bombTotalDurationMs = 165000;
-let bombEndTimeMs = 0; // Bezwzględny czas wybuchu (Date.now() + duration) - zero lagów na końcu!
+let bombEndTimeMs = 0;
 let bombIsExplodedOrFinished = false;
 let bombPenaltyTicker = null;
 let bombProgressTicker = null;
@@ -827,7 +866,7 @@ if (leaders.length === 0) return { player: activeList[0], tieMsg: "" };
 if (leaders.length === 1) {
 return { player: leaders[0], tieMsg: `NAJWIĘCEJ PUNKTÓW (${maxPts}) MA: ${getDisplayName(leaders[0]).toUpperCase()}!` };
 } else {
-let chosen = leaders[Math.floor(Math.random() * leaders.length)];
+let chosen = pickFairRandomTieWinner(leaders);
 return { player: chosen, tieMsg: `REMIS LIDERÓW (${maxPts} PKT)! WYLOSOWANO: ${getDisplayName(chosen).toUpperCase()}!` };
 }
 }
@@ -965,7 +1004,6 @@ answerTick: Date.now()
 async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
 bombTurnNum = turnIndex;
-// Tylko 1 tura w całej Rundzie 2!
 if (bombTurnNum > 1) {
 await triggerRoundSummary(2);
 return;
@@ -974,7 +1012,6 @@ const activeList = getSelectedActivePlayers();
 bombHolderIdx = Math.floor(Math.random() * activeList.length);
 const starter = activeList[bombHolderIdx];
 
-// Losowo od 150 do 180 sekund (2:30 - 3:00 minuty)
 const durationSec = Math.floor(Math.random() * 31) + 150;
 bombTotalDurationMs = durationSec * 1000;
 bombEndTimeMs = 0;
@@ -1000,7 +1037,7 @@ pool: currentPool
 }
 
 function startContinuousBombCountdownIfNeeded() {
-if (bombEndTimeMs > 0) return; // Zegar już tyka w tle - nie resetujemy go!
+if (bombEndTimeMs > 0) return;
 bombEndTimeMs = Date.now() + bombTotalDurationMs;
 bombIsExplodedOrFinished = false;
 
@@ -1008,7 +1045,6 @@ clearInterval(bombProgressTicker);
 clearInterval(bombPenaltyTicker);
 clearTimeout(bombExplodeTimeout);
 
-// Aktualizacja paska postępu bomby co 1 sekundę (czas leci non-stop, także podczas czytania!)
 bombProgressTicker = setInterval(async () => {
 if (bombIsExplodedOrFinished || !currentState || currentState.round !== 2) return;
 const remMs = Math.max(0, bombEndTimeMs - Date.now());
@@ -1024,7 +1060,6 @@ await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog });
 } catch (e) {}
 }, 1000);
 
-// Kara -1 pkt co 2 sekundy trzymania bomby
 bombPenaltyTicker = setInterval(async () => {
 if (bombIsExplodedOrFinished || !currentState || currentState.round !== 2) return;
 if (Date.now() >= bombEndTimeMs) return;
@@ -1036,7 +1071,6 @@ await changePlayerScoreDelta(curHolder, -1);
 }
 }, 2000);
 
-// Gwarantowany wybuch dokładnie po upływie czasu (niezależnie od tego, czy ktoś odpowiada, czy lektor czyta)
 bombExplodeTimeout = setTimeout(async () => {
 await explodeBombNow();
 }, bombTotalDurationMs);
@@ -1045,7 +1079,6 @@ await explodeBombNow();
 async function sendNextBombQuestionContinuous() {
 if (bombIsExplodedOrFinished) return;
 
-// Uruchamiamy ciągły zegar przy pierwszym pytaniu
 startContinuousBombCountdownIfNeeded();
 
 const remMs = bombEndTimeMs - Date.now();
@@ -1065,7 +1098,6 @@ updateRemainingCounterUI();
 
 statusEl.innerText = `🔥 BOMBA W GRZE (Pytanie #${bombQuestionsAskedCount}) -> ${getDisplayName(holder)} (Pozostało: ${(remMs/1000).toFixed(1)}s - czas leci cały czas!)`;
 
-// Ustawiamy od razu status "r2_bomb_running", aby przyciski PRAWDA/FAŁSZ były od razu aktywne, a lektor czyta w tym samym czasie!
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_running",
 round: 2,
@@ -1342,7 +1374,6 @@ if (nonSameCatIndices.length === 0) nonSameCatIndices = availableIndices;
 
 const chosenIdx = nonSameCatIndices[Math.floor(Math.random() * nonSameCatIndices.length)];
 usedR7Indices.push(chosenIdx);
-// Za każdym razem losowo mieszamy opcje ABCD w pytaniu z koła!
 const qObj = shuffleQuestionOptions(list[chosenIdx]);
 const segIdx = cats.indexOf(qObj.cat);
 lastR7WheelSegment = segIdx >= 0 ? segIdx : 0;
@@ -1378,7 +1409,8 @@ if (val > maxBid) maxBid = val;
 
 const topPlayers = activeList.filter(p => (parseInt(rawBids[p], 10) || 5) === maxBid);
 const wasRandomDraw = topPlayers.length > 1;
-const winnerPlayer = topPlayers[Math.floor(Math.random() * topPlayers.length)];
+// Sprawiedliwa rotacja przy remisie najwyższych ofert!
+const winnerPlayer = wasRandomDraw ? pickFairRandomTieWinner(topPlayers) : topPlayers[0];
 
 for (let p of activeList) {
 const bidVal = parseInt(rawBids[p], 10) || 5;
@@ -1430,6 +1462,8 @@ try {
 clearAllAdminTimers();
 document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
+r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
+lastR7TieWinner = "";
 usedBombQuestionsInSession.clear();
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
@@ -1448,6 +1482,8 @@ clearAllAdminTimers();
 currentPool = parseInt(document.getElementById('poolSel').value);
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 };
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
+r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
+lastR7TieWinner = "";
 usedBombQuestionsInSession.clear();
 let activeList = getSelectedActivePlayers();
 updateRemainingCounterUI();
@@ -1471,7 +1507,6 @@ clearAllAdminTimers();
 currentQIndex[2] = 0;
 await prepareBombTurnWaitReady(1);
 } else if (currentState && currentState.round === 2 && currentState.status === "r2_bomb_running") {
-// Awaryjny przeskok do kolejnego pytania w trakcie tykania bomby (bez resetowania zegara!)
 bombHolderIdx = (bombHolderIdx + 1) % activeList.length;
 await sendNextBombQuestionContinuous();
 } else {
@@ -1529,7 +1564,6 @@ await triggerRoundSummary(r);
 return;
 }
 
-// Losowe przetasowanie opcji ABCD przed wysłaniem pytania w R1 i R6!
 let qData = (r === 1 || r === 6) ? shuffleQuestionOptions(rawQData) : rawQData;
 
 statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} / ${allDBs[currentPool][r].length} (Runda ${r}, Pula ${currentPool})`;
@@ -1596,7 +1630,7 @@ updateRemainingCounterUI();
 if (!window.QUIZ_QUESTIONS_RAW || !window.BOMB_TF_RAW) {
 showError("Brak plików baza_pytan.js lub baza_bomba.js w tym samym folderze!");
 } else {
-statusEl.innerText = `✅ SYSTEM GOTOWY (Losowe ABCD + Bomba 2:30-3:00 min non-stop + Licznik pytań)!`;
+statusEl.innerText = `✅ SYSTEM GOTOWY (Losowe ABCD + Bomba 2:30-3:00 min non-stop + Licznik pytań + Sprawiedliwe losowanie remisów)!`;
 }
 
 // --- NASŁUCHIWANIE STANU GRY W CZASIE RZECZYWISTYM ---
@@ -1677,7 +1711,6 @@ if (lastBombAnsKey !== ansKey) {
 lastBombAnsKey = ansKey;
 if (bombIsExplodedOrFinished) return;
 
-// Jeśli czas minął dokładnie w ułamku sekundy odpowiedzi, bomba wybucha!
 if (bombEndTimeMs > 0 && Date.now() >= bombEndTimeMs) {
 explodeBombNow();
 return;
