@@ -134,9 +134,14 @@ margin: 0.6vw 0;
 }
 
 /* ETAP 2: WIZUALIZACJA HYMNU */
-.audio-waves { display: flex; gap: 0.5vw; height: 5.5vw; align-items: center; justify-content: center; margin-top: 1vw; }
+.audio-waves { display: flex; gap: 0.5vw; height: 5vw; align-items: center; justify-content: center; margin-top: 0.8vw; }
 .wave-bar { width: 1.2vw; height: 1.5vw; background: var(--gold); border-radius: 0.5vw; transition: 0.2s; }
 .wave-bar.active { animation: wavePulse 0.38s infinite alternate; box-shadow: 0 0 15px #00d4ff; }
+.hymn-karaoke-box {
+font-size: 2.1vw; font-weight: 900; color: #fff; background: rgba(0,0,0,0.55);
+border: 2px solid var(--gold); border-radius: 1vw; padding: 0.8vw 1.8vw; margin-top: 0.8vw;
+text-shadow: 0 0 12px var(--gold); min-height: 3.2vw; display: flex; align-items: center; justify-content: center;
+}
 
 /* ETAP 3: BRYŁA LODU */
 .ice-block {
@@ -341,6 +346,22 @@ Jas: [
 "Zrób zdjęcie kubkowi lub szklance, z której pije się ciepłą zimową herbatę!"
 ]
 };
+
+// PEŁNA KOLEJNOŚĆ 12 FRAZ HYMNU (1. ZWROTKA + REFREN) Z CZASAMI WEJŚCIA DO PODKŁADU
+const HYMN_SEQUENCE = [
+{ slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 600 },
+{ slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 2100 },
+{ slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 3600 },
+{ slot: "Kaja_2", player: "Kaja", label: "⛄ KAJA: KIEDY MY ŻYJEMY.", delayMs: 5600 },
+{ slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 7800 },
+{ slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 9600 },
+{ slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 11600 },
+{ slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 13800 },
+{ slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 16200 },
+{ slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 18200 },
+{ slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 20100 },
+{ slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 22200 }
+];
 
 const STAGE4_RIDDLES = {
 Lila: [
@@ -919,7 +940,6 @@ padEl.classList.remove('lit');
 }, durationMs);
 }
 
-// GENERATOR SEKWENCJI SIMONA BEZ POWTÓRZEŃ TEGO SAMEGO KOLORU POD RZĄD
 function buildHardNonRepeatingSequence(levelNum, activeList) {
 const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
@@ -958,7 +978,6 @@ const introSpeech = mistakeBy
 
 if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
 
-// Wolniejsze tempo w rundzie 2 i 3 (zgodnie z prośbą!)
 const stepInterval = levelNum === 1 ? 850 : (levelNum === 2 ? 820 : 750);
 const litDuration = Math.round(stepInterval * 0.68);
 
@@ -1105,33 +1124,33 @@ speakPolishText("Wujek! Łapcie Wujka i odbierzcie klucz do prezentu!");
 });
 }
 
-// ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE HYMNU Z PODKŁADEM
+// ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE CAŁEJ 1. ZWROTKI + REFRENU Z PODKŁADEM
 function playSynchronizedHymn(tracks, activeList) {
 isBgMusicPlaying = false;
-speakPolishText("Wszystkie głosy nagrane! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
+speakPolishText("Wszystkie dwanaście fragmentów nagrane! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
 anthemAudio.currentTime = 0;
-anthemAudio.volume = 0.35;
+anthemAudio.volume = 0.28;
 anthemAudio.play().catch(() => {});
 
 const waves = document.querySelectorAll('.wave-bar');
 waves.forEach(w => w.classList.add('active'));
 
-const schedule = {
-Lila: 700,
-Kaja: 2100,
-Darek: 3500,
-Jas: 5400
-};
+const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
+let maxDelay = 0;
 
-const order = ["Lila", "Kaja", "Darek", "Jas"].filter(p => activeList.includes(p));
-order.forEach(p => {
-if (tracks[p]) {
+activeSeq.forEach((item, idx) => {
+const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (600 + idx * 1950);
+if (playAt > maxDelay) maxDelay = playAt;
+
 setTimeout(() => {
-const a = new Audio(tracks[p]);
+const karaokeEl = document.getElementById('hymnKaraokeText');
+if (karaokeEl) karaokeEl.innerText = item.label;
+if (tracks[item.slot]) {
+const a = new Audio(tracks[item.slot]);
 a.volume = 1.0;
 a.play().catch(() => {});
-}, schedule[p] || 0);
 }
+}, playAt);
 });
 
 setTimeout(async () => {
@@ -1142,7 +1161,7 @@ status: "stage_complete",
 completedStageNum: 2,
 speechTick: Date.now()
 });
-}, 8500);
+}, maxDelay + 2800);
 });
 }
 
@@ -1212,9 +1231,10 @@ imgEl.src = pPhoto.img;
 imgEl.style.display = 'none';
 }
 } else if (st === 2) {
-const tr = (currentState.audioTracks || {})[dbK];
-numEl.innerText = "HYMN";
-qEl.innerText = tr ? "✅ Słowo nagrane i gotowe!" : "🎤 Nagraj swoje słowo na telefonie!";
+const tr = currentState.audioTracks || {};
+const cnt = (tr[dbK + "_1"] ? 1 : 0) + (tr[dbK + "_2"] ? 1 : 0) + (tr[dbK + "_3"] ? 1 : 0);
+numEl.innerText = "HYMN " + cnt + "/3";
+qEl.innerText = cnt >= 3 ? "✅ Wszystkie 3 frazy nagrane!" : "🎤 Nagraj 3 frazy na telefonie (w tym z Bartusiem)!";
 imgEl.style.display = 'none';
 } else if (st === 3) {
 numEl.innerText = "LÓD";
@@ -1293,31 +1313,37 @@ lastAnnouncedStage = 1;
 speakPolishText("Etap pierwszy: Foto-Zwiad! Każdy Agent ma do wykonania trzy świąteczne zdjęcia w domu.");
 }
 }
-// ETAP 2: HYMN Z BARTUSIEM
+// ETAP 2: HYMN Z BARTUSIEM (1. ZWROTKA + REFREN)
 else if (st === 2) {
 head.innerText = "🎤 ETAP 2: WOKALNY NAPĘD SAŃ (HYMN Z BARTUSIEM!)";
 const tracks = currentState.audioTracks || {};
 const order = ["Lila", "Kaja", "Darek", "Jas"].filter(p => activeList.includes(p));
-const allRecorded = order.length > 0 && order.every(p => tracks[p]);
+let totalDone = 0;
+const totalNeeded = order.length * 3;
 
 let cardsHtml = '<div style="display:flex; gap:1.2vw; justify-content:center; width:100%;">';
 order.forEach(p => {
-const ok = Boolean(tracks[p]);
+const cnt = (tracks[p + "_1"] ? 1 : 0) + (tracks[p + "_2"] ? 1 : 0) + (tracks[p + "_3"] ? 1 : 0);
+totalDone += cnt;
+const ok = cnt >= 3;
 cardsHtml += '<div style="background:#081c15; border:2px solid ' + (ok ? '#2dc653' : '#ff4d4d') + '; padding:1vw; border-radius:1vw; width:12vw;">'
 + '<b style="color:var(--gold); font-size:1.2vw;">' + p.toUpperCase() + '</b><br>'
-+ '<span style="font-size:1vw; font-weight:bold; color:' + (ok ? '#2dc653' : '#cbd5e1') + ';">' + (ok ? '✅ NAGRANE' : '⏳ NAGRYWA...') + '</span></div>';
++ '<span style="font-size:1.1vw; font-weight:bold; color:' + (ok ? '#2dc653' : '#ffd700') + ';">' + (ok ? '✅ 3/3 GOTOWE' : '🎙️ ' + cnt + ' / 3') + '</span></div>';
 });
 cardsHtml += '</div>';
 
-const bottomHtml = allRecorded
-? '<div style="margin-top:1.2vw; font-size:1.3vw; color:#2dc653; font-weight:bold;">Wszyscy nagrani! Wujek zaraz odpali nasz chór!</div><div class="audio-waves"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>'
-: '<div style="margin-top:1.2vw; font-size:1.15vw; color:#cbd5e1;">Odsłuchajcie swoje nagranie na telefonie przed wysłaniem!</div>';
+const allRecorded = totalNeeded > 0 && totalDone >= totalNeeded;
+const bottomHtml = status === "stage2_play"
+? '<div class="hymn-karaoke-box" id="hymnKaraokeText">🎶 START HYMNU...</div><div class="audio-waves"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>'
+: (allRecorded
+? '<div style="margin-top:1.2vw; font-size:1.3vw; color:#2dc653; font-weight:bold;">Wszystkie 12 nagrań gotowe! Wujek zaraz odpali nasz chór!</div>'
+: '<div style="margin-top:1.2vw; font-size:1.15vw; color:#cbd5e1;">Każdy nagrywa 3 fragmenty (1. zwrotka i refren) – na zmianę z Bartusiem!</div>');
 
-arena.innerHTML = '<div style="font-size:1.45vw; font-weight:bold; margin-bottom:1.2vw; color:var(--gold);">NAGRAJCIE SWOJE SŁOWA HYMNU (I ZAANGAŻUJCIE BARTUSIA!)</div>' + cardsHtml + bottomHtml;
+arena.innerHTML = '<div style="font-size:1.4vw; font-weight:bold; margin-bottom:1vw; color:var(--gold);">POSTĘP NAGRANIA HYMNU: ' + totalDone + ' / ' + totalNeeded + '</div>' + cardsHtml + bottomHtml;
 
 if (lastAnnouncedStage !== 2) {
 lastAnnouncedStage = 2;
-speakPolishText("Etap drugi! Silnik sań uruchomi tylko nasz wspólny hymn! Nagrajcie przydzielone słowa na telefonach, a przy zadaniach specjalnych złapcie Bartusia!");
+speakPolishText("Etap drugi! Nagrywamy pierwszą zwrotkę i refren hymnu! Każdy ma trzy fragmenty na zmianę z Bartusiem. Odsłuchajcie przed wysłaniem!");
 }
 
 if (status === "stage2_play" && currentState.playTick && currentState.playTick !== lastHymnPlayTick) {
