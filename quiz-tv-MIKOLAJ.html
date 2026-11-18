@@ -496,7 +496,7 @@ speechSafetyTimer = setTimeout(finishOnce, estMs);
 window.speechSynthesis.speak(utter);
 }
 
-// --- AUDIO SYNTEZATOR: DZWONECZKI, PODKŁAD HYMNU (WEB AUDIO), NAPIĘCIE 60s, SIMON SAYS, LÓD, FAJERWERKI ---
+// --- AUDIO SYNTEZATOR ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
@@ -1007,20 +1007,30 @@ padEl.classList.remove('lit');
 }, durationMs);
 }
 
-// GENERATOR SEKWENCJI SIMONA: DŁUGOŚCI 7 / 8 / 9, MAX 2 TAKIE SAME KOLORY Z RZĘDU
+// GENERATOR SEKWENCJI SIMONA: DŁUGOŚCI 7 / 8 / 9, GWARANTOWANY KAŻDY AKTYWNY GRACZ, MAX 2 Z RZĘDU
 function buildSmartSimonSequence(levelNum, activeList) {
 const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
-const res = [];
-for (let i = 0; i < targetLen; i++) {
-let candidates = pool;
-if (pool.length > 1 && i >= 2 && res[i - 1] === res[i - 2]) {
-candidates = pool.filter(p => p !== res[i - 1]);
+
+for (let attempt = 0; attempt < 50; attempt++) {
+const bag = [];
+for (let i = 0; i < Math.min(targetLen, pool.length); i++) {
+bag.push(pool[i]);
 }
-const pick = candidates[Math.floor(Math.random() * candidates.length)];
-res.push(pick);
+while (bag.length < targetLen) {
+bag.push(pool[Math.floor(Math.random() * pool.length)]);
 }
-return res;
+for (let i = bag.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+const tmp = bag[i];
+bag[i] = bag[j];
+bag[j] = tmp;
+}
+if (!hasThreeInARow(bag)) {
+return bag;
+}
+}
+return pool;
 }
 
 function hasThreeInARow(seq) {
@@ -1030,9 +1040,15 @@ if (seq[i] === seq[i - 1] && seq[i] === seq[i - 2]) return true;
 return false;
 }
 
+function isMissingActivePlayer(seq, activeList) {
+if (!activeList || activeList.length === 0) return false;
+if (seq.length < activeList.length) return false;
+return activeList.some(p => !seq.includes(p));
+}
+
 async function playSimonSequenceOnTV(seq, mistakeBy, levelNum, activeList) {
 const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
-if ((activeList || []).length > 1 && (seq.length !== targetLen || hasThreeInARow(seq))) {
+if ((activeList || []).length > 1 && (seq.length !== targetLen || hasThreeInARow(seq) || isMissingActivePlayer(seq, activeList))) {
 const fixedSeq = buildSmartSimonSequence(levelNum, activeList);
 await updateDoc(stateRef, { simonSeq: fixedSeq, seqTick: Date.now() });
 return;
@@ -1094,7 +1110,7 @@ speechTick: Date.now()
 }, 80);
 }
 
-// UNIWERSALNA SEKWENCJA NAPIĘCIA (DZIAŁA ZARÓWNO GDY KLUCZ MA OSOBA, JAK I GDY JEST UKRYTY W MIEJSCU)
+// UNIWERSALNA SEKWENCJA NAPIĘCIA
 function runFinaleSuspenseSequence() {
 const myRun = ++suspenseRunId;
 isBgMusicPlaying = false;
@@ -1141,7 +1157,7 @@ speechTick: Date.now()
 });
 }
 
-// UNIWERSALNY SLAJD FINAŁOWY (BEZ ZAKŁADANIA "W KIESZENI")
+// UNIWERSALNY SLAJD FINAŁOWY
 function runDramaticFinalSlideReveal() {
 const mySlideRun = ++finaleSlideRunId;
 const head = document.getElementById('missionHeader');
@@ -1151,7 +1167,7 @@ const stageBox = document.getElementById('mainStage');
 
 const holderRaw = (currentState && currentState.keyHolder && currentState.keyHolder.trim())
 ? currentState.keyHolder.trim()
-: "WUJEK";
+: "W KIESZENI U WUJKA";
 const holderUpper = holderRaw.toUpperCase();
 
 vicBanner.style.display = 'none';
