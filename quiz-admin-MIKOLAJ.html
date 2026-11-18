@@ -15,7 +15,7 @@ button.red { background: #d62828; color: #fff; border: 1px solid #ffd700; }
 button.green { background: #2dc653; color: #000; }
 button.gold { background: #ffd700; color: #000; }
 button.purple { background: #a855f7; color: #fff; }
-select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 8px; width: 100%; max-width: 520px; }
+select, input[type="text"] { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 8px; width: 100%; max-width: 520px; box-sizing: border-box; }
 .status-banner { background: #07140f; border-left: 5px solid #2dc653; padding: 12px; font-size: 14px; font-weight: bold; color: #2dc653; margin-top: 15px; border-radius: 6px; }
 .error-banner { background: #300; border-left: 5px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 6px; display: none; }
 .player-cb-label { background: #081c15; padding: 10px 16px; border-radius: 8px; border: 2px solid #ffd700; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
@@ -30,12 +30,14 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .code-pill { background: #ffd700; color: #000; font-weight: 900; padding: 2px 7px; border-radius: 5px; font-family: monospace; font-size: 14px; }
 .track-badge { display: inline-block; background: #081c15; border: 1px solid #444; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
 .track-badge.done { border-color: #2dc653; color: #2dc653; }
+.key-row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 15px; padding-top: 12px; border-top: 1px dashed #2d4a3e; }
+.key-row input[type="text"] { max-width: 260px; margin-bottom: 0; border: 2px solid #ffd700; background: #081c15; color: #ffd700; text-transform: uppercase; }
 </style>
 </head>
 <body>
 
 <div class="box">
-<h3>KROK 1: RESET MISJI MIKOŁAJKOWEJ I WYBÓR KTO GRA</h3>
+<h3>KROK 1: RESET MISJI MIKOŁAJKOWEJ, SKŁAD DRUŻYNY I POSIADACZ KLUCZA</h3>
 <button type="button" class="red" onclick="window.resetMission()">🗑️ ZRESETUJ CAŁĄ MISJĘ OD ZERA</button>
 <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #2d4a3e;">
 <label style="color:#ffd700; font-weight:bold; font-size:14px; display:block; margin-bottom:10px;">👥 ZAZNACZ KTO DZIŚ GRA (odznacz osobę nieobecną):</label>
@@ -46,6 +48,11 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label class="player-cb-label"><input type="checkbox" class="active-player-cb" value="Jas" checked onchange="window.updateActivePlayers()"> 🎅 JAŚ</label>
 </div>
 </div>
+<div class="key-row">
+<label for="keyHolderInput" style="color:#ffd700; font-weight:bold; font-size:14px;">🔑 KTO MA KLUCZ W FINALE:</label>
+<input type="text" id="keyHolderInput" value="WUJEK" placeholder="np. WUJEK, MAMA, BABCIA...">
+<button type="button" class="gold" onclick="window.saveKeyHolder()">💾 ZAPISZ OSOBĘ</button>
+</div>
 </div>
 
 <div class="box">
@@ -53,7 +60,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <select id="stageSel">
 <option value="1">ETAP 1: Foto-Zwiad (Po 3 zdjęcia na osobę -> Akceptacja Wujka)</option>
 <option value="2">ETAP 2: Hymn z Bartusiem (Nagrywanie 1. zwrotki i refrenu)</option>
-<option value="3">ETAP 3: Zamarznięte Sanie (Trzęsienie telefonami / lód)</option>
+<option value="3">ETAP 3: Zamarznięte Sanie (Trzęsienie telefonami / lód ~30s)</option>
 <option value="4">ETAP 4: Poszukiwacze Tajnych Kodów w Domu (12 zagadek)</option>
 <option value="5">ETAP 5: Świąteczna Rozgrzewka Umysłów (Quiz z karą 20s)</option>
 <option value="6">ETAP 6: Tajny Szyfr Kolorów Elfów (Simon Says)</option>
@@ -62,7 +69,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </select><br>
 <button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
 <button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
-<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (SEKWENCJA NAPIĘCIA + KLUCZ U WUJKA)</button>
+<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (SEKWENCJA NAPIĘCIA + FINAŁ)</button>
 <div class="status-banner" id="adminStatus">⏳ Ładowanie systemu Mikołajkowego...</div>
 <div class="error-banner" id="errorBox"></div>
 </div>
@@ -76,7 +83,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <!-- PANEL KONTROLI HYMNU Z BARTUSIEM (ETAP 2) -->
 <div class="box" id="hymnControlBox" style="display:none; border-color:#00d4ff;">
 <h3 style="color:#00d4ff;">🎤 KONTROLA WOKALNEGO NAPĘDU SAŃ (ETAP 2)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Każdy Agent nagrywa po 3 fragmenty (razem 12 nagrań). Gdy wszyscy będą gotowi, odpal hymn na TV!</p>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Każdy Agent nagrywa po 3 fragmenty (1. zwrotka + refren). Gdy wszyscy będą gotowi, odpal hymn na TV!</p>
 <div id="hymnTracksStatus" style="margin-bottom:12px;"></div>
 <button type="button" id="btnPlayHymn" class="gold" style="width:100%; padding:15px; font-size:16px;" onclick="window.playHymnOnTV()" disabled>▶️ ODTWÓRZ HYMN NA TV (Z SYNCHRONIZACJĄ)</button>
 <button type="button" class="red" style="margin-top:8px; padding:8px 12px; font-size:12px;" onclick="window.forceCompleteHymn()">⏭️ POMIŃ HYMN / ZALICZ ETAP</button>
@@ -84,15 +91,16 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 
 <!-- PANEL AWARYJNY DLA LODU (ETAP 3) -->
 <div class="box" id="iceControlBox" style="display:none; border-color:#00d4ff;">
-<h3 style="color:#00d4ff;">🧊 AWARYJNE ROZBICIE LODU (ETAP 3)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Jeśli któryś telefon nie ma żyroskopu lub akcelerometr nie działa, kliknij przycisk poniżej, aby natychmiast skruszyć lód:</p>
+<h3 style="color:#00d4ff;">🧊 POSTĘP ROZBIJANIA LODU (ETAP 3)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Wymagane energiczne trzęsienie telefonami przez ~25–30 sekund. Jeśli któryś telefon nie ma żyroskopu, możesz pomóc przyciskiem poniżej:</p>
+<div id="iceProgressAdmin" style="font-weight:900; color:#00d4ff; margin-bottom:10px;">Postęp lodu: 0 / 560</div>
 <button type="button" class="green" onclick="window.forceBreakIce()">🔨 NATYCHMIAST ROZBIJ CAŁY LÓD</button>
 </div>
 
 <!-- ŚCIĄGAWKA KODÓW (ETAP 4) -->
 <div class="box" id="cheatBox">
 <h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 4)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz w każdej chwili kliknąć <b>"ZALICZ KROK"</b> przy dziecku:</p>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz w każdej chwili kliknąć <b>"ZALICZ"</b> przy dziecku:</p>
 <table class="cheat-table">
 <thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Aktualny postęp i pomoc</th></tr></thead>
 <tbody>
@@ -118,7 +126,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, updateDoc, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, setDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const statusEl = document.getElementById('adminStatus');
 const errorEl = document.getElementById('errorBox');
@@ -152,29 +160,6 @@ Jas: [
 ]
 };
 
-export const STAGE4_RIDDLES = {
-Lila: [
-{ q: "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?", code: "482", place: "Pralka" },
-{ q: "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.", code: "915", place: "Babcia Ela" },
-{ q: "Ostatni Twój szyfr spoczywa w Twoim własnym królestwie na czterech nogach – dokładnie tam, gdzie odrabiasz lekcje, rysujesz i odkładasz zeszyty!", code: "307", place: "Biurko Lili" }
-],
-Kaja: [
-{ q: "Zwykle zieję gorącem jak wulkan i rumienię świąteczne ciasta za szklaną szybą, ale dziś jestem chłodny i czekam, aż zajrzysz do mojego wnętrza!", code: "629", place: "Piekarnik" },
-{ q: "Milczę na ścianie tam, gdzie myjesz ręce i zęby, ale potrafię bezbłędnie przedrzeźniać każdą minę, którą przede mną zrobisz!", code: "154", place: "Lustro w łazience" },
-{ q: "Ostatni kod ma przy sobie osoba, która zna Twoją mamę od kołyski, bo jest jej starszą siostrą! Podbiegnij do tej cioci po tajny szyfr!", code: "840", place: "Ciocia Ania" }
-],
-Darek: [
-{ q: "Prywatna piaszczysta wyspa w domu, którą odwiedza tylko czworonożny mruczący domownik! Nie musisz kopać w żwirku – obejrzyj jej obudowę z boku!", code: "518", place: "Kuweta" },
-{ q: "Świecę prosto w Twoje oczy w tej właśnie sekundzie i wyświetlam całą tę grę! Sprawdź ostrożnie przy mojej ramce lub pod podstawką!", code: "763", place: "Telewizor" },
-{ q: "Trzeciego kodu pilnuje młodsza siostra Twojej mamy Ani! Odszukaj tę ciocię i szepnij jej hasło: 'Mikołaj pakuje walizki'!", code: "291", place: "Ciocia Ola" }
-],
-Jas: [
-{ q: "Nawet w środku lata w moim brzuchu panuje arktyczny mróz, a gdy otwierasz moje drzwi, zapala się jasne światełko. Zajrzyj do środka!", code: "336", place: "Lodówka" },
-{ q: "Odpoczywamy parami na podłodze blisko drzwi wyjściowych i cierpliwie czekamy, aż włożysz w nas stopy przed wyjściem na dwór!", code: "804", place: "Buty w przedpokoju" },
-{ q: "Gdy nalejesz mi do brzuszka zimnej wody i klikniesz pstryczek, po chwili zaczynam głośno bulgotać i puszczać gorącą parę dzióbkiem!", code: "672", place: "Czajnik w kuchni" }
-]
-};
-
 let currentState = null;
 
 function getSelectedActivePlayers() {
@@ -182,6 +167,22 @@ const cbs = document.querySelectorAll('.active-player-cb:checked');
 const arr = Array.from(cbs).map(cb => cb.value);
 return arr.length > 0 ? arr : ["Lila", "Kaja", "Darek", "Jas"];
 }
+
+function getKeyHolderValue() {
+const inp = document.getElementById('keyHolderInput');
+const val = inp ? inp.value.trim() : "";
+return val || "WUJEK";
+}
+
+window.saveKeyHolder = async () => {
+const holder = getKeyHolderValue();
+try {
+await updateDoc(stateRef, { keyHolder: holder });
+statusEl.innerText = "🔑 Zapisano posiadacza klucza w finale: " + holder.toUpperCase();
+} catch (e) {
+showError(e.message);
+}
+};
 
 window.updateActivePlayers = async () => {
 const activeList = getSelectedActivePlayers();
@@ -195,15 +196,17 @@ window.resetMission = async () => {
 if (!confirm("Czy na pewno chcesz zresetować całą Misję Mikołajkową do początku?")) return;
 document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
 const all = ["Lila", "Kaja", "Darek", "Jas"];
+const holder = getKeyHolderValue();
 await setDoc(stateRef, {
 stage: 0,
 status: "idle",
 activePlayers: all,
+keyHolder: holder,
 stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
 photos: {},
 audioTracks: {},
 iceTotalHits: 0,
-iceTarget: 120,
+iceTarget: 560,
 simonLevel: 1,
 simonSeq: [],
 simonInput: [],
@@ -217,10 +220,25 @@ speechTick: Date.now()
 statusEl.innerText = "✅ Misja zresetowana! Wybierz Etap 1 i kliknij URUCHOM WYBRANY ETAP.";
 };
 
+// GENERATOR SEKWENCJI SIMONA (MAX 2 TAKIE SAME KOLORY Z RZĘDU - NATURALNY UKŁAD TAKŻE DLA 2 GRACZY)
+function generateSmartSimonSequence(len, activeList) {
+const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
+const arr = [];
+for (let i = 0; i < len; i++) {
+let candidates = pool;
+if (pool.length > 1 && i >= 2 && arr[i - 1] === arr[i - 2]) {
+candidates = pool.filter(p => p !== arr[i - 1]);
+}
+arr.push(candidates[Math.floor(Math.random() * candidates.length)]);
+}
+return arr;
+}
+
 window.startSelectedStage = async (forcedStageNum) => {
 const stNum = forcedStageNum || parseInt(document.getElementById('stageSel').value) || 1;
 document.getElementById('stageSel').value = String(stNum);
 const activeList = getSelectedActivePlayers();
+const holder = getKeyHolderValue();
 let resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (stNum === 1) {
@@ -228,6 +246,7 @@ await setDoc(stateRef, {
 stage: 1,
 status: "stage1_active",
 activePlayers: activeList,
+keyHolder: holder,
 stepProgress: resetProg,
 photos: {},
 speechTick: Date.now()
@@ -237,6 +256,7 @@ await updateDoc(stateRef, {
 stage: 2,
 status: "stage2_active",
 activePlayers: activeList,
+keyHolder: holder,
 audioTracks: {},
 speechTick: Date.now()
 });
@@ -245,8 +265,9 @@ await updateDoc(stateRef, {
 stage: 3,
 status: "stage3_ice",
 activePlayers: activeList,
+keyHolder: holder,
 iceTotalHits: 0,
-iceTarget: activeList.length * 30,
+iceTarget: activeList.length * 140,
 speechTick: Date.now()
 });
 } else if (stNum === 4) {
@@ -254,6 +275,7 @@ await updateDoc(stateRef, {
 stage: 4,
 status: "stage4_active",
 activePlayers: activeList,
+keyHolder: holder,
 stepProgress: resetProg,
 speechTick: Date.now()
 });
@@ -262,15 +284,17 @@ await updateDoc(stateRef, {
 stage: 5,
 status: "stage5_active",
 activePlayers: activeList,
+keyHolder: holder,
 stepProgress: resetProg,
 speechTick: Date.now()
 });
 } else if (stNum === 6) {
-const seq = generateSimonSequence(8, activeList);
+const seq = generateSmartSimonSequence(8, activeList);
 await updateDoc(stateRef, {
 stage: 6,
 status: "stage6_watch",
 activePlayers: activeList,
+keyHolder: holder,
 simonLevel: 1,
 simonSeq: seq,
 simonInput: [],
@@ -284,6 +308,7 @@ await updateDoc(stateRef, {
 stage: 7,
 status: "stage7_speaking",
 activePlayers: activeList,
+keyHolder: holder,
 tapsCount: 0,
 tapsTarget: target,
 tapsStartTime: 0,
@@ -294,20 +319,13 @@ await updateDoc(stateRef, {
 stage: 8,
 status: "stage8_active",
 activePlayers: activeList,
+keyHolder: holder,
 holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
 holdRemainingMs: 60000,
 speechTick: Date.now()
 });
 }
 };
-
-function generateSimonSequence(len, activeList) {
-let arr = [];
-for (let i = 0; i < len; i++) {
-arr.push(activeList[Math.floor(Math.random() * activeList.length)]);
-}
-return arr;
-}
 
 window.forceNextStage = async () => {
 const cur = (currentState && currentState.stage) ? currentState.stage : 0;
@@ -319,9 +337,11 @@ await window.startSelectedStage(cur + 1);
 };
 
 window.triggerGrandFinale = async () => {
+const holder = getKeyHolderValue();
 await updateDoc(stateRef, {
 stage: 9,
 status: "finale_suspense",
+keyHolder: holder,
 finaleStartTick: Date.now(),
 speechTick: Date.now()
 });
@@ -374,7 +394,7 @@ await updateDoc(stateRef, { status: "stage2_play", playTick: Date.now() });
 const btn = document.getElementById('btnPlayHymn');
 if (btn) {
 btn.disabled = true;
-btn.innerText = "🎶 ODTWARZANIE W TOKU...";
+btn.innerText = "🎶 ODTWARZANIE HYMNU W TOKU...";
 }
 };
 
@@ -383,7 +403,8 @@ await updateDoc(stateRef, { status: "stage_complete", completedStageNum: 2, spee
 };
 
 window.forceBreakIce = async () => {
-await updateDoc(stateRef, { iceTotalHits: 999, speechTick: Date.now() });
+const target = (currentState && currentState.iceTarget) ? currentState.iceTarget : 560;
+await updateDoc(stateRef, { iceTotalHits: target + 10, speechTick: Date.now() });
 };
 
 onSnapshot(stateRef, (snap) => {
@@ -393,12 +414,18 @@ const st = currentState.stage || 0;
 const prog = currentState.stepProgress || {};
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 
+const keyInp = document.getElementById('keyHolderInput');
+if (keyInp && document.activeElement !== keyInp && currentState.keyHolder) {
+keyInp.value = currentState.keyHolder;
+}
+
 ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
 const el = document.getElementById("prog-" + p);
 if (el) el.innerText = (prog[p] || 0) + "/3";
 });
 
-statusEl.innerText = "🎄 Aktualny Etap: " + st + "/8 | Status: " + currentState.status + " | Aktywni: " + activeList.join(", ");
+const curHolder = (currentState.keyHolder || "WUJEK").toUpperCase();
+statusEl.innerText = "🎄 Etap: " + st + "/8 | Status: " + currentState.status + " | Aktywni: " + activeList.join(", ") + " | 🔑 Klucz: " + curHolder;
 
 // 1. ZDJĘCIA
 const photoBox = document.getElementById('photoReviewBox');
@@ -461,7 +488,16 @@ hymnBox.style.display = 'none';
 }
 
 // 3. LÓD
-document.getElementById('iceControlBox').style.display = (st === 3) ? 'block' : 'none';
+const iceBox = document.getElementById('iceControlBox');
+if (st === 3) {
+iceBox.style.display = 'block';
+const iceProg = document.getElementById('iceProgressAdmin');
+if (iceProg) {
+iceProg.innerText = "Postęp rozbicia lodu: " + (currentState.iceTotalHits || 0) + " / " + (currentState.iceTarget || (activeList.length * 140));
+}
+} else {
+iceBox.style.display = 'none';
+}
 
 // ŚCIĄGAWKA KODÓW (ETAP 4 i 5)
 document.getElementById('cheatBox').style.display = (st === 4 || st === 5) ? 'block' : 'none';
