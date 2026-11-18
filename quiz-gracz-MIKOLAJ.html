@@ -219,9 +219,10 @@ let mediaRecorder = null;
 let audioChunks = [];
 let recordedBase64 = null;
 
-// Etap 3: Akcelerometr
+// Etap 3: Akcelerometr (200% trudniejszy — próg 22.0 + max 1 pkt na 150ms)
 let motionActive = false;
 let shakeScore = 0;
+let lastShakeCountAt = 0;
 let lastShakeSync = 0;
 
 window.joinMission = () => {
@@ -346,7 +347,7 @@ await updateDoc(stateRef, { audioTracks: tracks, trackUpdatedTick: Date.now() })
 fb.innerText = "";
 };
 
-// --- ETAP 3: AKCELEROMETR (LÓD) ---
+// --- ETAP 3: AKCELEROMETR (LÓD - WYMAGANE MOCNE POTRZĄSANIE PRZEZ 25-30s) ---
 window.requestMotionPermission = () => {
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
 DeviceMotionEvent.requestPermission().then(state => {
@@ -372,10 +373,11 @@ if (!motionActive || !currentState || currentState.stage !== 3 || currentState.s
 const acc = e.accelerationIncludingGravity;
 if (!acc) return;
 const mag = Math.sqrt((acc.x || 0) * (acc.x || 0) + (acc.y || 0) * (acc.y || 0) + (acc.z || 0) * (acc.z || 0));
-if (mag > 15.5) {
-shakeScore += 2;
 const now = Date.now();
-if (now - lastShakeSync > 450) {
+if (mag > 22.0 && now - lastShakeCountAt > 150) {
+lastShakeCountAt = now;
+shakeScore += 1;
+if (now - lastShakeSync > 550) {
 lastShakeSync = now;
 const add = shakeScore;
 shakeScore = 0;
@@ -394,8 +396,22 @@ window.manualIceHit = async () => {
 if (!currentState || currentState.stage !== 3 || currentState.status !== "stage3_ice") return;
 const snap = await getDoc(stateRef);
 const d = snap.data() || {};
-await updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + 2 });
+await updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + 1 });
 };
+
+// GENERATOR SEKWENCJI SIMONA (POZWALA NA MAX 2 TAKIE SAME KOLORY Z RZĘDU)
+function buildSmartSimonSequence(len, activeList) {
+const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
+const res = [];
+for (let i = 0; i < len; i++) {
+let candidates = pool;
+if (pool.length > 1 && i >= 2 && res[i - 1] === res[i - 2]) {
+candidates = pool.filter(p => p !== res[i - 1]);
+}
+res.push(candidates[Math.floor(Math.random() * candidates.length)]);
+}
+return res;
+}
 
 function renderPad() {
 const container = document.getElementById('stageContent');
@@ -454,7 +470,8 @@ return;
 }
 
 if (status === "finale_unlocked" || st === 9) {
-container.innerHTML = '<h2>🏆 SKARBIEC OTWARTY! 🏆</h2><div class="task-box" style="border-color:#2dc653; color:#ffd700; font-size:19px;">KLUCZ DO SKRZYNI Z PREZENTEM MA W KIESZENI WUJEK! ŁAPCIE GO! 🎅🔑</div>';
+const holderName = (currentState.keyHolder && currentState.keyHolder.trim()) ? currentState.keyHolder.trim().toUpperCase() : "WUJEK";
+container.innerHTML = '<h2>🏆 SKARBIEC OTWARTY! 🏆</h2><div class="task-box" style="border-color:#2dc653; color:#ffd700; font-size:19px;">KLUCZ DO SKRZYNI Z PREZENTEM MA: ' + holderName + '! ŁAPCIE! 🎅🔑</div>';
 return;
 }
 
@@ -521,9 +538,9 @@ return;
 if (st === 3) {
 const motionHtml = !motionActive
 ? '<button class="btn-main btn-green" onclick="window.requestMotionPermission()">🚀 WŁĄCZ CZUJNIK RUCHU</button>'
-: '<div class="shake-banner">📱 TRZĘŚ TELEFONEM! 🧊</div>';
-container.innerHTML = '<span class="step-badge">ETAP 3 / 8</span><h2>🧊 ROZBIJ LÓD NA SANIACH!</h2>'
-+ '<div class="task-box">Chwyć mocno telefon i trzęś nim jak najszybciej, aby skruszyć bryłę lodu na TV!</div>'
+: '<div class="shake-banner">📱 MOCNO TRZĘŚ TELEFONEM! 🧊</div>';
+container.innerHTML = '<span class="step-badge">ETAP 3 / 8</span><h2>🧊 ROZBIJ PANCERNY LÓD!</h2>'
++ '<div class="task-box">Chwyć mocno telefon i energicznie nim trzęś przez ok. 30 sekund, aby skruszyć bryłę lodu na TV!</div>'
 + motionHtml
 + '<button class="btn-main btn-blue" style="margin-top:8px;" onclick="window.manualIceHit()">🔨 UDERZ W LÓD (AWARYJNIE)</button>';
 return;
@@ -736,8 +753,7 @@ const curIdx = inp.length - 1;
 
 if (seq[curIdx] !== myName) {
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-const newSeq = [];
-for (let i = 0; i < seq.length; i++) newSeq.push(activeList[Math.floor(Math.random() * activeList.length)]);
+const newSeq = buildSmartSimonSequence(seq.length, activeList);
 await updateDoc(stateRef, {
 status: "stage6_watch",
 simonSeq: newSeq,
@@ -761,8 +777,7 @@ speechTick: Date.now()
 } else {
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const len = nextLvl === 2 ? 10 : 12;
-const newSeq = [];
-for (let i = 0; i < len; i++) newSeq.push(activeList[Math.floor(Math.random() * activeList.length)]);
+const newSeq = buildSmartSimonSequence(len, activeList);
 await updateDoc(stateRef, {
 status: "stage6_watch",
 simonLevel: nextLvl,
@@ -817,16 +832,15 @@ const resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (nextSt === 2) {
 recordedBase64 = null;
-await updateDoc(stateRef, { stage: 2, status: "stage2_mic", audioTracks: {}, speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 2, status: "stage2_active", audioTracks: {}, speechTick: Date.now() });
 } else if (nextSt === 3) {
-await updateDoc(stateRef, { stage: 3, status: "stage3_ice", iceTotalHits: 0, iceTarget: activeList.length * 30, speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 3, status: "stage3_ice", iceTotalHits: 0, iceTarget: activeList.length * 140, speechTick: Date.now() });
 } else if (nextSt === 4) {
 await updateDoc(stateRef, { stage: 4, status: "stage4_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 5) {
 await updateDoc(stateRef, { stage: 5, status: "stage5_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 6) {
-const seq = [];
-for (let i = 0; i < 8; i++) seq.push(activeList[Math.floor(Math.random() * activeList.length)]);
+const seq = buildSmartSimonSequence(8, activeList);
 await updateDoc(stateRef, { stage: 6, status: "stage6_watch", simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
 } else if (nextSt === 7) {
 await updateDoc(stateRef, { stage: 7, status: "stage7_speaking", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: 0, speechTick: Date.now() });
