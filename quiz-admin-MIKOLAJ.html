@@ -10,6 +10,7 @@ body { font-family: sans-serif; background: #0c1914; color: #fff; padding: 20px;
 h3 { margin-top: 0; color: #ffd700; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
 button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; color: #000; }
 button:active { transform: scale(0.95); }
+button:disabled { opacity: 0.35; cursor: not-allowed; filter: grayscale(1); }
 button.red { background: #d62828; color: #fff; border: 1px solid #ffd700; }
 button.green { background: #2dc653; color: #000; }
 button.gold { background: #ffd700; color: #000; }
@@ -27,6 +28,8 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .cheat-table th, .cheat-table td { border: 1px solid #2d4a3e; padding: 8px; text-align: left; }
 .cheat-table th { background: #081c15; color: #ffd700; }
 .code-pill { background: #ffd700; color: #000; font-weight: 900; padding: 2px 7px; border-radius: 5px; font-family: monospace; font-size: 14px; }
+.track-badge { display: inline-block; background: #081c15; border: 1px solid #444; padding: 6px 12px; border-radius: 6px; font-weight: bold; margin-right: 6px; margin-bottom: 6px; }
+.track-badge.done { border-color: #2dc653; color: #2dc653; }
 </style>
 </head>
 <body>
@@ -46,14 +49,16 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: STEROWANIE ETAPAMI SKARBCA MIKOŁAJA (1 - 6)</h3>
+<h3>KROK 2: STEROWANIE ETAPAMI SKARBCA MIKOŁAJA (1 - 8)</h3>
 <select id="stageSel">
 <option value="1">ETAP 1: Foto-Zwiad (Po 3 zdjęcia na osobę -> Akceptacja Wujka)</option>
-<option value="2">ETAP 2: Poszukiwacze Tajnych Kodów w Domu (12 trudnych zagadek)</option>
-<option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania | Kara 20s za błąd)</option>
-<option value="4">ETAP 4: Tajny Szyfr Kolorów Elfów (Wspólna pamięć 4 kolorów)</option>
-<option value="5">ETAP 5: Tankowanie Sań Mikołaja (20s po lektorze | 75 klików/os.)</option>
-<option value="6">ETAP 6: Skaner Wytrwałości (60s | Puszczenie palca resetuje czas z powrotem do 60s!)</option>
+<option value="2">ETAP 2: Hymn z Bartusiem (Nagrywanie 1. zwrotki i refrenu)</option>
+<option value="3">ETAP 3: Zamarznięte Sanie (Trzęsienie telefonami / lód)</option>
+<option value="4">ETAP 4: Poszukiwacze Tajnych Kodów w Domu (12 zagadek)</option>
+<option value="5">ETAP 5: Świąteczna Rozgrzewka Umysłów (Quiz z karą 20s)</option>
+<option value="6">ETAP 6: Tajny Szyfr Kolorów Elfów (Simon Says)</option>
+<option value="7">ETAP 7: Tankowanie Sań Mikołaja (20s po lektorze)</option>
+<option value="8">ETAP 8: Skaner Wytrwałości (60s skaner linii papilarnych)</option>
 </select><br>
 <button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
 <button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
@@ -62,44 +67,50 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <div class="error-banner" id="errorBox"></div>
 </div>
 
+<!-- PANEL WERYFIKACJI ZDJĘĆ (ETAP 1) -->
 <div class="box" id="photoReviewBox" style="display:none;">
 <h3>📸 WERYFIKACJA ZDJĘĆ DZIECI NA ŻYWO (ETAP 1)</h3>
 <div class="photo-grid" id="photoGrid"></div>
 </div>
 
-<div class="box">
-<h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 2)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz też w każdej chwili kliknąć <b>"ZALICZ KROK"</b> przy dziecku, jeśli zgubi karteczkę:</p>
+<!-- PANEL KONTROLI HYMNU Z BARTUSIEM (ETAP 2) -->
+<div class="box" id="hymnControlBox" style="display:none; border-color:#00d4ff;">
+<h3 style="color:#00d4ff;">🎤 KONTROLA WOKALNEGO NAPĘDU SAŃ (ETAP 2)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Każdy Agent nagrywa po 3 fragmenty (razem 12 nagrań). Gdy wszyscy będą gotowi, odpal hymn na TV!</p>
+<div id="hymnTracksStatus" style="margin-bottom:12px;"></div>
+<button type="button" id="btnPlayHymn" class="gold" style="width:100%; padding:15px; font-size:16px;" onclick="window.playHymnOnTV()" disabled>▶️ ODTWÓRZ HYMN NA TV (Z SYNCHRONIZACJĄ)</button>
+<button type="button" class="red" style="margin-top:8px; padding:8px 12px; font-size:12px;" onclick="window.forceCompleteHymn()">⏭️ POMIŃ HYMN / ZALICZ ETAP</button>
+</div>
+
+<!-- PANEL AWARYJNY DLA LODU (ETAP 3) -->
+<div class="box" id="iceControlBox" style="display:none; border-color:#00d4ff;">
+<h3 style="color:#00d4ff;">🧊 AWARYJNE ROZBICIE LODU (ETAP 3)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Jeśli któryś telefon nie ma żyroskopu lub akcelerometr nie działa, kliknij przycisk poniżej, aby natychmiast skruszyć lód:</p>
+<button type="button" class="green" onclick="window.forceBreakIce()">🔨 NATYCHMIAST ROZBIJ CAŁY LÓD</button>
+</div>
+
+<!-- ŚCIĄGAWKA KODÓW (ETAP 4) -->
+<div class="box" id="cheatBox">
+<h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 4)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz w każdej chwili kliknąć <b>"ZALICZ KROK"</b> przy dziecku:</p>
 <table class="cheat-table">
 <thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Aktualny postęp i pomoc</th></tr></thead>
 <tbody>
 <tr>
-<td><b>🦌 Lila</b></td>
-<td>Pralka <span class="code-pill">482</span></td>
-<td>Babcia Ela <span class="code-pill">915</span></td>
-<td>Biurko Lili <span class="code-pill">307</span></td>
-<td><span id="prog-Lila">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Lila')">⏭️ ZALICZ KROK</button></td>
+<td><b>🦌 Lila</b></td><td>Pralka <span class="code-pill">482</span></td><td>Babcia Ela <span class="code-pill">915</span></td><td>Biurko Lili <span class="code-pill">307</span></td>
+<td><span id="prog-Lila">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Lila')">⏭️ ZALICZ</button></td>
 </tr>
 <tr>
-<td><b>⛄ Kaja</b></td>
-<td>Piekarnik <span class="code-pill">629</span></td>
-<td>Lustro (łazienka) <span class="code-pill">154</span></td>
-<td>Ciocia Ania <span class="code-pill">840</span></td>
-<td><span id="prog-Kaja">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Kaja')">⏭️ ZALICZ KROK</button></td>
+<td><b>⛄ Kaja</b></td><td>Piekarnik <span class="code-pill">629</span></td><td>Lustro (łazienka) <span class="code-pill">154</span></td><td>Ciocia Ania <span class="code-pill">840</span></td>
+<td><span id="prog-Kaja">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Kaja')">⏭️ ZALICZ</button></td>
 </tr>
 <tr>
-<td><b>🎄 Darek</b></td>
-<td>Kuweta <span class="code-pill">518</span></td>
-<td>Telewizor <span class="code-pill">763</span></td>
-<td>Ciocia Ola <span class="code-pill">291</span></td>
-<td><span id="prog-Darek">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Darek')">⏭️ ZALICZ KROK</button></td>
+<td><b>🎄 Darek</b></td><td>Kuweta <span class="code-pill">518</span></td><td>Telewizor <span class="code-pill">763</span></td><td>Ciocia Ola <span class="code-pill">291</span></td>
+<td><span id="prog-Darek">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Darek')">⏭️ ZALICZ</button></td>
 </tr>
 <tr>
-<td><b>🎅 Jaś</b></td>
-<td>Lodówka <span class="code-pill">336</span></td>
-<td>Buty (przedpokój) <span class="code-pill">804</span></td>
-<td>Czajnik <span class="code-pill">672</span></td>
-<td><span id="prog-Jas">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Jas')">⏭️ ZALICZ KROK</button></td>
+<td><b>🎅 Jaś</b></td><td>Lodówka <span class="code-pill">336</span></td><td>Buty (przedpokój) <span class="code-pill">804</span></td><td>Czajnik <span class="code-pill">672</span></td>
+<td><span id="prog-Jas">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Jas')">⏭️ ZALICZ</button></td>
 </tr>
 </tbody>
 </table>
@@ -141,7 +152,7 @@ Jas: [
 ]
 };
 
-export const STAGE2_RIDDLES = {
+export const STAGE4_RIDDLES = {
 Lila: [
 { q: "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?", code: "482", place: "Pralka" },
 { q: "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.", code: "915", place: "Babcia Ela" },
@@ -165,7 +176,6 @@ Jas: [
 };
 
 let currentState = null;
-let adminStageTimer = null;
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
@@ -177,7 +187,7 @@ window.updateActivePlayers = async () => {
 const activeList = getSelectedActivePlayers();
 try {
 await updateDoc(stateRef, { activePlayers: activeList });
-statusEl.innerText = `👥 Zaktualizowano skład drużyny (${activeList.length}): ${activeList.join(", ")}`;
+statusEl.innerText = "👥 Zaktualizowano skład drużyny (" + activeList.length + "): " + activeList.join(", ");
 } catch (e) {}
 };
 
@@ -191,6 +201,9 @@ status: "idle",
 activePlayers: all,
 stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
 photos: {},
+audioTracks: {},
+iceTotalHits: 0,
+iceTarget: 120,
 simonLevel: 1,
 simonSeq: [],
 simonInput: [],
@@ -224,22 +237,39 @@ await updateDoc(stateRef, {
 stage: 2,
 status: "stage2_active",
 activePlayers: activeList,
-stepProgress: resetProg,
+audioTracks: {},
 speechTick: Date.now()
 });
 } else if (stNum === 3) {
 await updateDoc(stateRef, {
 stage: 3,
-status: "stage3_active",
+status: "stage3_ice",
+activePlayers: activeList,
+iceTotalHits: 0,
+iceTarget: activeList.length * 30,
+speechTick: Date.now()
+});
+} else if (stNum === 4) {
+await updateDoc(stateRef, {
+stage: 4,
+status: "stage4_active",
 activePlayers: activeList,
 stepProgress: resetProg,
 speechTick: Date.now()
 });
-} else if (stNum === 4) {
-const seq = generateSimonSequence(4, activeList);
+} else if (stNum === 5) {
 await updateDoc(stateRef, {
-stage: 4,
-status: "stage4_watch",
+stage: 5,
+status: "stage5_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+speechTick: Date.now()
+});
+} else if (stNum === 6) {
+const seq = generateSimonSequence(8, activeList);
+await updateDoc(stateRef, {
+stage: 6,
+status: "stage6_watch",
 activePlayers: activeList,
 simonLevel: 1,
 simonSeq: seq,
@@ -248,21 +278,21 @@ simonMistakeBy: "",
 speechTick: Date.now(),
 seqTick: Date.now()
 });
-} else if (stNum === 5) {
+} else if (stNum === 7) {
 const target = activeList.length * 75;
 await updateDoc(stateRef, {
-stage: 5,
-status: "stage5_active",
+stage: 7,
+status: "stage7_speaking",
 activePlayers: activeList,
 tapsCount: 0,
 tapsTarget: target,
-tapsStartTime: Date.now(),
+tapsStartTime: 0,
 speechTick: Date.now()
 });
-} else if (stNum === 6) {
+} else if (stNum === 8) {
 await updateDoc(stateRef, {
-stage: 6,
-status: "stage6_active",
+stage: 8,
+status: "stage8_active",
 activePlayers: activeList,
 holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
 holdRemainingMs: 60000,
@@ -281,7 +311,7 @@ return arr;
 
 window.forceNextStage = async () => {
 const cur = (currentState && currentState.stage) ? currentState.stage : 0;
-if (cur >= 6) {
+if (cur >= 8) {
 await window.triggerGrandFinale();
 } else {
 await window.startSelectedStage(cur + 1);
@@ -290,7 +320,7 @@ await window.startSelectedStage(cur + 1);
 
 window.triggerGrandFinale = async () => {
 await updateDoc(stateRef, {
-stage: 7,
+stage: 9,
 status: "finale_suspense",
 finaleStartTick: Date.now(),
 speechTick: Date.now()
@@ -338,45 +368,103 @@ speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
 });
 };
 
+window.playHymnOnTV = async () => {
+if (!currentState || currentState.stage !== 2) return;
+await updateDoc(stateRef, { status: "stage2_play", playTick: Date.now() });
+const btn = document.getElementById('btnPlayHymn');
+if (btn) {
+btn.disabled = true;
+btn.innerText = "🎶 ODTWARZANIE W TOKU...";
+}
+};
+
+window.forceCompleteHymn = async () => {
+await updateDoc(stateRef, { status: "stage_complete", completedStageNum: 2, speechTick: Date.now() });
+};
+
+window.forceBreakIce = async () => {
+await updateDoc(stateRef, { iceTotalHits: 999, speechTick: Date.now() });
+};
+
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
 currentState = snap.data();
 const st = currentState.stage || 0;
 const prog = currentState.stepProgress || {};
+const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
+
 ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
-const el = document.getElementById(`prog-${p}`);
-if (el) el.innerText = `${prog[p] || 0}/3`;
+const el = document.getElementById("prog-" + p);
+if (el) el.innerText = (prog[p] || 0) + "/3";
 });
 
-statusEl.innerText = `🎄 Aktualny Etap: ${st}/6 | Status: ${currentState.status} | Aktywni: ${(currentState.activePlayers || []).join(", ")}`;
+statusEl.innerText = "🎄 Aktualny Etap: " + st + "/8 | Status: " + currentState.status + " | Aktywni: " + activeList.join(", ");
 
-// Podgląd zdjęć w Etapie 1
+// 1. ZDJĘCIA
 const photoBox = document.getElementById('photoReviewBox');
 const photoGrid = document.getElementById('photoGrid');
 if (st === 1) {
 photoBox.style.display = 'block';
 photoGrid.innerHTML = "";
 const photos = currentState.photos || {};
-(currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"]).forEach(p => {
+activeList.forEach(p => {
 const pData = photos[p] || {};
 const stepIdx = prog[p] || 0;
 const taskDesc = stepIdx < 3 ? STAGE1_PHOTOS[p][stepIdx] : "Wszystkie 3 zdjęcia zaliczone!";
 const card = document.createElement('div');
 card.className = "photo-card" + (pData.status === "pending" ? " pending" : "");
-card.innerHTML = `
-<div style="font-weight:900; color:#ffd700;">${p.toUpperCase()} (${stepIdx}/3)</div>
-<div style="font-size:11px; color:#cbd5e1; min-height:32px; margin:4px 0;">${taskDesc}</div>
-${pData.img ? `<img src="${pData.img}">` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>`}
-${pData.status === "pending" ? `
-<button class="green" style="width:100%; padding:8px; margin:4px 0;" onclick="window.approvePhoto('${p}')">✅ AKCEPTUJ</button>
-<button class="red" style="width:100%; padding:8px; margin:0;" onclick="window.rejectPhoto('${p}')">❌ ODRZUĆ</button>
-` : `<div style="font-size:12px; color:#2dc653; font-weight:bold; margin-top:6px;">${stepIdx >= 3 ? "✔️ UKOŃCZONO (3/3)" : "Czeka na nowe zdjęcie..."}</div>`}
-`;
+card.innerHTML = '<div style="font-weight:900; color:#ffd700;">' + p.toUpperCase() + ' (' + stepIdx + '/3)</div>'
++ '<div style="font-size:11px; color:#cbd5e1; min-height:32px; margin:4px 0;">' + taskDesc + '</div>'
++ (pData.img ? '<img src="' + pData.img + '">' : '<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>')
++ (pData.status === "pending"
+? '<button class="green" style="width:100%; padding:8px; margin:4px 0;" onclick="window.approvePhoto(\'' + p + '\')">✅ AKCEPTUJ</button><button class="red" style="width:100%; padding:8px; margin:0;" onclick="window.rejectPhoto(\'' + p + '\')">❌ ODRZUĆ</button>'
+: '<div style="font-size:12px; color:#2dc653; font-weight:bold; margin-top:6px;">' + (stepIdx >= 3 ? "✔️ UKOŃCZONO" : "Czeka na nowe...") + '</div>');
 photoGrid.appendChild(card);
 });
 } else {
 photoBox.style.display = 'none';
 }
+
+// 2. HYMN
+const hymnBox = document.getElementById('hymnControlBox');
+if (st === 2) {
+hymnBox.style.display = 'block';
+const tracks = currentState.audioTracks || {};
+const statusDiv = document.getElementById('hymnTracksStatus');
+let statusHtml = "";
+activeList.forEach(p => {
+const c1 = tracks[p + "_1"] ? "✅" : "⏳";
+const c2 = tracks[p + "_2"] ? "✅" : "⏳";
+const c3 = tracks[p + "_3"] ? "✅" : "⏳";
+statusHtml += '<span class="track-badge ' + (c1==="✅" && c2==="✅" && c3==="✅" ? 'done' : '') + '">' + p.toUpperCase() + ': ' + c1 + ' ' + c2 + ' ' + c3 + '</span>';
+});
+statusDiv.innerHTML = statusHtml;
+
+const btn = document.getElementById('btnPlayHymn');
+const totalNeeded = activeList.length * 3;
+let totalRecorded = 0;
+activeList.forEach(p => {
+if (tracks[p + "_1"]) totalRecorded++;
+if (tracks[p + "_2"]) totalRecorded++;
+if (tracks[p + "_3"]) totalRecorded++;
+});
+
+if (currentState.status === "stage2_play") {
+btn.disabled = true;
+btn.innerText = "🎶 ODTWARZANIE HYMNU W TOKU...";
+} else {
+btn.disabled = totalRecorded < totalNeeded;
+btn.innerText = "▶️ ODTWÓRZ HYMN NA TV (" + totalRecorded + " / " + totalNeeded + " NAGRAŃ)";
+}
+} else {
+hymnBox.style.display = 'none';
+}
+
+// 3. LÓD
+document.getElementById('iceControlBox').style.display = (st === 3) ? 'block' : 'none';
+
+// ŚCIĄGAWKA KODÓW (ETAP 4 i 5)
+document.getElementById('cheatBox').style.display = (st === 4 || st === 5) ? 'block' : 'none';
 });
 </script>
 </body>
