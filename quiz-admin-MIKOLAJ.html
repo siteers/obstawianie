@@ -10,12 +10,11 @@ body { font-family: sans-serif; background: #0c1914; color: #fff; padding: 20px;
 h3 { margin-top: 0; color: #ffd700; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
 button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; color: #000; }
 button:active { transform: scale(0.95); }
-button:disabled { opacity: 0.3; cursor: not-allowed; transform: none; filter: grayscale(1); }
 button.red { background: #d62828; color: #fff; border: 1px solid #ffd700; }
 button.green { background: #2dc653; color: #000; }
 button.gold { background: #ffd700; color: #000; }
 button.purple { background: #a855f7; color: #fff; }
-select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 8px; width: 100%; max-width: 600px; }
+select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px; background: #fff; color: #000; font-weight: bold; margin-bottom: 8px; width: 100%; max-width: 520px; }
 .status-banner { background: #07140f; border-left: 5px solid #2dc653; padding: 12px; font-size: 14px; font-weight: bold; color: #2dc653; margin-top: 15px; border-radius: 6px; }
 .error-banner { background: #300; border-left: 5px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 6px; display: none; }
 .player-cb-label { background: #081c15; padding: 10px 16px; border-radius: 8px; border: 2px solid #ffd700; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
@@ -28,8 +27,6 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 .cheat-table th, .cheat-table td { border: 1px solid #2d4a3e; padding: 8px; text-align: left; }
 .cheat-table th { background: #081c15; color: #ffd700; }
 .code-pill { background: #ffd700; color: #000; font-weight: 900; padding: 2px 7px; border-radius: 5px; font-family: monospace; font-size: 14px; }
-.track-status { display:inline-block; padding:5px 10px; border-radius:5px; font-weight:bold; margin-right:5px; margin-bottom:5px; background:#081c15; border:1px solid #555; }
-.track-status.done { border-color:#2dc653; color:#2dc653; }
 </style>
 </head>
 <body>
@@ -49,59 +46,60 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: STEROWANIE ETAPAMI SKARBCA MIKOŁAJA (1 - 8)</h3>
+<h3>KROK 2: STEROWANIE ETAPAMI SKARBCA MIKOŁAJA (1 - 6)</h3>
 <select id="stageSel">
-<option value="1">ETAP 1: Foto-Zwiad (Zdjęcia)</option>
-<option value="2">ETAP 2: Hymn z Bartusiem (Nagrywanie wokalu)</option>
-<option value="3">ETAP 3: Rozbijanie Lodu (Trzęsienie telefonami)</option>
-<option value="4">ETAP 4: Tajne Kody (Szukanie w domu 3-cyfrowych kodów)</option>
-<option value="5">ETAP 5: Quiz Mikołajkowy (Z blokadą 20s za błąd)</option>
-<option value="6">ETAP 6: Szyfr Kolorów Elfów (Simon Says na TV)</option>
-<option value="7">ETAP 7: Tankowanie Sań (20s szybkiego klikania po lektorze)</option>
-<option value="8">ETAP 8: Skaner Wytrwałości (60s wspólnego trzymania palca)</option>
+<option value="1">ETAP 1: Foto-Zwiad (Po 3 zdjęcia na osobę -> Akceptacja Wujka)</option>
+<option value="2">ETAP 2: Poszukiwacze Tajnych Kodów w Domu (12 trudnych zagadek)</option>
+<option value="3">ETAP 3: Świąteczna Rozgrzewka Umysłów (Po 3 pytania | Kara 20s za błąd)</option>
+<option value="4">ETAP 4: Tajny Szyfr Kolorów Elfów (Wspólna pamięć 4 kolorów)</option>
+<option value="5">ETAP 5: Tankowanie Sań Mikołaja (20s po lektorze | 75 klików/os.)</option>
+<option value="6">ETAP 6: Skaner Wytrwałości (60s | Puszczenie palca resetuje czas z powrotem do 60s!)</option>
 </select><br>
 <button type="button" class="green" onclick="window.startSelectedStage()">▶️ URUCHOM WYBRANY ETAP</button>
 <button type="button" class="gold" onclick="window.forceNextStage()">⏭️ PRZESKOCZ DO NASTĘPNEGO ETAPU</button>
-<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (SEKWENCJA NAPIĘCIA NA KONIEC)</button>
+<button type="button" class="purple" onclick="window.triggerGrandFinale()">🏆 OTWÓRZ SKARBIEC (SEKWENCJA NAPIĘCIA + KLUCZ U WUJKA)</button>
 <div class="status-banner" id="adminStatus">⏳ Ładowanie systemu Mikołajkowego...</div>
 <div class="error-banner" id="errorBox"></div>
 </div>
 
-<!-- PANEL ETAPU 1: ZDJĘCIA -->
 <div class="box" id="photoReviewBox" style="display:none;">
 <h3>📸 WERYFIKACJA ZDJĘĆ DZIECI NA ŻYWO (ETAP 1)</h3>
 <div class="photo-grid" id="photoGrid"></div>
 </div>
 
-<!-- PANEL ETAPU 2: HYMN -->
-<div class="box" id="hymnControlBox" style="display:none; border-color:#00d4ff;">
-<h3 style="color:#00d4ff;">🎤 WOKALNY NAPĘD SAŃ (ETAP 2)</h3>
-<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Dzieci nagrywają swoje słowa hymnu (z Bartusiem). Kiedy wszyscy wyślą, kliknij odtwórz!</p>
-<div id="hymnTracksStatus" style="margin-bottom:15px;"></div>
-<button type="button" id="btnPlayHymn" class="gold" style="width:100%; padding:15px; font-size:16px;" onclick="window.playHymnOnTV()" disabled>▶️ ODTWÓRZ HYMN NA TV (Z SYNCHRONIZACJĄ MUZYKI)</button>
-</div>
-
-<!-- ŚCIĄGA DLA ETAPU 4 -->
-<div class="box" id="cheatBox">
-<h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW (ETAP 4)</h3>
+<div class="box">
+<h3>📋 ŚCIĄGAWKA TAJNYCH KODÓW DO ROZŁOŻENIA W DOMU (ETAP 2)</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0;">Rozłóż poniższe 3-cyfrowe karteczki przed grą. Możesz też w każdej chwili kliknąć <b>"ZALICZ KROK"</b> przy dziecku, jeśli zgubi karteczkę:</p>
 <table class="cheat-table">
-<thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Zalicz krok zdalnie</th></tr></thead>
+<thead><tr><th>Agent</th><th>Kryjówka 1</th><th>Kryjówka 2</th><th>Kryjówka 3</th><th>Aktualny postęp i pomoc</th></tr></thead>
 <tbody>
 <tr>
-<td><b>🦌 Lila</b></td><td>Pralka <span class="code-pill">482</span></td><td>Babcia Ela <span class="code-pill">915</span></td><td>Biurko Lili <span class="code-pill">307</span></td>
-<td><span id="prog-Lila">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Lila')">⏭️ ZALICZ</button></td>
+<td><b>🦌 Lila</b></td>
+<td>Pralka <span class="code-pill">482</span></td>
+<td>Babcia Ela <span class="code-pill">915</span></td>
+<td>Biurko Lili <span class="code-pill">307</span></td>
+<td><span id="prog-Lila">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Lila')">⏭️ ZALICZ KROK</button></td>
 </tr>
 <tr>
-<td><b>⛄ Kaja</b></td><td>Piekarnik <span class="code-pill">629</span></td><td>Lustro (łazienka) <span class="code-pill">154</span></td><td>Ciocia Ania <span class="code-pill">840</span></td>
-<td><span id="prog-Kaja">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Kaja')">⏭️ ZALICZ</button></td>
+<td><b>⛄ Kaja</b></td>
+<td>Piekarnik <span class="code-pill">629</span></td>
+<td>Lustro (łazienka) <span class="code-pill">154</span></td>
+<td>Ciocia Ania <span class="code-pill">840</span></td>
+<td><span id="prog-Kaja">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Kaja')">⏭️ ZALICZ KROK</button></td>
 </tr>
 <tr>
-<td><b>🎄 Darek</b></td><td>Kuweta <span class="code-pill">518</span></td><td>Telewizor <span class="code-pill">763</span></td><td>Ciocia Ola <span class="code-pill">291</span></td>
-<td><span id="prog-Darek">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Darek')">⏭️ ZALICZ</button></td>
+<td><b>🎄 Darek</b></td>
+<td>Kuweta <span class="code-pill">518</span></td>
+<td>Telewizor <span class="code-pill">763</span></td>
+<td>Ciocia Ola <span class="code-pill">291</span></td>
+<td><span id="prog-Darek">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Darek')">⏭️ ZALICZ KROK</button></td>
 </tr>
 <tr>
-<td><b>🎅 Jaś</b></td><td>Lodówka <span class="code-pill">336</span></td><td>Buty <span class="code-pill">804</span></td><td>Czajnik <span class="code-pill">672</span></td>
-<td><span id="prog-Jas">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Jas')">⏭️ ZALICZ</button></td>
+<td><b>🎅 Jaś</b></td>
+<td>Lodówka <span class="code-pill">336</span></td>
+<td>Buty (przedpokój) <span class="code-pill">804</span></td>
+<td>Czajnik <span class="code-pill">672</span></td>
+<td><span id="prog-Jas">0/3</span> <button type="button" style="padding:5px 10px; font-size:11px;" onclick="window.skipChildStep('Jas')">⏭️ ZALICZ KROK</button></td>
 </tr>
 </tbody>
 </table>
@@ -120,11 +118,59 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 const stateRef = doc(db, "mikolajGame", "state");
 
+export const STAGE1_PHOTOS = {
+Lila: [
+"Zrób zdjęcie uśmiechniętego Bartusia!",
+"Zrób zbliżenie na swoją własną skarpetkę (świąteczny skarpetkowy potwór)!",
+"Zrób wspólne zdjęcie pozostałym Agentom, jak robią najśmieszniejsze miny!"
+],
+Kaja: [
+"Załóż okulary przeciwsłoneczne lub zimową czapkę i zrób sobie wesołe selfie!",
+"Znajdź w domu coś zielonego jak choinka lub roślina i zrób temu zdjęcie!",
+"Zrób zdjęcie swoim ulubionym butom gotowym na daleką wyprawę!"
+],
+Darek: [
+"Zrób zdjęcie rzeczy, w którą można spakować ekwipunek na wyjazd (plecak, walizka lub torba)!",
+"Znajdź w domu przedmiot pokazujący godzinę i zrób mu zdjęcie!",
+"Zrób z ukrycia zdjęcie (jak tajny detektyw!) któremuś z dorosłych w pokoju!"
+],
+Jas: [
+"Znajdź w domu coś czerwonego jak czapka Świętego Mikołaja i zrób temu zdjęcie!",
+"Zrób zdjęcie swojej ulubionej zabawce lub pluszakowi!",
+"Zrób zdjęcie kubkowi lub szklance, z której pije się ciepłą zimową herbatę!"
+]
+};
+
+export const STAGE2_RIDDLES = {
+Lila: [
+{ q: "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?", code: "482", place: "Pralka" },
+{ q: "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.", code: "915", place: "Babcia Ela" },
+{ q: "Ostatni Twój szyfr spoczywa w Twoim własnym królestwie na czterech nogach – dokładnie tam, gdzie odrabiasz lekcje, rysujesz i odkładasz zeszyty!", code: "307", place: "Biurko Lili" }
+],
+Kaja: [
+{ q: "Zwykle zieję gorącem jak wulkan i rumienię świąteczne ciasta za szklaną szybą, ale dziś jestem chłodny i czekam, aż zajrzysz do mojego wnętrza!", code: "629", place: "Piekarnik" },
+{ q: "Milczę na ścianie tam, gdzie myjesz ręce i zęby, ale potrafię bezbłędnie przedrzeźniać każdą minę, którą przede mną zrobisz!", code: "154", place: "Lustro w łazience" },
+{ q: "Ostatni kod ma przy sobie osoba, która zna Twoją mamę od kołyski, bo jest jej starszą siostrą! Podbiegnij do tej cioci po tajny szyfr!", code: "840", place: "Ciocia Ania" }
+],
+Darek: [
+{ q: "Prywatna piaszczysta wyspa w domu, którą odwiedza tylko czworonożny mruczący domownik! Nie musisz kopać w żwirku – obejrzyj jej obudowę z boku!", code: "518", place: "Kuweta" },
+{ q: "Świecę prosto w Twoje oczy w tej właśnie sekundzie i wyświetlam całą tę grę! Sprawdź ostrożnie przy mojej ramce lub pod podstawką!", code: "763", place: "Telewizor" },
+{ q: "Trzeciego kodu pilnuje młodsza siostra Twojej mamy Ani! Odszukaj tę ciocię i szepnij jej hasło: 'Mikołaj pakuje walizki'!", code: "291", place: "Ciocia Ola" }
+],
+Jas: [
+{ q: "Nawet w środku lata w moim brzuchu panuje arktyczny mróz, a gdy otwierasz moje drzwi, zapala się jasne światełko. Zajrzyj do środka!", code: "336", place: "Lodówka" },
+{ q: "Odpoczywamy parami na podłodze blisko drzwi wyjściowych i cierpliwie czekamy, aż włożysz w nas stopy przed wyjściem na dwór!", code: "804", place: "Buty w przedpokoju" },
+{ q: "Gdy nalejesz mi do brzuszka zimnej wody i klikniesz pstryczek, po chwili zaczynam głośno bulgotać i puszczać gorącą parę dzióbkiem!", code: "672", place: "Czajnik w kuchni" }
+]
+};
+
 let currentState = null;
+let adminStageTimer = null;
 
 function getSelectedActivePlayers() {
 const cbs = document.querySelectorAll('.active-player-cb:checked');
-return Array.from(cbs).map(cb => cb.value);
+const arr = Array.from(cbs).map(cb => cb.value);
+return arr.length > 0 ? arr : ["Lila", "Kaja", "Darek", "Jas"];
 }
 
 window.updateActivePlayers = async () => {
@@ -145,8 +191,6 @@ status: "idle",
 activePlayers: all,
 stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
 photos: {},
-audioTracks: {},
-iceTotalHits: 0,
 simonLevel: 1,
 simonSeq: [],
 simonInput: [],
@@ -167,34 +211,90 @@ const activeList = getSelectedActivePlayers();
 let resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (stNum === 1) {
-await setDoc(stateRef, { stage: 1, status: "stage1_active", activePlayers: activeList, stepProgress: resetProg, photos: {}, speechTick: Date.now() }, { merge: true });
+await setDoc(stateRef, {
+stage: 1,
+status: "stage1_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+photos: {},
+speechTick: Date.now()
+}, { merge: true });
 } else if (stNum === 2) {
-await updateDoc(stateRef, { stage: 2, status: "stage2_mic", activePlayers: activeList, audioTracks: {}, speechTick: Date.now() });
+await updateDoc(stateRef, {
+stage: 2,
+status: "stage2_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+speechTick: Date.now()
+});
 } else if (stNum === 3) {
-await updateDoc(stateRef, { stage: 3, status: "stage3_ice", activePlayers: activeList, iceTotalHits: 0, speechTick: Date.now() });
+await updateDoc(stateRef, {
+stage: 3,
+status: "stage3_active",
+activePlayers: activeList,
+stepProgress: resetProg,
+speechTick: Date.now()
+});
 } else if (stNum === 4) {
-await updateDoc(stateRef, { stage: 4, status: "stage4_active", activePlayers: activeList, stepProgress: resetProg, speechTick: Date.now() });
+const seq = generateSimonSequence(4, activeList);
+await updateDoc(stateRef, {
+stage: 4,
+status: "stage4_watch",
+activePlayers: activeList,
+simonLevel: 1,
+simonSeq: seq,
+simonInput: [],
+simonMistakeBy: "",
+speechTick: Date.now(),
+seqTick: Date.now()
+});
 } else if (stNum === 5) {
-await updateDoc(stateRef, { stage: 5, status: "stage5_active", activePlayers: activeList, stepProgress: resetProg, speechTick: Date.now() });
-} else if (stNum === 6) {
-const seq = []; for(let i=0; i<4; i++) seq.push(activeList[Math.floor(Math.random()*activeList.length)]);
-await updateDoc(stateRef, { stage: 6, status: "stage6_watch", activePlayers: activeList, simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
-} else if (stNum === 7) {
 const target = activeList.length * 75;
-await updateDoc(stateRef, { stage: 7, status: "stage7_speaking", activePlayers: activeList, tapsCount: 0, tapsTarget: target, tapsStartTime: Date.now(), speechTick: Date.now() });
-} else if (stNum === 8) {
-await updateDoc(stateRef, { stage: 8, status: "stage8_active", activePlayers: activeList, holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false }, holdRemainingMs: 60000, speechTick: Date.now() });
+await updateDoc(stateRef, {
+stage: 5,
+status: "stage5_active",
+activePlayers: activeList,
+tapsCount: 0,
+tapsTarget: target,
+tapsStartTime: Date.now(),
+speechTick: Date.now()
+});
+} else if (stNum === 6) {
+await updateDoc(stateRef, {
+stage: 6,
+status: "stage6_active",
+activePlayers: activeList,
+holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
+holdRemainingMs: 60000,
+speechTick: Date.now()
+});
 }
 };
 
+function generateSimonSequence(len, activeList) {
+let arr = [];
+for (let i = 0; i < len; i++) {
+arr.push(activeList[Math.floor(Math.random() * activeList.length)]);
+}
+return arr;
+}
+
 window.forceNextStage = async () => {
 const cur = (currentState && currentState.stage) ? currentState.stage : 0;
-if (cur >= 8) await window.triggerGrandFinale();
-else await window.startSelectedStage(cur + 1);
+if (cur >= 6) {
+await window.triggerGrandFinale();
+} else {
+await window.startSelectedStage(cur + 1);
+}
 };
 
 window.triggerGrandFinale = async () => {
-await updateDoc(stateRef, { stage: 9, status: "finale_suspense", finaleStartTick: Date.now(), speechTick: Date.now() });
+await updateDoc(stateRef, {
+stage: 7,
+status: "finale_suspense",
+finaleStartTick: Date.now(),
+speechTick: Date.now()
+});
 };
 
 window.approvePhoto = async (player) => {
@@ -206,7 +306,14 @@ photos[player] = { ...(photos[player] || {}), status: "approved", approvedAt: Da
 
 const activeList = currentState.activePlayers || getSelectedActivePlayers();
 const allDone = activeList.every(p => (prog[p] || 0) >= 3);
-await updateDoc(stateRef, { stepProgress: prog, photos: photos, status: allDone ? "stage_complete" : "stage1_active", completedStageNum: allDone ? 1 : 0, speechTick: allDone ? Date.now() : (currentState.speechTick || 0) });
+
+await updateDoc(stateRef, {
+stepProgress: prog,
+photos: photos,
+status: allDone ? "stage_complete" : "stage1_active",
+completedStageNum: allDone ? 1 : 0,
+speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
+});
 };
 
 window.rejectPhoto = async (player) => {
@@ -231,78 +338,45 @@ speechTick: allDone ? Date.now() : (currentState.speechTick || 0)
 });
 };
 
-window.playHymnOnTV = async () => {
-if (!currentState || currentState.stage !== 2) return;
-await updateDoc(stateRef, { status: "stage2_play", playTick: Date.now() });
-document.getElementById('btnPlayHymn').innerText = "🎶 ODTWARZANIE W TOKU...";
-document.getElementById('btnPlayHymn').disabled = true;
-};
-
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
 currentState = snap.data();
 const st = currentState.stage || 0;
 const prog = currentState.stepProgress || {};
-const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-
 ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
 const el = document.getElementById(`prog-${p}`);
 if (el) el.innerText = `${prog[p] || 0}/3`;
 });
 
-statusEl.innerText = `🎄 Aktualny Etap: ${st}/8 | Status: ${currentState.status} | Aktywni: ${activeList.join(", ")}`;
+statusEl.innerText = `🎄 Aktualny Etap: ${st}/6 | Status: ${currentState.status} | Aktywni: ${(currentState.activePlayers || []).join(", ")}`;
 
-// 1. ZDJĘCIA
+// Podgląd zdjęć w Etapie 1
 const photoBox = document.getElementById('photoReviewBox');
 const photoGrid = document.getElementById('photoGrid');
 if (st === 1) {
 photoBox.style.display = 'block';
 photoGrid.innerHTML = "";
 const photos = currentState.photos || {};
-activeList.forEach(p => {
+(currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"]).forEach(p => {
 const pData = photos[p] || {};
 const stepIdx = prog[p] || 0;
+const taskDesc = stepIdx < 3 ? STAGE1_PHOTOS[p][stepIdx] : "Wszystkie 3 zdjęcia zaliczone!";
 const card = document.createElement('div');
 card.className = "photo-card" + (pData.status === "pending" ? " pending" : "");
 card.innerHTML = `
 <div style="font-weight:900; color:#ffd700;">${p.toUpperCase()} (${stepIdx}/3)</div>
-${pData.img ? `<img src="${pData.img}">` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px; margin:6px 0;">Brak zdjęcia</div>`}
+<div style="font-size:11px; color:#cbd5e1; min-height:32px; margin:4px 0;">${taskDesc}</div>
+${pData.img ? `<img src="${pData.img}">` : `<div style="height:180px; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; color:#666; font-size:12px;">Brak zdjęcia</div>`}
 ${pData.status === "pending" ? `
 <button class="green" style="width:100%; padding:8px; margin:4px 0;" onclick="window.approvePhoto('${p}')">✅ AKCEPTUJ</button>
 <button class="red" style="width:100%; padding:8px; margin:0;" onclick="window.rejectPhoto('${p}')">❌ ODRZUĆ</button>
-` : `<div style="font-size:12px; color:#2dc653; font-weight:bold; margin-top:6px;">${stepIdx >= 3 ? "✔️ UKOŃCZONO" : "Czeka na nowe zdjęcie..."}</div>`}
+` : `<div style="font-size:12px; color:#2dc653; font-weight:bold; margin-top:6px;">${stepIdx >= 3 ? "✔️ UKOŃCZONO (3/3)" : "Czeka na nowe zdjęcie..."}</div>`}
 `;
 photoGrid.appendChild(card);
 });
 } else {
 photoBox.style.display = 'none';
 }
-
-// 2. HYMN
-const hymnBox = document.getElementById('hymnControlBox');
-if (st === 2) {
-hymnBox.style.display = 'block';
-const tracks = currentState.audioTracks || {};
-const statusDiv = document.getElementById('hymnTracksStatus');
-statusDiv.innerHTML = activeList.map(p => {
-return `<span class="track-status ${tracks[p] ? 'done' : ''}">${p.toUpperCase()}: ${tracks[p] ? '✅ NAGRANO' : '⏳ BRAK'}</span>`;
-}).join("");
-
-const btn = document.getElementById('btnPlayHymn');
-const allRecorded = activeList.length > 0 && activeList.every(p => tracks[p]);
-if (currentState.status === "stage2_play") {
-btn.disabled = true;
-btn.innerText = "🎶 ODTWARZANIE W TOKU...";
-} else {
-btn.disabled = !allRecorded;
-btn.innerText = "▶️ ODTWÓRZ HYMN NA TV (Z SYNCHRONIZACJĄ MUZYKI)";
-}
-} else {
-hymnBox.style.display = 'none';
-}
-
-// ŚCIĄGA (ETAP 4)
-document.getElementById('cheatBox').style.display = (st === 4 || st === 5) ? 'block' : 'none';
 });
 </script>
 </body>
