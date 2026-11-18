@@ -399,18 +399,34 @@ const d = snap.data() || {};
 await updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + 1 });
 };
 
-// GENERATOR SEKWENCJI SIMONA (POZWALA NA MAX 2 TAKIE SAME KOLORY Z RZĘDU)
+// GENERATOR SEKWENCJI SIMONA: GWARANTOWANY KAŻDY AKTYWNY GRACZ, MAX 2 TAKIE SAME KOLORY Z RZĘDU
 function buildSmartSimonSequence(len, activeList) {
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
-const res = [];
-for (let i = 0; i < len; i++) {
-let candidates = pool;
-if (pool.length > 1 && i >= 2 && res[i - 1] === res[i - 2]) {
-candidates = pool.filter(p => p !== res[i - 1]);
+
+for (let attempt = 0; attempt < 50; attempt++) {
+const bag = [];
+for (let i = 0; i < Math.min(len, pool.length); i++) {
+bag.push(pool[i]);
 }
-res.push(candidates[Math.floor(Math.random() * candidates.length)]);
+while (bag.length < len) {
+bag.push(pool[Math.floor(Math.random() * pool.length)]);
 }
-return res;
+for (let i = bag.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+const tmp = bag[i];
+bag[i] = bag[j];
+bag[j] = tmp;
+}
+let threeInRow = false;
+for (let i = 2; i < bag.length; i++) {
+if (bag[i] === bag[i - 1] && bag[i] === bag[i - 2]) {
+threeInRow = true;
+break;
+}
+}
+if (!threeInRow) return bag;
+}
+return pool;
 }
 
 function renderPad() {
