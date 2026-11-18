@@ -24,16 +24,19 @@ background: #040d09; color: #fff; text-align: center; font-weight: 900; box-sizi
 margin-bottom: 12px; outline: none;
 }
 .btn-main {
-width: 100%; padding: 18px; border-radius: 16px; border: 2px solid #fff;
+width: 100%; padding: 16px; border-radius: 16px; border: 2px solid #fff;
 background: linear-gradient(135deg, var(--red), #9b111e); color: #fff;
-font-size: 18px; font-weight: 900; text-transform: uppercase; cursor: pointer;
+font-size: 17px; font-weight: 900; text-transform: uppercase; cursor: pointer;
 box-shadow: 0 8px 20px rgba(214, 40, 40, 0.45); transition: 0.15s; display: inline-block; box-sizing: border-box;
+margin-bottom: 8px;
 }
 .btn-main:active { transform: scale(0.95); }
 .btn-green { background: linear-gradient(135deg, #2dc653, #15803d); color: #000; }
+.btn-blue { background: linear-gradient(135deg, #00d4ff, #0284c7); color: #000; }
+.btn-disabled { background: #334155 !important; color: #94a3b8 !important; border-color: #64748b !important; pointer-events: none; box-shadow: none !important; opacity: 0.65; }
 .task-box { background: rgba(0,0,0,0.45); border: 1px dashed var(--gold); border-radius: 14px; padding: 15px; margin: 12px 0; font-size: 16px; line-height: 1.4; color: #f1f5f9; font-weight: bold; }
+.bartus-box { background: rgba(255, 215, 0, 0.18); border: 2px solid var(--gold); border-radius: 14px; padding: 15px; margin: 12px 0; font-size: 16px; line-height: 1.4; color: #fff; font-weight: bold; box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); }
 .step-badge { display: inline-block; background: var(--gold); color: #000; font-weight: 900; padding: 4px 12px; border-radius: 20px; font-size: 12px; margin-bottom: 8px; }
-.preview-img { width: 100%; max-height: 220px; object-fit: contain; border-radius: 12px; border: 2px solid var(--gold); margin-top: 10px; display: none; }
 .opt-btn { width: 100%; padding: 15px; margin: 6px 0; border-radius: 12px; border: 2px solid var(--gold); background: #0b2419; color: #fff; font-size: 16px; font-weight: bold; cursor: pointer; }
 .opt-btn:active { background: var(--gold); color: #000; }
 .Tap-btn {
@@ -44,6 +47,15 @@ display: flex; flex-direction: column; align-items: center; justify-content: cen
 box-shadow: 0 0 35px rgba(255, 77, 77, 0.7);
 }
 .Tap-btn:active { transform: scale(0.91); filter: brightness(1.25); }
+.mic-btn {
+width: 185px; height: 185px; font-size: 20px;
+background: radial-gradient(circle, #00d4ff 0%, #0369a1 100%);
+border-color: #fff; box-shadow: 0 0 30px rgba(0, 212, 255, 0.7);
+}
+.mic-btn.recording {
+background: radial-gradient(circle, #ff4d4d 0%, #9b111e 100%);
+border-color: var(--gold); box-shadow: 0 0 45px #ff4d4d; transform: scale(1.06);
+}
 .hold-scanner {
 width: 220px; height: 220px; border-radius: 50%; border: 5px dashed var(--gold);
 background: rgba(0, 212, 255, 0.12); color: var(--gold); margin: 15px auto;
@@ -57,6 +69,16 @@ color: #fff; box-shadow: 0 0 40px #2dc653; transform: scale(1.04);
 .penalty-box {
 background: rgba(214, 40, 40, 0.25); border: 3px solid #ff4d4d; border-radius: 16px;
 padding: 22px 14px; margin: 12px 0; color: #fff; font-weight: 900;
+}
+.shake-banner {
+font-size: 21px; color: #00d4ff; font-weight: 900; margin: 14px 0;
+animation: vibrate 0.22s infinite;
+}
+@keyframes vibrate {
+0%, 100% { transform: translate(0, 0); }
+25% { transform: translate(-4px, 3px); }
+50% { transform: translate(4px, -3px); }
+75% { transform: translate(-4px, -3px); }
 }
 .feedback { color: #ff6b6b; font-weight: 900; font-size: 14px; min-height: 20px; margin-top: 6px; }
 </style>
@@ -81,6 +103,8 @@ padding: 22px 14px; margin: 12px 0; color: #fff; font-weight: 900;
 <div id="stageContent"></div>
 <div class="feedback" id="feedbackMsg"></div>
 </div>
+
+<audio id="localAudioPlayer" style="display:none;"></audio>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
@@ -113,7 +137,31 @@ Jas: [
 ]
 };
 
-const STAGE2_RIDDLES = {
+// ETAP 2: CAŁA 1. ZWROTKA + CAŁY REFREN (12 FRAZ, PO 3 NA GRACZA, BARTUŚ SOLO W "POLSKA!")
+const STAGE2_HYMN_TASKS = {
+Lila: [
+{ slot: "Lila_1", word: "JESZCZE", bartus: false, desc: "Zaśpiewaj lub powiedz wyraźnie sama:" },
+{ slot: "Lila_2", word: "POLSKA!", bartus: true, desc: "⭐ BARTUŚ SOLO ⭐<br>Przyłóż telefon do Bartusia i nagraj, jak SAM krzyczy:" },
+{ slot: "Lila_3", word: "Z ZIEMI WŁOSKIEJ", bartus: false, desc: "Teraz znów Ty sama! Zaśpiewaj refren:" }
+],
+Kaja: [
+{ slot: "Kaja_1", word: "NIE ZGINĘŁA,", bartus: true, desc: "⭐ Z BARTUSIEM ⭐<br>Zaśpiewajcie razem z Bartusiem do mikrofonu:" },
+{ slot: "Kaja_2", word: "KIEDY MY ŻYJEMY.", bartus: false, desc: "Teraz Ty sama! Zaśpiewaj wyraźnie:" },
+{ slot: "Kaja_3", word: "DO POLSKI!", bartus: true, desc: "⭐ BARTUŚ SOLO ⭐<br>Złap Bartusia i nagraj, jak SAM krzyczy:" }
+],
+Darek: [
+{ slot: "Darek_1", word: "CO NAM OBCA", bartus: false, desc: "Zaśpiewaj lub powiedz wyraźnie sam:" },
+{ slot: "Darek_2", word: "PRZEMOC WZIĘŁA,", bartus: true, desc: "⭐ Z BARTUSIEM ⭐<br>Podpowiedz Bartusiowi i nagrajcie razem:" },
+{ slot: "Darek_3", word: "ZA TWOIM PRZEWODEM", bartus: false, desc: "Teraz znów Ty sam! Zaśpiewaj refren:" }
+],
+Jas: [
+{ slot: "Jas_1", word: "SZABLĄ ODBIERZEMY!", bartus: true, desc: "⭐ Z BARTUSIEM ⭐<br>Zaśpiewajcie razem z Bartusiem do mikrofonu:" },
+{ slot: "Jas_2", word: "MARSZ, MARSZ DĄBROWSKI!", bartus: true, desc: "⭐ BARTUŚ SOLO ⭐<br>Przyłóż telefon do Bartusia i nagraj, jak krzyczy:" },
+{ slot: "Jas_3", word: "ZŁĄCZYM SIĘ Z NARODEM!", bartus: false, desc: "Wielki finał zwrotki! Zaśpiewaj sam:" }
+]
+};
+
+const STAGE4_RIDDLES = {
 Lila: [
 { q: "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?", code: "482" },
 { q: "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.", code: "915" },
@@ -136,8 +184,7 @@ Jas: [
 ]
 };
 
-// ETAP 3: ZERO WZMIANEK O CYPRZE - CZYSTO ŚWIĄTECZNO-ZIMOWE ZAGADKI!
-const STAGE3_QUIZ = {
+const STAGE5_QUIZ = {
 Lila: [
 { q: "W jakiej mroźnej krainie na północy Finlandii znajduje się oficjalna wioska Świętego Mikołaja?", o: ["W Laponii", "Na Saharze", "W Bawarii"], c: 0 },
 { q: "Ile geometrycznych ramion ma zawsze prawdziwy płatek śniegu oglądany pod lupą?", o: ["Cztery", "Sześć", "Osiem"], c: 1 },
@@ -165,14 +212,24 @@ let currentState = null;
 let lastRenderKey = "";
 let isHoldingScanner = false;
 let quizPenaltyInterval = null;
-let stage5PadTimer = null;
+let stage7PadTimer = null;
+
+// Etap 2: Mikrofon
+let mediaRecorder = null;
+let audioChunks = [];
+let recordedBase64 = null;
+
+// Etap 3: Akcelerometr
+let motionActive = false;
+let shakeScore = 0;
+let lastShakeSync = 0;
 
 window.joinMission = () => {
 myName = document.getElementById('agentSel').value;
 if (!myName) return alert("Wybierz swoje imię!");
 document.getElementById('loginView').style.display = 'none';
 document.getElementById('gameView').style.display = 'block';
-document.getElementById('topAgentHeader').innerText = `🎄 AGENT: ${myName.toUpperCase()} 🎁`;
+document.getElementById('topAgentHeader').innerText = "🎄 AGENT: " + myName.toUpperCase() + " 🎁";
 
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
@@ -186,20 +243,159 @@ const unlockAt = parseInt(localStorage.getItem('mikolaj_quiz_lock_' + myName) ||
 return Math.max(0, Math.ceil((unlockAt - Date.now()) / 1000));
 }
 
-function startStage5LocalCountdown() {
-if (stage5PadTimer) clearInterval(stage5PadTimer);
-stage5PadTimer = setInterval(() => {
-if (!currentState || currentState.stage !== 5 || currentState.status !== "stage5_active") {
-clearInterval(stage5PadTimer);
+function startStage7LocalCountdown() {
+if (stage7PadTimer) clearInterval(stage7PadTimer);
+stage7PadTimer = setInterval(() => {
+if (!currentState || currentState.stage !== 7 || currentState.status !== "stage7_active") {
+clearInterval(stage7PadTimer);
 return;
 }
-const el = document.getElementById('padStage5Sec');
+const el = document.getElementById('padStage7Sec');
 if (!el) return;
 const startT = currentState.tapsStartTime || Date.now();
 const rem = Math.max(0, (20000 - (Date.now() - startT)) / 1000);
-el.innerText = `⏱️ POZOSTAŁO CZASU: ${rem.toFixed(1)}s`;
+el.innerText = "⏱️ POZOSTAŁO CZASU: " + rem.toFixed(1) + "s";
 }, 100);
 }
+
+// --- ETAP 2: MIKROFON ---
+window.requestMicPermission = async () => {
+try {
+const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+mediaRecorder = new MediaRecorder(stream);
+mediaRecorder.ondataavailable = (e) => {
+if (e.data && e.data.size > 0) audioChunks.push(e.data);
+};
+mediaRecorder.onstop = () => {
+const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+const reader = new FileReader();
+reader.readAsDataURL(blob);
+reader.onloadend = () => {
+recordedBase64 = reader.result;
+const player = document.getElementById('localAudioPlayer');
+if (player) player.src = recordedBase64;
+lastRenderKey = "";
+renderPad();
+};
+audioChunks = [];
+};
+lastRenderKey = "";
+renderPad();
+} catch (err) {
+alert("Brak dostępu do mikrofonu! Zezwól przeglądarce na mikrofon w pasku adresu.");
+}
+};
+
+function bindMicEvents() {
+const btn = document.getElementById('micRecordBtn');
+if (!btn) return;
+const startRec = () => {
+if (mediaRecorder && mediaRecorder.state === "inactive") {
+audioChunks = [];
+mediaRecorder.start();
+btn.classList.add('recording');
+btn.innerHTML = "🎙️<br>NAGRYWAM!<br>(PUŚĆ ABY STOP)";
+}
+};
+const stopRec = () => {
+if (mediaRecorder && mediaRecorder.state === "recording") {
+mediaRecorder.stop();
+btn.classList.remove('recording');
+btn.innerHTML = "⏳<br>PRZETWARZAM...";
+}
+};
+btn.ontouchstart = (e) => { e.preventDefault(); startRec(); };
+btn.ontouchend = (e) => { e.preventDefault(); stopRec(); };
+btn.ontouchcancel = (e) => { e.preventDefault(); stopRec(); };
+btn.onmousedown = () => startRec();
+btn.onmouseup = () => stopRec();
+}
+
+window.playMyRecording = () => {
+const player = document.getElementById('localAudioPlayer');
+if (player && recordedBase64) {
+player.currentTime = 0;
+player.play().catch(() => {});
+}
+};
+
+window.discardMyRecording = () => {
+recordedBase64 = null;
+lastRenderKey = "";
+renderPad();
+};
+
+window.sendMyRecording = async () => {
+if (!recordedBase64 || !currentState) return;
+const fb = document.getElementById('feedbackMsg');
+fb.style.color = "#ffd700";
+fb.innerText = "⏳ Wysyłanie nagrania na TV...";
+
+const snap = await getDoc(stateRef);
+const data = snap.data() || {};
+const tracks = { ...(data.audioTracks || {}) };
+const myTasks = STAGE2_HYMN_TASKS[myName];
+let stepIdx = 0;
+if (tracks[myTasks[0].slot]) stepIdx = 1;
+if (tracks[myTasks[1].slot]) stepIdx = 2;
+if (stepIdx < 3) {
+tracks[myTasks[stepIdx].slot] = recordedBase64;
+}
+recordedBase64 = null;
+await updateDoc(stateRef, { audioTracks: tracks, trackUpdatedTick: Date.now() });
+fb.innerText = "";
+};
+
+// --- ETAP 3: AKCELEROMETR (LÓD) ---
+window.requestMotionPermission = () => {
+if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
+DeviceMotionEvent.requestPermission().then(state => {
+if (state === 'granted') {
+window.addEventListener('devicemotion', handleMotion);
+motionActive = true;
+lastRenderKey = "";
+renderPad();
+} else {
+alert("Zezwól na czujniki ruchu lub używaj przycisku uderzenia w lód!");
+}
+}).catch(() => {});
+} else {
+window.addEventListener('devicemotion', handleMotion);
+motionActive = true;
+lastRenderKey = "";
+renderPad();
+}
+};
+
+function handleMotion(e) {
+if (!motionActive || !currentState || currentState.stage !== 3 || currentState.status !== "stage3_ice") return;
+const acc = e.accelerationIncludingGravity;
+if (!acc) return;
+const mag = Math.sqrt((acc.x || 0) * (acc.x || 0) + (acc.y || 0) * (acc.y || 0) + (acc.z || 0) * (acc.z || 0));
+if (mag > 15.5) {
+shakeScore += 2;
+const now = Date.now();
+if (now - lastShakeSync > 450) {
+lastShakeSync = now;
+const add = shakeScore;
+shakeScore = 0;
+getDoc(stateRef).then(snap => {
+if (!snap.exists()) return;
+const d = snap.data();
+if (d.stage === 3 && d.status === "stage3_ice") {
+updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + add });
+}
+});
+}
+}
+}
+
+window.manualIceHit = async () => {
+if (!currentState || currentState.stage !== 3 || currentState.status !== "stage3_ice") return;
+const snap = await getDoc(stateRef);
+const d = snap.data() || {};
+await updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + 2 });
+};
 
 function renderPad() {
 const container = document.getElementById('stageContent');
@@ -208,7 +404,7 @@ if (!currentState) return;
 
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 if (!activeList.includes(myName)) {
-container.innerHTML = `<div class="task-box">Odznaczono Cię w panelu Admina w tej rundzie.</div>`;
+container.innerHTML = '<div class="task-box">Odznaczono Cię w panelu Admina w tej rundzie.</div>';
 return;
 }
 
@@ -217,15 +413,15 @@ const status = currentState.status || "idle";
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const myPhoto = (currentState.photos && currentState.photos[myName]) || {};
 
-if (st === 5 && status === "stage5_active") {
+if (st === 7 && status === "stage7_active") {
 const countEl = document.getElementById('liveTapCounter');
 if (countEl) {
-countEl.innerText = `${currentState.tapsCount || 0} / ${currentState.tapsTarget || 300}`;
+countEl.innerText = (currentState.tapsCount || 0) + " / " + (currentState.tapsTarget || 300);
 return;
 }
 }
 
-if (st === 6 && status === "stage6_active") {
+if (st === 8 && status === "stage8_active") {
 const secEl = document.getElementById('padHoldSec');
 if (secEl) {
 secEl.innerText = ((currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) / 1000).toFixed(1) + "s";
@@ -233,90 +429,131 @@ return;
 }
 }
 
-const lockRem = st === 3 ? getQuizLockRemainingSec() : 0;
-const renderKey = `${st}_${status}_${myStep}_${myPhoto.status || ""}_${currentState.simonLevel || 0}_${lockRem > 0 ? "locked" : "open"}`;
+const tracks = currentState.audioTracks || {};
+const myTasks = STAGE2_HYMN_TASKS[myName];
+let hymnDoneCount = 0;
+myTasks.forEach(t => { if (tracks[t.slot]) hymnDoneCount++; });
+
+const hasMic = mediaRecorder !== null;
+const hasRec = recordedBase64 !== null;
+const lockRem = st === 5 ? getQuizLockRemainingSec() : 0;
+const renderKey = st + "_" + status + "_" + myStep + "_" + (myPhoto.status || "") + "_" + (currentState.simonLevel || 0) + "_" + (lockRem > 0 ? "locked" : "open") + "_" + hasMic + "_" + hasRec + "_" + hymnDoneCount + "_" + motionActive;
+
 if (renderKey === lastRenderKey) return;
 lastRenderKey = renderKey;
 fb.innerText = "";
 
 if (status === "idle" || st === 0) {
-container.innerHTML = `<h2>GOTOWY DO MISJI!</h2><div class="task-box">Patrz na ekran telewizora. Zaraz Wujek uruchomi pierwszy etap!</div>`;
+container.innerHTML = '<h2>GOTOWY DO MISJI!</h2><div class="task-box">Patrz na ekran telewizora. Zaraz Wujek uruchomi pierwszy etap!</div>';
 return;
 }
 
 if (status === "finale_suspense") {
-container.innerHTML = `<h2>🔓 ZAMKI PUSZCZAJĄ...</h2><div class="task-box" style="border-color:var(--gold); color:var(--gold); font-size:18px;">PATRZ UWAŻNIE NA TELEWIZOR! Pancerne rygle Skarbca właśnie się otwierają...</div>`;
+container.innerHTML = '<h2>🔓 ZAMKI PUSZCZAJĄ...</h2><div class="task-box" style="border-color:var(--gold); color:var(--gold); font-size:18px;">PATRZ UWAŻNIE NA TELEWIZOR! Pancerne rygle Skarbca właśnie się otwierają...</div>';
 return;
 }
 
-if (status === "finale_unlocked" || st === 7) {
-container.innerHTML = `<h2>🏆 SKARBIEC OTWARTY! 🏆</h2><div class="task-box" style="border-color:#2dc653; color:#ffd700; font-size:19px;">KLUCZ DO SKRZYNI Z PREZENTEM MA W KIESZENI WUJEK! ŁAPCIE GO! 🎅🔑</div>`;
+if (status === "finale_unlocked" || st === 9) {
+container.innerHTML = '<h2>🏆 SKARBIEC OTWARTY! 🏆</h2><div class="task-box" style="border-color:#2dc653; color:#ffd700; font-size:19px;">KLUCZ DO SKRZYNI Z PREZENTEM MA W KIESZENI WUJEK! ŁAPCIE GO! 🎅🔑</div>';
 return;
 }
 
 if (status === "stage_complete") {
-container.innerHTML = `<h2>✅ ETAP ${currentState.completedStageNum} UKOŃCZONY!</h2><div class="task-box" style="border-color:#2dc653;">Brawo Drużyno! Rygiel skarbca puścił! Patrzcie na TV i kliknijcie gotowość na kolejny etap!</div>
-<button class="btn-main btn-green" onclick="window.triggerNextStageFromPad()">🚀 URUCHOM KOLEJNY ETAP!</button>`;
+container.innerHTML = '<h2>✅ ETAP ' + currentState.completedStageNum + ' UKOŃCZONY!</h2><div class="task-box" style="border-color:#2dc653;">Brawo Drużyno! Rygiel skarbca puścił! Patrzcie na TV i kliknijcie gotowość na kolejny etap!</div>'
++ '<button class="btn-main btn-green" onclick="window.triggerNextStageFromPad()">🚀 URUCHOM KOLEJNY ETAP!</button>';
 return;
 }
 
 // ETAP 1: FOTO-ZWIAD
 if (st === 1) {
 if (myStep >= 3) {
-container.innerHTML = `<h2>📸 ZDJĘCIA ZALICZONE (3/3)!</h2><div class="task-box">Wszystkie Twoje 3 zdjęcia zostały zaakceptowane! Pomóż reszcie drużyny!</div>`;
+container.innerHTML = '<h2>📸 ZDJĘCIA ZALICZONE (3/3)!</h2><div class="task-box">Wszystkie Twoje 3 zdjęcia zostały zaakceptowane! Pomóż reszcie drużyny!</div>';
 return;
 }
 const taskText = STAGE1_PHOTOS[myName][myStep];
 if (myPhoto.status === "pending") {
-container.innerHTML = `<span class="step-badge">ZDJĘCIE ${myStep + 1} / 3</span><h2>⏳ WERYFIKACJA...</h2>
-<div class="task-box">Twoje zdjęcie wyświetla się teraz na telewizorze! Czekamy aż Wujek je zatwierdzi...</div>`;
+container.innerHTML = '<span class="step-badge">ZDJĘCIE ' + (myStep + 1) + ' / 3</span><h2>⏳ WERYFIKACJA...</h2>'
++ '<div class="task-box">Twoje zdjęcie wyświetla się teraz na telewizorze! Czekamy aż Wujek je zatwierdzi...</div>';
 return;
 }
-container.innerHTML = `
-<span class="step-badge">FOTO-ZADANIE ${myStep + 1} / 3</span>
-<h2>📸 ZRÓB ZDJĘCIE!</h2>
-<div class="task-box">${taskText}</div>
-${myPhoto.status === "rejected" ? `<div style="color:#ff4d4d; font-weight:bold; margin-bottom:8px;">❌ Wujek poprosił o wyraźniejsze zdjęcie! Spróbuj jeszcze raz!</div>` : ""}
-<label class="btn-main btn-green" style="cursor:pointer;">
-📷 OTWÓRZ APARAT / ZRÓB ZDJĘCIE
-<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="window.handlePhotoUpload(event)">
-</label>
-`;
+const rejHtml = myPhoto.status === "rejected"
+? '<div style="color:#ff4d4d; font-weight:bold; margin-bottom:8px;">❌ Wujek poprosił o wyraźniejsze zdjęcie! Spróbuj jeszcze raz!</div>'
+: '';
+container.innerHTML = '<span class="step-badge">FOTO-ZADANIE ' + (myStep + 1) + ' / 3</span>'
++ '<h2>📸 ZRÓB ZDJĘCIE!</h2>'
++ '<div class="task-box">' + taskText + '</div>'
++ rejHtml
++ '<label class="btn-main btn-green" style="cursor:pointer;">📷 OTWÓRZ APARAT / ZRÓB ZDJĘCIE<input type="file" accept="image/*" capture="environment" style="display:none;" onchange="window.handlePhotoUpload(event)"></label>';
 return;
 }
 
-// ETAP 2: POSZUKIWACZE TAJNYCH KODÓW
+// ETAP 2: HYMN (1. ZWROTKA + REFREN, 3 FRAZY NA OSOBĘ, BARTUŚ SOLO W "POLSKA!")
 if (st === 2) {
-if (myStep >= 3) {
-container.innerHTML = `<h2>🔐 KODY ZNALEZIONE (3/3)!</h2><div class="task-box">Brawo! Znalazłeś wszystkie 3 tajne karteczki! Pomóż teraz pozostałym!</div>`;
+if (hymnDoneCount >= 3) {
+container.innerHTML = '<span class="step-badge">ETAP 2: HYMN (3/3)</span><h2>✅ WSZYSTKIE 3 NAGRANIA GOTOWE!</h2><div class="task-box" style="border-color:#2dc653;">Super! Twoje słowa i nagranie z Bartusiem są już na TV! Czekamy na resztę drużyny!</div>';
 return;
 }
-const riddleObj = STAGE2_RIDDLES[myName][myStep];
-container.innerHTML = `
-<span class="step-badge">KRYJÓWKA ${myStep + 1} / 3</span>
-<h2>🔎 ZNAJDŹ KOD W DOMU</h2>
-<div class="task-box">${riddleObj.q}</div>
-<input type="number" id="codeInput" placeholder="Wpisz 3-cyfrowy kod..." inputmode="numeric">
-<button class="btn-main btn-green" onclick="window.submitRiddleCode()">🔓 SPRAWDŹ KOD</button>
-`;
+const curTask = myTasks[hymnDoneCount];
+const boxClass = curTask.bartus ? "bartus-box" : "task-box";
+const taskHtml = curTask.desc + '<br><span style="font-size:25px; color:var(--gold);">"' + curTask.word + '"</span>';
+
+if (!hasMic) {
+container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1) + ' / 3</span><h2>🎤 WOKALNY NAPĘD SAŃ</h2>'
++ '<div class="' + boxClass + '">' + taskHtml + '</div>'
++ '<button class="btn-main btn-green" onclick="window.requestMicPermission()">1. ZEZWÓL NA MIKROFON</button>';
+} else if (!hasRec) {
+container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1) + ' / 3</span><h2>🎙️ NAGRAJ FRAZĘ!</h2>'
++ '<div class="' + boxClass + '">' + taskHtml + '</div>'
++ '<div style="font-size:13px; color:#cbd5e1;">Przytrzymaj niebieski przycisk podczas śpiewania, puść gdy skończysz:</div>'
++ '<div class="Tap-btn mic-btn" id="micRecordBtn">🎙️<br>TRZYMAJ<br>I NAGRAJ</div>';
+setTimeout(bindMicEvents, 100);
+} else {
+container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1) + ' / 3</span><h2>🎧 SPRAWDŹ NAGRANIE</h2>'
++ '<div class="task-box">Odsłuchaj czy dobrze słychać: <b style="color:var(--gold);">"' + curTask.word + '"</b></div>'
++ '<button class="btn-main btn-blue" onclick="window.playMyRecording()">▶️ ODSŁUCHAJ</button>'
++ '<button class="btn-main btn-green" onclick="window.sendMyRecording()">✅ ZATWIERDŹ I WYŚLIJ</button>'
++ '<button class="btn-main" style="background:#334155;" onclick="window.discardMyRecording()">🔄 NAGRAJ PONOWNIE</button>';
+}
 return;
 }
 
-// ETAP 3: PO 3 PYTANIA ŚWIĄTECZNO-ZIMOWE Z BLOKADĄ 20 SEKUND ZA BŁĄD!
+// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONEM)
 if (st === 3) {
+const motionHtml = !motionActive
+? '<button class="btn-main btn-green" onclick="window.requestMotionPermission()">🚀 WŁĄCZ CZUJNIK RUCHU</button>'
+: '<div class="shake-banner">📱 TRZĘŚ TELEFONEM! 🧊</div>';
+container.innerHTML = '<span class="step-badge">ETAP 3 / 8</span><h2>🧊 ROZBIJ LÓD NA SANIACH!</h2>'
++ '<div class="task-box">Chwyć mocno telefon i trzęś nim jak najszybciej, aby skruszyć bryłę lodu na TV!</div>'
++ motionHtml
++ '<button class="btn-main btn-blue" style="margin-top:8px;" onclick="window.manualIceHit()">🔨 UDERZ W LÓD (AWARYJNIE)</button>';
+return;
+}
+
+// ETAP 4: POSZUKIWACZE TAJNYCH KODÓW
+if (st === 4) {
 if (myStep >= 3) {
-container.innerHTML = `<h2>🧠 PYTANIA ROZWIĄZANE (3/3)!</h2><div class="task-box">Świetna robota! Czekamy aż reszta drużyny odpowie na swoje pytania!</div>`;
+container.innerHTML = '<h2>🔐 KODY ZNALEZIONE (3/3)!</h2><div class="task-box">Brawo! Znalazłeś wszystkie 3 tajne karteczki! Pomóż teraz pozostałym!</div>';
+return;
+}
+const riddleObj = STAGE4_RIDDLES[myName][myStep];
+container.innerHTML = '<span class="step-badge">KRYJÓWKA ' + (myStep + 1) + ' / 3</span>'
++ '<h2>🔎 ZNAJDŹ KOD W DOMU</h2>'
++ '<div class="task-box">' + riddleObj.q + '</div>'
++ '<input type="number" id="codeInput" placeholder="Wpisz 3-cyfrowy kod..." inputmode="numeric">'
++ '<button class="btn-main btn-green" onclick="window.submitRiddleCode()">🔓 SPRAWDŹ KOD</button>';
+return;
+}
+
+// ETAP 5: PO 3 PYTANIA ŚWIĄTECZNO-ZIMOWE Z BLOKADĄ 20 SEKUND ZA BŁĄD!
+if (st === 5) {
+if (myStep >= 3) {
+container.innerHTML = '<h2>🧠 PYTANIA ROZWIĄZANE (3/3)!</h2><div class="task-box">Świetna robota! Czekamy aż reszta drużyny odpowie na swoje pytania!</div>';
 return;
 }
 if (lockRem > 0) {
-container.innerHTML = `
-<span class="step-badge">BLOKADA ZA BŁĄD!</span>
-<h2>❄️ TERMINAL ZAMROŻONY!</h2>
-<div class="penalty-box">
-Pudło! Nie można strzelać na oślep!<br><br>
-Odczekaj: <span id="lockTimerSpan" style="font-size:28px; color:var(--gold);">${lockRem}s</span>
-</div>
-`;
+container.innerHTML = '<span class="step-badge">BLOKADA ZA BŁĄD!</span>'
++ '<h2>❄️ TERMINAL ZAMROŻONY!</h2>'
++ '<div class="penalty-box">Pudło! Nie można strzelać na oślep!<br><br>Odczekaj: <span id="lockTimerSpan" style="font-size:28px; color:var(--gold);">' + lockRem + 's</span></div>';
 if (quizPenaltyInterval) clearInterval(quizPenaltyInterval);
 quizPenaltyInterval = setInterval(() => {
 const r = getQuizLockRemainingSec();
@@ -330,18 +567,20 @@ renderPad();
 }, 250);
 return;
 }
-const qObj = STAGE3_QUIZ[myName][myStep];
-container.innerHTML = `
-<span class="step-badge">PYTANIE ${myStep + 1} / 3 (BŁĄD = BLOKADA 20s)</span>
-<h2>🎄 ZAGADKA MIKOŁAJA</h2>
-<div class="task-box">${qObj.q}</div>
-${qObj.o.map((opt, idx) => `<button class="opt-btn" onclick="window.submitQuizAns(${idx})">${opt}</button>`).join("")}
-`;
+const qObj = STAGE5_QUIZ[myName][myStep];
+let optsHtml = "";
+qObj.o.forEach((opt, idx) => {
+optsHtml += '<button class="opt-btn" onclick="window.submitQuizAns(' + idx + ')">' + opt + '</button>';
+});
+container.innerHTML = '<span class="step-badge">PYTANIE ' + (myStep + 1) + ' / 3 (BŁĄD = BLOKADA 20s)</span>'
++ '<h2>🎄 ZAGADKA MIKOŁAJA</h2>'
++ '<div class="task-box">' + qObj.q + '</div>'
++ optsHtml;
 return;
 }
 
-// ETAP 4: TAJNY SZYFR KOLORÓW ELFÓW
-if (st === 4) {
+// ETAP 6: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS)
+if (st === 6) {
 const colorMap = {
 Lila: { name: "ŻÓŁTY 🔔", bg: "#f59e0b" },
 Kaja: { name: "NIEBIESKI ❄️", bg: "#00d4ff" },
@@ -349,50 +588,48 @@ Darek: { name: "ZIELONY 🎄", bg: "#2dc653" },
 Jas: { name: "CZERWONY 🎅", bg: "#d62828" }
 };
 const myCol = colorMap[myName];
-const isWatching = (status === "stage4_watch");
-container.innerHTML = `
-<span class="step-badge">POZIOM SZYFRU: ${currentState.simonLevel || 1} / 3</span>
-<h2>🎶 SZYFR KOLORÓW ELFÓW</h2>
-<div class="task-box">${isWatching ? "👀 PATRZ UWAŻNIE NA TELEWIZOR! Zapamiętaj, kiedy zapala się Twój kolor!" : "👉 WASZA KOLEJ! Naciskajcie swoje kolory w takiej samej kolejności jak na TV!"}</div>
-<button class="btn-main" style="background:${myCol.bg}; color:#000; padding:38px 15px; font-size:24px; opacity:${isWatching ? 0.35 : 1};" ${isWatching ? "disabled" : ""} onclick="window.pressSimonColor()">
-TWÓJ KOLOR:<br>${myCol.name}
-</button>
-`;
+const isWatching = (status === "stage6_watch");
+const infoTxt = isWatching
+? "👀 PATRZ UWAŻNIE NA TELEWIZOR! Zapamiętaj, kiedy zapala się Twój kolor!"
+: "👉 WASZA KOLEJ! Naciskajcie swoje kolory w takiej samej kolejności jak na TV!";
+container.innerHTML = '<span class="step-badge">POZIOM SZYFRU: ' + (currentState.simonLevel || 1) + ' / 3</span>'
++ '<h2>🎶 SZYFR KOLORÓW ELFÓW</h2>'
++ '<div class="task-box">' + infoTxt + '</div>'
++ '<button class="btn-main" style="background:' + myCol.bg + '; color:#000; padding:38px 15px; font-size:24px; opacity:' + (isWatching ? 0.35 : 1) + ';" ' + (isWatching ? "disabled" : "") + ' onclick="window.pressSimonColor()">TWÓJ KOLOR:<br>' + myCol.name + '</button>';
 return;
 }
 
-// ETAP 5: TANKOWANIE SAŃ (20 SEKUND!)
-if (st === 5) {
-if (status === "stage5_failed") {
-container.innerHTML = `
-<h2>❄️ CZAS 20s MINĄŁ!</h2>
-<div class="task-box" style="border-color:#ff4d4d;">Zabrakło odrobiny mocy! Rozgrzejcie palce i spróbujcie jeszcze raz!</div>
-<button class="btn-main btn-green" onclick="window.restartStage5()">🔥 SPRÓBUJCIE PONOWNIE (20s)!</button>
-`;
+// ETAP 7: TANKOWANIE SAŃ (ZABLOKOWANE DO KOŃCA LEKTORA!)
+if (st === 7) {
+if (status === "stage7_speaking") {
+container.innerHTML = '<span class="step-badge">SŁUCHAJ LEKTORA!</span>'
++ '<h2>🔥 ROZGRZEJ SILNIK SAŃ!</h2>'
++ '<div class="task-box" style="border-color:var(--gold); color:var(--gold);">🗣️ Lektor czyta polecenie... Przycisk odblokuje się dopiero na sygnał START!</div>'
++ '<div class="Tap-btn btn-disabled">⏳<br>CZEKAJ...</div>';
 return;
 }
-container.innerHTML = `
-<span class="step-badge">WYZWANIE 20 SEKUND!</span>
-<h2>🔥 ROZGRZEJ SILNIK SAŃ!</h2>
-<div id="padStage5Sec" style="font-size:18px; font-weight:900; color:#ff4d4d; margin-bottom:4px;">⏱️ POZOSTAŁO CZASU: 20.0s</div>
-<div style="font-size:22px; font-weight:900; color:var(--gold);" id="liveTapCounter">${currentState.tapsCount || 0} / ${currentState.tapsTarget || 300}</div>
-<div class="Tap-btn" onclick="window.sendEngineTap()">🔥<br>STUKAJ<br>SZYBKO!</div>
-`;
-startStage5LocalCountdown();
+if (status === "stage7_failed") {
+container.innerHTML = '<h2>❄️ CZAS 20s MINĄŁ!</h2>'
++ '<div class="task-box" style="border-color:#ff4d4d;">Zabrakło odrobiny mocy! Rozgrzejcie palce i spróbujcie jeszcze raz!</div>'
++ '<button class="btn-main btn-green" onclick="window.restartStage7()">🔥 SPRÓBUJCIE PONOWNIE (20s)!</button>';
+return;
+}
+container.innerHTML = '<span class="step-badge">WYZWANIE 20 SEKUND!</span>'
++ '<h2>🔥 ROZGRZEJ SILNIK SAŃ!</h2>'
++ '<div id="padStage7Sec" style="font-size:18px; font-weight:900; color:#ff4d4d; margin-bottom:4px;">⏱️ POZOSTAŁO CZASU: 20.0s</div>'
++ '<div style="font-size:22px; font-weight:900; color:var(--gold);" id="liveTapCounter">' + (currentState.tapsCount || 0) + ' / ' + (currentState.tapsTarget || 300) + '</div>'
++ '<div class="Tap-btn" onclick="window.sendEngineTap()">🔥<br>STUKAJ<br>SZYBKO!</div>';
+startStage7LocalCountdown();
 return;
 }
 
-// ETAP 6: SKANER WYTRWAŁOŚCI 60 SEKUND
-if (st === 6) {
+// ETAP 8: SKANER WYTRWAŁOŚCI 60 SEKUND
+if (st === 8) {
 const secRem = ((currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000) / 1000).toFixed(1);
-container.innerHTML = `
-<span class="step-badge">OSTATNI RYGIEL SKARBCA!</span>
-<h2>⚡ SKANER LINII PAPILARNYCH</h2>
-<div class="task-box">Wszyscy jednocześnie przytrzymajcie palec na skanerze przez 60 sekund!<br>(Pozostało: <b id="padHoldSec" style="color:var(--gold); font-size:20px;">${secRem}s</b>)</div>
-<div class="hold-scanner ${isHoldingScanner ? 'holding' : ''}" id="scannerPad">
-🖐️<br>${isHoldingScanner ? "TRZYMASZ!" : "PRZYŁÓŻ I TRZYMAJ PALEC"}
-</div>
-`;
+container.innerHTML = '<span class="step-badge">OSTATNI RYGIEL SKARBCA!</span>'
++ '<h2>⚡ SKANER LINII PAPILARNYCH</h2>'
++ '<div class="task-box">Wszyscy jednocześnie przytrzymajcie palec na skanerze przez 60 sekund!<br>(Pozostało: <b id="padHoldSec" style="color:var(--gold); font-size:20px;">' + secRem + 's</b>)</div>'
++ '<div class="hold-scanner ' + (isHoldingScanner ? 'holding' : '') + '" id="scannerPad">🖐️<br>' + (isHoldingScanner ? "TRZYMASZ!" : "PRZYŁÓŻ I TRZYMAJ PALEC") + '</div>';
 bindScannerEvents();
 }
 }
@@ -432,7 +669,7 @@ reader.readAsDataURL(file);
 window.submitRiddleCode = async () => {
 const val = (document.getElementById('codeInput').value || "").trim();
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
-const targetCode = STAGE2_RIDDLES[myName][myStep].code;
+const targetCode = STAGE4_RIDDLES[myName][myStep].code;
 const fb = document.getElementById('feedbackMsg');
 
 if (val === targetCode) {
@@ -446,8 +683,8 @@ const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const allDone = activeList.every(p => (prog[p] || 0) >= 3);
 await updateDoc(stateRef, {
 stepProgress: prog,
-status: allDone ? "stage_complete" : "stage2_active",
-completedStageNum: allDone ? 2 : 0,
+status: allDone ? "stage_complete" : "stage4_active",
+completedStageNum: allDone ? 4 : 0,
 speechTick: allDone ? Date.now() : (data.speechTick || 0),
 solveTick: Date.now()
 });
@@ -461,7 +698,7 @@ document.getElementById('codeInput').value = "";
 window.submitQuizAns = async (idx) => {
 if (getQuizLockRemainingSec() > 0) return;
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
-const qObj = STAGE3_QUIZ[myName][myStep];
+const qObj = STAGE5_QUIZ[myName][myStep];
 const fb = document.getElementById('feedbackMsg');
 
 if (idx === qObj.c) {
@@ -475,13 +712,12 @@ const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const allDone = activeList.every(p => (prog[p] || 0) >= 3);
 await updateDoc(stateRef, {
 stepProgress: prog,
-status: allDone ? "stage_complete" : "stage3_active",
-completedStageNum: allDone ? 3 : 0,
+status: allDone ? "stage_complete" : "stage5_active",
+completedStageNum: allDone ? 5 : 0,
 speechTick: allDone ? Date.now() : (data.speechTick || 0),
 solveTick: Date.now()
 });
 } else {
-// Karna blokada na 20 sekund!
 localStorage.setItem('mikolaj_quiz_lock_' + myName, String(Date.now() + 20000));
 lastRenderKey = "";
 renderPad();
@@ -489,10 +725,10 @@ renderPad();
 };
 
 window.pressSimonColor = async () => {
-if (!currentState || currentState.stage !== 4 || currentState.status !== "stage4_input") return;
+if (!currentState || currentState.stage !== 6 || currentState.status !== "stage6_input") return;
 const snap = await getDoc(stateRef);
 const data = snap.data();
-if (data.status !== "stage4_input") return;
+if (data.status !== "stage6_input") return;
 
 const seq = data.simonSeq || [];
 let inp = [...(data.simonInput || []), myName];
@@ -503,7 +739,7 @@ const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const newSeq = [];
 for (let i = 0; i < seq.length; i++) newSeq.push(activeList[Math.floor(Math.random() * activeList.length)]);
 await updateDoc(stateRef, {
-status: "stage4_watch",
+status: "stage6_watch",
 simonSeq: newSeq,
 simonInput: [],
 simonMistakeBy: myName,
@@ -519,16 +755,16 @@ await updateDoc(stateRef, {
 lastColorPressed: myName,
 colorTick: Date.now(),
 status: "stage_complete",
-completedStageNum: 4,
+completedStageNum: 6,
 speechTick: Date.now()
 });
 } else {
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-const len = nextLvl === 2 ? 5 : 6;
+const len = nextLvl === 2 ? 10 : 12;
 const newSeq = [];
 for (let i = 0; i < len; i++) newSeq.push(activeList[Math.floor(Math.random() * activeList.length)]);
 await updateDoc(stateRef, {
-status: "stage4_watch",
+status: "stage6_watch",
 simonLevel: nextLvl,
 simonSeq: newSeq,
 simonInput: [],
@@ -544,17 +780,17 @@ await updateDoc(stateRef, { simonInput: inp, lastColorPressed: myName, colorTick
 };
 
 window.sendEngineTap = async () => {
-if (!currentState || currentState.stage !== 5 || currentState.status !== "stage5_active") return;
+if (!currentState || currentState.stage !== 7 || currentState.status !== "stage7_active") return;
 const snap = await getDoc(stateRef);
 const data = snap.data();
-if (data.status !== "stage5_active") return;
+if (data.status !== "stage7_active") return;
 const nextCount = (data.tapsCount || 0) + 1;
 const target = data.tapsTarget || 300;
 if (nextCount >= target) {
 await updateDoc(stateRef, {
 tapsCount: target,
 status: "stage_complete",
-completedStageNum: 5,
+completedStageNum: 7,
 speechTick: Date.now()
 });
 } else {
@@ -562,13 +798,13 @@ await updateDoc(stateRef, { tapsCount: nextCount });
 }
 };
 
-window.restartStage5 = async () => {
+window.restartStage7 = async () => {
 const activeList = (currentState && currentState.activePlayers) || ["Lila", "Kaja", "Darek", "Jas"];
 await updateDoc(stateRef, {
-status: "stage5_active",
+status: "stage7_speaking",
 tapsCount: 0,
 tapsTarget: activeList.length * 75,
-tapsStartTime: Date.now(),
+tapsStartTime: 0,
 speechTick: Date.now()
 });
 };
@@ -580,17 +816,22 @@ const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"
 const resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (nextSt === 2) {
-await updateDoc(stateRef, { stage: 2, status: "stage2_active", stepProgress: resetProg, speechTick: Date.now() });
+recordedBase64 = null;
+await updateDoc(stateRef, { stage: 2, status: "stage2_mic", audioTracks: {}, speechTick: Date.now() });
 } else if (nextSt === 3) {
-await updateDoc(stateRef, { stage: 3, status: "stage3_active", stepProgress: resetProg, speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 3, status: "stage3_ice", iceTotalHits: 0, iceTarget: activeList.length * 30, speechTick: Date.now() });
 } else if (nextSt === 4) {
-const seq = [];
-for (let i = 0; i < 4; i++) seq.push(activeList[Math.floor(Math.random() * activeList.length)]);
-await updateDoc(stateRef, { stage: 4, status: "stage4_watch", simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 4, status: "stage4_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 5) {
-await updateDoc(stateRef, { stage: 5, status: "stage5_active", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: Date.now(), speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 5, status: "stage5_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 6) {
-await updateDoc(stateRef, { stage: 6, status: "stage6_active", holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false }, holdRemainingMs: 60000, speechTick: Date.now() });
+const seq = [];
+for (let i = 0; i < 8; i++) seq.push(activeList[Math.floor(Math.random() * activeList.length)]);
+await updateDoc(stateRef, { stage: 6, status: "stage6_watch", simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
+} else if (nextSt === 7) {
+await updateDoc(stateRef, { stage: 7, status: "stage7_speaking", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: 0, speechTick: Date.now() });
+} else if (nextSt === 8) {
+await updateDoc(stateRef, { stage: 8, status: "stage8_active", holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false }, holdRemainingMs: 60000, speechTick: Date.now() });
 }
 };
 
