@@ -316,7 +316,6 @@ const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/29
 loseSound.volume = 0.9;
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
 fanfareSound.volume = 1.0;
-const anthemAudio = new Audio("https://upload.wikimedia.org/wikipedia/commons/c/c5/Mazurek_Dabrowskiego.ogg");
 
 function getGraczQrUrl() {
 const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
@@ -497,13 +496,14 @@ speechSafetyTimer = setTimeout(finishOnce, estMs);
 window.speechSynthesis.speak(utter);
 }
 
-// --- AUDIO SYNTEZATOR: DZWONECZKI, MUZYKA NAPIĘCIA 60s, SIMON SAYS, PĘKANIE LODU I POTĘŻNE FAJERWERKI ---
+// --- AUDIO SYNTEZATOR: DZWONECZKI, PODKŁAD HYMNU (WEB AUDIO), NAPIĘCIE 60s, SIMON SAYS, LÓD, FAJERWERKI ---
 let audioCtx = null;
 let bgMasterGain = null;
 let musicInterval = null;
 let fanfareLoopInterval = null;
 let isBgMusicPlaying = false;
 let musicMutedByUser = false;
+let anthemPlaybackTimers = [];
 
 function createFestiveChimesMusic() {
 if (audioCtx) return;
@@ -538,6 +538,69 @@ bellOsc.start(now); bellOsc.stop(now + 0.25);
 }
 step++;
 }, 260);
+}
+
+// WBUDOWANY PODKŁAD MAZURKA DĄBROWSKIEGO (100% DZIAŁAJĄCY NA KAŻDYM TV I IPHONE)
+function startBuiltInAnthemBacking(totalDurationMs) {
+stopBuiltInAnthemBacking();
+if (!audioCtx) {
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+audioCtx = new AudioContext();
+}
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+
+// Nuty Mazurka Dąbrowskiego w tonacji F-dur (częstotliwości Hz + czas trwania w beatach)
+const notes = [
+// "Jesz-cze Pol-ska nie zgi-nę-ła,"
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+[523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
+// "kie-dy my ży-je-my."
+[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [466.16, 1.0],
+[466.16, 0.75], [392.00, 0.25], [523.25, 0.5], [466.16, 0.5], [440.00, 1.0],
+// "Co nam ob-ca prze-moc wzię-ła,"
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+[523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
+// "sza-blą od-bie-rze-my."
+[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0],
+[523.25, 0.75], [440.00, 0.25], [466.16, 0.5], [392.00, 0.5], [349.23, 1.0],
+// REFREN: "Marsz, marsz Dą-brow-ski,"
+[392.00, 1.0], [392.00, 1.0], [466.16, 1.5], [440.00, 0.5], [392.00, 1.0], [349.23, 1.0],
+// "z zie-mi wło-skiej do Pol-ski!"
+[440.00, 0.75], [523.25, 0.25], [698.46, 1.5], [587.33, 0.5], [523.25, 1.0], [466.16, 1.0], [440.00, 1.0],
+// "Za Two-im prze-wo-dem"
+[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0], [523.25, 1.5], [440.00, 0.5],
+// "złą-czym się z na-ro-dem!"
+[466.16, 0.75], [392.00, 0.25], [349.23, 2.0]
+];
+
+const beatMs = 460;
+let cursorMs = 200;
+
+notes.forEach(([freq, beats]) => {
+const durMs = beats * beatMs;
+const t = setTimeout(() => {
+if (!audioCtx) return;
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "triangle";
+osc.frequency.setValueAtTime(freq, now);
+g.gain.setValueAtTime(0.001, now);
+g.gain.linearRampToValueAtTime(0.14, now + 0.03);
+g.gain.exponentialRampToValueAtTime(0.001, now + (durMs / 1000) * 0.92);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + (durMs / 1000));
+}, cursorMs);
+anthemPlaybackTimers.push(t);
+cursorMs += durMs;
+});
+}
+
+function stopBuiltInAnthemBacking() {
+anthemPlaybackTimers.forEach(t => clearTimeout(t));
+anthemPlaybackTimers = [];
 }
 
 window.toggleBgMusic = function() {
@@ -635,11 +698,11 @@ const g = audioCtx.createGain();
 osc.type = "triangle";
 osc.frequency.setValueAtTime(freq, now);
 g.gain.setValueAtTime(0.32, now);
-g.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
 osc.connect(g);
 g.connect(audioCtx.destination);
 osc.start(now);
-osc.stop(now + 0.45);
+osc.stop(now + 0.50);
 }
 
 function playVaultRumbleEffect() {
@@ -749,7 +812,6 @@ speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na osiem rygli. 
 [winSound, loseSound, fanfareSound].forEach(s => {
 s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
 });
-anthemAudio.load();
 };
 
 // --- PEŁNY SILNIK WIZUALNYCH FAJERWERKÓW NA TV ---
@@ -882,7 +944,7 @@ let wasHoldingAllInStage8 = false;
 let lastHymnPlayTick = 0;
 let lastIceHits = 0;
 
-// GŁÓWNY ZEGAR ETAPU 8 (60s): Muzyka napięcia + Reset z powrotem do 60.0s, gdy ktokolwiek puści palec!
+// GŁÓWNY ZEGAR ETAPU 8 (60s)
 setInterval(async () => {
 if (!currentState) return;
 if (currentState.stage === 8 && currentState.status === "stage8_active") {
@@ -930,7 +992,7 @@ currentState = docSnap.data();
 renderTVStage();
 });
 
-function highlightSimonPad(player, durationMs = 550) {
+function highlightSimonPad(player, durationMs = 650) {
 const padEl = document.getElementById("sp-" + player);
 if (!padEl) return;
 padEl.classList.add('lit');
@@ -940,13 +1002,14 @@ padEl.classList.remove('lit');
 }, durationMs);
 }
 
-function buildHardNonRepeatingSequence(levelNum, activeList) {
+// GENERATOR SEKWENCJI SIMONA (POZWALA NA 2 TAKIE SAME KOLORY Z RZĘDU, BLOKUJE DOPIERO 3 Z RZĘDU)
+function buildSmartSimonSequence(levelNum, activeList) {
 const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
 const res = [];
 for (let i = 0; i < targetLen; i++) {
 let candidates = pool;
-if (pool.length > 1 && i > 0) {
+if (pool.length > 1 && i >= 2 && res[i - 1] === res[i - 2]) {
 candidates = pool.filter(p => p !== res[i - 1]);
 }
 const pick = candidates[Math.floor(Math.random() * candidates.length)];
@@ -955,17 +1018,17 @@ res.push(pick);
 return res;
 }
 
-function hasConsecutiveRepeats(seq) {
-for (let i = 1; i < seq.length; i++) {
-if (seq[i] === seq[i - 1]) return true;
+function hasThreeInARow(seq) {
+for (let i = 2; i < seq.length; i++) {
+if (seq[i] === seq[i - 1] && seq[i] === seq[i - 2]) return true;
 }
 return false;
 }
 
 async function playSimonSequenceOnTV(seq, mistakeBy, levelNum, activeList) {
 const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
-if ((activeList || []).length > 1 && (seq.length !== targetLen || hasConsecutiveRepeats(seq))) {
-const fixedSeq = buildHardNonRepeatingSequence(levelNum, activeList);
+if ((activeList || []).length > 1 && (seq.length !== targetLen || hasThreeInARow(seq))) {
+const fixedSeq = buildSmartSimonSequence(levelNum, activeList);
 await updateDoc(stateRef, { simonSeq: fixedSeq, seqTick: Date.now() });
 return;
 }
@@ -978,8 +1041,9 @@ const introSpeech = mistakeBy
 
 if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
 
-const stepInterval = levelNum === 1 ? 850 : (levelNum === 2 ? 820 : 750);
-const litDuration = Math.round(stepInterval * 0.68);
+// Wyraźnie wolniejsze tempo w rundzie 2 i 3
+const stepInterval = levelNum === 1 ? 950 : (levelNum === 2 ? 1150 : 1050);
+const litDuration = Math.round(stepInterval * 0.72);
 
 speakPolishText(introSpeech, () => {
 let delay = 450;
@@ -994,7 +1058,7 @@ setTimeout(async () => {
 if (msgEl) msgEl.innerText = "👉 WASZA KOLEJ! ODTWÓRZCIE SZYFR NA TELEFONACH!";
 isBgMusicPlaying = true;
 await updateDoc(stateRef, { status: "stage6_input" });
-}, delay + 350);
+}, delay + 400);
 });
 }
 
@@ -1073,13 +1137,18 @@ speechTick: Date.now()
 });
 }
 
-// DRAMATYCZNY OSTATNI SLAJD: "KLUCZ... MA... W SWOJEJ KIESZENI... WUJEK!"
+// DRAMATYCZNY OSTATNI SLAJD Z DYNAMICZNĄ OSOBĄ WPISANĄ W ADMINIE!
 function runDramaticFinalSlideReveal() {
 const mySlideRun = ++finaleSlideRunId;
 const head = document.getElementById('missionHeader');
 const arena = document.getElementById('stageArena');
 const vicBanner = document.getElementById('victory-banner');
 const stageBox = document.getElementById('mainStage');
+
+const holderRaw = (currentState && currentState.keyHolder && currentState.keyHolder.trim())
+? currentState.keyHolder.trim()
+: "WUJEK";
+const holderUpper = holderRaw.toUpperCase();
 
 vicBanner.style.display = 'none';
 stageBox.classList.remove('victory-glow');
@@ -1113,30 +1182,29 @@ head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
 const dots = document.getElementById('dotsSuspense');
 if (dots) dots.remove();
 if (box) {
-box.innerHTML += '<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">🎅🔑 WUJEK! ŁAPCIE GO! 🔑🎅</div>';
+box.innerHTML += '<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">🎅🔑 ' + holderUpper + '! ŁAPCIE! 🔑🎅</div>';
 }
+vicBanner.innerText = "🏆 SKARBIEC OTWARTY! KLUCZ MA: " + holderUpper + "! 🎅🔑";
 vicBanner.style.display = 'block';
 startFireworks();
 startVictoryFanfareLoop();
-speakPolishText("Wujek! Łapcie Wujka i odbierzcie klucz do prezentu!");
+speakPolishText(holderRaw + "! Łapcie i odbierzcie klucz do prezentu!");
 }, 2400);
 });
 });
 }
 
-// ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE CAŁEJ 1. ZWROTKI + REFRENU Z PODKŁADEM
+// ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE CAŁEJ 1. ZWROTKI + REFRENU Z PODKŁADEM WEB AUDIO
 function playSynchronizedHymn(tracks, activeList) {
 isBgMusicPlaying = false;
 speakPolishText("Wszystkie dwanaście fragmentów nagrane! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
-anthemAudio.currentTime = 0;
-anthemAudio.volume = 0.28;
-anthemAudio.play().catch(() => {});
+const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
+let maxDelay = 0;
+
+startBuiltInAnthemBacking(25000);
 
 const waves = document.querySelectorAll('.wave-bar');
 waves.forEach(w => w.classList.add('active'));
-
-const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
-let maxDelay = 0;
 
 activeSeq.forEach((item, idx) => {
 const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (600 + idx * 1950);
@@ -1154,7 +1222,7 @@ a.play().catch(() => {});
 });
 
 setTimeout(async () => {
-anthemAudio.pause();
+stopBuiltInAnthemBacking();
 isBgMusicPlaying = true;
 await updateDoc(stateRef, {
 status: "stage_complete",
@@ -1238,7 +1306,7 @@ qEl.innerText = cnt >= 3 ? "✅ Wszystkie 3 frazy nagrane!" : "🎤 Nagraj 3 fra
 imgEl.style.display = 'none';
 } else if (st === 3) {
 numEl.innerText = "LÓD";
-qEl.innerText = "🧊 Trzęś telefonem, aby skruszyć bryłę lodu!";
+qEl.innerText = "🧊 Trzęś mocno telefonem, aby skruszyć bryłę lodu!";
 imgEl.style.display = 'none';
 } else if (st === 4) {
 numEl.innerText = "KRYJÓWKA " + Math.min(3, pStep + 1) + "/3";
@@ -1336,7 +1404,7 @@ const allRecorded = totalNeeded > 0 && totalDone >= totalNeeded;
 const bottomHtml = status === "stage2_play"
 ? '<div class="hymn-karaoke-box" id="hymnKaraokeText">🎶 START HYMNU...</div><div class="audio-waves"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>'
 : (allRecorded
-? '<div style="margin-top:1.2vw; font-size:1.3vw; color:#2dc653; font-weight:bold;">Wszystkie 12 nagrań gotowe! Wujek zaraz odpali nasz chór!</div>'
+? '<div style="margin-top:1.2vw; font-size:1.3vw; color:#2dc653; font-weight:bold;">Wszystkie nagrania gotowe! Wujek zaraz odpali nasz chór!</div>'
 : '<div style="margin-top:1.2vw; font-size:1.15vw; color:#cbd5e1;">Każdy nagrywa 3 fragmenty (1. zwrotka i refren) – na zmianę z Bartusiem!</div>');
 
 arena.innerHTML = '<div style="font-size:1.4vw; font-weight:bold; margin-bottom:1vw; color:var(--gold);">POSTĘP NAGRANIA HYMNU: ' + totalDone + ' / ' + totalNeeded + '</div>' + cardsHtml + bottomHtml;
@@ -1351,19 +1419,19 @@ lastHymnPlayTick = currentState.playTick;
 playSynchronizedHymn(tracks, activeList);
 }
 }
-// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONAMI)
+// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONAMI - 200% TRUDNIEJSZY)
 else if (st === 3) {
 head.innerText = "🧊 ETAP 3: ZAMARZNIĘTE SANIE (TRZĘŚCIE TELEFONAMI!)";
 const hits = currentState.iceTotalHits || 0;
-const target = currentState.iceTarget || 120;
+const target = currentState.iceTarget || (activeList.length * 140);
 const pct = Math.min(100, Math.round((hits / target) * 100));
 const isShaking = (hits > lastIceHits);
 lastIceHits = hits;
 
 const iceOpacity = Math.max(0, (100 - pct) / 100).toFixed(2);
-arena.innerHTML = '<div style="font-size:1.35vw; font-weight:bold; margin-bottom:1vw; color:#cbd5e1;">Włączcie czujnik ruchu na telefonach i trzęście nimi z całej siły, aż lód pęknie!</div>'
+arena.innerHTML = '<div style="font-size:1.35vw; font-weight:bold; margin-bottom:1vw; color:#cbd5e1;">Lód jest pancerny! Włączcie czujniki ruchu i trzęście telefonami z całej siły przez 30 sekund!</div>'
 + '<div class="ice-block ' + (isShaking ? 'suspense-shake' : '') + '">🛷<div style="position:absolute; inset:0; background:rgba(180,240,255,' + iceOpacity + '); pointer-events:none;"></div></div>'
-+ '<div style="margin-top:1vw; font-size:2.2vw; font-weight:900; color:#00d4ff;">SKRUSZONY LÓD: ' + pct + '%</div>';
++ '<div style="margin-top:1vw; font-size:2.2vw; font-weight:900; color:#00d4ff;">SKRUSZONY LÓD: ' + pct + '% (' + hits + '/' + target + ')</div>';
 
 if (isShaking) {
 playIceCrackSound();
@@ -1375,7 +1443,7 @@ updateDoc(stateRef, { status: "stage_complete", completedStageNum: 3, speechTick
 }
 if (lastAnnouncedStage !== 3) {
 lastAnnouncedStage = 3;
-speakPolishText("Etap trzeci! Sanie zamarzły w wielkiej bryle lodu! Aktywujcie czujniki ruchu w telefonach i trzęście nimi mocno, aby rozbić lód!");
+speakPolishText("Etap trzeci! Sanie zamarzły w bardzo grubej bryle lodu! Aktywujcie czujniki ruchu w telefonach i trzęście nimi mocno przez dłuższą chwilę!");
 }
 }
 // ETAP 4: POSZUKIWACZE TAJNYCH KODÓW W DOMU
@@ -1400,7 +1468,7 @@ lastAnnouncedStage = 5;
 speakPolishText("Etap piąty! Odpowiedzcie na trzy świąteczne pytania. Uważajcie, bo za błąd jest dwadzieścia sekund blokady!");
 }
 }
-// ETAP 6: SIMON SAYS (WOLNIEJSZY W RUNDZIE 2 I 3)
+// ETAP 6: SIMON SAYS (WOLNIEJSZY W RUNDZIE 2 I 3 + MOŻLIWE 2 TAKIE SAME KOLORY POD RZĄD)
 else if (st === 6) {
 head.innerText = "🎶 ETAP 6: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS)";
 const simonLvl = currentState.simonLevel || 1;
@@ -1424,7 +1492,7 @@ if (lvlEl) lvlEl.innerText = "POZIOM PAMIĘCI: " + simonLvl + " / 3 (Wprowadzono
 if (currentState.colorTick && currentState.colorTick !== lastColorTickPlayed) {
 lastColorTickPlayed = currentState.colorTick;
 if (currentState.lastColorPressed) {
-highlightSimonPad(currentState.lastColorPressed, 420);
+highlightSimonPad(currentState.lastColorPressed, 480);
 }
 }
 
