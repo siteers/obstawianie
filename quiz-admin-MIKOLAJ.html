@@ -247,18 +247,34 @@ speechTick: Date.now()
 statusEl.innerText = "✅ Misja zresetowana! Wybierz Etap 1 i kliknij URUCHOM WYBRANY ETAP.";
 };
 
-// GENERATOR SEKWENCJI SIMONA (7 / 8 / 9, MAX 2 TAKIE SAME KOLORY Z RZĘDU)
+// GENERATOR SEKWENCJI SIMONA (7 / 8 / 9, KAŻDY AKTYWNY GRACZ MINIMUM RAZ, MAX 2 Z RZĘDU)
 function generateSmartSimonSequence(len, activeList) {
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
-const arr = [];
-for (let i = 0; i < len; i++) {
-let candidates = pool;
-if (pool.length > 1 && i >= 2 && arr[i - 1] === arr[i - 2]) {
-candidates = pool.filter(p => p !== arr[i - 1]);
+
+for (let attempt = 0; attempt < 50; attempt++) {
+const bag = [];
+for (let i = 0; i < Math.min(len, pool.length); i++) {
+bag.push(pool[i]);
 }
-arr.push(candidates[Math.floor(Math.random() * candidates.length)]);
+while (bag.length < len) {
+bag.push(pool[Math.floor(Math.random() * pool.length)]);
 }
-return arr;
+for (let i = bag.length - 1; i > 0; i--) {
+const j = Math.floor(Math.random() * (i + 1));
+const tmp = bag[i];
+bag[i] = bag[j];
+bag[j] = tmp;
+}
+let threeInRow = false;
+for (let i = 2; i < bag.length; i++) {
+if (bag[i] === bag[i - 1] && bag[i] === bag[i - 2]) {
+threeInRow = true;
+break;
+}
+}
+if (!threeInRow) return bag;
+}
+return pool;
 }
 
 window.startSelectedStage = async (forcedStageNum) => {
