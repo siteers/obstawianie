@@ -297,7 +297,7 @@ border-radius: 8px; border: 1px solid var(--gold); margin: 6px 0;
 <div id="loading-msg" style="font-size:1.4vw; color:var(--gold); font-weight:bold;">ŁĄCZENIE Z BIEGUNEM PÓŁNOCNYM...</div>
 </div>
 
-<div id="victory-banner">🏆 SKARBIEC OTWARTY! KLUCZ MA W KIESZENI WUJEK! 🎅🔑</div>
+<div id="victory-banner">🏆 SKARBIEC OTWARTY! KLUCZ ODNALEZIONY! 🎅🔑</div>
 </div>
 </div>
 
@@ -346,20 +346,20 @@ Jas: [
 ]
 };
 
-// PEŁNA KOLEJNOŚĆ 12 FRAZ HYMNU (1. ZWROTKA + REFREN) Z CZASAMI WEJŚCIA DO PODKŁADU
+// DOKŁADNA SYNCHRONIZACJA 12 FRAZ Z PODKŁADEM MAZURKA DĄBROWSKIEGO (beatMs = 460)
 const HYMN_SEQUENCE = [
-{ slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 600 },
-{ slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 2100 },
-{ slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 3600 },
-{ slot: "Kaja_2", player: "Kaja", label: "⛄ KAJA: KIEDY MY ŻYJEMY.", delayMs: 5600 },
-{ slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 7800 },
-{ slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 9600 },
-{ slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 11600 },
-{ slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 13800 },
-{ slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 16200 },
-{ slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 18200 },
-{ slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 20100 },
-{ slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 22200 }
+{ slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 200 },
+{ slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 1120 },
+{ slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 2040 },
+{ slot: "Kaja_2", player: "Kaja", label: "⛄ KAJA: KIEDY MY ŻYJEMY.", delayMs: 3420 },
+{ slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 6180 },
+{ slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 8020 },
+{ slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 9400 },
+{ slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 12160 },
+{ slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 14920 },
+{ slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 16300 },
+{ slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 17680 },
+{ slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 19750 }
 ];
 
 const STAGE4_RIDDLES = {
@@ -540,8 +540,8 @@ step++;
 }, 260);
 }
 
-// WBUDOWANY PODKŁAD MAZURKA DĄBROWSKIEGO (100% DZIAŁAJĄCY NA KAŻDYM TV I IPHONE)
-function startBuiltInAnthemBacking(totalDurationMs) {
+// WBUDOWANY PODKŁAD MAZURKA DĄBROWSKIEGO (100% ZSYNCHRONIZOWANY Z HYMN_SEQUENCE)
+function startBuiltInAnthemBacking() {
 stopBuiltInAnthemBacking();
 if (!audioCtx) {
 const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -549,28 +549,33 @@ audioCtx = new AudioContext();
 }
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-// Nuty Mazurka Dąbrowskiego w tonacji F-dur (częstotliwości Hz + czas trwania w beatach)
 const notes = [
-// "Jesz-cze Pol-ska nie zgi-nę-ła,"
-[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+// [200ms] "Jesz-cze" (2.0 beatu = 920ms)
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0],
+// [1120ms] "Pol-ska!" (2.0 beatu = 920ms)
+[523.25, 1.0], [523.25, 1.0],
+// [2040ms] "nie zgi-nę-ła," (3.0 beatu = 1380ms)
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
-// "kie-dy my ży-je-my."
+// [3420ms] "kie-dy my ży-je-my." (6.0 beatu = 2760ms)
 [392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [466.16, 1.0],
 [466.16, 0.75], [392.00, 0.25], [523.25, 0.5], [466.16, 0.5], [440.00, 1.0],
-// "Co nam ob-ca prze-moc wzię-ła,"
-[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+// [6180ms] "Co nam ob-ca" (4.0 beatu = 1840ms)
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0], [523.25, 1.0],
+// [8020ms] "prze-moc wzię-ła," (3.0 beatu = 1380ms)
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
-// "sza-blą od-bie-rze-my."
+// [9400ms] "sza-blą od-bie-rze-my." (6.0 beatu = 2760ms)
 [392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0],
 [523.25, 0.75], [440.00, 0.25], [466.16, 0.5], [392.00, 0.5], [349.23, 1.0],
-// REFREN: "Marsz, marsz Dą-brow-ski,"
+// [12160ms] "Marsz, marsz Dą-brow-ski," (6.0 beatu = 2760ms)
 [392.00, 1.0], [392.00, 1.0], [466.16, 1.5], [440.00, 0.5], [392.00, 1.0], [349.23, 1.0],
-// "z zie-mi wło-skiej do Pol-ski!"
-[440.00, 0.75], [523.25, 0.25], [698.46, 1.5], [587.33, 0.5], [523.25, 1.0], [466.16, 1.0], [440.00, 1.0],
-// "Za Two-im prze-wo-dem"
-[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0], [523.25, 1.5], [440.00, 0.5],
-// "złą-czym się z na-ro-dem!"
-[466.16, 0.75], [392.00, 0.25], [349.23, 2.0]
+// [14920ms] "z zie-mi wło-skiej" (3.0 beatu = 1380ms)
+[440.00, 0.75], [523.25, 0.25], [698.46, 1.5], [587.33, 0.5],
+// [16300ms] "do Pol-ski!" (3.0 beatu = 1380ms)
+[523.25, 1.0], [466.16, 1.0], [440.00, 1.0],
+// [17680ms] "Za Two-im prze-wo-dem" (4.5 beatu = 2070ms)
+[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0], [523.25, 1.5],
+// [19750ms] "złą-czym się z na-ro-dem!" (3.5 beatu = 1610ms)
+[440.00, 0.5], [466.16, 0.75], [392.00, 0.25], [349.23, 2.0]
 ];
 
 const beatMs = 460;
@@ -586,7 +591,7 @@ const g = audioCtx.createGain();
 osc.type = "triangle";
 osc.frequency.setValueAtTime(freq, now);
 g.gain.setValueAtTime(0.001, now);
-g.gain.linearRampToValueAtTime(0.14, now + 0.03);
+g.gain.linearRampToValueAtTime(0.09, now + 0.03);
 g.gain.exponentialRampToValueAtTime(0.001, now + (durMs / 1000) * 0.92);
 osc.connect(g);
 g.connect(audioCtx.destination);
@@ -1002,9 +1007,9 @@ padEl.classList.remove('lit');
 }, durationMs);
 }
 
-// GENERATOR SEKWENCJI SIMONA (POZWALA NA 2 TAKIE SAME KOLORY Z RZĘDU, BLOKUJE DOPIERO 3 Z RZĘDU)
+// GENERATOR SEKWENCJI SIMONA: DŁUGOŚCI 7 / 8 / 9, MAX 2 TAKIE SAME KOLORY Z RZĘDU
 function buildSmartSimonSequence(levelNum, activeList) {
-const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
+const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
 const res = [];
 for (let i = 0; i < targetLen; i++) {
@@ -1026,7 +1031,7 @@ return false;
 }
 
 async function playSimonSequenceOnTV(seq, mistakeBy, levelNum, activeList) {
-const targetLen = levelNum === 1 ? 8 : (levelNum === 2 ? 10 : 12);
+const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
 if ((activeList || []).length > 1 && (seq.length !== targetLen || hasThreeInARow(seq))) {
 const fixedSeq = buildSmartSimonSequence(levelNum, activeList);
 await updateDoc(stateRef, { simonSeq: fixedSeq, seqTick: Date.now() });
@@ -1041,7 +1046,6 @@ const introSpeech = mistakeBy
 
 if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
 
-// Wyraźnie wolniejsze tempo w rundzie 2 i 3
 const stepInterval = levelNum === 1 ? 950 : (levelNum === 2 ? 1150 : 1050);
 const litDuration = Math.round(stepInterval * 0.72);
 
@@ -1090,7 +1094,7 @@ speechTick: Date.now()
 }, 80);
 }
 
-// ŁAŃCUCHOWA SEKWENCJA NAPIĘCIA PRZED OSTATNIM SLAJDEM
+// UNIWERSALNA SEKWENCJA NAPIĘCIA (DZIAŁA ZARÓWNO GDY KLUCZ MA OSOBA, JAK I GDY JEST UKRYTY W MIEJSCU)
 function runFinaleSuspenseSequence() {
 const myRun = ++suspenseRunId;
 isBgMusicPlaying = false;
@@ -1110,17 +1114,17 @@ setTimeout(() => {
 if (myRun !== suspenseRunId) return;
 playVaultRumbleEffect();
 head.innerText = "📦 WEWNĄTRZ SKARBCA JEST TAJNA SKRZYNIA... 📦";
-arena.innerHTML = '<div style="font-size:2vw; color:var(--gold); font-weight:900; line-height:1.4;">😱 CHWILECZKĘ! SKRZYNIA Z PREZENTEM JEST ZAMKNIĘTA NA KLUCZ!<br><span style="font-size:1.35vw; color:#cbd5e1;">Ktoś zabrał fizyczny klucz ze środka skarbca!</span></div>';
+arena.innerHTML = '<div style="font-size:2vw; color:var(--gold); font-weight:900; line-height:1.4;">😱 CHWILECZKĘ! SKRZYNIA Z PREZENTEM JEST ZAMKNIĘTA NA KLUCZ!<br><span style="font-size:1.35vw; color:#cbd5e1;">Ktoś ukrył fizyczny klucz poza skarbcem!</span></div>';
 
-speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć złodzieja klucza!", () => {
+speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć położenie klucza!", () => {
 if (myRun !== suspenseRunId) return;
 setTimeout(() => {
 if (myRun !== suspenseRunId) return;
 playVaultRumbleEffect();
-head.innerText = "📡 NAMIERZANIE SYGNAŁU KLUCZA W TYM POKOJU... 📡";
-arena.innerHTML = '<div style="font-size:2.1vw; color:#2dc653; font-weight:900; line-height:1.4;">🎯 SYGNAŁ NAMIERZONY W ODLEGŁŚCI KILKU METRÓW!<br><span style="font-size:1.4vw; color:#fff;">Klucz znajduje się w czyjejś kieszeni...</span></div>';
+head.innerText = "📡 NAMIERZANIE SYGNAŁU KLUCZA W POBLIŻU... 📡";
+arena.innerHTML = '<div style="font-size:2.1vw; color:#2dc653; font-weight:900; line-height:1.4;">🎯 SYGNAŁ NAMIERZONY W ODLEGŁŚCI KILKU METRÓW!<br><span style="font-size:1.4vw; color:#fff;">Trwa dokładny odczyt kryjówki klucza...</span></div>';
 
-speakPolishText("Sygnał namierzony! Klucz znajduje się dokładnie w tym pokoju, ukryty w czyjejś kieszeni...", () => {
+speakPolishText("Sygnał namierzony! Klucz znajduje się całkiem blisko...", () => {
 if (myRun !== suspenseRunId) return;
 setTimeout(async () => {
 if (myRun !== suspenseRunId) return;
@@ -1137,7 +1141,7 @@ speechTick: Date.now()
 });
 }
 
-// DRAMATYCZNY OSTATNI SLAJD Z DYNAMICZNĄ OSOBĄ WPISANĄ W ADMINIE!
+// UNIWERSALNY SLAJD FINAŁOWY (BEZ ZAKŁADANIA "W KIESZENI")
 function runDramaticFinalSlideReveal() {
 const mySlideRun = ++finaleSlideRunId;
 const head = document.getElementById('missionHeader');
@@ -1163,10 +1167,10 @@ if (mySlideRun !== finaleSlideRunId) return;
 playDramaticDrumHit(120);
 const box = document.getElementById('finalRevealBox');
 if (box) {
-box.innerHTML += '<div class="reveal-step-line" style="color:var(--gold); font-size:2.4vw;">...UKRYŁ W SWOJEJ KIESZENI...</div>';
+box.innerHTML += '<div class="reveal-step-line" style="color:var(--gold); font-size:2.4vw;">...ZNAJDUJE SIĘ...</div>';
 }
 
-speakPolishText("ukrył w swojej kieszeni...", () => {
+speakPolishText("znajduje się...", () => {
 if (mySlideRun !== finaleSlideRunId) return;
 
 playVaultRumbleEffect();
@@ -1182,13 +1186,13 @@ head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
 const dots = document.getElementById('dotsSuspense');
 if (dots) dots.remove();
 if (box) {
-box.innerHTML += '<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">🎅🔑 ' + holderUpper + '! ŁAPCIE! 🔑🎅</div>';
+box.innerHTML += '<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">🎅🔑 ' + holderUpper + '! 🔑🎅</div>';
 }
-vicBanner.innerText = "🏆 SKARBIEC OTWARTY! KLUCZ MA: " + holderUpper + "! 🎅🔑";
+vicBanner.innerText = "🏆 SKARBIEC OTWARTY! KLUCZ: " + holderUpper + "! 🎅🔑";
 vicBanner.style.display = 'block';
 startFireworks();
 startVictoryFanfareLoop();
-speakPolishText(holderRaw + "! Łapcie i odbierzcie klucz do prezentu!");
+speakPolishText(holderRaw + "! Odbierzcie klucz i otwórzcie prezent!");
 }, 2400);
 });
 });
@@ -1197,17 +1201,17 @@ speakPolishText(holderRaw + "! Łapcie i odbierzcie klucz do prezentu!");
 // ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE CAŁEJ 1. ZWROTKI + REFRENU Z PODKŁADEM WEB AUDIO
 function playSynchronizedHymn(tracks, activeList) {
 isBgMusicPlaying = false;
-speakPolishText("Wszystkie dwanaście fragmentów nagrane! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
+speakPolishText("Wszystkie nagrania gotowe! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
 const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
 let maxDelay = 0;
 
-startBuiltInAnthemBacking(25000);
+startBuiltInAnthemBacking();
 
 const waves = document.querySelectorAll('.wave-bar');
 waves.forEach(w => w.classList.add('active'));
 
 activeSeq.forEach((item, idx) => {
-const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (600 + idx * 1950);
+const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (200 + idx * 1850);
 if (playAt > maxDelay) maxDelay = playAt;
 
 setTimeout(() => {
@@ -1229,7 +1233,7 @@ status: "stage_complete",
 completedStageNum: 2,
 speechTick: Date.now()
 });
-}, maxDelay + 2800);
+}, maxDelay + 2400);
 });
 }
 
@@ -1419,17 +1423,17 @@ lastHymnPlayTick = currentState.playTick;
 playSynchronizedHymn(tracks, activeList);
 }
 }
-// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONAMI - 200% TRUDNIEJSZY)
+// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONAMI - CEL 2500 / OSOBĘ)
 else if (st === 3) {
 head.innerText = "🧊 ETAP 3: ZAMARZNIĘTE SANIE (TRZĘŚCIE TELEFONAMI!)";
 const hits = currentState.iceTotalHits || 0;
-const target = currentState.iceTarget || (activeList.length * 140);
+const target = currentState.iceTarget || (activeList.length * 2500);
 const pct = Math.min(100, Math.round((hits / target) * 100));
 const isShaking = (hits > lastIceHits);
 lastIceHits = hits;
 
 const iceOpacity = Math.max(0, (100 - pct) / 100).toFixed(2);
-arena.innerHTML = '<div style="font-size:1.35vw; font-weight:bold; margin-bottom:1vw; color:#cbd5e1;">Lód jest pancerny! Włączcie czujniki ruchu i trzęście telefonami z całej siły przez 30 sekund!</div>'
+arena.innerHTML = '<div style="font-size:1.35vw; font-weight:bold; margin-bottom:1vw; color:#cbd5e1;">Lód jest pancerny! Włączcie czujniki ruchu i trzęście telefonami z całej siły!</div>'
 + '<div class="ice-block ' + (isShaking ? 'suspense-shake' : '') + '">🛷<div style="position:absolute; inset:0; background:rgba(180,240,255,' + iceOpacity + '); pointer-events:none;"></div></div>'
 + '<div style="margin-top:1vw; font-size:2.2vw; font-weight:900; color:#00d4ff;">SKRUSZONY LÓD: ' + pct + '% (' + hits + '/' + target + ')</div>';
 
@@ -1468,7 +1472,7 @@ lastAnnouncedStage = 5;
 speakPolishText("Etap piąty! Odpowiedzcie na trzy świąteczne pytania. Uważajcie, bo za błąd jest dwadzieścia sekund blokady!");
 }
 }
-// ETAP 6: SIMON SAYS (WOLNIEJSZY W RUNDZIE 2 I 3 + MOŻLIWE 2 TAKIE SAME KOLORY POD RZĄD)
+// ETAP 6: SIMON SAYS (7 / 8 / 9)
 else if (st === 6) {
 head.innerText = "🎶 ETAP 6: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS)";
 const simonLvl = currentState.simonLevel || 1;
