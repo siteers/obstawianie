@@ -337,8 +337,12 @@ lastRenderKey = "";
 renderPad();
 };
 
+let isSendingAudio = false;
+
 window.sendMyRecording = async () => {
-if (!recordedBase64 || !currentState) return;
+if (!recordedBase64 || !currentState || isSendingAudio) return;
+isSendingAudio = true;
+const audioToSend = recordedBase64;
 const fb = document.getElementById('feedbackMsg');
 fb.style.color = "#ffd700";
 fb.innerText = "⏳ Wysyłanie nagrania na TV...";
@@ -349,20 +353,30 @@ const data = snap.data() || {};
 const tracks = data.audioTracks || {};
 const myTasks = STAGE2_HYMN_TASKS[myName];
 const stepIdx = myTasks.findIndex(t => !tracks[t.slot]);
+
+recordedBase64 = null;
+const player = document.getElementById('localAudioPlayer');
+if (player) { player.pause(); player.removeAttribute('src'); }
+
 if (stepIdx !== -1) {
 const slotKey = myTasks[stepIdx].slot;
 const payload = { trackUpdatedTick: Date.now() };
-payload["audioTracks." + slotKey] = recordedBase64;
+payload["audioTracks." + slotKey] = audioToSend;
 await updateDoc(stateRef, payload);
 }
-recordedBase64 = null;
 fb.innerText = "";
+lastRenderKey = "";
+renderPad();
 } catch (err) {
+recordedBase64 = audioToSend;
 fb.style.color = "#ff4d4d";
 fb.innerText = "❌ Błąd wysyłania: " + err.message;
+lastRenderKey = "";
+renderPad();
+} finally {
+isSendingAudio = false;
 }
 };
-
 // --- ETAP 3: AKCELEROMETR (LÓD) ---
 window.requestMotionPermission = () => {
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
