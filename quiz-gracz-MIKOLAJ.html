@@ -214,7 +214,8 @@ let isHoldingScanner = false;
 let quizPenaltyInterval = null;
 let stage7PadTimer = null;
 
-// Etap 2: Mikrofon
+// Etap 2: Mikrofon (świeży MediaRecorder na każde nagranie + 32 kbps)
+let micStream = null;
 let mediaRecorder = null;
 let audioChunks = [];
 let recordedBase64 = null;
@@ -262,24 +263,7 @@ el.innerText = "⏱️ POZOSTAŁO CZASU: " + rem.toFixed(1) + "s";
 // --- ETAP 2: MIKROFON ---
 window.requestMicPermission = async () => {
 try {
-const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-mediaRecorder = new MediaRecorder(stream);
-mediaRecorder.ondataavailable = (e) => {
-if (e.data && e.data.size > 0) audioChunks.push(e.data);
-};
-mediaRecorder.onstop = () => {
-const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType || 'audio/webm' });
-const reader = new FileReader();
-reader.readAsDataURL(blob);
-reader.onloadend = () => {
-recordedBase64 = reader.result;
-const player = document.getElementById('localAudioPlayer');
-if (player) player.src = recordedBase64;
-lastRenderKey = "";
-renderPad();
-};
-audioChunks = [];
-};
+micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 lastRenderKey = "";
 renderPad();
 } catch (err) {
@@ -291,12 +275,39 @@ function bindMicEvents() {
 const btn = document.getElementById('micRecordBtn');
 if (!btn) return;
 const startRec = () => {
-if (mediaRecorder && mediaRecorder.state === "inactive") {
+if (!micStream || (mediaRecorder && mediaRecorder.state === "recording")) return;
 audioChunks = [];
+try {
+mediaRecorder = new MediaRecorder(micStream, { audioBitsPerSecond: 32000 });
+} catch (e) {
+mediaRecorder = new MediaRecorder(micStream);
+}
+mediaRecorder.ondataavailable = (e) => {
+if (e.data && e.data.size > 0) audioChunks.push(e.data);
+};
+mediaRecorder.onstop = () => {
+const mime = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
+const blob = new Blob(audioChunks, { type: mime });
+audioChunks = [];
+if (blob.size < 100) {
+alert("Nagranie było za krótkie! Przytrzymaj przycisk dłużej podczas mówienia.");
+lastRenderKey = "";
+renderPad();
+return;
+}
+const reader = new FileReader();
+reader.readAsDataURL(blob);
+reader.onloadend = () => {
+recordedBase64 = reader.result;
+const player = document.getElementById('localAudioPlayer');
+if (player) player.src = recordedBase64;
+lastRenderKey = "";
+renderPad();
+};
+};
 mediaRecorder.start();
 btn.classList.add('recording');
 btn.innerHTML = "🎙️<br>NAGRYWAM!<br>(PUŚĆ ABY STOP)";
-}
 };
 const stopRec = () => {
 if (mediaRecorder && mediaRecorder.state === "recording") {
@@ -332,19 +343,24 @@ const fb = document.getElementById('feedbackMsg');
 fb.style.color = "#ffd700";
 fb.innerText = "⏳ Wysyłanie nagrania na TV...";
 
+try {
 const snap = await getDoc(stateRef);
 const data = snap.data() || {};
-const tracks = { ...(data.audioTracks || {}) };
+const tracks = data.audioTracks || {};
 const myTasks = STAGE2_HYMN_TASKS[myName];
-let stepIdx = 0;
-if (tracks[myTasks[0].slot]) stepIdx = 1;
-if (tracks[myTasks[1].slot]) stepIdx = 2;
-if (stepIdx < 3) {
-tracks[myTasks[stepIdx].slot] = recordedBase64;
+const stepIdx = myTasks.findIndex(t => !tracks[t.slot]);
+if (stepIdx !== -1) {
+const slotKey = myTasks[stepIdx].slot;
+const payload = { trackUpdatedTick: Date.now() };
+payload["audioTracks." + slotKey] = recordedBase64;
+await updateDoc(stateRef, payload);
 }
 recordedBase64 = null;
-await updateDoc(stateRef, { audioTracks: tracks, trackUpdatedTick: Date.now() });
 fb.innerText = "";
+} catch (err) {
+fb.style.color = "#ff4d4d";
+fb.innerText = "❌ Błąd wysyłania: " + err.message;
+}
 };
 
 // --- ETAP 3: AKCELEROMETR (LÓD) ---
@@ -466,7 +482,7 @@ const myTasks = STAGE2_HYMN_TASKS[myName];
 let hymnDoneCount = 0;
 myTasks.forEach(t => { if (tracks[t.slot]) hymnDoneCount++; });
 
-const hasMic = mediaRecorder !== null;
+const hasMic = micStream !== null;
 const hasRec = recordedBase64 !== null;
 const lockRem = st === 5 ? getQuizLockRemainingSec() : 0;
 const renderKey = st + "_" + status + "_" + myStep + "_" + (myPhoto.status || "") + "_" + (currentState.simonLevel || 0) + "_" + (lockRem > 0 ? "locked" : "open") + "_" + hasMic + "_" + hasRec + "_" + hymnDoneCount + "_" + motionActive;
@@ -842,7 +858,7 @@ const resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (nextSt === 2) {
 recordedBase64 = null;
-await updateDoc(stateRef, { stage: 2, status: "stage2_active", audioTracks: {}, speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 2, status: "stage2_active", photos: {}, audioTracks: {}, speechTick: Date.now() });
 } else if (nextSt === 3) {
 await updateDoc(stateRef, { stage: 3, status: "stage3_ice", iceTotalHits: 0, iceTarget: activeList.length * 2500, speechTick: Date.now() });
 } else if (nextSt === 4) {
