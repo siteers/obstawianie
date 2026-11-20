@@ -346,20 +346,20 @@ Jas: [
 ]
 };
 
-// DOKŁADNA SYNCHRONIZACJA 12 FRAZ Z PODKŁADEM MAZURKA DĄBROWSKIEGO (beatMs = 460)
+// DOKŁADNA SYNCHRONIZACJA 12 FRAZ Z PODKŁADEM MAZURKA DĄBROWSKIEGO (beatMs = 520, start 300ms)
 const HYMN_SEQUENCE = [
-{ slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 200 },
-{ slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 1120 },
-{ slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 2040 },
+{ slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 300 },
+{ slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 820 },
+{ slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 1860 },
 { slot: "Kaja_2", player: "Kaja", label: "⛄ KAJA: KIEDY MY ŻYJEMY.", delayMs: 3420 },
-{ slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 6180 },
-{ slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 8020 },
-{ slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 9400 },
-{ slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 12160 },
-{ slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 14920 },
-{ slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 16300 },
-{ slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 17680 },
-{ slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 19750 }
+{ slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 6540 },
+{ slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 8100 },
+{ slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 9660 },
+{ slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 12780 },
+{ slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 15900 },
+{ slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 17460 },
+{ slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 19020 },
+{ slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 22140 }
 ];
 
 const STAGE4_RIDDLES = {
@@ -504,14 +504,25 @@ let fanfareLoopInterval = null;
 let isBgMusicPlaying = false;
 let musicMutedByUser = false;
 let anthemPlaybackTimers = [];
+let hymnVoiceTimers = [];
+let activeHymnNodes = [];
+let activeHymnFallbackAudios = [];
 
-function createFestiveChimesMusic() {
-if (audioCtx) return;
+function ensureAudioCtx() {
+if (!audioCtx) {
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 audioCtx = new AudioContext();
 bgMasterGain = audioCtx.createGain();
 bgMasterGain.gain.value = 0.20;
 bgMasterGain.connect(audioCtx.destination);
+}
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+return audioCtx;
+}
+
+function createFestiveChimesMusic() {
+ensureAudioCtx();
+if (musicInterval) return;
 const jingleMelody = [
 659.25, 659.25, 659.25, 0,
 659.25, 659.25, 659.25, 0,
@@ -540,49 +551,47 @@ step++;
 }, 260);
 }
 
-// WBUDOWANY PODKŁAD MAZURKA DĄBROWSKIEGO (100% ZSYNCHRONIZOWANY Z HYMN_SEQUENCE)
+// WBUDOWANY PODKŁAD MAZURKA DĄBROWSKIEGO (16 TAKTÓW W 3/4, beatMs = 520, START = 300ms)
 function startBuiltInAnthemBacking() {
 stopBuiltInAnthemBacking();
-if (!audioCtx) {
-const AudioContext = window.AudioContext || window.webkitAudioContext;
-audioCtx = new AudioContext();
-}
-if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+ensureAudioCtx();
 
 const notes = [
-// [200ms] "Jesz-cze" (2.0 beatu = 920ms)
-[440.00, 0.75], [466.16, 0.25], [523.25, 1.0],
-// [1120ms] "Pol-ska!" (2.0 beatu = 920ms)
-[523.25, 1.0], [523.25, 1.0],
-// [2040ms] "nie zgi-nę-ła," (3.0 beatu = 1380ms)
+// Takt 1 (beat 0..3): "Jesz-cze Pol-ska"
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+// Takt 2 (beat 3..6): "nie zgi-nę-ła,"
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
-// [3420ms] "kie-dy my ży-je-my." (6.0 beatu = 2760ms)
-[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [466.16, 1.0],
-[466.16, 0.75], [392.00, 0.25], [523.25, 0.5], [466.16, 0.5], [440.00, 1.0],
-// [6180ms] "Co nam ob-ca" (4.0 beatu = 1840ms)
-[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0], [523.25, 1.0],
-// [8020ms] "prze-moc wzię-ła," (3.0 beatu = 1380ms)
+// Takt 3-4 (beat 6..12): "kie-dy my ży-je-my."
+[392.00, 0.75], [392.00, 0.25], [523.25, 1.5], [466.16, 0.5],
+[440.00, 1.0], [440.00, 1.0], [0, 1.0],
+// Takt 5 (beat 12..15): "Co nam ob-ca"
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+// Takt 6 (beat 15..18): "prze-moc wzię-ła,"
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
-// [9400ms] "sza-blą od-bie-rze-my." (6.0 beatu = 2760ms)
-[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0],
-[523.25, 0.75], [440.00, 0.25], [466.16, 0.5], [392.00, 0.5], [349.23, 1.0],
-// [12160ms] "Marsz, marsz Dą-brow-ski," (6.0 beatu = 2760ms)
-[392.00, 1.0], [392.00, 1.0], [466.16, 1.5], [440.00, 0.5], [392.00, 1.0], [349.23, 1.0],
-// [14920ms] "z zie-mi wło-skiej" (3.0 beatu = 1380ms)
-[440.00, 0.75], [523.25, 0.25], [698.46, 1.5], [587.33, 0.5],
-// [16300ms] "do Pol-ski!" (3.0 beatu = 1380ms)
-[523.25, 1.0], [466.16, 1.0], [440.00, 1.0],
-// [17680ms] "Za Two-im prze-wo-dem" (4.5 beatu = 2070ms)
-[392.00, 0.75], [440.00, 0.25], [466.16, 1.0], [587.33, 1.0], [523.25, 1.5],
-// [19750ms] "złą-czym się z na-ro-dem!" (3.5 beatu = 1610ms)
-[440.00, 0.5], [466.16, 0.75], [392.00, 0.25], [349.23, 2.0]
+// Takt 7-8 (beat 18..24): "sza-blą od-bie-rze-my."
+[392.00, 0.75], [392.00, 0.25], [523.25, 1.0], [466.16, 0.75], [392.00, 0.25],
+[349.23, 2.0], [0, 1.0],
+// Takt 9-10 (beat 24..30): "Marsz, marsz Dą-brow-ski,"
+[392.00, 1.0], [392.00, 1.0], [466.16, 1.0],
+[440.00, 1.0], [392.00, 1.0], [0, 1.0],
+// Takt 11 (beat 30..33): "z zie-mi wło-skiej"
+[440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
+// Takt 12 (beat 33..36): "do Pol-ski!"
+[587.33, 1.0], [523.25, 1.0], [523.25, 1.0],
+// Takt 13-14 (beat 36..42): "Za Two-im prze-wo-dem"
+[587.33, 0.75], [587.33, 0.25], [587.33, 1.0], [523.25, 1.0],
+[466.16, 1.0], [440.00, 1.0], [0, 1.0],
+// Takt 15-16 (beat 42..48): "złą-czym się z na-ro-dem!"
+[392.00, 0.75], [523.25, 0.25], [466.16, 1.0], [392.00, 1.0],
+[349.23, 2.0], [0, 1.0]
 ];
 
-const beatMs = 460;
-let cursorMs = 200;
+const beatMs = 520;
+let cursorMs = 300;
 
 notes.forEach(([freq, beats]) => {
 const durMs = beats * beatMs;
+if (freq > 0) {
 const t = setTimeout(() => {
 if (!audioCtx) return;
 const now = audioCtx.currentTime;
@@ -591,7 +600,7 @@ const g = audioCtx.createGain();
 osc.type = "triangle";
 osc.frequency.setValueAtTime(freq, now);
 g.gain.setValueAtTime(0.001, now);
-g.gain.linearRampToValueAtTime(0.09, now + 0.03);
+g.gain.linearRampToValueAtTime(0.085, now + 0.03);
 g.gain.exponentialRampToValueAtTime(0.001, now + (durMs / 1000) * 0.92);
 osc.connect(g);
 g.connect(audioCtx.destination);
@@ -599,6 +608,7 @@ osc.start(now);
 osc.stop(now + (durMs / 1000));
 }, cursorMs);
 anthemPlaybackTimers.push(t);
+}
 cursorMs += durMs;
 });
 }
@@ -606,6 +616,59 @@ cursorMs += durMs;
 function stopBuiltInAnthemBacking() {
 anthemPlaybackTimers.forEach(t => clearTimeout(t));
 anthemPlaybackTimers = [];
+}
+
+function stopAllHymnPlayback() {
+stopBuiltInAnthemBacking();
+hymnVoiceTimers.forEach(t => clearTimeout(t));
+hymnVoiceTimers = [];
+activeHymnNodes.forEach(n => { try { n.stop(); } catch (e) {} });
+activeHymnNodes = [];
+activeHymnFallbackAudios.forEach(a => { try { a.pause(); } catch (e) {} });
+activeHymnFallbackAudios = [];
+}
+
+function dataUrlToArrayBuffer(dataUrl) {
+const idx = dataUrl.indexOf(',');
+if (idx === -1) return null;
+const b64 = dataUrl.slice(idx + 1);
+const binStr = atob(b64);
+const len = binStr.length;
+const bytes = new Uint8Array(len);
+for (let i = 0; i < len; i++) {
+bytes[i] = binStr.charCodeAt(i);
+}
+return bytes.buffer;
+}
+
+function decodeAudioPromise(ctx, arrayBuffer) {
+return new Promise((resolve, reject) => {
+try {
+const p = ctx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
+if (p && typeof p.then === 'function') p.then(resolve).catch(reject);
+} catch (err) {
+reject(err);
+}
+});
+}
+
+function findVoiceStartAndPeak(audioBuffer) {
+const data = audioBuffer.getChannelData(0);
+const sr = audioBuffer.sampleRate;
+let peak = 0;
+for (let i = 0; i < data.length; i++) {
+const a = Math.abs(data[i]);
+if (a > peak) peak = a;
+}
+const threshold = Math.min(0.035, peak * 0.18);
+let offsetSec = 0;
+for (let i = 0; i < data.length; i++) {
+if (Math.abs(data[i]) > threshold) {
+offsetSec = Math.max(0, (i / sr) - 0.03);
+break;
+}
+}
+return { offsetSec: offsetSec, peak: peak };
 }
 
 window.toggleBgMusic = function() {
@@ -1214,42 +1277,98 @@ speakPolishText(holderRaw + "! Odbierzcie klucz i otwórzcie prezent!");
 });
 }
 
-// ETAP 2: ZSYNCHRONIZOWANE ODTWARZANIE CAŁEJ 1. ZWROTKI + REFRENU Z PODKŁADEM WEB AUDIO
-function playSynchronizedHymn(tracks, activeList) {
+// ETAP 2: ODTWARZANIE HYMNU PRZEZ WEB AUDIO API (Z DEKODOWANIEM, WYCIĘCIEM CISZY I FALLBACKIEM)
+async function playSynchronizedHymn(tracks, activeList) {
+stopAllHymnPlayback();
 isBgMusicPlaying = false;
-speakPolishText("Wszystkie nagrania gotowe! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", () => {
-const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
-let maxDelay = 0;
+const ctx = ensureAudioCtx();
 
+const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
+const decodedMap = {};
+const fallbackMap = {};
+
+// Dekodujemy wszystkie ścieżki z wyprzedzeniem podczas zapowiedzi lektora
+const decodePromises = activeSeq.map(async (item) => {
+const dataUrl = tracks[item.slot];
+if (!dataUrl || typeof dataUrl !== "string") return;
+
+const fbAudio = new Audio(dataUrl);
+fbAudio.preload = "auto";
+fbAudio.volume = 1.0;
+fallbackMap[item.slot] = fbAudio;
+activeHymnFallbackAudios.push(fbAudio);
+
+try {
+const ab = dataUrlToArrayBuffer(dataUrl);
+if (ab && ab.byteLength > 0) {
+const buf = await decodeAudioPromise(ctx, ab);
+const info = findVoiceStartAndPeak(buf);
+decodedMap[item.slot] = { buffer: buf, offsetSec: info.offsetSec, peak: info.peak };
+}
+} catch (err) {
+console.warn("WebAudio decode fallback dla " + item.slot + ":", err);
+}
+});
+
+speakPolishText("Wszystkie nagrania gotowe! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", async () => {
+await Promise.allSettled(decodePromises);
+ensureAudioCtx();
+
+let maxDelay = 0;
 startBuiltInAnthemBacking();
 
 const waves = document.querySelectorAll('.wave-bar');
 waves.forEach(w => w.classList.add('active'));
 
 activeSeq.forEach((item, idx) => {
-const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (200 + idx * 1850);
+const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (300 + idx * 1900);
 if (playAt > maxDelay) maxDelay = playAt;
 
-setTimeout(() => {
+const timerId = setTimeout(() => {
 const karaokeEl = document.getElementById('hymnKaraokeText');
 if (karaokeEl) karaokeEl.innerText = item.label;
-if (tracks[item.slot]) {
-const a = new Audio(tracks[item.slot]);
-a.volume = 1.0;
-a.play().catch(() => {});
+
+const decoded = decodedMap[item.slot];
+if (decoded && decoded.buffer && audioCtx) {
+try {
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
+const src = audioCtx.createBufferSource();
+src.buffer = decoded.buffer;
+
+const gainNode = audioCtx.createGain();
+const boost = decoded.peak > 0.01 ? Math.min(2.4, Math.max(1.0, 0.85 / decoded.peak)) : 1.5;
+gainNode.gain.value = boost;
+
+src.connect(gainNode);
+gainNode.connect(audioCtx.destination);
+src.start(0, decoded.offsetSec);
+activeHymnNodes.push(src);
+return;
+} catch (e) {
+console.warn("WebAudio play error dla " + item.slot + ":", e);
+}
+}
+
+const fbAudio = fallbackMap[item.slot];
+if (fbAudio) {
+fbAudio.currentTime = 0;
+fbAudio.play().catch((e) => console.warn("HTMLAudio fallback error dla " + item.slot + ":", e));
 }
 }, playAt);
+
+hymnVoiceTimers.push(timerId);
 });
 
-setTimeout(async () => {
-stopBuiltInAnthemBacking();
+const endTimer = setTimeout(async () => {
+stopAllHymnPlayback();
 isBgMusicPlaying = true;
 await updateDoc(stateRef, {
 status: "stage_complete",
 completedStageNum: 2,
 speechTick: Date.now()
 });
-}, maxDelay + 2400);
+}, maxDelay + 2800);
+hymnVoiceTimers.push(endTimer);
 });
 }
 
@@ -1265,6 +1384,10 @@ const stageBox = document.getElementById('mainStage');
 const arena = document.getElementById('stageArena');
 const vicBanner = document.getElementById('victory-banner');
 const head = document.getElementById('missionHeader');
+
+if (st !== 2 || status !== "stage2_play") {
+stopAllHymnPlayback();
+}
 
 if (status !== "finale_unlocked" && st !== 9) {
 lastFinaleUnlockedStarted = false;
@@ -1420,6 +1543,8 @@ cardsHtml += '<div style="background:#081c15; border:2px solid ' + (ok ? '#2dc65
 });
 cardsHtml += '</div>';
 
+// Nie nadpisujemy paska karaoke, jeśli odtwarzanie już trwa
+if (!(status === "stage2_play" && document.getElementById('hymnKaraokeText'))) {
 const allRecorded = totalNeeded > 0 && totalDone >= totalNeeded;
 const bottomHtml = status === "stage2_play"
 ? '<div class="hymn-karaoke-box" id="hymnKaraokeText">🎶 START HYMNU...</div><div class="audio-waves"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>'
@@ -1428,6 +1553,7 @@ const bottomHtml = status === "stage2_play"
 : '<div style="margin-top:1.2vw; font-size:1.15vw; color:#cbd5e1;">Każdy nagrywa 3 fragmenty (1. zwrotka i refren) – na zmianę z Bartusiem!</div>');
 
 arena.innerHTML = '<div style="font-size:1.4vw; font-weight:bold; margin-bottom:1vw; color:var(--gold);">POSTĘP NAGRANIA HYMNU: ' + totalDone + ' / ' + totalNeeded + '</div>' + cardsHtml + bottomHtml;
+}
 
 if (lastAnnouncedStage !== 2) {
 lastAnnouncedStage = 2;
