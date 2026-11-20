@@ -292,6 +292,7 @@ activePlayers: activeList,
 keyHolder: holder,
 stepProgress: resetProg,
 photos: {},
+audioTracks: {},
 speechTick: Date.now()
 }, { merge: true });
 } else if (stNum === 2) {
@@ -300,6 +301,7 @@ stage: 2,
 status: "stage2_active",
 activePlayers: activeList,
 keyHolder: holder,
+photos: {},
 audioTracks: {},
 speechTick: Date.now()
 });
@@ -309,6 +311,8 @@ stage: 3,
 status: "stage3_ice",
 activePlayers: activeList,
 keyHolder: holder,
+photos: {},
+audioTracks: {},
 iceTotalHits: 0,
 iceTarget: activeList.length * 2500,
 speechTick: Date.now()
