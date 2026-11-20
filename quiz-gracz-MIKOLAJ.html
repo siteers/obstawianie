@@ -104,8 +104,6 @@ animation: vibrate 0.22s infinite;
 <div class="feedback" id="feedbackMsg"></div>
 </div>
 
-<audio id="localAudioPlayer" style="display:none;"></audio>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -214,11 +212,19 @@ let isHoldingScanner = false;
 let quizPenaltyInterval = null;
 let stage7PadTimer = null;
 
-// Etap 2: Mikrofon (świeży MediaRecorder na każde nagranie + 32 kbps)
+// Etap 2: Niezawodny rejestrator Web Audio WAV (działa w 100% na iPhone i Androidzie bez bugów MediaRecordera)
 let micStream = null;
-let mediaRecorder = null;
-let audioChunks = [];
+let recAudioCtx = null;
+let recSource = null;
+let recProcessor = null;
+let recZeroGain = null;
+let isRecordingWav = false;
+let pcmChunks = [];
+let recAutoStopTimer = null;
 let recordedBase64 = null;
+let recordedAudioBuffer = null;
+let previewSourceNode = null;
+let isSendingAudio = false;
 
 // Etap 3: Akcelerometr (próg 22.0 + max 1 pkt na 150ms, cel 2500 pkt/os.)
 let motionActive = false;
@@ -260,10 +266,127 @@ el.innerText = "⏱️ POZOSTAŁO CZASU: " + rem.toFixed(1) + "s";
 }, 100);
 }
 
-// --- ETAP 2: MIKROFON ---
+// --- ETAP 2: REJESTRATOR WEB AUDIO WAV ---
+function encodeWavFromChunks(chunks, inputSampleRate) {
+let totalLen = 0;
+for (let i = 0; i < chunks.length; i++) totalLen += chunks[i].length;
+if (totalLen < Math.floor(inputSampleRate * 0.15)) return null;
+
+// Maksymalnie 3.5 sekundy na frazę (żeby 12 nagrań nigdy nie przekroczyło limitu bazy)
+const maxInputSamples = Math.floor(inputSampleRate * 3.5);
+const useLen = Math.min(totalLen, maxInputSamples);
+
+const merged = new Float32Array(useLen);
+let offset = 0;
+for (let i = 0; i < chunks.length && offset < useLen; i++) {
+const sliceLen = Math.min(chunks[i].length, useLen - offset);
+merged.set(chunks[i].subarray(0, sliceLen), offset);
+offset += sliceLen;
+}
+
+// Downsampling do 8000 Hz mono 16-bit WAV
+const targetRate = 8000;
+const ratio = inputSampleRate / targetRate;
+const newLen = Math.max(1, Math.floor(merged.length / ratio));
+const downsampled = new Float32Array(newLen);
+for (let i = 0; i < newLen; i++) {
+const start = Math.floor(i * ratio);
+const end = Math.min(merged.length, Math.floor((i + 1) * ratio));
+let sum = 0;
+let count = 0;
+for (let j = start; j < end; j++) {
+sum += merged[j];
+count++;
+}
+downsampled[i] = count > 0 ? sum / count : 0;
+}
+
+const buffer = new ArrayBuffer(44 + newLen * 2);
+const view = new DataView(buffer);
+const writeStr = (off, str) => {
+for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
+};
+
+writeStr(0, 'RIFF');
+view.setUint32(4, 36 + newLen * 2, true);
+writeStr(8, 'WAVE');
+writeStr(12, 'fmt ');
+view.setUint32(16, 16, true);
+view.setUint16(20, 1, true);
+view.setUint16(22, 1, true);
+view.setUint32(24, targetRate, true);
+view.setUint32(28, targetRate * 2, true);
+view.setUint16(32, 2, true);
+view.setUint16(34, 16, true);
+writeStr(36, 'data');
+view.setUint32(40, newLen * 2, true);
+
+let pos = 44;
+for (let i = 0; i < newLen; i++) {
+const s = Math.max(-1, Math.min(1, downsampled[i]));
+view.setInt16(pos, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+pos += 2;
+}
+
+const bytes = new Uint8Array(buffer);
+let binary = '';
+const chunkSize = 8192;
+for (let i = 0; i < bytes.length; i += chunkSize) {
+binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+}
+
+let previewBuf = null;
+if (recAudioCtx) {
+previewBuf = recAudioCtx.createBuffer(1, merged.length, inputSampleRate);
+previewBuf.getChannelData(0).set(merged);
+}
+
+return {
+base64: 'data:audio/wav;base64,' + btoa(binary),
+previewBuf: previewBuf
+};
+}
+
+function isMicAlive() {
+if (!micStream || !micStream.active) return false;
+const tracks = micStream.getAudioTracks();
+return tracks.length > 0 && tracks.every(t => t.readyState === 'live');
+}
+
 window.requestMicPermission = async () => {
 try {
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+if (!recAudioCtx) {
+recAudioCtx = new AudioCtx();
+}
+if (recAudioCtx.state === 'suspended') {
+await recAudioCtx.resume();
+}
+
+if (micStream) {
+micStream.getTracks().forEach(t => t.stop());
+}
 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+if (recSource) { try { recSource.disconnect(); } catch (e) {} }
+if (recProcessor) { try { recProcessor.disconnect(); } catch (e) {} }
+if (recZeroGain) { try { recZeroGain.disconnect(); } catch (e) {} }
+
+recSource = recAudioCtx.createMediaStreamSource(micStream);
+recProcessor = recAudioCtx.createScriptProcessor(4096, 1, 1);
+recZeroGain = recAudioCtx.createGain();
+recZeroGain.gain.value = 0;
+
+recProcessor.onaudioprocess = (e) => {
+if (!isRecordingWav) return;
+const input = e.inputBuffer.getChannelData(0);
+pcmChunks.push(new Float32Array(input));
+};
+
+recSource.connect(recProcessor);
+recProcessor.connect(recZeroGain);
+recZeroGain.connect(recAudioCtx.destination);
+
 lastRenderKey = "";
 renderPad();
 } catch (err) {
@@ -271,81 +394,116 @@ alert("Brak dostępu do mikrofonu! Zezwól przeglądarce na mikrofon w pasku adr
 }
 };
 
+function stopWavRecording() {
+if (!isRecordingWav) return;
+isRecordingWav = false;
+clearTimeout(recAutoStopTimer);
+
+const btn = document.getElementById('micRecordBtn');
+if (btn) {
+btn.classList.remove('recording');
+btn.innerHTML = "⏳<br>PRZETWARZAM...";
+}
+
+const sr = (recAudioCtx && recAudioCtx.sampleRate) ? recAudioCtx.sampleRate : 44100;
+const result = encodeWavFromChunks(pcmChunks, sr);
+pcmChunks = [];
+
+if (!result) {
+const fb = document.getElementById('feedbackMsg');
+if (fb) {
+fb.style.color = "#ff6b6b";
+fb.innerText = "⚠️ Za krótkie nagranie — przytrzymaj przycisk chwilę dłużej!";
+}
+if (btn) btn.innerHTML = "🎙️<br>TRZYMAJ<br>I NAGRAJ";
+return;
+}
+
+recordedBase64 = result.base64;
+recordedAudioBuffer = result.previewBuf;
+lastRenderKey = "";
+renderPad();
+}
+
 function bindMicEvents() {
 const btn = document.getElementById('micRecordBtn');
 if (!btn) return;
+
 const startRec = () => {
-if (!micStream || (mediaRecorder && mediaRecorder.state === "recording")) return;
-audioChunks = [];
-try {
-mediaRecorder = new MediaRecorder(micStream, { audioBitsPerSecond: 32000 });
-} catch (e) {
-mediaRecorder = new MediaRecorder(micStream);
-}
-mediaRecorder.ondataavailable = (e) => {
-if (e.data && e.data.size > 0) audioChunks.push(e.data);
-};
-mediaRecorder.onstop = () => {
-const mime = (mediaRecorder && mediaRecorder.mimeType) || 'audio/webm';
-const blob = new Blob(audioChunks, { type: mime });
-audioChunks = [];
-if (blob.size < 100) {
-alert("Nagranie było za krótkie! Przytrzymaj przycisk dłużej podczas mówienia.");
+if (isRecordingWav) return;
+if (!isMicAlive() || !recAudioCtx) {
 lastRenderKey = "";
 renderPad();
 return;
 }
-const reader = new FileReader();
-reader.readAsDataURL(blob);
-reader.onloadend = () => {
-recordedBase64 = reader.result;
-const player = document.getElementById('localAudioPlayer');
-if (player) player.src = recordedBase64;
-lastRenderKey = "";
-renderPad();
-};
-};
-mediaRecorder.start();
+if (previewSourceNode) {
+try { previewSourceNode.stop(); } catch (e) {}
+previewSourceNode = null;
+}
+if (recAudioCtx.state === 'suspended') {
+recAudioCtx.resume().catch(() => {});
+}
+const fb = document.getElementById('feedbackMsg');
+if (fb) fb.innerText = "";
+
+pcmChunks = [];
+isRecordingWav = true;
 btn.classList.add('recording');
 btn.innerHTML = "🎙️<br>NAGRYWAM!<br>(PUŚĆ ABY STOP)";
+
+clearTimeout(recAutoStopTimer);
+recAutoStopTimer = setTimeout(() => {
+if (isRecordingWav) stopWavRecording();
+}, 3500);
 };
-const stopRec = () => {
-if (mediaRecorder && mediaRecorder.state === "recording") {
-mediaRecorder.stop();
-btn.classList.remove('recording');
-btn.innerHTML = "⏳<br>PRZETWARZAM...";
-}
-};
+
 btn.ontouchstart = (e) => { e.preventDefault(); startRec(); };
-btn.ontouchend = (e) => { e.preventDefault(); stopRec(); };
-btn.ontouchcancel = (e) => { e.preventDefault(); stopRec(); };
+btn.ontouchend = (e) => { e.preventDefault(); stopWavRecording(); };
+btn.ontouchcancel = (e) => { e.preventDefault(); stopWavRecording(); };
 btn.onmousedown = () => startRec();
-btn.onmouseup = () => stopRec();
+btn.onmouseup = () => stopWavRecording();
+btn.onmouseleave = () => { if (isRecordingWav) stopWavRecording(); };
 }
 
 window.playMyRecording = () => {
-const player = document.getElementById('localAudioPlayer');
-if (player && recordedBase64) {
-player.currentTime = 0;
-player.play().catch(() => {});
+if (!recAudioCtx || !recordedAudioBuffer) return;
+if (recAudioCtx.state === 'suspended') {
+recAudioCtx.resume().catch(() => {});
 }
+if (previewSourceNode) {
+try { previewSourceNode.stop(); } catch (e) {}
+}
+const src = recAudioCtx.createBufferSource();
+src.buffer = recordedAudioBuffer;
+src.connect(recAudioCtx.destination);
+src.start(0);
+previewSourceNode = src;
 };
 
 window.discardMyRecording = () => {
+if (previewSourceNode) {
+try { previewSourceNode.stop(); } catch (e) {}
+previewSourceNode = null;
+}
 recordedBase64 = null;
+recordedAudioBuffer = null;
 lastRenderKey = "";
 renderPad();
 };
-
-let isSendingAudio = false;
 
 window.sendMyRecording = async () => {
 if (!recordedBase64 || !currentState || isSendingAudio) return;
 isSendingAudio = true;
 const audioToSend = recordedBase64;
+const bufBackup = recordedAudioBuffer;
 const fb = document.getElementById('feedbackMsg');
 fb.style.color = "#ffd700";
 fb.innerText = "⏳ Wysyłanie nagrania na TV...";
+
+if (previewSourceNode) {
+try { previewSourceNode.stop(); } catch (e) {}
+previewSourceNode = null;
+}
 
 try {
 const snap = await getDoc(stateRef);
@@ -355,8 +513,7 @@ const myTasks = STAGE2_HYMN_TASKS[myName];
 const stepIdx = myTasks.findIndex(t => !tracks[t.slot]);
 
 recordedBase64 = null;
-const player = document.getElementById('localAudioPlayer');
-if (player) { player.pause(); player.removeAttribute('src'); }
+recordedAudioBuffer = null;
 
 if (stepIdx !== -1) {
 const slotKey = myTasks[stepIdx].slot;
@@ -369,6 +526,7 @@ lastRenderKey = "";
 renderPad();
 } catch (err) {
 recordedBase64 = audioToSend;
+recordedAudioBuffer = bufBackup;
 fb.style.color = "#ff4d4d";
 fb.innerText = "❌ Błąd wysyłania: " + err.message;
 lastRenderKey = "";
@@ -377,6 +535,7 @@ renderPad();
 isSendingAudio = false;
 }
 };
+
 // --- ETAP 3: AKCELEROMETR (LÓD) ---
 window.requestMotionPermission = () => {
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
@@ -496,7 +655,7 @@ const myTasks = STAGE2_HYMN_TASKS[myName];
 let hymnDoneCount = 0;
 myTasks.forEach(t => { if (tracks[t.slot]) hymnDoneCount++; });
 
-const hasMic = micStream !== null;
+const hasMic = isMicAlive() && recAudioCtx !== null;
 const hasRec = recordedBase64 !== null;
 const lockRem = st === 5 ? getQuizLockRemainingSec() : 0;
 const renderKey = st + "_" + status + "_" + myStep + "_" + (myPhoto.status || "") + "_" + (currentState.simonLevel || 0) + "_" + (lockRem > 0 ? "locked" : "open") + "_" + hasMic + "_" + hasRec + "_" + hymnDoneCount + "_" + motionActive;
@@ -563,7 +722,7 @@ container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1)
 + '<div class="' + boxClass + '">' + taskHtml + '</div>'
 + '<div style="font-size:13px; color:#cbd5e1;">Przytrzymaj niebieski przycisk podczas śpiewania, puść gdy skończysz:</div>'
 + '<div class="Tap-btn mic-btn" id="micRecordBtn">🎙️<br>TRZYMAJ<br>I NAGRAJ</div>';
-setTimeout(bindMicEvents, 100);
+setTimeout(bindMicEvents, 60);
 } else {
 container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1) + ' / 3</span><h2>🎧 SPRAWDŹ NAGRANIE</h2>'
 + '<div class="task-box">Odsłuchaj czy dobrze słychać: <b style="color:var(--gold);">"' + curTask.word + '"</b></div>'
@@ -872,9 +1031,10 @@ const resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 
 if (nextSt === 2) {
 recordedBase64 = null;
+recordedAudioBuffer = null;
 await updateDoc(stateRef, { stage: 2, status: "stage2_active", photos: {}, audioTracks: {}, speechTick: Date.now() });
 } else if (nextSt === 3) {
-await updateDoc(stateRef, { stage: 3, status: "stage3_ice", iceTotalHits: 0, iceTarget: activeList.length * 2500, speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 3, status: "stage3_ice", photos: {}, audioTracks: {}, iceTotalHits: 0, iceTarget: activeList.length * 2500, speechTick: Date.now() });
 } else if (nextSt === 4) {
 await updateDoc(stateRef, { stage: 4, status: "stage4_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 5) {
