@@ -188,7 +188,6 @@ const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", auth
 const db = getFirestore(initializeApp(firebaseConfig));
 
 // --- BAZA 60 PYTAŃ DO NOWEJ RUNDY 3: "KTO NAJBLIŻEJ?" (12 PUL x 5 PYTAŃ) ---
-// Format: Pytanie|PoprawnaLiczba|Jednostka (opcjonalna)
 const closestR3Raw = `
 Ile kilometrów długości ma najdłuższa rzeka w Polsce – Wisła?|1047|km
 Z ilu kości składa się szkielet dorosłego człowieka?|206|kości
@@ -252,7 +251,6 @@ Ile maksymalnie punktów można zdobyć przy jednym podejściu do stołu w snook
 Ile kilometrów wynosi średnica Ziemi mierzona na równiku?|12756|km
 `;
 
-// --- FUNKCJA LOSOWEGO MIESZANIA ODPOWIEDZI A/B/C/D ---
 function shuffleQuestionOptions(qObj) {
 if (!qObj || !Array.isArray(qObj.o) || qObj.o.length < 2) return qObj;
 const pairs = qObj.o.map((text, idx) => ({ text, isCorrect: idx === qObj.c }));
@@ -262,9 +260,7 @@ if (window.crypto && window.crypto.getRandomValues) {
 const randArr = new Uint32Array(1);
 window.crypto.getRandomValues(randArr);
 j = randArr[0] % (i + 1);
-} else {
-j = Math.floor(Math.random() * (i + 1));
-}
+} else j = Math.floor(Math.random() * (i + 1));
 [pairs[i], pairs[j]] = [pairs[j], pairs[i]];
 }
 const newCorrectIdx = pairs.findIndex(p => p.isCorrect);
@@ -278,8 +274,7 @@ return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").
 function sanitizeSpoilerInQuestionText(qText, answerText) {
 if (!qText || !answerText) return qText;
 let cleaned = qText;
-const ansVariants = answerText.split('/').map(a => a.trim()).filter(Boolean);
-ansVariants.forEach(ans => {
+answerText.split('/').map(a => a.trim()).filter(Boolean).forEach(ans => {
 const normAns = stripPolishChars(ans).replace(/[^a-z0-9]/g, "");
 if (normAns.length < 4) return;
 const stem = normAns.slice(0, Math.max(4, normAns.length - 2));
@@ -337,24 +332,19 @@ result.push(pool.splice(idx, 1)[0]);
 return result;
 }
 
-// --- WŁASNE IMIONA GRACZY I PODGLĄD AWATARÓW ---
+// --- WŁASNE IMIONA I AWATARY ---
 let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
 function getDisplayName(pKey) { return playerNamesMap[pKey] || pKey; }
 
 function refreshPlayerLabelsInAdmin() {
 ["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
 const dn = getDisplayName(k);
-const lbl = document.getElementById(`lbl-pts-${k}`);
-if (lbl) lbl.innerText = dn.toUpperCase();
-const cbTxt = document.getElementById(`cb-txt-${k}`);
-if (cbTxt) cbTxt.innerText = dn.toUpperCase();
-const inpName = document.getElementById(`custom-name-${k}`);
-if (inpName && document.activeElement !== inpName) inpName.value = dn;
+const lbl = document.getElementById(`lbl-pts-${k}`); if (lbl) lbl.innerText = dn.toUpperCase();
+const cbTxt = document.getElementById(`cb-txt-${k}`); if (cbTxt) cbTxt.innerText = dn.toUpperCase();
+const inpName = document.getElementById(`custom-name-${k}`); if (inpName && document.activeElement !== inpName) inpName.value = dn;
 });
 const sel = document.getElementById('controllerSel');
-if (sel) {
-Array.from(sel.options).forEach(opt => { opt.text = getDisplayName(opt.value); });
-}
+if (sel) Array.from(sel.options).forEach(opt => { opt.text = getDisplayName(opt.value); });
 }
 
 async function saveCustomPlayerNames() {
@@ -392,7 +382,7 @@ if (st) { st.innerText = "brak foto"; st.style.color = "#94a3b8"; }
 });
 });
 
-// --- POBIERANIE BAZ PYTAŃ Z ZEWNĘTRZNYCH PLIKÓW JS ---
+// --- BAZY PYTAŃ ---
 const QDB = window.QUIZ_QUESTIONS_RAW || {};
 const BDB = window.BOMB_TF_RAW || {};
 const ADB = window.ADULT_QUIZ_DB || null;
@@ -404,7 +394,6 @@ const familyR4Questions = parseR4(QDB.familyR4Questions);
 const generalR4Questions = parseR4(QDB.generalR4Questions);
 const rawR6_Dedicated = parseR4(QDB.rawR6_Dedicated);
 
-// Baza dla dorosłych (Pule 11 i 12)
 const adultR1 = ADB ? parseR1(ADB.r1) : [];
 const adultBombTF = ADB ? parseTF(ADB.bombTF) : [];
 const adultR4 = ADB ? parseWheel(ADB.r4) : [];
@@ -414,7 +403,6 @@ const adultMilQ2 = ADB ? parseR1(ADB.milQ2) : [];
 const adultR6 = ADB ? parseR4(ADB.r6) : [];
 const adultR7 = ADB ? parseR4(ADB.r7) : [];
 
-// Baza Postaw na Milion (Dzieci 1–10)
 const millionStandardQ4Opts = parseR1(QDB.millionStandardQ4Opts || "");
 const millionStandardQ3Opts = parseR1(QDB.millionStandardQ3Opts || "");
 const millionStandardQ2Opts = parseR1(QDB.millionStandardQ2Opts || "");
@@ -422,7 +410,6 @@ const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || "");
 const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || "");
 const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || "");
 
-// Baza Gorącej Bomby — sztywny podział na 12 rozłącznych pul
 const rawLilaBomb = parseTF(BDB.Lila);
 const rawKajaBomb = parseTF(BDB.Kaja);
 const rawDarekBomb = parseTF(BDB.Darek);
@@ -435,32 +422,21 @@ for (let i = 0; i < maxLKD; i++) {
 [rawLilaBomb[i], rawKajaBomb[i], rawDarekBomb[i]].forEach(item => {
 if (!item || !item.q) return;
 const normKey = stripPolishChars(item.q);
-if (!seenBombQSet.has(normKey)) {
-seenBombQSet.add(normKey);
-allOlderBombOrdered.push(item);
-}
+if (!seenBombQSet.has(normKey)) { seenBombQSet.add(normKey); allOlderBombOrdered.push(item); }
 });
 }
-
 const extraBombOverflow = [];
 rawExtraBomb.forEach(item => {
 if (!item || !item.q) return;
 const normKey = stripPolishChars(item.q);
-if (!seenBombQSet.has(normKey)) {
-seenBombQSet.add(normKey);
-extraBombOverflow.push(item);
-}
+if (!seenBombQSet.has(normKey)) { seenBombQSet.add(normKey); extraBombOverflow.push(item); }
 });
-
 const jasUniqueBombQuestions = [];
 const seenJasBombSet = new Set();
 parseTF(BDB.Jas).forEach(item => {
 if (!item || !item.q) return;
 const normKey = stripPolishChars(item.q);
-if (!seenJasBombSet.has(normKey)) {
-seenJasBombSet.add(normKey);
-jasUniqueBombQuestions.push(item);
-}
+if (!seenJasBombSet.has(normKey)) { seenJasBombSet.add(normKey); jasUniqueBombQuestions.push(item); }
 });
 
 let usedBombQuestionsInSession = new Set();
@@ -468,53 +444,38 @@ let usedBombQuestionsInSession = new Set();
 function getBombSliceForPool(poolNum, isJasSlot) {
 if (poolNum >= 11 && adultBombTF.length > 0) {
 const half = Math.floor(adultBombTF.length / 2);
-const start = (poolNum === 11) ? 0 : half;
-const end = (poolNum === 11) ? half : adultBombTF.length;
-return { primary: adultBombTF.slice(start, end), fallback: adultBombTF };
+return { primary: adultBombTF.slice(poolNum === 11 ? 0 : half, poolNum === 11 ? half : adultBombTF.length), fallback: adultBombTF };
 }
 const pIdx = Math.max(0, Math.min(9, poolNum - 1));
 if (isJasSlot && jasUniqueBombQuestions.length > 0) {
 const perPool = Math.max(1, Math.floor(jasUniqueBombQuestions.length / 10));
-const start = pIdx * perPool;
-const end = (pIdx === 9) ? jasUniqueBombQuestions.length : (start + perPool);
-return { primary: jasUniqueBombQuestions.slice(start, end), fallback: jasUniqueBombQuestions };
+return { primary: jasUniqueBombQuestions.slice(pIdx * perPool, pIdx === 9 ? jasUniqueBombQuestions.length : (pIdx + 1) * perPool), fallback: jasUniqueBombQuestions };
 }
 const perPool = Math.max(1, Math.floor(allOlderBombOrdered.length / 10));
-const start = pIdx * perPool;
-const end = (pIdx === 9) ? allOlderBombOrdered.length : (start + perPool);
-return { primary: allOlderBombOrdered.slice(start, end), fallback: [...extraBombOverflow, ...allOlderBombOrdered] };
+return { primary: allOlderBombOrdered.slice(pIdx * perPool, pIdx === 9 ? allOlderBombOrdered.length : (pIdx + 1) * perPool), fallback: [...extraBombOverflow, ...allOlderBombOrdered] };
 }
 
 function pickNextUniqueBombQuestion(playerKey) {
 const activePool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
-const isJasSlot = (activePool <= 10 && playerKey === "Jas");
-const { primary, fallback } = getBombSliceForPool(activePool, isJasSlot);
-
+const { primary, fallback } = getBombSliceForPool(activePool, activePool <= 10 && playerKey === "Jas");
 let unused = primary.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
 if (unused.length === 0) unused = fallback.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
-if (unused.length === 0) {
-usedBombQuestionsInSession.clear();
-unused = primary.length > 0 ? [...primary] : [...fallback];
-}
-
-const randomIdx = Math.floor(Math.random() * unused.length);
-const chosen = unused[randomIdx] || { q: "Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?", a: true };
+if (unused.length === 0) { usedBombQuestionsInSession.clear(); unused = primary.length > 0 ? [...primary] : [...fallback]; }
+const chosen = unused[Math.floor(Math.random() * unused.length)] || { q: "Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?", a: true };
 usedBombQuestionsInSession.add(stripPolishChars(chosen.q));
 return chosen;
 }
 
 function getMillionQuestionsForPlayer(player, poolNum, pIdx) {
 if (poolNum >= 11 && adultMilQ4.length >= 24 && adultMilQ3.length >= 8 && adultMilQ2.length >= 8) {
-const adultPoolOffset = (poolNum === 11) ? 0 : 1;
-const q4Base = adultPoolOffset * 12 + pIdx * 3;
-const q3Idx = adultPoolOffset * 4 + pIdx;
-const q2Idx = adultPoolOffset * 4 + pIdx;
+const off = (poolNum === 11) ? 0 : 1;
+const q4Base = off * 12 + pIdx * 3;
 return [
 shuffleQuestionOptions(adultMilQ4[q4Base % adultMilQ4.length]),
 shuffleQuestionOptions(adultMilQ4[(q4Base + 1) % adultMilQ4.length]),
 shuffleQuestionOptions(adultMilQ4[(q4Base + 2) % adultMilQ4.length]),
-shuffleQuestionOptions(adultMilQ3[q3Idx % adultMilQ3.length]),
-shuffleQuestionOptions(adultMilQ2[q2Idx % adultMilQ2.length])
+shuffleQuestionOptions(adultMilQ3[(off * 4 + pIdx) % adultMilQ3.length]),
+shuffleQuestionOptions(adultMilQ2[(off * 4 + pIdx) % adultMilQ2.length])
 ];
 }
 const pOffset = Math.max(0, Math.min(9, poolNum - 1));
@@ -543,10 +504,7 @@ const r5Order = ["Lila", "Kaja", "Darek", "Jas"];
 const r5Ages = { Lila: 11, Kaja: 10, Darek: 10, Jas: 8 };
 const r7WheelCategoriesKids = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r7WheelCategoriesAdults = ["KOSMOS", "FILM", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
-
-function getWheelCategoriesForPool(poolNum) {
-return poolNum >= 11 ? r7WheelCategoriesAdults : r7WheelCategoriesKids;
-}
+function getWheelCategoriesForPool(poolNum) { return poolNum >= 11 ? r7WheelCategoriesAdults : r7WheelCategoriesKids; }
 
 const roundTitlesSpeech = {
 1: "Runda pierwsza: Wyścig A B C D",
@@ -563,47 +521,35 @@ const r7ByCat = {};
 const adultR7ByCat = {};
 r7WheelCategoriesAdults.forEach(c => { adultR7ByCat[c] = adultR7.filter(item => item.cat === c); });
 
-// --- BUDOWANIE 12 W PEŁNI UNIKALNYCH PUL PYTAŃ WE WSZYSTKICH 7 RUNDACH (1-12) ---
 const allDBs = {};
 for (let p = 1; p <= 12; p++) {
 const r3ClosestSlice = masterR3Closest.slice((p - 1) * 5, (p - 1) * 5 + 5);
-
 if (p >= 11 && ADB && adultR1.length >= 30) {
 const offset = p - 11;
-const r1AdultSlice = adultR1.slice(offset * 15, offset * 15 + 15).map(shuffleQuestionOptions);
-const r4AdultSlice = arrangeNoAdjacentCategories(adultR4.slice(offset * 5, offset * 5 + 5), p);
-const r6AdultSlice = arrangeNoAdjacentCategories(adultR6.slice(offset * 24, offset * 24 + 24).map(shuffleQuestionOptions), p);
 const r7AdultPool = [];
 r7WheelCategoriesAdults.forEach(c => {
 const catArr = adultR7ByCat[c] || [];
-if (catArr.length >= 4) {
-r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2]));
-r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2 + 1]));
-}
+if (catArr.length >= 4) { r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2])); r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2 + 1])); }
 });
-allDBs[p] = { 1: r1AdultSlice, 2: {}, 3: r3ClosestSlice, 4: r4AdultSlice, 5: {}, 6: r6AdultSlice, 7: r7AdultPool };
+allDBs[p] = {
+1: adultR1.slice(offset * 15, offset * 15 + 15).map(shuffleQuestionOptions),
+2: {},
+3: r3ClosestSlice,
+4: arrangeNoAdjacentCategories(adultR4.slice(offset * 5, offset * 5 + 5), p),
+5: {},
+6: arrangeNoAdjacentCategories(adultR6.slice(offset * 24, offset * 24 + 24).map(shuffleQuestionOptions), p),
+7: r7AdultPool
+};
 continue;
 }
-
-const r1Slice = [];
-for (let i = 0; i < 15; i++) {
-if (masterR1.length) r1Slice.push(shuffleQuestionOptions(masterR1[((p - 1) * 15 + i) % masterR1.length]));
-}
-const r4PhraseSlice = [];
-for (let i = 0; i < 5; i++) {
-if (masterR2.length) r4PhraseSlice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
-}
-const r6GenSlice = [];
-for (let i = 0; i < 22; i++) {
-if (generalR4Questions.length) r6GenSlice.push(shuffleQuestionOptions(generalR4Questions[((p - 1) * 22 + i) % generalR4Questions.length]));
-}
+const r1Slice = []; for (let i = 0; i < 15; i++) if (masterR1.length) r1Slice.push(shuffleQuestionOptions(masterR1[((p - 1) * 15 + i) % masterR1.length]));
+const r4PhraseSlice = []; for (let i = 0; i < 5; i++) if (masterR2.length) r4PhraseSlice.push(masterR2[((p - 1) * 5 + i) % masterR2.length]);
+const r6GenSlice = []; for (let i = 0; i < 22; i++) if (generalR4Questions.length) r6GenSlice.push(shuffleQuestionOptions(generalR4Questions[((p - 1) * 22 + i) % generalR4Questions.length]));
 const r6FamSlice = [];
 if (familyR4Questions.length) {
 r6FamSlice.push(shuffleQuestionOptions(familyR4Questions[((p - 1) * 2) % familyR4Questions.length]));
 r6FamSlice.push(shuffleQuestionOptions(familyR4Questions[((p - 1) * 2 + 1) % familyR4Questions.length]));
 }
-const r6Combined = arrangeNoAdjacentCategories([...r6GenSlice, ...r6FamSlice], p);
-
 const r7PoolQuestions = [];
 getWheelCategoriesForPool(p).forEach(c => {
 const catArr = r7ByCat[c] || [];
@@ -611,27 +557,13 @@ if (!catArr.length) return;
 r7PoolQuestions.push(shuffleQuestionOptions(catArr[((p - 1) * 2) % catArr.length]));
 r7PoolQuestions.push(shuffleQuestionOptions(catArr[((p - 1) * 2 + 1) % catArr.length]));
 });
-
-allDBs[p] = {
-1: r1Slice,
-2: {},
-3: r3ClosestSlice,
-4: arrangeNoAdjacentCategories(r4PhraseSlice, p),
-5: {},
-6: r6Combined,
-7: r7PoolQuestions
-};
+allDBs[p] = { 1: r1Slice, 2: {}, 3: r3ClosestSlice, 4: arrangeNoAdjacentCategories(r4PhraseSlice, p), 5: {}, 6: arrangeNoAdjacentCategories([...r6GenSlice, ...r6FamSlice], p), 7: r7PoolQuestions };
 }
 
 let currentPool = 1;
 let currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 };
-let usedR7Indices = [];
-let lastR7WheelSegment = -1;
-let r7CarryOverPool = 0;
-let currentState = null;
-let r6Controller = "";
-let r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
-let lastR7TieWinner = "";
+let usedR7Indices = [], lastR7WheelSegment = -1, r7CarryOverPool = 0, currentState = null, r6Controller = "";
+let r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }, lastR7TieWinner = "";
 
 function pickFairRandomTieWinner(tiedPlayers) {
 if (!tiedPlayers || tiedPlayers.length === 0) return "Lila";
@@ -639,113 +571,58 @@ if (tiedPlayers.length === 1) return tiedPlayers[0];
 let minWins = Infinity;
 tiedPlayers.forEach(p => { const w = r7TieWinCounts[p] || 0; if (w < minWins) minWins = w; });
 let candidates = tiedPlayers.filter(p => (r7TieWinCounts[p] || 0) === minWins);
-if (candidates.length > 1 && lastR7TieWinner && candidates.includes(lastR7TieWinner)) {
-candidates = candidates.filter(p => p !== lastR7TieWinner);
-}
+if (candidates.length > 1 && lastR7TieWinner && candidates.includes(lastR7TieWinner)) candidates = candidates.filter(p => p !== lastR7TieWinner);
 let chosenIndex = 0;
-if (window.crypto && window.crypto.getRandomValues) {
-const randArr = new Uint32Array(1);
-window.crypto.getRandomValues(randArr);
-chosenIndex = randArr[0] % candidates.length;
-} else {
-chosenIndex = Math.floor(Math.random() * candidates.length);
-}
+if (window.crypto && window.crypto.getRandomValues) { const randArr = new Uint32Array(1); window.crypto.getRandomValues(randArr); chosenIndex = randArr[0] % candidates.length; }
+else chosenIndex = Math.floor(Math.random() * candidates.length);
 const winner = candidates[chosenIndex];
 r7TieWinCounts[winner] = (r7TieWinCounts[winner] || 0) + 1;
 lastR7TieWinner = winner;
 return winner;
 }
 
-// ZMIENNE RUNDY 2 (BOMBA)
-let bombTurnNum = 0;
-let bombHolderIdx = 0;
-let bombQuestionsAskedCount = 0;
-let bombTotalDurationMs = 90000;
-let bombEndTimeMs = 0;
-let bombIsExplodedOrFinished = false;
-let bombPenaltyTicker = null;
-let bombProgressTicker = null;
-let bombExplodeTimeout = null;
-let lastBombAnsKey = "";
-let lastBombReadyKey = "";
-
-// ZMIENNE RUNDY 5 (POSTAW NA MILION)
-let milPlayerIdx = 0;
-let milQIdx = 0;
-let milCurrentPoints = 200;
-let milTrapdoorTimer = null;
-let milBettingTimeout = null;
-let lastMilHandledKey = "";
-let lastMilReadyKey = "";
-let lastMilTimeoutResolvedKey = "";
-let lastMilBettingStartKey = "";
-
-// TIMERY I BLOKADY
-let suspenseTimer = null;
-let autoFlowTimer = null;
-let r1QuestionTimer = null;
-let r3QuestionTimer = null;
-let r7BiddingTimer = null;
-let lastHandledStatus = "";
-let lastSpinHandled = 0;
-let lastSummaryReadyKey = "";
-let lastR7BlindResolvedKey = "";
-let lastR1ResolvedKey = "";
-let lastR3ResolvedKey = "";
-let lastR4FullGuessKey = "";
+// ZMIENNE BOMBY, MILIONA I TIMERÓW
+let bombTurnNum = 0, bombHolderIdx = 0, bombQuestionsAskedCount = 0, bombTotalDurationMs = 90000, bombEndTimeMs = 0, bombIsExplodedOrFinished = false;
+let bombPenaltyTicker = null, bombProgressTicker = null, bombExplodeTimeout = null, lastBombAnsKey = "", lastBombReadyKey = "";
+let milPlayerIdx = 0, milQIdx = 0, milCurrentPoints = 200, milTrapdoorTimer = null, milBettingTimeout = null;
+let lastMilHandledKey = "", lastMilReadyKey = "", lastMilTimeoutResolvedKey = "", lastMilBettingStartKey = "";
+let suspenseTimer = null, autoFlowTimer = null, r1QuestionTimer = null, r3QuestionTimer = null, r7BiddingTimer = null;
+let lastHandledStatus = "", lastSpinHandled = 0, lastSummaryReadyKey = "", lastR7BlindResolvedKey = "", lastR1ResolvedKey = "", lastR3ResolvedKey = "", lastR4FullGuessKey = "";
+let lastR1TimeUpHandled = 0, lastR3TimeUpHandled = 0;
 
 function updateRemainingCounterUI() {
 const r = parseInt(document.getElementById('roundSel').value, 10) || 1;
 const activeList = getSelectedActivePlayers();
-
 if (r === 2) {
 if (bombEndTimeMs > 0 && !bombIsExplodedOrFinished) {
 const remSec = Math.max(0, Math.ceil((bombEndTimeMs - Date.now()) / 1000));
-const mins = Math.floor(remSec / 60);
-const secs = remSec % 60;
 remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - PULA ${currentPool}) | Zadano pytań: ${bombQuestionsAskedCount}`;
-remRightEl.innerText = `⏱️ Do wybuchu: ${mins}:${secs < 10 ? '0' + secs : secs} (${remSec}s)`;
+remRightEl.innerText = `⏱️ Do wybuchu: ${Math.floor(remSec / 60)}:${remSec % 60 < 10 ? '0' + (remSec % 60) : (remSec % 60)} (${remSec}s)`;
 } else {
 remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA): 1 Tura (losowo 1:15 – 1:45 min | Sztywna pula #${currentPool})`;
 remRightEl.innerText = `Pozostało: 1 tura`;
 }
 return;
 }
-
 if (r === 5) {
 const activeOrder = r5Order.filter(p => activeList.includes(p));
-const totalPlayers = activeOrder.length;
 const curPOrd = Math.max(0, activeOrder.indexOf(r5Order[milPlayerIdx]));
-const totalQsInR5 = totalPlayers * 5;
-const doneQs = currentQIndex[5] === -1 ? 0 : (curPOrd * 5 + milQIdx);
-const remQs = Math.max(0, totalQsInR5 - doneQs);
-const curPName = r5Order[milPlayerIdx] ? getDisplayName(r5Order[milPlayerIdx]) : "--";
-remLeftEl.innerText = `💰 RUNDA 5 (POSTAW NA MILION) | Gracz: ${curPName} (Pytanie ${Math.min(5, milQIdx + 1)}/5)`;
+const totalQsInR5 = activeOrder.length * 5;
+const remQs = Math.max(0, totalQsInR5 - (currentQIndex[5] === -1 ? 0 : (curPOrd * 5 + milQIdx)));
+remLeftEl.innerText = `💰 RUNDA 5 (POSTAW NA MILION) | Gracz: ${r5Order[milPlayerIdx] ? getDisplayName(r5Order[milPlayerIdx]) : "--"} (Pytanie ${Math.min(5, milQIdx + 1)}/5)`;
 remRightEl.innerText = `Pozostało w rundzie: ${remQs} z ${totalQsInR5} pytań`;
 return;
 }
-
-const totalMap = {
-1: (allDBs[currentPool] && allDBs[currentPool][1]) ? allDBs[currentPool][1].length : 15,
-3: (allDBs[currentPool] && allDBs[currentPool][3]) ? allDBs[currentPool][3].length : 5,
-4: (allDBs[currentPool] && allDBs[currentPool][4]) ? allDBs[currentPool][4].length : 5,
-6: (allDBs[currentPool] && allDBs[currentPool][6]) ? allDBs[currentPool][6].length : 24,
-7: 16
-};
-
+const totalMap = { 1: (allDBs[currentPool] && allDBs[currentPool][1]) ? allDBs[currentPool][1].length : 15, 3: (allDBs[currentPool] && allDBs[currentPool][3]) ? allDBs[currentPool][3].length : 5, 4: (allDBs[currentPool] && allDBs[currentPool][4]) ? allDBs[currentPool][4].length : 5, 6: (allDBs[currentPool] && allDBs[currentPool][6]) ? allDBs[currentPool][6].length : 24, 7: 16 };
 const total = totalMap[r] || 5;
 const curIdx = currentQIndex[r] !== undefined ? currentQIndex[r] : -1;
-const currentNum = curIdx < 0 ? 0 : Math.min(total, curIdx + 1);
-const remaining = curIdx < 0 ? total : Math.max(0, total - (curIdx + 1));
-
-remLeftEl.innerText = `📊 POSTĘP RUNDY ${r}: Pytanie ${currentNum} z ${total}`;
-remRightEl.innerText = `Pozostało do końca rundy: ${remaining}`;
+remLeftEl.innerText = `📊 POSTĘP RUNDY ${r}: Pytanie ${curIdx < 0 ? 0 : Math.min(total, curIdx + 1)} z ${total}`;
+remRightEl.innerText = `Pozostało do końca rundy: ${curIdx < 0 ? total : Math.max(0, total - (curIdx + 1))}`;
 }
 window.updateRemainingCounterUI = updateRemainingCounterUI;
 
 function clearAllAdminTimers() {
-clearTimeout(suspenseTimer);
-clearTimeout(autoFlowTimer);
+clearTimeout(suspenseTimer); clearTimeout(autoFlowTimer);
 clearTimeout(r1QuestionTimer); r1QuestionTimer = null;
 clearTimeout(r3QuestionTimer); r3QuestionTimer = null;
 clearTimeout(r7BiddingTimer); r7BiddingTimer = null;
@@ -773,16 +650,14 @@ await setDoc(ref, { points: cur + delta }, { merge: true });
 
 async function setPlayerScoreManually(player) {
 try {
-const inp = document.getElementById(`manual-pts-${player}`);
-const newPts = parseInt(inp.value, 10) || 0;
+const newPts = parseInt(document.getElementById(`manual-pts-${player}`).value, 10) || 0;
 await setDoc(doc(db, "quizScores", player), { points: newPts }, { merge: true });
 statusEl.innerText = `✅ Ręcznie zmieniono punkty gracza ${getDisplayName(player)} na: ${newPts} PKT!`;
 } catch (err) { showError(err.message); }
 }
 
 function getSelectedActivePlayers() {
-const cbs = document.querySelectorAll('.active-player-cb:checked');
-const arr = Array.from(cbs).map(cb => cb.value);
+const arr = Array.from(document.querySelectorAll('.active-player-cb:checked')).map(cb => cb.value);
 return arr.length > 0 ? arr : ["Lila", "Kaja", "Darek", "Jas"];
 }
 
@@ -790,10 +665,7 @@ async function updateActivePlayersList() {
 const activeList = getSelectedActivePlayers();
 const sel = document.getElementById('controllerSel');
 if (sel) {
-Array.from(sel.options).forEach(opt => {
-opt.disabled = !activeList.includes(opt.value);
-opt.hidden = !activeList.includes(opt.value);
-});
+Array.from(sel.options).forEach(opt => { opt.disabled = !activeList.includes(opt.value); opt.hidden = !activeList.includes(opt.value); });
 if (!activeList.includes(sel.value)) sel.value = activeList[0];
 }
 updateRemainingCounterUI();
@@ -806,13 +678,12 @@ statusEl.innerText = `👥 Aktywni gracze (${activeList.length}): ${activeList.m
 async function determineInitialController() {
 const activeList = getSelectedActivePlayers();
 const snap = await getDocs(collection(db, "quizScores"));
-let maxPts = -999999;
-let leaders = [];
+let maxPts = -999999, leaders = [];
 snap.forEach(d => {
 if (!activeList.includes(d.id)) return;
 let pts = d.data().points || 0;
 if (pts > maxPts) { maxPts = pts; leaders = [d.id]; }
-else if (pts === maxPts) { leaders.push(d.id); }
+else if (pts === maxPts) leaders.push(d.id);
 });
 if (leaders.length === 0) return { player: activeList[0], tieMsg: "" };
 if (leaders.length === 1) return { player: leaders[0], tieMsg: `NAJWIĘCEJ PUNKTÓW (${maxPts}) MA: ${getDisplayName(leaders[0]).toUpperCase()}!` };
@@ -823,9 +694,7 @@ return { player: chosen, tieMsg: `REMIS LIDERÓW (${maxPts} PKT)! WYLOSOWANO: ${
 async function showGrandFinale() {
 try {
 clearAllAdminTimers();
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "podium", activePlayers: getSelectedActivePlayers(), playerNames: playerNamesMap, answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: "podium", activePlayers: getSelectedActivePlayers(), playerNames: playerNamesMap, answerTick: Date.now() });
 statusEl.innerText = "🏆 WIELKI FINAŁ! Na ekranie TV wyświetlane jest podium i fajerwerki!";
 } catch (err) { showError(err.message); }
 }
@@ -838,147 +707,127 @@ const nextR = completedRound + 1;
 document.getElementById('roundSel').value = String(nextR);
 updateRemainingCounterUI();
 let activeList = getSelectedActivePlayers();
-
-statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Czekam aż gracze (${activeList.map(getDisplayName).join(", ")}) klikną GOTOWOŚĆ na telefonach (lub kliknij START GRY tutaj)...`;
-
+statusEl.innerText = `📊 PODSUMOWANIE RUNDY ${completedRound}! Czekam aż gracze (${activeList.map(getDisplayName).join(", ")}) klikną GOTOWOŚĆ...`;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "round_summary",
-round: completedRound,
-completedRound: completedRound,
-nextRound: nextR,
-nextRoundTitle: roundTitlesSpeech[nextR] || `Runda ${nextR}`,
-activePlayers: activeList,
-playerNames: playerNamesMap,
-readyPlayers: [],
-speechTick: Date.now(),
-pool: currentPool
+status: "round_summary", round: completedRound, completedRound: completedRound, nextRound: nextR,
+nextRoundTitle: roundTitlesSpeech[nextR] || `Runda ${nextR}`, activePlayers: activeList, playerNames: playerNamesMap,
+readyPlayers: [], speechTick: Date.now(), pool: currentPool
 });
 }
 
-// --- RUNDA 1: WYŚCIG ABCD ---
-async function finalizeR1Question() {
+// --- RUNDA 1: WYŚCIG ABCD (BŁYSKAWICZNE ZAMYKANIE + RÓWNOLEGŁY ZAPIS PUNKTÓW) ---
+async function finalizeR1Question(fromAllSubmitted = false) {
 if (!currentState || currentState.round !== 1) return;
 const r1Key = "r1_fin_" + currentState.speechTick;
 if (lastR1ResolvedKey === r1Key) return;
 lastR1ResolvedKey = r1Key;
 clearTimeout(r1QuestionTimer); r1QuestionTimer = null;
 
+let answersMap = { ...(currentState.r1Answers || {}) };
+if (!fromAllSubmitted) {
+try {
 const snap = await getDoc(doc(db, "quizGame", "state"));
-const latest = snap.exists() ? snap.data() : currentState;
-const answersMap = latest.r1Answers || {};
-const correctIdx = latest.correctIndex;
-const entries = [];
+if (snap.exists()) answersMap = { ...answersMap, ...(snap.data().r1Answers || {}) };
+} catch (e) {}
+}
 
+const correctIdx = currentState.correctIndex;
+const entries = [];
 Object.keys(answersMap).forEach(pl => {
 const item = answersMap[pl];
-if (item && typeof item === 'object') {
-entries.push({ player: pl, opt: item.opt, ts: item.ts || 9999999999999, correct: item.opt === correctIdx });
-} else if (typeof item === 'number') {
-entries.push({ player: pl, opt: item, ts: Date.now(), correct: item === correctIdx });
-}
+if (item && typeof item === 'object') entries.push({ player: pl, opt: item.opt, ts: item.ts || 9999999999999, correct: item.opt === correctIdx });
+else if (typeof item === 'number') entries.push({ player: pl, opt: item, ts: Date.now(), correct: item === correctIdx });
 });
 
 const correctEntries = entries.filter(e => e.correct).sort((a, b) => a.ts - b.ts);
 const ptsTable = [15, 12, 10, 8];
 const winnersFormatted = [];
+const scorePromises = [];
 
 for (let i = 0; i < correctEntries.length; i++) {
 const pl = correctEntries[i].player;
 const pts = ptsTable[i] || 8;
-await changePlayerScoreDelta(pl, pts);
 winnersFormatted.push(`${getDisplayName(pl)} (+${pts} pkt)`);
+scorePromises.push(changePlayerScoreDelta(pl, pts));
 }
 
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r1_results",
-r1Winners: winnersFormatted,
-answerTick: Date.now()
-});
+await Promise.all(scorePromises);
+await updateDoc(doc(db, "quizGame", "state"), { status: "r1_results", r1Winners: winnersFormatted, answerTick: Date.now() });
 }
 
-// --- RUNDA 3: 🎯 KTO NAJBLIŻEJ? (SZACOWANIE NA OSI LICZBOWEJ + BONUS +10 ZA IDEAŁ) ---
+// --- RUNDA 3: 🎯 KTO NAJBLIŻEJ? (ZERO POMIJANIA 4. GRACZA + ZERO ZAWIASU PRZY 0s!) ---
 function normalizeAnswerStr(s) {
-return (s || "").toString().trim().toLowerCase()
-.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
+return (s || "").toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
 }
 
-async function finalizeR3Question() {
+async function finalizeR3Question(fromAllSubmitted = false) {
 if (!currentState || currentState.round !== 3) return;
 const r3Key = "r3_fin_" + currentState.speechTick;
 if (lastR3ResolvedKey === r3Key) return;
 lastR3ResolvedKey = r3Key;
 clearTimeout(r3QuestionTimer); r3QuestionTimer = null;
 
+// Łączymy lokalny snapshot z serwerowym getDoc — żaden gracz nie przepadnie w wyścigu zapisów!
+let guessesMap = { ...(currentState.r3Guesses || {}) };
+const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
+if (!fromAllSubmitted) {
+try {
 const snap = await getDoc(doc(db, "quizGame", "state"));
-const latest = snap.exists() ? snap.data() : currentState;
-const guessesMap = latest.r3Guesses || {};
-const activeList = (latest.activePlayers && latest.activePlayers.length > 0) ? latest.activePlayers : getSelectedActivePlayers();
-const targetVal = Number(latest.correctNumber);
+if (snap.exists()) guessesMap = { ...guessesMap, ...(snap.data().r3Guesses || {}) };
+} catch (e) {}
+}
 
+const targetVal = Number(currentState.correctNumber);
 const entries = [];
+
 activeList.forEach(pl => {
 const g = guessesMap[pl];
 if (g !== undefined && g !== null) {
 const rawVal = (typeof g === 'object') ? Number(g.val) : Number(g);
 const ts = (typeof g === 'object' && g.ts) ? g.ts : Date.now();
 if (Number.isFinite(rawVal)) {
-entries.push({
-player: pl,
-val: rawVal,
-diff: Math.abs(rawVal - targetVal),
-ts: ts
-});
+entries.push({ player: pl, val: rawVal, diff: Math.abs(rawVal - targetVal), ts: ts });
 }
 }
 });
 
-// Sortujemy od najmniejszej różnicy (przy remisie decyduje czas wysłania dla kolejności na liście, ale punkty przy remisie są równe!)
 entries.sort((a, b) => (a.diff - b.diff) || (a.ts - b.ts));
 
 const ptsByRank = { 1: 15, 2: 12, 3: 10, 4: 8 };
 const exactBonus = 10;
 const resultsData = [];
 const winnersFormatted = [];
+const scorePromises = [];
 
 let curRank = 1;
 for (let i = 0; i < entries.length; i++) {
-if (i > 0 && entries[i].diff > entries[i - 1].diff) {
-curRank = i + 1;
-}
+if (i > 0 && entries[i].diff > entries[i - 1].diff) curRank = i + 1;
 const basePts = ptsByRank[curRank] || 8;
 const bonusPts = (entries[i].diff === 0) ? exactBonus : 0;
 const totalPts = basePts + bonusPts;
 
-await changePlayerScoreDelta(entries[i].player, totalPts);
-
 const rec = {
-player: entries[i].player,
-val: entries[i].val,
-diff: entries[i].diff,
-ts: entries[i].ts,
-rank: curRank,
-basePts: basePts,
-bonusPts: bonusPts,
-totalPts: totalPts,
-exact: entries[i].diff === 0
+player: entries[i].player, val: entries[i].val, diff: entries[i].diff, ts: entries[i].ts,
+rank: curRank, basePts: basePts, bonusPts: bonusPts, totalPts: totalPts, exact: entries[i].diff === 0
 };
 resultsData.push(rec);
-
-const bonusTag = rec.exact ? " 🎯 IDEAŁ +10!" : "";
-winnersFormatted.push(`${getDisplayName(rec.player)}: ${rec.val} (+${rec.totalPts} pkt${bonusTag})`);
+winnersFormatted.push(`${getDisplayName(rec.player)}: ${rec.val} (+${rec.totalPts} pkt${rec.exact ? " 🎯 IDEAŁ +10!" : ""})`);
+scorePromises.push(changePlayerScoreDelta(rec.player, totalPts));
 }
 
+// NAJPIERW błyskawicznie wysyłamy status r3_results na TV (stoper staje od razu, ZERO zawiasu przy 0s!),
+// a punkty zapisujemy równolegle w tle (TV i tak odkrywa je dopiero po ~5s gdy spadnie złota linia!).
 await updateDoc(doc(db, "quizGame", "state"), {
 status: "r3_results",
 r3ResultsData: resultsData,
 r3Winners: winnersFormatted,
 answerTick: Date.now()
 });
+
+Promise.all(scorePromises).catch(err => showError("Błąd zapisu punktów R3: " + err.message));
 }
 
-// ============================================================================
-// RUNDA 2: GORĄCA BOMBA (1:15 – 1:45 MIN)
-// ============================================================================
+// --- RUNDA 2: GORĄCA BOMBA (1:15 – 1:45 MIN) ---
 async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
@@ -987,28 +836,15 @@ if (bombTurnNum > 1) { await triggerRoundSummary(2); return; }
 const activeList = getSelectedActivePlayers();
 bombHolderIdx = Math.floor(Math.random() * activeList.length);
 const starter = activeList[bombHolderIdx];
-
 const durationSec = Math.floor(Math.random() * 31) + 75;
 bombTotalDurationMs = durationSec * 1000;
-bombEndTimeMs = 0;
-bombQuestionsAskedCount = 0;
-bombIsExplodedOrFinished = false;
+bombEndTimeMs = 0; bombQuestionsAskedCount = 0; bombIsExplodedOrFinished = false;
 updateRemainingCounterUI();
-
-statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - PULA ${currentPool} | ${durationSec}s)! Zaczyna gracz: ${getDisplayName(starter)}. Czekam na GOTOWOŚĆ graczy...`;
-
+statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - PULA ${currentPool} | ${durationSec}s)! Zaczyna: ${getDisplayName(starter)}.`;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_wait_ready",
-round: 2,
-bombTurn: 1,
-nominated: starter,
+status: "r2_bomb_wait_ready", round: 2, bombTurn: 1, nominated: starter,
 question: `Gorąca Bomba (1 Tura)! Jako pierwszy bombę bierze gracz: ${getDisplayName(starter)}!`,
-bombProgress: 0,
-readyPlayers: [],
-activePlayers: activeList,
-playerNames: playerNamesMap,
-speechTick: Date.now(),
-pool: currentPool
+bombProgress: 0, readyPlayers: [], activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 }
 
@@ -1016,28 +852,19 @@ function startContinuousBombCountdownIfNeeded() {
 if (bombEndTimeMs > 0) return;
 bombEndTimeMs = Date.now() + bombTotalDurationMs;
 bombIsExplodedOrFinished = false;
-
-clearInterval(bombProgressTicker);
-clearInterval(bombPenaltyTicker);
-clearTimeout(bombExplodeTimeout);
-
+clearInterval(bombProgressTicker); clearInterval(bombPenaltyTicker); clearTimeout(bombExplodeTimeout);
 bombProgressTicker = setInterval(async () => {
 if (bombIsExplodedOrFinished || !currentState || currentState.round !== 2) return;
 const remMs = Math.max(0, bombEndTimeMs - Date.now());
 if (remMs <= 0) { await explodeBombNow(); return; }
-const prog = Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationMs)));
 updateRemainingCounterUI();
 statusEl.innerText = `🔥 BOMBA TYKA NON-STOP u gracza ${getDisplayName(currentState.nominated)}! Pozostało: ${(remMs/1000).toFixed(1)}s | Pytanie #${bombQuestionsAskedCount}`;
-try { await updateDoc(doc(db, "quizGame", "state"), { bombProgress: prog }); } catch (e) {}
+try { await updateDoc(doc(db, "quizGame", "state"), { bombProgress: Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationMs))) }); } catch (e) {}
 }, 1000);
-
 bombPenaltyTicker = setInterval(async () => {
-if (bombIsExplodedOrFinished || !currentState || currentState.round !== 2) return;
-if (Date.now() >= bombEndTimeMs) return;
-const curHolder = currentState.nominated;
-if (curHolder) { try { await changePlayerScoreDelta(curHolder, -1); } catch (e) {} }
+if (bombIsExplodedOrFinished || !currentState || currentState.round !== 2 || Date.now() >= bombEndTimeMs) return;
+if (currentState.nominated) { try { await changePlayerScoreDelta(currentState.nominated, -1); } catch (e) {} }
 }, 2000);
-
 bombExplodeTimeout = setTimeout(async () => { await explodeBombNow(); }, bombTotalDurationMs);
 }
 
@@ -1045,112 +872,64 @@ async function sendNextBombQuestionContinuous() {
 if (bombIsExplodedOrFinished) return;
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 startContinuousBombCountdownIfNeeded();
-
 const remMs = bombEndTimeMs - Date.now();
 if (remMs <= 150) { await explodeBombNow(); return; }
-
 const activeList = getSelectedActivePlayers();
 const holder = activeList[bombHolderIdx % activeList.length];
 const qItem = pickNextUniqueBombQuestion(holder);
 bombQuestionsAskedCount++;
-
-const progressRatio = Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationMs)));
 const nowTick = Date.now();
 updateRemainingCounterUI();
-
 statusEl.innerText = `🔥 BOMBA W GRZE (Pula ${currentPool} | Pytanie #${bombQuestionsAskedCount}) -> ${getDisplayName(holder)} (Pozostało: ${(remMs/1000).toFixed(1)}s)`;
-
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_running",
-round: 2,
-bombTurn: 1,
-nominated: holder,
-r5Age: currentPool >= 11 ? 30 : (r5Ages[holder] || 10),
-question: qItem.q,
-r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
-bombProgress: progressRatio,
-activePlayers: activeList,
-playerNames: playerNamesMap,
-tick: nowTick,
-speechTick: nowTick,
-pool: currentPool
+status: "r2_bomb_running", round: 2, bombTurn: 1, nominated: holder,
+r5Age: currentPool >= 11 ? 30 : (r5Ages[holder] || 10), question: qItem.q, r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
+bombProgress: Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationMs))), activePlayers: activeList, playerNames: playerNamesMap,
+tick: nowTick, speechTick: nowTick, pool: currentPool
 }, { merge: true });
 }
 
 async function explodeBombNow() {
 if (bombIsExplodedOrFinished) return;
-bombIsExplodedOrFinished = true;
-bombEndTimeMs = 0;
-
+bombIsExplodedOrFinished = true; bombEndTimeMs = 0;
 clearTimeout(bombExplodeTimeout); bombExplodeTimeout = null;
 clearInterval(bombPenaltyTicker); bombPenaltyTicker = null;
 clearInterval(bombProgressTicker); bombProgressTicker = null;
 updateRemainingCounterUI();
-
 const activeList = getSelectedActivePlayers();
 const victim = (currentState && currentState.nominated) ? currentState.nominated : activeList[bombHolderIdx % activeList.length];
-
 await changePlayerScoreDelta(victim, -10);
 statusEl.innerText = `💥 BOOM! Bomba wybuchła u gracza ${getDisplayName(victim)} (-10 PKT)! Za 8 sekund podsumowanie Rundy 2...`;
-
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_exploded",
-loser: victim,
-bombVictim: victim,
-pointsChange: -10,
-bombProgress: 1,
-answerTick: Date.now(),
-speechTick: Date.now()
-});
-
+await updateDoc(doc(db, "quizGame", "state"), { status: "r2_bomb_exploded", loser: victim, bombVictim: victim, pointsChange: -10, bombProgress: 1, answerTick: Date.now(), speechTick: Date.now() });
 autoFlowTimer = setTimeout(() => { triggerRoundSummary(2); }, 8000);
 }
 
-// ============================================================================
-// RUNDA 5: POSTAW NA MILION
-// ============================================================================
+// --- RUNDA 5: POSTAW NA MILION ---
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 const activeList = getSelectedActivePlayers();
-while (pIdx < r5Order.length && !activeList.includes(r5Order[pIdx])) { pIdx++; }
+while (pIdx < r5Order.length && !activeList.includes(r5Order[pIdx])) pIdx++;
 milPlayerIdx = pIdx;
 if (milPlayerIdx >= r5Order.length) { await triggerRoundSummary(5); return; }
-milQIdx = 0;
-milCurrentPoints = 200;
+milQIdx = 0; milCurrentPoints = 200;
 const player = r5Order[milPlayerIdx];
 updateRemainingCounterUI();
-
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion - Pula ${currentPool}): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ na swoim telefonie...`;
-
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion - Pula ${currentPool}): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ...`;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_wait_ready",
-round: 5,
-nominated: player,
-question: `Przygotuj się do gry przy zapadniach: ${getDisplayName(player)}!`,
-milQNum: 1,
-milCurrentPts: 200,
-activePlayers: activeList,
-playerNames: playerNamesMap,
-speechTick: Date.now(),
-pool: currentPool
+status: "r5_mil_wait_ready", round: 5, nominated: player, question: `Przygotuj się do gry przy zapadniach: ${getDisplayName(player)}!`,
+milQNum: 1, milCurrentPts: 200, activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 }
 
 function sanitizeMillionBets(rawBets, optsCount, maxTraps, availablePoints) {
-const sanitizedBets = {};
-let sumAllocated = 0;
-let activeTraps = 0;
+const sanitizedBets = {}; let sumAllocated = 0, activeTraps = 0;
 for (let i = 0; i < optsCount; i++) {
 let v = parseInt((rawBets || {})[i], 10) || 0;
 if (v < 0) v = 0;
-if (v > 0) {
-if (activeTraps >= maxTraps) v = 0;
-else activeTraps++;
-}
+if (v > 0) { if (activeTraps >= maxTraps) v = 0; else activeTraps++; }
 if (sumAllocated + v > availablePoints) v = Math.max(0, availablePoints - sumAllocated);
-sanitizedBets[i] = v;
-sumAllocated += v;
+sanitizedBets[i] = v; sumAllocated += v;
 }
 return { sanitizedBets, lostUnallocated: Math.max(0, availablePoints - sumAllocated) };
 }
@@ -1161,15 +940,12 @@ const tKey = "mil_to_" + (currentState.tick || currentState.speechTick);
 if (lastMilTimeoutResolvedKey === tKey) return;
 lastMilTimeoutResolvedKey = tKey;
 clearTimeout(milBettingTimeout); milBettingTimeout = null;
-
 try {
 const snap = await getDoc(doc(db, "quizGame", "state"));
 const latest = snap.exists() ? snap.data() : currentState;
 if (latest.status !== "r5_mil_betting") return;
-const optsCount = (latest.options || []).length;
 const rawBets = (latest.milLiveBets && Object.keys(latest.milLiveBets).length > 0) ? latest.milLiveBets : (latest.milBets || {});
-const maxTraps = latest.milMaxTraps || 3;
-const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(rawBets, optsCount, maxTraps, milCurrentPoints);
+const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(rawBets, (latest.options || []).length, latest.milMaxTraps || 3, milCurrentPoints);
 await startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 } catch (err) { showError(err.message); }
 }
@@ -1180,86 +956,45 @@ currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentP
 const activeList = getSelectedActivePlayers();
 const player = r5Order[milPlayerIdx];
 const pQuestions = getMillionQuestionsForPlayer(player, currentPool, milPlayerIdx);
-
 if (milQIdx >= 5 || milCurrentPoints <= 0) { await finishMillionForPlayer(); return; }
-
 const qObj = pQuestions[milQIdx];
 const maxTrapsAllowed = milQIdx < 3 ? 3 : (milQIdx === 3 ? 2 : 1);
 const nowTick = Date.now();
 updateRemainingCounterUI();
-
-statusEl.innerText = `💰 Runda 5 (Pula ${currentPool}) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | Lektor czyta pytanie...`;
-
+statusEl.innerText = `💰 Runda 5 (Pula ${currentPool}) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | Lektor czyta...`;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_speaking",
-round: 5,
-nominated: player,
-milQNum: milQIdx + 1,
-milCurrentPts: milCurrentPoints,
-milMaxTraps: maxTrapsAllowed,
-milTimeoutSec: 45,
-milLostUnallocated: 0,
-question: qObj.q,
-options: qObj.o,
-correctIndex: qObj.c,
-milBets: {},
-milLiveBets: {},
-milOpenTraps: [],
-activePlayers: activeList,
-playerNames: playerNamesMap,
-tick: nowTick,
-speechTick: nowTick,
-pool: currentPool
+status: "r5_mil_speaking", round: 5, nominated: player, milQNum: milQIdx + 1, milCurrentPts: milCurrentPoints,
+milMaxTraps: maxTrapsAllowed, milTimeoutSec: 45, milLostUnallocated: 0, question: qObj.q, options: qObj.o,
+correctIndex: qObj.c, milBets: {}, milLiveBets: {}, milOpenTraps: [], activePlayers: activeList, playerNames: playerNamesMap,
+tick: nowTick, speechTick: nowTick, pool: currentPool
 });
 }
 
 function activateMillionTimerAfterSpeech() {
 clearTimeout(milBettingTimeout);
 const player = r5Order[milPlayerIdx];
-const maxTrapsAllowed = currentState ? (currentState.milMaxTraps || 3) : 3;
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT | Limit: 45s (Max zapadni: ${maxTrapsAllowed})`;
+statusEl.innerText = `💰 Runda 5 - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | W grze: ${milCurrentPoints} PKT | Limit: 45s`;
 milBettingTimeout = setTimeout(() => { resolveMillionTimeout(); }, 45500);
 }
 
 async function startMillionTrapdoorSequence(betsObj, lostUnallocated = 0) {
 clearTimeout(milBettingTimeout); milBettingTimeout = null;
 if (!currentState || currentState.round !== 5) return;
-const optsCount = (currentState.options || []).length;
-const correctIdx = currentState.correctIndex;
-const wrongIndices = [];
-for (let i = 0; i < optsCount; i++) { if (i !== correctIdx) wrongIndices.push(i); }
+const optsCount = (currentState.options || []).length, correctIdx = currentState.correctIndex, wrongIndices = [];
+for (let i = 0; i < optsCount; i++) if (i !== correctIdx) wrongIndices.push(i);
 wrongIndices.sort(() => Math.random() - 0.5);
-
-const openedSoFar = [];
-let step = 0;
-
-if (lostUnallocated > 0) statusEl.innerText = `⏰ CZAS MINĄŁ! Gracz nie zdążył rozdzielić ${lostUnallocated} PKT. Otwieramy zapadnie...`;
-
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_dropping",
-milBets: betsObj,
-milLostUnallocated: lostUnallocated,
-milOpenTraps: [],
-speechTick: Date.now()
-});
-
+const openedSoFar = []; let step = 0;
+await updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_dropping", milBets: betsObj, milLostUnallocated: lostUnallocated, milOpenTraps: [], speechTick: Date.now() });
 function dropNextTrap() {
 if (step < wrongIndices.length) {
-openedSoFar.push(wrongIndices[step]);
-step++;
-statusEl.innerText = `💰 Otwieranie zapadni ${step}/${wrongIndices.length}...${lostUnallocated > 0 ? ` (Przepadło przez czas: ${lostUnallocated} PKT)` : ""}`;
+openedSoFar.push(wrongIndices[step]); step++;
+statusEl.innerText = `💰 Otwieranie zapadni ${step}/${wrongIndices.length}...`;
 updateDoc(doc(db, "quizGame", "state"), { milOpenTraps: [...openedSoFar], answerTick: Date.now() });
 milTrapdoorTimer = setTimeout(dropNextTrap, 3000);
 } else {
-const savedPts = parseInt(betsObj[correctIdx], 10) || 0;
-milCurrentPoints = savedPts;
+milCurrentPoints = parseInt(betsObj[correctIdx], 10) || 0;
 statusEl.innerText = `💰 Wynik pytania ${milQIdx + 1}/5: Ocalało ${milCurrentPoints} PKT!`;
-updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_q_result",
-milCurrentPts: milCurrentPoints,
-milLostUnallocated: lostUnallocated,
-answerTick: Date.now()
-});
+updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_q_result", milCurrentPts: milCurrentPoints, milLostUnallocated: lostUnallocated, answerTick: Date.now() });
 milTrapdoorTimer = setTimeout(() => { milQIdx++; sendMillionQuestionToPlayer(); }, 4500);
 }
 }
@@ -1270,27 +1005,20 @@ async function finishMillionForPlayer() {
 const player = r5Order[milPlayerIdx];
 if (milCurrentPoints > 0) await changePlayerScoreDelta(player, milCurrentPoints);
 statusEl.innerText = `💰 Koniec serii Postaw na Milion dla gracza ${getDisplayName(player)}! +${milCurrentPoints} PKT!`;
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_player_summary",
-nominated: player,
-milSavedTotal: milCurrentPoints,
-pointsChange: milCurrentPoints,
-speechTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_player_summary", nominated: player, milSavedTotal: milCurrentPoints, pointsChange: milCurrentPoints, speechTick: Date.now() });
 autoFlowTimer = setTimeout(() => { startMillionForPlayer(milPlayerIdx + 1); }, 6500);
 }
 
-// --- RUNDA 7: KOŁO I TAJNE OBSTAWIANIE W CIEMNO ---
+// --- RUNDA 7: KOŁO I OBSTAWIANIE ---
 function pickR7QuestionFromPool(pool) {
 const list = allDBs[pool][7] || [];
 let availableIndices = [];
-for (let i = 0; i < list.length; i++) { if (!usedR7Indices.includes(i)) availableIndices.push(i); }
+for (let i = 0; i < list.length; i++) if (!usedR7Indices.includes(i)) availableIndices.push(i);
 if (availableIndices.length === 0) { usedR7Indices = []; for (let i = 0; i < list.length; i++) availableIndices.push(i); }
 const cats = getWheelCategoriesForPool(pool);
 const lastCatName = lastR7WheelSegment >= 0 ? cats[lastR7WheelSegment] : "";
 let nonSameCatIndices = availableIndices.filter(idx => list[idx].cat !== lastCatName);
 if (nonSameCatIndices.length === 0) nonSameCatIndices = availableIndices;
-
 const chosenIdx = nonSameCatIndices[Math.floor(Math.random() * nonSameCatIndices.length)];
 usedR7Indices.push(chosenIdx);
 const qObj = shuffleQuestionOptions(list[chosenIdx]);
@@ -1305,45 +1033,27 @@ const resolveKey = "blind_done_" + currentState.speechTick;
 if (lastR7BlindResolvedKey === resolveKey) return;
 lastR7BlindResolvedKey = resolveKey;
 clearTimeout(r7BiddingTimer); r7BiddingTimer = null;
-
 try {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
-const rawBids = { ...(currentState.r6Bids || {}) };
-const lockedList = currentState.r6LockedBidders || [];
-
-let sumBids = 0;
-let maxBid = -1;
+const rawBids = { ...(currentState.r6Bids || {}) }, lockedList = currentState.r6LockedBidders || [];
+let sumBids = 0, maxBid = -1;
 activeList.forEach(p => {
 let val = parseInt(rawBids[p], 10);
 if (!lockedList.includes(p) || isNaN(val) || val < 5) { val = 5; rawBids[p] = 5; }
-sumBids += val;
-if (val > maxBid) maxBid = val;
+sumBids += val; if (val > maxBid) maxBid = val;
 });
-
 const topPlayers = activeList.filter(p => (parseInt(rawBids[p], 10) || 5) === maxBid);
 const wasRandomDraw = topPlayers.length > 1;
 const winnerPlayer = wasRandomDraw ? pickFairRandomTieWinner(topPlayers) : topPlayers[0];
-
-for (let p of activeList) {
-await changePlayerScoreDelta(p, -(parseInt(rawBids[p], 10) || 5));
-}
-
-const totalPot = (currentState.carryOver || 0) + sumBids;
-
+await Promise.all(activeList.map(p => changePlayerScoreDelta(p, -(parseInt(rawBids[p], 10) || 5))));
 await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_sold",
-nominated: winnerPlayer,
-r6Bids: rawBids,
-r6HighestBidder: winnerPlayer,
-r6HighestBid: maxBid,
-r6Pot: totalPot,
-r6RandomDrawn: wasRandomDraw,
-speechTick: Date.now()
+status: "r6_sold", nominated: winnerPlayer, r6Bids: rawBids, r6HighestBidder: winnerPlayer, r6HighestBid: maxBid,
+r6Pot: (currentState.carryOver || 0) + sumBids, r6RandomDrawn: wasRandomDraw, speechTick: Date.now()
 });
 } catch (err) { showError(err.message); }
 }
 
-// --- STEROWANIE GŁÓWNE ADMINA ---
+// --- STEROWANIE GŁÓWNE ---
 async function adminForceContinue() {
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
 const selRound = parseInt(document.getElementById('roundSel').value) || 1;
@@ -1362,15 +1072,10 @@ try {
 clearAllAdminTimers();
 document.querySelectorAll('.active-player-cb').forEach(cb => { cb.checked = true; });
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
-r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
-lastR7TieWinner = "";
-usedBombQuestionsInSession.clear();
+r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; lastR7TieWinner = ""; usedBombQuestionsInSession.clear();
 const players = ["Lila", "Kaja", "Darek", "Jas"];
-for(let p of players) { await setDoc(doc(db, "quizScores", p), { points: 0 }); }
-await setDoc(doc(db, "quizGame", "state"), {
-status: "idle", round: 1, question: "Punkty wyzerowane! Wszyscy 4 gracze aktywni.",
-blocked: [], usedOptions: [], activePlayers: players, playerNames: playerNamesMap, pool: currentPool
-});
+await Promise.all(players.map(p => setDoc(doc(db, "quizScores", p), { points: 0 })));
+await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: "Punkty wyzerowane! Wszyscy 4 gracze aktywni.", blocked: [], usedOptions: [], activePlayers: players, playerNames: playerNamesMap, pool: currentPool });
 await updateActivePlayersList();
 statusEl.innerText = "Status: Punkty wyzerowane, wszyscy 4 gracze włączeni (awatary zachowane).";
 } catch (err) { showError(err.message); }
@@ -1380,22 +1085,14 @@ async function sendPoolChoice() {
 try {
 clearAllAdminTimers();
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
-if (currentPool >= 11 && !ADB) {
-showError("Brak pliku baza_dorosli.js w folderze! Zapisz go obok quiz_admin.html i odśwież stronę.");
-return;
-}
+if (currentPool >= 11 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 };
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
-r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
-lastR7TieWinner = "";
-usedBombQuestionsInSession.clear();
+r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; lastR7TieWinner = ""; usedBombQuestionsInSession.clear();
 let activeList = getSelectedActivePlayers();
 updateRemainingCounterUI();
 const modeLabel = currentPool >= 11 ? " (TRYB DOROŚLI HARD — RÓWNY POZIOM)" : "";
-await setDoc(doc(db, "quizGame", "state"), {
-status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}${modeLabel}! Czekamy na przycisk START.`,
-blocked: [], usedOptions: [], activePlayers: activeList, playerNames: playerNamesMap, pool: currentPool
-});
+await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}${modeLabel}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], activePlayers: activeList, playerNames: playerNamesMap, pool: currentPool });
 statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}${modeLabel} (Grają: ${activeList.map(getDisplayName).join(", ")}). Kliknij START GRY!`;
 } catch (err) { showError(err.message); }
 }
@@ -1403,10 +1100,7 @@ statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}${modeLabel} (Graj
 async function nextQuestion() {
 try {
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
-if (currentPool >= 11 && !ADB) {
-showError("Brak pliku baza_dorosli.js w folderze! Zapisz go obok quiz_admin.html i odśwież stronę.");
-return;
-}
+if (currentPool >= 11 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
 let r = parseInt(document.getElementById('roundSel').value, 10);
 let activeList = getSelectedActivePlayers();
 
@@ -1422,7 +1116,7 @@ clearAllAdminTimers();
 if (r === 5) {
 if (currentQIndex[5] === -1) { currentQIndex[5] = 0; await startMillionForPlayer(0); }
 else if (currentState && currentState.round === 5 && (currentState.status === "r5_mil_speaking" || currentState.status === "r5_mil_betting" || currentState.status === "r5_mil_dropping")) { milQIdx++; await sendMillionQuestionToPlayer(); }
-else { await startMillionForPlayer(milPlayerIdx + 1); }
+else await startMillionForPlayer(milPlayerIdx + 1);
 return;
 }
 
@@ -1432,73 +1126,51 @@ updateRemainingCounterUI();
 if (r === 7) {
 if (currentQIndex[7] >= 16) { await showGrandFinale(); return; }
 let tieBanner = "";
-if (currentQIndex[7] === 0 || !r6Controller || !activeList.includes(r6Controller)) {
-let initRes = await determineInitialController();
-r6Controller = initRes.player;
-tieBanner = initRes.tieMsg;
-}
+if (currentQIndex[7] === 0 || !r6Controller || !activeList.includes(r6Controller)) { let initRes = await determineInitialController(); r6Controller = initRes.player; tieBanner = initRes.tieMsg; }
 const picked = pickR7QuestionFromPool(currentPool);
 await setDoc(doc(db, "quizGame", "state"), {
-status: "r6_wait_spin", round: 7, controller: r6Controller, tieMsg: tieBanner,
-wheelSegment: picked.segIdx, wheelCategories: getWheelCategoriesForPool(currentPool),
-category: picked.catName, question: picked.qData.q, options: picked.qData.o, correctIndex: picked.qData.c,
-carryOver: r7CarryOverPool, r6Pot: r7CarryOverPool, r6Bids: {}, r6LockedBidders: [], r6TiedBidders: [], blocked: [], usedOptions: [],
-activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
+status: "r6_wait_spin", round: 7, controller: r6Controller, tieMsg: tieBanner, wheelSegment: picked.segIdx,
+wheelCategories: getWheelCategoriesForPool(currentPool), category: picked.catName, question: picked.qData.q,
+options: picked.qData.o, correctIndex: picked.qData.c, carryOver: r7CarryOverPool, r6Pot: r7CarryOverPool,
+r6Bids: {}, r6LockedBidders: [], r6TiedBidders: [], blocked: [], usedOptions: [], activePlayers: activeList,
+playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 return;
 }
 
 let rawQData = allDBs[currentPool][r][currentQIndex[r]];
 if (!rawQData) { await triggerRoundSummary(r); return; }
-
 let qData = (r === 1 || r === 6) ? shuffleQuestionOptions(rawQData) : rawQData;
 statusEl.innerText = `Status: Grane zadanie #${currentQIndex[r] + 1} / ${allDBs[currentPool][r].length} (Runda ${r}, Pula ${currentPool})`;
 
 if (r === 1) {
 await setDoc(doc(db, "quizGame", "state"), {
 status: "speaking", round: 1, question: qData.q, options: qData.o, correctIndex: qData.c,
-r1Answers: {}, r1Winners: [], activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
+r1Answers: {}, r1Winners: [], r1TimeUpTick: 0, activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 3) {
 await setDoc(doc(db, "quizGame", "state"), {
-status: "speaking",
-round: 3,
-question: qData.q,
-correctNumber: qData.a,
-correctUnit: qData.unit || "",
-correctText: `${qData.a}${qData.unit ? " " + qData.unit : ""}`,
-r3Guesses: {},
-r3ResultsData: [],
-r3Winners: [],
-activePlayers: activeList,
-playerNames: playerNamesMap,
-speechTick: Date.now(),
-pool: currentPool
+status: "speaking", round: 3, question: qData.q, correctNumber: qData.a, correctUnit: qData.unit || "",
+correctText: `${qData.a}${qData.unit ? " " + qData.unit : ""}`, r3Guesses: {}, r3ResultsData: [], r3Winners: [],
+r3TimeUpTick: 0, activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 4) {
-let phraseClean = qData.phrase.replace(/ /g, "");
-let indices = [];
+let phraseClean = qData.phrase.replace(/ /g, ""); let indices = [];
 for (let i = 0; i < phraseClean.length; i++) indices.push(i);
 indices.sort(() => Math.random() - 0.5);
-
 await setDoc(doc(db, "quizGame", "state"), {
-status: "wheel_reading", round: 4, category: qData.cat, question: qData.phrase,
-wheelOrder: indices, wheelWinners: [], r4FullGuess: null, activePlayers: activeList, playerNames: playerNamesMap, tick: Date.now(), speechTick: Date.now(), pool: currentPool
+status: "wheel_reading", round: 4, category: qData.cat, question: qData.phrase, wheelOrder: indices,
+wheelWinners: [], r4FullGuess: null, activePlayers: activeList, playerNames: playerNamesMap, tick: Date.now(), speechTick: Date.now(), pool: currentPool
 });
 } else if (r === 6) {
 let tieBanner = "";
-if (currentQIndex[6] === 0 || !r6Controller || !activeList.includes(r6Controller)) {
-let initRes = await determineInitialController();
-r6Controller = initRes.player;
-tieBanner = initRes.tieMsg;
-}
+if (currentQIndex[6] === 0 || !r6Controller || !activeList.includes(r6Controller)) { let initRes = await determineInitialController(); r6Controller = initRes.player; tieBanner = initRes.tieMsg; }
 let sel = document.getElementById('controllerSel');
-for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === r6Controller) sel.selectedIndex = i; }
-
+for(let i=0; i<sel.options.length; i++) if(sel.options[i].value === r6Controller) sel.selectedIndex = i;
 await setDoc(doc(db, "quizGame", "state"), {
-status: "nominating", round: 6, controller: r6Controller, tieMsg: tieBanner,
-category: qData.cat, question: qData.q, options: qData.o, correctIndex: qData.c,
-blocked: [], usedOptions: [], nominated: "", activePlayers: activeList, playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
+status: "nominating", round: 6, controller: r6Controller, tieMsg: tieBanner, category: qData.cat, question: qData.q,
+options: qData.o, correctIndex: qData.c, blocked: [], usedOptions: [], nominated: "", activePlayers: activeList,
+playerNames: playerNamesMap, speechTick: Date.now(), pool: currentPool
 });
 }
 } catch (err) { showError(err.message); }
@@ -1507,8 +1179,7 @@ blocked: [], usedOptions: [], nominated: "", activePlayers: activeList, playerNa
 async function startNominationPhase() {
 try {
 r6Controller = document.getElementById('controllerSel').value;
-let targetStatus = (currentState && currentState.round === 7) ? "r6_wait_spin" : "nominating";
-await updateDoc(doc(db, "quizGame", "state"), { status: targetStatus, controller: r6Controller });
+await updateDoc(doc(db, "quizGame", "state"), { status: (currentState && currentState.round === 7) ? "r6_wait_spin" : "nominating", controller: r6Controller });
 } catch (err) { showError(err.message); }
 }
 
@@ -1525,62 +1196,61 @@ window.startNominationPhase = startNominationPhase;
 
 updateRemainingCounterUI();
 
-if (!window.QUIZ_QUESTIONS_RAW || !window.BOMB_TF_RAW) {
-showError("Brak plików baza_pytan.js lub baza_bomba.js w tym samym folderze!");
-} else if (!window.ADULT_QUIZ_DB) {
-showError("Brak pliku baza_dorosli.js w tym samym folderze! Pule 11 i 12 dla dorosłych wymagają tego pliku.");
-} else {
+if (!window.QUIZ_QUESTIONS_RAW || !window.BOMB_TF_RAW) showError("Brak plików baza_pytan.js lub baza_bomba.js!");
+else if (!window.ADULT_QUIZ_DB) showError("Brak pliku baza_dorosli.js!");
+else {
 const kidsBombTotal = allOlderBombOrdered.length + extraBombOverflow.length + jasUniqueBombQuestions.length;
 const kidsMilTotal = millionStandardQ4Opts.length + millionStandardQ3Opts.length + millionStandardQ2Opts.length + millionJasQ4Opts.length + millionJasQ3Opts.length + millionJasQ2Opts.length;
 statusEl.innerText = `✅ SYSTEM GOTOWY! R3 Kto Najbliżej: ${masterR3Closest.length} pytań (12x5) | Bomba: ${kidsBombTotal}+${adultBombTF.length} | Milion: ${kidsMilTotal}+${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length}`;
 }
 
-// --- NASŁUCHIWANIE STANU GRY W CZASIE RZECZYWISTYM ---
+// --- NASŁUCHIWANIE STANU GRY ---
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
 currentState = docSnap.data();
 
-if (currentState.playerNames) {
-playerNamesMap = { ...playerNamesMap, ...currentState.playerNames };
-refreshPlayerLabelsInAdmin();
-}
-
+if (currentState.playerNames) { playerNamesMap = { ...playerNamesMap, ...currentState.playerNames }; refreshPlayerLabelsInAdmin(); }
 updateRemainingCounterUI();
-
 document.getElementById('nominateUI').style.display = 'none';
 r3LiveBox.style.display = 'none';
 
 if (currentState.status === "round_summary") {
 let activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 let readyList = currentState.readyPlayers || [];
-statusEl.innerText = `📊 Podsumowanie Rundy ${currentState.completedRound} | Gotowi gracze: ${readyList.length}/${activeList.length} (${readyList.map(getDisplayName).join(", ") || "brak"})`;
+statusEl.innerText = `📊 Podsumowanie Rundy ${currentState.completedRound} | Gotowi: ${readyList.length}/${activeList.length}`;
 if (activeList.length > 0 && activeList.every(p => readyList.includes(p))) {
 let rKey = "sum_ready_" + currentState.completedRound + "_" + currentState.speechTick;
-if (lastSummaryReadyKey !== rKey) {
-lastSummaryReadyKey = rKey;
-statusEl.innerText = `✅ Wszyscy aktywni gracze gotowi! Startuję Rundę ${currentState.nextRound}...`;
-setTimeout(() => { nextQuestion(); }, 1200);
-}
+if (lastSummaryReadyKey !== rKey) { lastSummaryReadyKey = rKey; setTimeout(() => { nextQuestion(); }, 1200); }
 }
 }
 
 if ((currentState.status === "setup_nomination" || currentState.status === "nominating" || currentState.status === "r6_wait_spin") && (currentState.round === 6 || currentState.round === 7)) {
 document.getElementById('nominateUI').style.display = 'block';
 document.getElementById('n-curr').innerText = getDisplayName(currentState.controller || r6Controller);
-statusEl.innerText = currentState.round === 7
-? `Status: Runda 7 (Koło) - ${getDisplayName(currentState.controller)} kręci palcem kołem na swoim telefonie!`
-: `Status: Runda 6 (Ryzyko) - ${getDisplayName(currentState.controller)} wybiera na telefonie kto odpowiada!`;
+statusEl.innerText = currentState.round === 7 ? `Runda 7: ${getDisplayName(currentState.controller)} kręci kołem!` : `Runda 6: ${getDisplayName(currentState.controller)} wybiera kto odpowiada!`;
 } else if (currentState.status === "speaking") {
 statusEl.innerText = `🗣️ Lektor na TV czyta teraz pytanie... Po zakończeniu włączy się stoper!`;
 }
 
 // RUNDA 1: WYŚCIG ABCD
 if (currentState.status === "reading" && currentState.round === 1) {
+const r1Key = "r1_fin_" + currentState.speechTick;
+if (lastR1ResolvedKey !== r1Key) {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
-const count = Object.keys(currentState.r1Answers || {}).length;
-statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedzi: ${count}/${activeList.length}`;
-if (!r1QuestionTimer) r1QuestionTimer = setTimeout(() => { finalizeR1Question(); }, 12500);
-if (count >= activeList.length && activeList.length > 0) finalizeR1Question();
+const answers = currentState.r1Answers || {};
+const submittedCount = activeList.filter(p => answers[p] !== undefined && answers[p] !== null).length;
+statusEl.innerText = `Status: Runda 1 (Wyścig ABCD - 12s) - odpowiedzi: ${submittedCount}/${activeList.length}`;
+
+if (activeList.length > 0 && submittedCount >= activeList.length) {
+finalizeR1Question(true);
+} else if (currentState.r1TimeUpTick && currentState.r1TimeUpTick !== lastR1TimeUpHandled) {
+lastR1TimeUpHandled = currentState.r1TimeUpTick;
+clearTimeout(r1QuestionTimer);
+r1QuestionTimer = setTimeout(() => { finalizeR1Question(false); }, 300);
+} else if (!r1QuestionTimer) {
+r1QuestionTimer = setTimeout(() => { finalizeR1Question(false); }, 13500);
+}
+}
 }
 
 // RUNDA 2: GORĄCA BOMBA
@@ -1593,7 +1263,6 @@ const bRKey = "bomb_rdy_1_" + currentState.speechTick;
 if (lastBombReadyKey !== bRKey) { lastBombReadyKey = bRKey; setTimeout(() => { sendNextBombQuestionContinuous(); }, 800); }
 }
 }
-
 if (currentState.round === 2 && currentState.status === "r2_bomb_answered") {
 const ansKey = "bomb_ans_" + currentState.answerTick;
 if (lastBombAnsKey !== ansKey) {
@@ -1602,22 +1271,22 @@ if (bombIsExplodedOrFinished) return;
 if (bombEndTimeMs > 0 && Date.now() >= bombEndTimeMs) { explodeBombNow(); return; }
 const player = currentState.nominated;
 const isCorrect = (currentState.r5GivenBool === currentState.r5CorrectBool);
-const ptsDelta = isCorrect ? 10 : -5;
 (async () => {
 try {
-await changePlayerScoreDelta(player, ptsDelta);
+await changePlayerScoreDelta(player, isCorrect ? 10 : -5);
 if (bombIsExplodedOrFinished) return;
 const activeList = getSelectedActivePlayers();
 bombHolderIdx = (bombHolderIdx + 1) % activeList.length;
-statusEl.innerText = `💣 ${getDisplayName(player)}: ${isCorrect ? "✅ DOBRZE (+10)" : "❌ ŹLE (-5)"}! Bomba leci do: ${getDisplayName(activeList[bombHolderIdx])}!`;
 await sendNextBombQuestionContinuous();
 } catch (e) { showError(e.message); }
 })();
 }
 }
 
-// RUNDA 3: 🎯 KTO NAJBLIŻEJ? (20s PO LEKTORZE)
+// RUNDA 3: 🎯 KTO NAJBLIŻEJ? (NATYCHMIASTOWY STOP PO 4/4 + SYGNAŁ 0s Z TV!)
 if (currentState.status === "reading" && currentState.round === 3) {
+const r3Key = "r3_fin_" + currentState.speechTick;
+if (lastR3ResolvedKey !== r3Key) {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const guesses = currentState.r3Guesses || {};
 const submittedPlayers = activeList.filter(p => guesses[p] !== undefined && guesses[p] !== null);
@@ -1627,15 +1296,24 @@ const liveTypesStr = submittedPlayers.map(p => `${getDisplayName(p)}: <b>${guess
 r3LiveBox.style.display = 'block';
 r3LiveBox.innerHTML = `<b>Poprawna wartość:</b> <span style="color:#ffd700">${currentState.correctText}</span><br><b>Typy graczy (tajne przed TV):</b> ${liveTypesStr}`;
 
-if (!r3QuestionTimer) r3QuestionTimer = setTimeout(() => { finalizeR3Question(); }, 20500);
-if (activeList.length > 0 && submittedPlayers.length >= activeList.length) finalizeR3Question();
+if (activeList.length > 0 && submittedPlayers.length >= activeList.length) {
+finalizeR3Question(true);
+} else if (currentState.r3TimeUpTick && currentState.r3TimeUpTick !== lastR3TimeUpHandled) {
+lastR3TimeUpHandled = currentState.r3TimeUpTick;
+clearTimeout(r3QuestionTimer);
+// 350ms marginesu dla spóźnialskiego klikającego w ostatnim ułamku sekundy, potem natychmiastowe wyniki bez zawiasu!
+r3QuestionTimer = setTimeout(() => { finalizeR3Question(false); }, 350);
+} else if (!r3QuestionTimer) {
+r3QuestionTimer = setTimeout(() => { finalizeR3Question(false); }, 21500);
+}
+}
 }
 
 // RUNDA 4: ODSŁANIANIE HASŁA
 if (currentState.status === "wheel_reading" && currentState.round === 4) {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const winners = currentState.wheelWinners || [];
-statusEl.innerText = `Status: Runda 4 (Odsłanianie Hasła) w toku! Odgadło: ${winners.length}/${activeList.length}`;
+statusEl.innerText = `Status: Runda 4 (Odsłanianie Hasła) - odgadło: ${winners.length}/${activeList.length}`;
 if (currentState.r4FullGuess && currentState.r4FullGuess.ts) {
 const fg = currentState.r4FullGuess;
 const gKey = fg.player + "_" + fg.ts;
@@ -1644,19 +1322,12 @@ lastR4FullGuessKey = gKey;
 const normTarget = normalizeAnswerStr(currentState.question || "").replace(/\s+/g, "");
 const normGuess = normalizeAnswerStr(fg.text || "").replace(/\s+/g, "");
 if (normTarget && normGuess === normTarget) {
-const alreadyWon = winners.some(w => w.startsWith(fg.player) || w.startsWith(getDisplayName(fg.player)));
-if (!alreadyWon) {
-const ptsTable = [15, 12, 10, 8];
-const pts = ptsTable[winners.length] || 8;
+if (!winners.some(w => w.startsWith(fg.player) || w.startsWith(getDisplayName(fg.player)))) {
+const pts = [15, 12, 10, 8][winners.length] || 8;
 (async () => {
 await changePlayerScoreDelta(fg.player, pts);
 const newWinners = [...winners, `${getDisplayName(fg.player)} (+${pts} pkt)`];
-const allDone = newWinners.length >= activeList.length;
-await updateDoc(doc(db, "quizGame", "state"), {
-wheelWinners: newWinners,
-status: allDone ? "wheel_results" : "wheel_reading",
-answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { wheelWinners: newWinners, status: newWinners.length >= activeList.length ? "wheel_results" : "wheel_reading", answerTick: Date.now() });
 })();
 }
 }
@@ -1676,12 +1347,8 @@ if (lastMilBettingStartKey !== bStartKey) { lastMilBettingStartKey = bStartKey; 
 if (currentState.round === 5 && currentState.status === "r5_mil_locked") {
 const milKey = "mil_lock_" + currentState.answerTick;
 if (lastMilHandledKey !== milKey) {
-lastMilHandledKey = milKey;
-clearTimeout(milBettingTimeout); milBettingTimeout = null;
-const optsCount = (currentState.options || []).length;
-const maxTraps = currentState.milMaxTraps || 3;
-const rawBets = currentState.milBets || currentState.milLiveBets || {};
-const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(rawBets, optsCount, maxTraps, milCurrentPoints);
+lastMilHandledKey = milKey; clearTimeout(milBettingTimeout); milBettingTimeout = null;
+const { sanitizedBets, lostUnallocated } = sanitizeMillionBets(currentState.milBets || currentState.milLiveBets || {}, (currentState.options || []).length, currentState.milMaxTraps || 3, milCurrentPoints);
 startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 }
 }
@@ -1690,18 +1357,13 @@ startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 if (currentState.round === 7 && currentState.status === "r6_spinning") {
 if (currentState.spinTick && currentState.spinTick !== lastSpinHandled) {
 lastSpinHandled = currentState.spinTick;
-statusEl.innerText = `🎡 Koło obraca się! Za 5s ruszy tajne obstawianie (20s, min. 5 pkt)...`;
+statusEl.innerText = `🎡 Koło obraca się! Za 5s ruszy tajne obstawianie...`;
 setTimeout(async () => {
-let now = Date.now();
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r6_blind_bidding", r6Bids: {}, r6LockedBidders: [], r6MinBid: 5, r6BidTimeoutSec: 20, r6Pot: currentState.carryOver || 0, speechTick: now
-});
-clearTimeout(r7BiddingTimer);
-r7BiddingTimer = setTimeout(() => { resolveR7BlindBidding(); }, 20500);
+await updateDoc(doc(db, "quizGame", "state"), { status: "r6_blind_bidding", r6Bids: {}, r6LockedBidders: [], r6MinBid: 5, r6BidTimeoutSec: 20, r6Pot: currentState.carryOver || 0, speechTick: Date.now() });
+clearTimeout(r7BiddingTimer); r7BiddingTimer = setTimeout(() => { resolveR7BlindBidding(); }, 20500);
 }, 5000);
 }
 }
-
 if (currentState.round === 7 && currentState.status === "r6_blind_bidding") {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const lockedList = currentState.r6LockedBidders || [];
@@ -1709,12 +1371,11 @@ statusEl.innerText = `🤫 Runda 7 (Tajne obstawianie - 20s): Złożono ofert: $
 if (activeList.length > 0 && activeList.every(p => lockedList.includes(p))) resolveR7BlindBidding();
 }
 
-// TIMEOUT R6 / R7
+// TIMEOUT & WERYFIKACJA R6 / R7
 if (currentState.status === "nominated_timeout" && (currentState.round === 6 || currentState.round === 7)) {
 let nomTimeKey = "nom_timeout_" + currentState.answerTick;
 if (lastHandledStatus !== nomTimeKey) {
-lastHandledStatus = nomTimeKey;
-let player = currentState.nominated;
+lastHandledStatus = nomTimeKey; let player = currentState.nominated;
 if (currentState.round === 7) {
 r7CarryOverPool = currentState.r6Pot || 20;
 updateDoc(doc(db, "quizGame", "state"), { status: "timeout", loser: player, winner: "", pointsChange: 0, carryOver: r7CarryOverPool, timeoutPenalty: true, answerTick: Date.now() });
@@ -1724,18 +1385,13 @@ let ptsChange = (player === currentState.controller) ? -20 : -10;
 try {
 await changePlayerScoreDelta(player, ptsChange);
 let newBlocked = [...(currentState.blocked || []), player];
-let activeCount = getSelectedActivePlayers().length;
-await updateDoc(doc(db, "quizGame", "state"), {
-status: newBlocked.length >= activeCount ? "timeout" : "results_wrong",
-loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, timeoutPenalty: true, answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: newBlocked.length >= getSelectedActivePlayers().length ? "timeout" : "results_wrong", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, timeoutPenalty: true, answerTick: Date.now() });
 } catch (err) { showError(err.message); }
 })();
 }
 }
 }
 
-// WERYFIKACJA R6 / R7
 if (currentState.status === "results_pending_r4" || currentState.status === "results_pending_r6") {
 let stateKey = currentState.status + "_" + currentState.fastest + "_" + (currentState.blocked ? currentState.blocked.length : 0);
 if (lastHandledStatus !== stateKey) {
@@ -1744,18 +1400,11 @@ statusEl.innerText = `Status: Weryfikacja odpowiedzi (${getDisplayName(currentSt
 clearTimeout(suspenseTimer);
 suspenseTimer = setTimeout(async () => {
 try {
-let isCorrect = currentState.isAnswerCorrect;
-let player = currentState.fastest;
+let isCorrect = currentState.isAnswerCorrect, player = currentState.fastest;
 if (currentState.round === 7) {
 let pot = currentState.r6Pot || 20;
-if (isCorrect) {
-await changePlayerScoreDelta(player, pot);
-r7CarryOverPool = 0; r6Controller = player;
-await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: pot, carryOver: 0, answerTick: Date.now() });
-} else {
-r7CarryOverPool = pot;
-await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: "", loser: player, pointsChange: 0, carryOver: r7CarryOverPool, answerTick: Date.now() });
-}
+if (isCorrect) { await changePlayerScoreDelta(player, pot); r7CarryOverPool = 0; r6Controller = player; await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: pot, carryOver: 0, answerTick: Date.now() }); }
+else { r7CarryOverPool = pot; await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: "", loser: player, pointsChange: 0, carryOver: r7CarryOverPool, answerTick: Date.now() }); }
 return;
 }
 let stake = (player === currentState.controller && currentState.nominated === currentState.controller) ? 20 : 10;
@@ -1764,17 +1413,13 @@ await changePlayerScoreDelta(player, ptsChange);
 if (isCorrect) {
 r6Controller = player;
 let sel = document.getElementById('controllerSel');
-for(let i=0; i<sel.options.length; i++) { if(sel.options[i].value === player) sel.selectedIndex = i; }
+for(let i=0; i<sel.options.length; i++) if(sel.options[i].value === player) sel.selectedIndex = i;
 await updateDoc(doc(db, "quizGame", "state"), { status: "results", winner: player, loser: "", pointsChange: ptsChange, timeoutPenalty: false, answerTick: Date.now() });
 } else {
 let newBlocked = [...(currentState.blocked || []), player];
 let newUsedOpts = [...(currentState.usedOptions || [])];
 if (currentState.selectedIndex !== undefined) newUsedOpts.push(currentState.selectedIndex);
-let activeCount = getSelectedActivePlayers().length;
-await updateDoc(doc(db, "quizGame", "state"), {
-status: newBlocked.length >= activeCount ? "timeout" : "results_wrong",
-loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, timeoutPenalty: false, answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: newBlocked.length >= getSelectedActivePlayers().length ? "timeout" : "results_wrong", loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOptions: newUsedOpts, timeoutPenalty: false, answerTick: Date.now() });
 }
 } catch (err) { showError(err.message); }
 }, 3500);
@@ -1784,12 +1429,9 @@ loser: player, winner: "", pointsChange: ptsChange, blocked: newBlocked, usedOpt
 if (currentState.status === "results_wrong") {
 let wrongKey = "wrong_" + currentState.answerTick;
 if (lastHandledStatus !== wrongKey) {
-lastHandledStatus = wrongKey;
-clearTimeout(autoFlowTimer);
+lastHandledStatus = wrongKey; clearTimeout(autoFlowTimer);
 statusEl.innerText = `Status: Błąd gracza ${getDisplayName(currentState.loser)}! Za 3.5s DOBITKA...`;
-autoFlowTimer = setTimeout(async () => {
-await updateDoc(doc(db, "quizGame", "state"), { status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", timeoutPenalty: false, tick: Date.now() });
-}, 3500);
+autoFlowTimer = setTimeout(async () => { await updateDoc(doc(db, "quizGame", "state"), { status: "reading", fastest: "", winner: "", loser: "", givenAnswer: "", nominated: "", timeoutPenalty: false, tick: Date.now() }); }, 3500);
 }
 }
 
