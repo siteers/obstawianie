@@ -2,20 +2,49 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Cyber-Pad | Gracz (7 Rund)</title>
+<title>Cyber-Pad | Gracz (7 Rund + Awatary)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <style>
-:root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; } 
+:root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
 body {
 font-family: sans-serif; background: var(--bg); color: #fff; margin: 0;
 display: flex; flex-direction: column; align-items: center; justify-content: center;
 min-height: 100vh; text-align: center; box-sizing: border-box; touch-action: manipulation;
 }
 body.keyboard-mode { justify-content: flex-start; padding-top: 12px; }
-.login-box { background: #111; padding: 26px; border-radius: 20px; border: 1px solid var(--cyan); width: 88%; max-width: 360px; box-sizing: border-box; }
+.login-box { background: #111; padding: 26px; border-radius: 20px; border: 1px solid var(--cyan); width: 88%; max-width: 360px; box-sizing: border-box; box-shadow: 0 0 25px rgba(0,212,255,0.18); }
 select { width: 100%; padding: 14px; font-size: 19px; margin-bottom: 14px; border-radius: 10px; background: #000; color: #fff; border: 1px solid var(--cyan); font-weight: bold; }
 .custom-nick-input { width: 100%; padding: 12px; font-size: 16px; margin-bottom: 18px; border-radius: 10px; background: #000; color: var(--gold); border: 1px dashed #666; box-sizing: border-box; text-align: center; font-weight: bold; }
+
+/* EKRAN DODAWANIA AWATARA */
+#avatarSetupUI { display: none; }
+.avatar-preview-circle {
+width: 140px; height: 140px; border-radius: 50%; margin: 12px auto 16px auto;
+border: 4px solid var(--gold); background: #1e272e; overflow: hidden;
+display: flex; align-items: center; justify-content: center; font-size: 52px;
+box-shadow: 0 0 22px rgba(212,175,55,0.35);
+}
+.avatar-preview-circle img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.avatar-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.btn-photo-pick {
+display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+background: #1e272e; border: 2px solid var(--cyan); color: #fff; padding: 14px 8px;
+border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; text-transform: uppercase;
+}
+.btn-photo-pick:active { transform: scale(0.95); background: rgba(0,212,255,0.2); }
+.btn-skip-avatar {
+background: transparent; border: 1px dashed #555; color: #94a3b8; padding: 10px;
+border-radius: 10px; font-size: 13px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 8px;
+}
+
 #gamePad { display: none; width: 94%; max-width: 440px; padding-bottom: 24px; }
+.player-mini-bar {
+display: flex; align-items: center; justify-content: center; gap: 10px;
+margin-bottom: 8px; padding: 6px 12px; background: rgba(255,255,255,0.04);
+border-radius: 30px; border: 1px solid #222;
+}
+.player-mini-bar img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gold); display: none; }
+.player-mini-bar span { font-size: 13px; font-weight: 900; color: var(--gold); letter-spacing: 1px; text-transform: uppercase; }
 .status-top { font-size: 13px; color: #888; text-transform: uppercase; margin-bottom: 10px; letter-spacing: 1.5px; font-weight: bold; cursor: pointer; user-select: none; }
 
 .grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; display: none; }
@@ -43,6 +72,24 @@ min-height: 100px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8
 .btn-tf-false { background: rgba(255, 71, 87, 0.35); border: 4px solid #ff4757; box-shadow: 0 0 20px rgba(255, 71, 87, 0.4); }
 .btn-tf:active { transform: scale(0.93); filter: brightness(1.3); }
 
+/* RUNDA 3: 🎯 KTO NAJBLIŻEJ? */
+.r3-closest-area { display: none; flex-direction: column; gap: 12px; width: 100%; }
+.r3-closest-q {
+background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 14px;
+font-size: 16px; font-weight: bold; color: #fff; line-height: 1.35;
+}
+.r3-num-wrap { display: flex; align-items: center; gap: 8px; width: 100%; }
+input.num-r3 {
+font-size: 32px; font-weight: 900; padding: 14px; text-align: center;
+border-radius: 14px; border: 3px solid var(--cyan); background: #000; color: #ffd700;
+width: 100%; box-sizing: border-box; outline: none;
+}
+.r3-unit-badge {
+background: #1e272e; border: 2px solid var(--gold); color: var(--gold);
+font-size: 16px; font-weight: 900; padding: 14px 12px; border-radius: 12px;
+white-space: nowrap; display: none;
+}
+
 .ready-area { display: none; flex-direction: column; align-items: center; gap: 14px; width: 100%; margin-top: 10px; }
 .ready-info-box { background: rgba(0, 212, 255, 0.12); border: 2px solid var(--cyan); border-radius: 15px; padding: 18px; font-size: 17px; font-weight: bold; color: #fff; line-height: 1.4; width: 100%; box-sizing: border-box; }
 .btn-ready { background: linear-gradient(135deg, #2ed573, #059669); color: #000; font-size: 19px; font-weight: 900; padding: 20px 14px; border: 3px solid #fff; border-radius: 16px; cursor: pointer; text-transform: uppercase; width: 100%; box-shadow: 0 0 25px rgba(46, 213, 115, 0.5); animation: pulseBtn 1.1s infinite; }
@@ -65,7 +112,7 @@ padding: 0; outline: none; box-sizing: border-box; font-family: monospace; caret
 .full-phrase-box { width: 100%; margin-top: 8px; padding-top: 10px; border-top: 1px dashed #444; display: flex; flex-direction: column; gap: 8px; }
 .full-phrase-input { width: 100%; font-size: 17px; padding: 12px; text-align: center; border-radius: 10px; border: 2px solid var(--gold); background: #000; color: #fff; text-transform: uppercase; box-sizing: border-box; font-weight: bold; }
 
-/* RUNDA 5: POSTAW NA MILION - RĘCZNE WPISYWANIE + PRZYCISKI + STOPER 45s */
+/* RUNDA 5: POSTAW NA MILION */
 #ui-r5-million { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .mil-pad-header { background: #111; border: 2px solid var(--gold); border-radius: 14px; padding: 12px; font-size: 14px; font-weight: bold; box-shadow: 0 0 15px rgba(212,175,55,0.2); }
 .mil-pad-qtext { font-size: 15px; color: #fff; margin: 6px 0; line-height: 1.3; }
@@ -96,11 +143,11 @@ padding: 9px 2px; font-size: 13px; font-weight: 900; cursor: pointer; touch-acti
 .btn-mil-step.max-btn { color: var(--gold); border-color: var(--gold); background: rgba(212,175,55,0.15); }
 .btn-mil-step:active { transform: scale(0.93); background: var(--cyan); color: #000; }
 
-.input-area { display: none; flex-direction: column; gap: 10px; width: 100%; }
-input.text-r3 { font-size: 22px; padding: 14px; text-align: center; border-radius: 10px; border: 2px solid #555; background: #000; color: #fff; text-transform: uppercase; width: 100%; box-sizing: border-box; }
 .btn-submit { background: var(--cyan); color: #000; font-size: 17px; font-weight: 900; padding: 15px; border: none; border-radius: 10px; cursor: pointer; text-transform: uppercase; width: 100%; }
 .btn-submit.gold-btn { background: var(--gold); color: #000; }
+.btn-submit.green-btn { background: #2ed573; color: #000; }
 .btn-submit:active { transform: scale(0.97); }
+.btn-submit:disabled { opacity: 0.4; pointer-events: none; }
 
 .nominate-area { display: none; flex-direction: column; gap: 10px; width: 100%; }
 .btn-nom { background: #d4af37; color: #000; font-size: 18px; font-weight: bold; padding: 15px; border-radius: 10px; border: none; cursor: pointer; text-transform: uppercase; }
@@ -145,10 +192,42 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <option value="Jas" id="opt-slot-Jas">Slot 4: Jaś</option>
 </select>
 <input type="text" id="customNickInp" class="custom-nick-input" placeholder="Wpisz własne imię (opcjonalnie)">
-<button class="btn-submit" onclick="joinGame()">DOŁĄCZ DO GRY</button>
+<button class="btn-submit" id="btnJoinMain" onclick="joinGame()">DOŁĄCZ DO GRY</button>
+</div>
+
+<!-- KROK 2 LOGOWANIA: DODANIE AWATARA (TYLKO JEŚLI GRACZ GO JESZCZE NIE MA) -->
+<div class="login-box" id="avatarSetupUI">
+<h2 style="margin-top:0; color:var(--gold); font-size:20px;">📸 DODAJ SWÓJ AWATAR!</h2>
+<p style="font-size:13px; color:#cbd5e1; margin:0 0 8px 0;">Twoje zdjęcie pojawi się na ekranie TV obok imienia oraz na osi liczbowej w Rundzie 3!</p>
+
+<div class="avatar-preview-circle" id="avatarPreviewBox">
+<span id="avatarPlaceholderIcon">👤</span>
+<img id="avatarPreviewImg" alt="Podgląd awatara">
+</div>
+
+<div class="avatar-btn-row">
+<label class="btn-photo-pick">
+<span style="font-size:24px;">🤳</span>
+<span>ZRÓB SELFIE</span>
+<input type="file" accept="image/*" capture="user" style="display:none;" onchange="handleAvatarFileSelect(event)">
+</label>
+<label class="btn-photo-pick">
+<span style="font-size:24px;">🖼️</span>
+<span>Z GALERII</span>
+<input type="file" accept="image/*" style="display:none;" onchange="handleAvatarFileSelect(event)">
+</label>
+</div>
+
+<div class="feedback-msg" id="avatarFeedback" style="margin-bottom:8px;"></div>
+<button class="btn-submit green-btn" id="btnSaveAvatar" onclick="saveAvatarAndEnter()" disabled>✅ ZAPISZ AWATAR I WEJDŹ</button>
+<button class="btn-skip-avatar" onclick="enterGamePadDirectly()">Pomiń na razie (wejdź bez zdjęcia)</button>
 </div>
 
 <div id="gamePad">
+<div class="player-mini-bar">
+<img id="myMiniAvatar" alt="">
+<span id="myMiniNick">GRACZ</span>
+</div>
 <div class="status-top" id="padStatus" onclick="forceSyncState()" title="Dotknij, aby odświeżyć połączenie">Łączenie z grą...</div>
 
 <div class="grid-abcd" id="ui-abcd">
@@ -181,6 +260,17 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 </div>
 </div>
 
+<!-- RUNDA 3: 🎯 KTO NAJBLIŻEJ? (KLAWIATURA NUMERYCZNA) -->
+<div class="r3-closest-area" id="ui-r3-closest">
+<div class="r3-closest-q" id="r3ClosestQText">...</div>
+<div class="r3-num-wrap">
+<input type="number" class="num-r3" id="r3GuessInput" placeholder="Wpisz liczbę..." inputmode="decimal" autocomplete="off">
+<div class="r3-unit-badge" id="r3UnitBadge">km</div>
+</div>
+<div class="feedback-msg" id="r3Feedback"></div>
+<button class="btn-ready" style="padding:16px;" onclick="sendClosestGuess()">🎯 ZATWIERDŹ LICZBĘ!</button>
+</div>
+
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
 <div class="wheel-pad-area" id="ui-wheel">
 <div class="wheel-pad-cat" id="wheelPadCat">KATEGORIA</div>
@@ -195,13 +285,7 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div class="feedback-msg" id="wheelFeedback"></div>
 </div>
 
-<div class="input-area" id="ui-input">
-<input type="text" class="text-r3" id="typeAnswer" placeholder="Wpisz odpowiedź..." autocomplete="off">
-<div class="feedback-msg" id="r3Feedback"></div>
-<button class="btn-submit" onclick="sendTypedAnswer()">WYŚLIJ ODPOWIEDŹ</button>
-</div>
-
-<!-- RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + SZYBKIE PRZYCISKI + STOPER 45s) -->
+<!-- RUNDA 5: POSTAW NA MILION -->
 <div id="ui-r5-million">
 <div class="mil-pad-header">
 <div style="color:var(--gold); font-size:15px;" id="milPadTitle">PYTANIE 1/5</div>
@@ -262,41 +346,53 @@ const db = getFirestore(initializeApp(firebaseConfig));
 
 let myName = "";
 let myCurrentPoints = 0;
+let myAvatarDataUrl = "";
+let pendingAvatarBase64 = "";
 let currentState = null;
 let unsubscribeSnapshot = null;
 let watchdogInterval = null;
 let bidLocalTimer = null;
 
 let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
-function getDisplayName(pKey) {
-return playerNamesMap[pKey] || pKey || "";
-}
+function getDisplayName(pKey) { return playerNamesMap[pKey] || pKey || ""; }
 
 function refreshLoginSlotNames() {
 ["Lila", "Kaja", "Darek", "Jas"].forEach((k, idx) => {
 const opt = document.getElementById(`opt-slot-${k}`);
-if (opt) {
-opt.text = `Slot ${idx + 1}: ${getDisplayName(k)}`;
-}
+if (opt) opt.text = `Slot ${idx + 1}: ${getDisplayName(k)}`;
 });
 }
 
 window.onSlotSelectChange = () => {
 const selVal = document.getElementById('agentSel').value;
-if (selVal) {
-document.getElementById('customNickInp').value = getDisplayName(selVal);
-}
+if (selVal) document.getElementById('customNickInp').value = getDisplayName(selVal);
 };
 
 onSnapshot(doc(db, "quizGame", "state"), (snap) => {
 if (snap.exists() && snap.data().playerNames) {
 playerNamesMap = { ...playerNamesMap, ...snap.data().playerNames };
 refreshLoginSlotNames();
+if (myName) {
+const miniNick = document.getElementById('myMiniNick');
+if (miniNick) miniNick.innerText = getDisplayName(myName);
+}
+}
+});
+
+// Nasłuchuj aktualizacji awatara dla zalogowanego gracza
+onSnapshot(doc(db, "quizGame", "avatars"), (snap) => {
+if (!myName || !snap.exists()) return;
+const av = snap.data()[myName] || "";
+myAvatarDataUrl = av;
+const miniImg = document.getElementById('myMiniAvatar');
+if (miniImg) {
+if (av) { miniImg.src = av; miniImg.style.display = "block"; }
+else { miniImg.removeAttribute('src'); miniImg.style.display = "none"; }
 }
 });
 
 let currentWheelTick = null;
-let lastR3Question = null;
+let lastR3SpeechTick = 0;
 let lastR6BlindSpeechTick = 0;
 let lastMilBetTick = 0;
 let padWheelInterval = null;
@@ -318,15 +414,142 @@ let lastHandledSpinTickOnPad = 0;
 let lastDrawnCatsKey = "";
 
 function getActivePlayers(stateObj) {
-if (stateObj && stateObj.activePlayers && stateObj.activePlayers.length > 0) {
-return stateObj.activePlayers;
-}
-return ["Lila", "Kaja", "Darek", "Jas"];
+return (stateObj && stateObj.activePlayers && stateObj.activePlayers.length > 0)
+? stateObj.activePlayers
+: ["Lila", "Kaja", "Darek", "Jas"];
 }
 
+// ============================================================================
+// KOMPRESJA I OBSŁUGA AWATARÓW (KWADRAT 220x220 JPEG)
+// ============================================================================
+window.handleAvatarFileSelect = (e) => {
+const file = e.target.files && e.target.files[0];
+if (!file) return;
+const fb = document.getElementById('avatarFeedback');
+fb.style.color = "#ffd700";
+fb.innerText = "⏳ Przetwarzanie zdjęcia...";
+
+const reader = new FileReader();
+reader.onload = (ev) => {
+const img = new Image();
+img.onload = () => {
+const size = 220;
+const canvas = document.createElement('canvas');
+canvas.width = size;
+canvas.height = size;
+const ctx = canvas.getContext('2d');
+
+// Centralne kadrowanie do kwadratu (jak Instagram / profilowe)
+const minSide = Math.min(img.width, img.height);
+const sx = Math.floor((img.width - minSide) / 2);
+const sy = Math.floor((img.height - minSide) / 2);
+ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+
+pendingAvatarBase64 = canvas.toDataURL('image/jpeg', 0.72);
+const prevImg = document.getElementById('avatarPreviewImg');
+const phIcon = document.getElementById('avatarPlaceholderIcon');
+prevImg.src = pendingAvatarBase64;
+prevImg.style.display = "block";
+phIcon.style.display = "none";
+document.getElementById('btnSaveAvatar').disabled = false;
+fb.style.color = "#2ed573";
+fb.innerText = "✅ Super! Kliknij poniżej, aby zapisać i wejść do gry.";
+};
+img.onerror = () => {
+fb.style.color = "#ff4757";
+fb.innerText = "❌ Nie udało się wczytać zdjęcia. Spróbuj inne!";
+};
+img.src = ev.target.result;
+};
+reader.readAsDataURL(file);
+};
+
+window.saveAvatarAndEnter = async () => {
+if (!myName || !pendingAvatarBase64) return;
+const fb = document.getElementById('avatarFeedback');
+const btn = document.getElementById('btnSaveAvatar');
+btn.disabled = true;
+fb.style.color = "#ffd700";
+fb.innerText = "⏳ Zapisywanie awatara na TV...";
+
+try {
+await setDoc(doc(db, "quizGame", "avatars"), { [myName]: pendingAvatarBase64 }, { merge: true });
+myAvatarDataUrl = pendingAvatarBase64;
+pendingAvatarBase64 = "";
+window.enterGamePadDirectly();
+} catch (err) {
+btn.disabled = false;
+fb.style.color = "#ff4757";
+fb.innerText = "❌ Błąd zapisu: " + err.message;
+}
+};
+
+window.enterGamePadDirectly = () => {
+document.getElementById('loginUI').style.display = 'none';
+document.getElementById('avatarSetupUI').style.display = 'none';
+document.getElementById('gamePad').style.display = 'block';
+
+document.getElementById('myMiniNick').innerText = getDisplayName(myName);
+const miniImg = document.getElementById('myMiniAvatar');
+if (myAvatarDataUrl) {
+miniImg.src = myAvatarDataUrl;
+miniImg.style.display = "block";
+} else {
+miniImg.style.display = "none";
+}
+
+onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
+if (sSnap.exists()) myCurrentPoints = sSnap.data().points || 0;
+});
+
+startRealtimeListener();
+clearInterval(watchdogInterval);
+watchdogInterval = setInterval(window.forceSyncState, 2000);
+};
+
+window.joinGame = async () => {
+myName = document.getElementById('agentSel').value;
+if (!myName) return alert("Musisz wybrać slot gracza z listy!");
+
+const btnJoin = document.getElementById('btnJoinMain');
+btnJoin.disabled = true;
+btnJoin.innerText = "⏳ ŁĄCZENIE...";
+
+const customNick = (document.getElementById('customNickInp').value || "").trim();
+if (customNick && customNick !== getDisplayName(myName)) {
+playerNamesMap[myName] = customNick;
+try {
+await setDoc(doc(db, "quizGame", "state"), { playerNames: playerNamesMap }, { merge: true });
+} catch (e) {}
+}
+
+// Sprawdzamy, czy ten slot MA JUŻ awatar w Firebase (jeśli ma, omijamy ekran wyboru zdjęcia!)
+let existingAv = "";
+try {
+const avSnap = await getDoc(doc(db, "quizGame", "avatars"));
+if (avSnap.exists() && avSnap.data()[myName]) {
+existingAv = avSnap.data()[myName];
+}
+} catch (e) {}
+
+btnJoin.disabled = false;
+btnJoin.innerText = "DOŁĄCZ DO GRY";
+
+if (existingAv) {
+myAvatarDataUrl = existingAv;
+window.enterGamePadDirectly();
+} else {
+document.getElementById('loginUI').style.display = 'none';
+document.getElementById('avatarSetupUI').style.display = 'block';
+}
+};
+
+// ============================================================================
+// KOŁO RUNDY 7 NA TELEFONIE
+// ============================================================================
 function drawPadWheel(catsList = r7Categories) {
 const key = (catsList || []).join("|");
-if (key === lastDrawnCatsKey) return; // Nie czyść canvasu, jeśli kategorie się nie zmieniły (chroni animację obrotu!)
+if (key === lastDrawnCatsKey) return;
 lastDrawnCatsKey = key;
 
 const canvas = document.getElementById('pad-wheel-canvas');
@@ -434,7 +657,6 @@ let diff = targetMod - curMod;
 if (diff < 0) diff += 360;
 padWheelRot += power * 360 + diff;
 
-// Wymuszenie reflow przed nałożeniem transition dla płynnego obrotu na iOS/Android
 padWheelEl.style.transition = "none";
 void padWheelEl.offsetWidth;
 padWheelEl.style.transition = "transform 4.4s cubic-bezier(0.12, 0.8, 0.18, 1)";
@@ -452,32 +674,18 @@ const maxAllowed = Math.max(5, myCurrentPoints + 100);
 const inp = document.getElementById('blindBidInput');
 if (!inp) return;
 document.getElementById('r6BidFeedback').innerText = "";
-if (val === 'MAX') {
-inp.value = maxAllowed;
-} else {
-inp.value = Math.min(maxAllowed, Math.max(5, val));
-}
+inp.value = (val === 'MAX') ? maxAllowed : Math.min(maxAllowed, Math.max(5, val));
 };
 
 window.submitBlindBid = async () => {
 if (!currentState || currentState.round !== 7 || currentState.status !== "r6_blind_bidding") return;
 const inp = document.getElementById('blindBidInput');
 const rawVal = inp.value.trim();
-if (rawVal === "") {
-document.getElementById('r6BidFeedback').innerText = "⚠️ WPISZ KWOTĘ (MINIMUM 5 PKT)!";
-return;
-}
+if (rawVal === "") { document.getElementById('r6BidFeedback').innerText = "⚠️ WPISZ KWOTĘ (MINIMUM 5 PKT)!"; return; }
 const bidAmount = parseInt(rawVal, 10);
 const maxAllowed = Math.max(5, myCurrentPoints + 100);
-
-if (isNaN(bidAmount) || bidAmount < 5) {
-document.getElementById('r6BidFeedback').innerText = "⚠️ MINIMALNA STAWKA TO 5 PKT!";
-return;
-}
-if (bidAmount > maxAllowed) {
-document.getElementById('r6BidFeedback').innerText = `⛔ MOŻESZ POSTAWIĆ MAKSYMALNIE ${maxAllowed} PKT!`;
-return;
-}
+if (isNaN(bidAmount) || bidAmount < 5) { document.getElementById('r6BidFeedback').innerText = "⚠️ MINIMALNA STAWKA TO 5 PKT!"; return; }
+if (bidAmount > maxAllowed) { document.getElementById('r6BidFeedback').innerText = `⛔ MOŻESZ POSTAWIĆ MAKSYMALNIE ${maxAllowed} PKT!`; return; }
 
 document.getElementById('r6BidFeedback').innerText = "";
 const stateRef = doc(db, "quizGame", "state");
@@ -491,11 +699,7 @@ let locked = [...(data.r6LockedBidders || [])];
 if (!locked.includes(myName)) locked.push(myName);
 bids[myName] = bidAmount;
 
-await updateDoc(stateRef, {
-r6Bids: bids,
-r6LockedBidders: locked,
-bidTick: Date.now()
-});
+await updateDoc(stateRef, { r6Bids: bids, r6LockedBidders: locked, bidTick: Date.now() });
 };
 
 window.confirmPlayerReady = async () => {
@@ -515,24 +719,51 @@ return;
 }
 
 if (currentState.round === 5 && currentState.status === "r5_mil_wait_ready" && currentState.nominated === myName) {
-await updateDoc(stateRef, {
-status: "r5_mil_ready_go",
-speechTick: Date.now()
-});
+await updateDoc(stateRef, { status: "r5_mil_ready_go", speechTick: Date.now() });
 }
 };
 
 window.sendBombTFAnswer = async (boolChoice) => {
 if (!currentState || currentState.round !== 2 || currentState.status !== "r2_bomb_running" || currentState.nominated !== myName) return;
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r2_bomb_answered",
-r5GivenBool: boolChoice,
-answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: "r2_bomb_answered", r5GivenBool: boolChoice, answerTick: Date.now() });
 };
 
 // ============================================================================
-// RUNDA 5: BUDOWANIE KART ZAPADNI (RĘCZNE WPISYWANIE + SZYBKIE PRZYCISKI + STOPER 45s)
+// RUNDA 3: 🎯 KTO NAJBLIŻEJ? — WYSYŁANIE LICZBY
+// ============================================================================
+window.sendClosestGuess = async () => {
+if (!currentState || currentState.status !== "reading" || currentState.round !== 3) return;
+const inp = document.getElementById('r3GuessInput');
+const fb = document.getElementById('r3Feedback');
+const rawStr = (inp.value || "").trim().replace(",", ".");
+if (rawStr === "") {
+fb.innerText = "⚠️ WPISZ LICZBĘ ZANIM WYŚLESZ!";
+return;
+}
+const numVal = Number(rawStr);
+if (!Number.isFinite(numVal)) {
+fb.innerText = "⚠️ WPISZ POPRAWNĄ LICZBĘ!";
+return;
+}
+const cleanNum = Math.round(numVal);
+fb.innerText = "";
+inp.blur();
+
+await updateDoc(doc(db, "quizGame", "state"), {
+[`r3Guesses.${myName}`]: { val: cleanNum, ts: Date.now() }
+});
+};
+
+// Enter w polu liczbowym R3 wysyła typ
+document.getElementById('r3GuessInput').addEventListener('keydown', (e) => {
+if (e.key === 'Enter') {
+e.preventDefault();
+window.sendClosestGuess();
+}
+});
+
+// ============================================================================
+// RUNDA 5: POSTAW NA MILION
 // ============================================================================
 function syncLiveMillionBetsToFirebase(immediate = false) {
 clearTimeout(milLiveSyncTimer);
@@ -540,15 +771,10 @@ const doSync = async () => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const betsObj = {};
 localMilBets.forEach((v, i) => { betsObj[i] = v; });
-try {
-await updateDoc(doc(db, "quizGame", "state"), { milLiveBets: betsObj });
-} catch (e) {}
+try { await updateDoc(doc(db, "quizGame", "state"), { milLiveBets: betsObj }); } catch (e) {}
 };
-if (immediate) {
-doSync();
-} else {
-milLiveSyncTimer = setTimeout(doSync, 120);
-}
+if (immediate) doSync();
+else milLiveSyncTimer = setTimeout(doSync, 120);
 }
 
 function buildMillionPadUI(optionsList, totalPts, maxTraps) {
@@ -598,14 +824,9 @@ unallocEl.style.color = rem === 0 ? "#2ed573" : (rem < 0 ? "#ff4757" : "#f1c40f"
 }
 localMilBets.forEach((val, idx) => {
 const inp = document.getElementById(`mil-pad-inp-${idx}`);
-if (inp && idx !== skipInputIdx) {
-inp.value = val;
-}
+if (inp && idx !== skipInputIdx) inp.value = val;
 const card = document.getElementById(`mil-pad-card-${idx}`);
-if (card) {
-if (val > 0) card.classList.add('active-trap');
-else card.classList.remove('active-trap');
-}
+if (card) card.classList.toggle('active-trap', val > 0);
 });
 syncLiveMillionBetsToFirebase();
 }
@@ -614,10 +835,8 @@ window.onMilManualInput = (idx, rawVal) => {
 document.getElementById('milPadFeedback').innerText = "";
 let parsed = parseInt(rawVal, 10);
 if (isNaN(parsed) || parsed < 0) parsed = 0;
-
 const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc + v, 0);
 const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
-
 const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? parsed : v) > 0).length;
 if (parsed > 0 && activeTrapsCount > localMilMaxTraps) {
 document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
@@ -627,14 +846,12 @@ if (inp) inp.value = 0;
 refreshMillionPadSummary();
 return;
 }
-
 if (parsed > maxPossibleHere) {
 parsed = maxPossibleHere;
 document.getElementById('milPadFeedback').innerText = `ℹ️ Automatycznie dopasowano do pozostałej puli (${maxPossibleHere} PKT).`;
 const inp = document.getElementById(`mil-pad-inp-${idx}`);
 if (inp) inp.value = parsed;
 }
-
 localMilBets[idx] = parsed;
 refreshMillionPadSummary(idx);
 };
@@ -644,22 +861,16 @@ document.getElementById('milPadFeedback').innerText = "";
 const currentVal = localMilBets[idx] || 0;
 const otherAllocated = localMilBets.reduce((acc, v, i) => i === idx ? acc : acc + v, 0);
 const maxPossibleHere = Math.max(0, localMilTotalPool - otherAllocated);
-
 let newVal = currentVal;
-if (delta === 'ZERO') {
-newVal = 0;
-} else if (delta === 'MAX') {
-newVal = maxPossibleHere;
-} else {
-newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
-}
+if (delta === 'ZERO') newVal = 0;
+else if (delta === 'MAX') newVal = maxPossibleHere;
+else newVal = Math.max(0, Math.min(maxPossibleHere, currentVal + delta));
 
 const activeTrapsCount = localMilBets.filter((v, i) => (i === idx ? newVal : v) > 0).length;
 if (newVal > 0 && activeTrapsCount > localMilMaxTraps) {
 document.getElementById('milPadFeedback').innerText = `⛔ MOŻESZ OBSTAWIĆ MAKSYMALNIE ${localMilMaxTraps} ZAPADNIE (MIN. 1 MUSI ZOSTAĆ PUSTA)!`;
 return;
 }
-
 localMilBets[idx] = newVal;
 refreshMillionPadSummary();
 };
@@ -667,14 +878,12 @@ refreshMillionPadSummary();
 window.submitMillionBets = async (isAutoTimeout = false) => {
 if (!currentState || currentState.round !== 5 || currentState.status !== "r5_mil_betting" || currentState.nominated !== myName) return;
 const allocated = localMilBets.reduce((a, b) => a + b, 0);
-
 if (isAutoTimeout) {
 clearInterval(milLocalCountdown);
 clearTimeout(milLiveSyncTimer);
 syncLiveMillionBetsToFirebase(true);
 return;
 }
-
 if (allocated !== localMilTotalPool) {
 const diff = localMilTotalPool - allocated;
 document.getElementById('milPadFeedback').innerText = diff > 0
@@ -682,23 +891,15 @@ document.getElementById('milPadFeedback').innerText = diff > 0
 : `⚠️ WPISANO ZA DUŻO O ${Math.abs(diff)} PKT! SUMA MUSI WYNOSIĆ ${localMilTotalPool} PKT!`;
 return;
 }
-const activeTrapsCount = localMilBets.filter(v => v > 0).length;
-if (activeTrapsCount > localMilMaxTraps) {
+if (localMilBets.filter(v => v > 0).length > localMilMaxTraps) {
 document.getElementById('milPadFeedback').innerText = `⛔ ZA DUŻO ZAPADNI! MAKSYMALNIE: ${localMilMaxTraps}!`;
 return;
 }
-
 clearInterval(milLocalCountdown);
 clearTimeout(milLiveSyncTimer);
 const betsObj = {};
 localMilBets.forEach((v, i) => { betsObj[i] = v; });
-
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_locked",
-milBets: betsObj,
-milLiveBets: betsObj,
-answerTick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_locked", milBets: betsObj, milLiveBets: betsObj, answerTick: Date.now() });
 };
 
 function normalizeChar(str) {
@@ -709,10 +910,7 @@ window.forceSyncState = async () => {
 if (!myName) return;
 try {
 const snap = await getDoc(doc(db, "quizGame", "state"));
-if (snap.exists()) {
-currentState = snap.data();
-updatePadUI();
-}
+if (snap.exists()) { currentState = snap.data(); updatePadUI(); }
 } catch (e) {}
 };
 
@@ -721,46 +919,12 @@ if (unsubscribeSnapshot) unsubscribeSnapshot();
 unsubscribeSnapshot = onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
 if (!docSnap.exists()) return;
 currentState = docSnap.data();
-if (currentState.playerNames) {
-playerNamesMap = { ...playerNamesMap, ...currentState.playerNames };
-}
+if (currentState.playerNames) playerNamesMap = { ...playerNamesMap, ...currentState.playerNames };
 updatePadUI();
-}, () => {
-setTimeout(window.forceSyncState, 1500);
-});
+}, () => { setTimeout(window.forceSyncState, 1500); });
 }
 
-window.joinGame = async () => {
-myName = document.getElementById('agentSel').value;
-if (!myName) return alert("Musisz wybrać slot gracza z listy!");
-const customNick = (document.getElementById('customNickInp').value || "").trim();
-if (customNick && customNick !== getDisplayName(myName)) {
-playerNamesMap[myName] = customNick;
-try {
-await setDoc(doc(db, "quizGame", "state"), { playerNames: playerNamesMap }, { merge: true });
-} catch (e) {}
-}
-
-document.getElementById('loginUI').style.display = 'none';
-document.getElementById('gamePad').style.display = 'block';
-
-onSnapshot(doc(db, "quizScores", myName), (sSnap) => {
-if (sSnap.exists()) {
-myCurrentPoints = sSnap.data().points || 0;
-}
-});
-
-startRealtimeListener();
-clearInterval(watchdogInterval);
-watchdogInterval = setInterval(window.forceSyncState, 2000);
-};
-
-document.addEventListener("visibilitychange", () => {
-if (document.visibilityState === "visible" && myName) {
-startRealtimeListener();
-window.forceSyncState();
-}
-});
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible" && myName) { startRealtimeListener(); window.forceSyncState(); } });
 window.addEventListener("focus", () => { if (myName) window.forceSyncState(); });
 window.addEventListener("online", () => { if (myName) { startRealtimeListener(); window.forceSyncState(); } });
 
@@ -788,50 +952,25 @@ const idxCopy = globalIdx;
 targetLetters.push(ch);
 
 inp.addEventListener('focus', () => {
-if (inp.readOnly || inp.classList.contains('revealed')) {
-focusNextEditableTile(idxCopy + 1);
-return;
-}
+if (inp.readOnly || inp.classList.contains('revealed')) { focusNextEditableTile(idxCopy + 1); return; }
 inp.select();
 });
-
 inp.addEventListener('input', (e) => {
-if (inp.readOnly || inp.classList.contains('revealed')) {
-inp.value = targetLetters[idxCopy];
-focusNextEditableTile(idxCopy + 1);
-return;
-}
+if (inp.readOnly || inp.classList.contains('revealed')) { inp.value = targetLetters[idxCopy]; focusNextEditableTile(idxCopy + 1); return; }
 document.getElementById('wheelFeedback').innerText = "";
 let val = e.target.value.trim().slice(-1).toUpperCase();
 e.target.value = val;
-if (val) {
-inp.classList.add('filled');
-focusNextEditableTile(idxCopy + 1);
-} else {
-inp.classList.remove('filled');
-}
+if (val) { inp.classList.add('filled'); focusNextEditableTile(idxCopy + 1); }
+else inp.classList.remove('filled');
 });
-
 inp.addEventListener('keydown', (e) => {
 if (e.key === 'Backspace') {
 e.preventDefault();
-if (inp.readOnly || inp.classList.contains('revealed')) {
-inp.value = targetLetters[idxCopy];
-focusPrevEditableTile(idxCopy - 1);
-return;
-}
-if (inp.value === "") {
-focusPrevEditableTile(idxCopy - 1);
-} else {
-inp.value = "";
-inp.classList.remove('filled');
-}
-} else if (e.key === 'Enter') {
-e.preventDefault();
-window.submitWheelTiles();
-}
+if (inp.readOnly || inp.classList.contains('revealed')) { inp.value = targetLetters[idxCopy]; focusPrevEditableTile(idxCopy - 1); return; }
+if (inp.value === "") focusPrevEditableTile(idxCopy - 1);
+else { inp.value = ""; inp.classList.remove('filled'); }
+} else if (e.key === 'Enter') { e.preventDefault(); window.submitWheelTiles(); }
 });
-
 wDiv.appendChild(inp);
 tileInputs.push(inp);
 globalIdx++;
@@ -842,20 +981,13 @@ board.appendChild(wDiv);
 
 function focusNextEditableTile(startIdx) {
 for (let i = startIdx; i < tileInputs.length; i++) {
-if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
-tileInputs[i].focus();
-return;
+if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) { tileInputs[i].focus(); return; }
 }
 }
-}
-
 function focusPrevEditableTile(startIdx) {
 for (let i = startIdx; i >= 0; i--) {
 if (!tileInputs[i].readOnly && !tileInputs[i].classList.contains('revealed')) {
-tileInputs[i].focus();
-tileInputs[i].value = "";
-tileInputs[i].classList.remove('filled');
-return;
+tileInputs[i].focus(); tileInputs[i].value = ""; tileInputs[i].classList.remove('filled'); return;
 }
 }
 }
@@ -885,8 +1017,8 @@ function updatePadUI() {
 document.getElementById('ui-abcd').style.display = 'none';
 document.getElementById('ui-ready').style.display = 'none';
 document.getElementById('ui-bomb').style.display = 'none';
+document.getElementById('ui-r3-closest').style.display = 'none';
 document.getElementById('ui-wheel').style.display = 'none';
-document.getElementById('ui-input').style.display = 'none';
 document.getElementById('ui-r5-million').style.display = 'none';
 document.getElementById('ui-nominate').style.display = 'none';
 document.getElementById('ui-r6-spin').style.display = 'none';
@@ -938,28 +1070,24 @@ document.getElementById('ui-ready').style.display = 'flex';
 return;
 }
 
-// ============================================================================
-// RUNDA 2: GORĄCA BOMBA (1 WIELKA TURA 2:30-3:00 MIN, CZAS LECI NON-STOP!)
-// ============================================================================
+// RUNDA 2: GORĄCA BOMBA
 if (currentState.round === 2) {
 const holderName = getDisplayName(currentState.nominated);
-
 if (currentState.status === "r2_bomb_wait_ready") {
 const readyList = currentState.readyPlayers || [];
 if (readyList.includes(myName)) {
-document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (1 WIELKA TURA)`;
+document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA (1 TURA)`;
 lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
 lockedEl.innerText = `✅ GOTOWOŚĆ ZATWIERDZONA!\nCZEKAMY NA POZOSTAŁYCH (${readyList.length}/${activeList.length})...`;
 } else {
 document.getElementById('padStatus').innerText = `💣 GORĄCA BOMBA - PRZYGOTOWANIE`;
-document.getElementById('readyInfoText').innerHTML = `Wielka Tura z Bombą (2:30 - 3:00 min)!<br>Jako pierwszy bombę dostaje gracz: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Uwaga: czas do wybuchu leci bez przerwy!`;
+document.getElementById('readyInfoText').innerHTML = `Gorąca Bomba (1:15 – 1:45 min)!<br>Jako pierwszy bombę dostaje gracz: <b style="color:var(--gold);">${holderName.toUpperCase()}</b>.<br>Uwaga: czas do wybuchu leci bez przerwy!`;
 document.getElementById('btnReadyAction').innerText = `✅ JESTEM GOTOWY NA BOMBĘ!`;
 document.getElementById('ui-ready').style.display = 'flex';
 }
 return;
 }
-
 if (currentState.status === "r2_bomb_exploded") {
 const victimName = getDisplayName(currentState.bombVictim || currentState.loser || currentState.nominated);
 document.getElementById('padStatus').innerText = `💥 BOOM! BOMBA WYBUCHŁA!`;
@@ -967,7 +1095,6 @@ lockedEl.style.display = 'block';
 lockedEl.innerText = `💥 BOOM! BOMBA WYBUCHŁA W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
 return;
 }
-
 if (currentState.status === "r2_bomb_running" || currentState.status === "r2_bomb_speaking" || currentState.status === "r2_bomb_active") {
 if (currentState.nominated === myName) {
 document.getElementById('padStatus').innerText = `🔥 GORĄCA BOMBA - ODPOWIADAJ SZYBKO!`;
@@ -983,9 +1110,7 @@ return;
 }
 }
 
-// ============================================================================
-// RUNDA 5: POSTAW NA MILION (RĘCZNE WPISYWANIE + PRZYCISKI + STOPER 45s PO LEKTORZE)
-// ============================================================================
+// RUNDA 5: POSTAW NA MILION
 if (currentState.round === 5) {
 const pName = getDisplayName(currentState.nominated);
 const currentPoolPts = currentState.milCurrentPts !== undefined ? currentState.milCurrentPts : 200;
@@ -1005,7 +1130,6 @@ lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nCZEKAM
 }
 return;
 }
-
 if (currentState.nominated !== myName) {
 clearInterval(milLocalCountdown);
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION: GRA ${pName.toUpperCase()}`;
@@ -1014,7 +1138,6 @@ lockedEl.style.display = 'block';
 lockedEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!\nPYTANIE ${currentState.milQNum || 1}/5 (W GRZE: ${currentPoolPts} PKT)\nOBSERWUJ ZAPADNIE NA TELEWIZORZE!`;
 return;
 }
-
 if (currentState.status === "r5_mil_speaking") {
 clearInterval(milLocalCountdown);
 document.getElementById('padStatus').innerText = `🗣️ SŁUCHAJ PYTANIA NA TV (ZEGAR STOI)!`;
@@ -1023,7 +1146,6 @@ lockedEl.style.display = 'block';
 lockedEl.innerText = `🗣️ LEKTOR CZYTA PYTANIE ${currentState.milQNum || 1}/5:\n"${currentState.question || ""}"\n\nPO PRZECZYTANIU ODBLOKUJĄ SIĘ ZAPADNIE I RUSZY STOPER 45 SEKUND!`;
 return;
 }
-
 if (currentState.status === "r5_mil_betting") {
 document.body.classList.add('keyboard-mode');
 document.getElementById('padStatus').innerText = `💰 POSTAW NA MILION - ROZDZIEL PUNKTY!`;
@@ -1049,10 +1171,7 @@ if (tSpan) tSpan.innerText = `${secLeft}s`;
 milLocalCountdown = setInterval(() => {
 secLeft = Math.max(0, secLeft - 1);
 if (tSpan) tSpan.innerText = `${secLeft}s`;
-if (secLeft <= 0) {
-clearInterval(milLocalCountdown);
-window.submitMillionBets(true);
-}
+if (secLeft <= 0) { clearInterval(milLocalCountdown); window.submitMillionBets(true); }
 }, 1000);
 }
 return;
@@ -1089,9 +1208,7 @@ return;
 }
 }
 
-// ============================================================================
 // RUNDA 7: KOŁO I LICYTACJA W CIEMNO
-// ============================================================================
 if (currentState.round === 7 && (currentState.status === "r6_wait_spin" || currentState.status === "r6_spinning")) {
 if (currentState.status === "r6_wait_spin") isSpinningLocally = false;
 document.getElementById('ui-r6-spin').style.display = 'flex';
@@ -1176,9 +1293,9 @@ return;
 }
 
 if (currentState.status === "speaking") {
-if (currentState.round === 3 && currentState.question !== lastR3Question) {
-lastR3Question = currentState.question;
-document.getElementById('typeAnswer').value = "";
+if (currentState.round === 3 && currentState.speechTick !== lastR3SpeechTick) {
+lastR3SpeechTick = currentState.speechTick;
+document.getElementById('r3GuessInput').value = "";
 document.getElementById('r3Feedback').innerText = "";
 }
 document.getElementById('padStatus').innerText = "🗣️ SŁUCHAJ LEKTORA NA TV!";
@@ -1191,11 +1308,15 @@ return;
 if (currentState.status === "idle" || currentState.status === "results" || currentState.status === "timeout" || currentState.status === "nominated_timeout" || currentState.status === "wheel_results" || currentState.status === "r1_results" || currentState.status === "r3_results") {
 clearInterval(padWheelInterval);
 clearInterval(milLocalCountdown);
-document.getElementById('padStatus').innerText = "Patrz na ekran TV!";
+document.getElementById('padStatus').innerText = currentState.status === "r3_results" ? "🎯 PATRZ NA OŚ LICZBOWĄ NA TV!" : "Patrz na ekran TV!";
+if (currentState.status === "r3_results") {
+lockedEl.classList.add('speak-msg');
+lockedEl.style.display = 'block';
+lockedEl.innerText = "🎯 OŚ LICZBOWA NA EKRANIE TV!\nZOBACZ, KTO BYŁ NAJBLIŻEJ ZŁOTEJ LINII!";
+}
 if (currentState.status === "results" || currentState.status === "timeout" || currentState.status === "r3_results") {
-document.getElementById('typeAnswer').value = "";
+document.getElementById('r3GuessInput').value = "";
 document.getElementById('r3Feedback').innerText = "";
-lastR3Question = null;
 }
 return;
 }
@@ -1235,10 +1356,7 @@ let totalLetters = (currentState.wheelOrder || []).length;
 let maxAutoReveal = Math.max(0, totalLetters - 1);
 let intervalMs = Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal)));
 padWheelInterval = setInterval(() => {
-if (padRevealedCount < maxAutoReveal) {
-padRevealedCount++;
-updateRevealedTilesOnPad();
-}
+if (padRevealedCount < maxAutoReveal) { padRevealedCount++; updateRevealedTilesOnPad(); }
 }, intervalMs);
 }
 return;
@@ -1250,24 +1368,14 @@ const ctrlName = getDisplayName(currentState.controller);
 if (currentState.controller === myName) {
 document.getElementById('padStatus').innerText = "DECYZJA NALEŻY DO CIEBIE!";
 document.getElementById('pad-cat').innerText = currentState.category || "";
-const allPlayers = ["Lila", "Kaja", "Darek", "Jas"];
-allPlayers.forEach(pid => {
+["Lila", "Kaja", "Darek", "Jas"].forEach(pid => {
 let btn = document.getElementById(`nom-${pid}`);
-if (!activeList.includes(pid)) {
-btn.style.display = 'none';
-return;
-}
+if (!activeList.includes(pid)) { btn.style.display = 'none'; return; }
 btn.style.display = 'block';
-let isBlocked = currentState.blocked && currentState.blocked.includes(pid);
-btn.disabled = isBlocked;
+btn.disabled = Boolean(currentState.blocked && currentState.blocked.includes(pid));
 const label = getDisplayName(pid).toUpperCase();
-if (pid === myName) {
-btn.classList.add('self-btn');
-btn.innerText = `${label} - BIORĘ NA SIEBIE! (±20 PKT)`;
-} else {
-btn.classList.remove('self-btn');
-btn.innerText = `${label} (±10 PKT)`;
-}
+if (pid === myName) { btn.classList.add('self-btn'); btn.innerText = `${label} - BIORĘ NA SIEBIE! (±20 PKT)`; }
+else { btn.classList.remove('self-btn'); btn.innerText = `${label} (±10 PKT)`; }
 });
 document.getElementById('ui-nominate').style.display = 'flex';
 } else {
@@ -1277,13 +1385,7 @@ return;
 }
 
 if (currentState.status === "reading") {
-if (currentState.round === 3 && currentState.question !== lastR3Question) {
-lastR3Question = currentState.question;
-document.getElementById('typeAnswer').value = "";
-document.getElementById('r3Feedback').innerText = "";
-}
-
-// RUNDA 1: ABCD (BEZ SPOILERA)
+// RUNDA 1: ABCD
 if (currentState.round === 1) {
 const myAns = (currentState.r1Answers || {})[myName];
 if (myAns !== undefined) {
@@ -1304,22 +1406,38 @@ document.getElementById('ui-abcd').style.display = 'grid';
 return;
 }
 
-// RUNDA 3: SZYBKIE PISANIE (BEZ SPOILERA)
+// RUNDA 3: 🎯 KTO NAJBLIŻEJ? (KLAWIATURA NUMERYCZNA)
 if (currentState.round === 3) {
-const mySub = (currentState.r3Submissions || {})[myName];
-if (mySub) {
-document.getElementById('padStatus').innerText = "🔒 ODPOWIEDŹ ZAREJESTROWANA!";
-lockedEl.classList.add('speak-msg');
+if (currentState.speechTick !== lastR3SpeechTick) {
+lastR3SpeechTick = currentState.speechTick;
+document.getElementById('r3GuessInput').value = "";
+document.getElementById('r3Feedback').innerText = "";
+}
+const myGuess = (currentState.r3Guesses || {})[myName];
+if (myGuess !== undefined && myGuess !== null) {
+const gVal = (typeof myGuess === 'object') ? myGuess.val : myGuess;
+const unitStr = currentState.correctUnit ? ` ${currentState.correctUnit}` : "";
+document.getElementById('padStatus').innerText = "🔒 LICZBA ZAPISANA!";
+lockedEl.classList.add('win-msg');
 lockedEl.style.display = 'block';
-lockedEl.innerText = `🔒 WPISANA ODPOWIEDŹ ZOSTAŁA ZAPISANA!\nWYNIKI I PUNKTY POKAŻĄ SIĘ PO ZAKOŃCZENIU CZASU.`;
+lockedEl.innerText = `🎯 TWÓJ TYP: ${gVal}${unitStr}\nCZEKAMY NA POZOSTAŁYCH GRACZY! PATRZ NA OŚ NA TV!`;
 return;
 }
 document.body.classList.add('keyboard-mode');
-document.getElementById('padStatus').innerText = "MASZ 20 SEKUND - WPISZ ODPOWIEDŹ:";
-document.getElementById('ui-input').style.display = 'flex';
+document.getElementById('padStatus').innerText = "🎯 MASZ 20 SEKUND - OSZACUJ LICZBĘ!";
+document.getElementById('r3ClosestQText').innerText = currentState.question || "";
+const uBadge = document.getElementById('r3UnitBadge');
+if (currentState.correctUnit) {
+uBadge.innerText = currentState.correctUnit;
+uBadge.style.display = 'block';
+} else {
+uBadge.style.display = 'none';
+}
+document.getElementById('ui-r3-closest').style.display = 'flex';
 return;
 }
 
+// RUNDA 6 i 7
 if (currentState.round === 6 || currentState.round === 7) {
 if (currentState.blocked && currentState.blocked.includes(myName)) {
 document.getElementById('padStatus').innerText = "ODPADŁEŚ W TYM PYTANIU!";
@@ -1330,7 +1448,7 @@ return;
 for(let i=0; i<4; i++) {
 let btn = document.getElementById(`pad-btn-${i}`);
 let lbl = document.getElementById(`pad-lbl-${i}`);
-btn.disabled = (currentState.usedOptions && currentState.usedOptions.includes(i));
+btn.disabled = Boolean(currentState.usedOptions && currentState.usedOptions.includes(i));
 lbl.innerText = (currentState.options && currentState.options[i]) ? currentState.options[i] : "";
 }
 if (!currentState.nominated || currentState.nominated === myName) {
@@ -1366,17 +1484,10 @@ focusNextEditableTile(0);
 return;
 }
 if (normalizeChar(userBuilt) === normalizeChar(targetBuilt)) {
-await updateDoc(doc(db, "quizGame", "state"), {
-r4FullGuess: { player: myName, text: currentState.question, ts: Date.now() }
-});
+await updateDoc(doc(db, "quizGame", "state"), { r4FullGuess: { player: myName, text: currentState.question, ts: Date.now() } });
 } else {
 document.getElementById('wheelFeedback').innerText = "❌ BŁĘDNE HASŁO! SPRÓBUJ PONOWNIE (BEZ KAR)!";
-tileInputs.forEach(inp => {
-if (!inp.readOnly && !inp.classList.contains('revealed')) {
-inp.value = "";
-inp.classList.remove('filled');
-}
-});
+tileInputs.forEach(inp => { if (!inp.readOnly && !inp.classList.contains('revealed')) { inp.value = ""; inp.classList.remove('filled'); } });
 focusNextEditableTile(0);
 }
 };
@@ -1385,16 +1496,10 @@ window.submitFullPhraseGuess = async () => {
 if (!currentState || currentState.round !== 4 || currentState.status !== "wheel_reading") return;
 const inp = document.getElementById('fullPhraseInp');
 const guess = (inp.value || "").trim();
-if (!guess) {
-document.getElementById('wheelFeedback').innerText = "⚠️ WPISZ HASŁO W POLE TEKSTOWE!";
-return;
-}
+if (!guess) { document.getElementById('wheelFeedback').innerText = "⚠️ WPISZ HASŁO W POLE TEKSTOWE!"; return; }
 if (normalizeChar(guess) === normalizeChar(currentState.question || "")) {
-inp.value = "";
-document.getElementById('wheelFeedback').innerText = "";
-await updateDoc(doc(db, "quizGame", "state"), {
-r4FullGuess: { player: myName, text: guess, ts: Date.now() }
-});
+inp.value = ""; document.getElementById('wheelFeedback').innerText = "";
+await updateDoc(doc(db, "quizGame", "state"), { r4FullGuess: { player: myName, text: guess, ts: Date.now() } });
 } else {
 document.getElementById('wheelFeedback').innerText = "❌ TO NIE TO HASŁO! PRÓBUJ DALEJ (ZERO KAR)!";
 inp.value = "";
@@ -1404,39 +1509,16 @@ inp.value = "";
 window.sendAnswer = async (index) => {
 if (!currentState || currentState.status !== "reading") return;
 const isCorrect = (index === currentState.correctIndex);
-
 if (currentState.round === 1) {
 if (currentState.r1Answers && currentState.r1Answers[myName] !== undefined) return;
-await updateDoc(doc(db, "quizGame", "state"), {
-[`r1Answers.${myName}`]: { opt: index, ts: Date.now() }
-});
+await updateDoc(doc(db, "quizGame", "state"), { [`r1Answers.${myName}`]: { opt: index, ts: Date.now() } });
 return;
 }
-
 if (currentState.round === 6) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r4", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
 } else if (currentState.round === 7) {
 await updateDoc(doc(db, "quizGame", "state"), { status: "results_pending_r6", fastest: myName, selectedIndex: index, isAnswerCorrect: isCorrect });
 }
-};
-
-window.sendTypedAnswer = async () => {
-if (!currentState || currentState.status !== "reading" || currentState.round !== 3) return;
-const inputEl = document.getElementById('typeAnswer');
-const ans = inputEl.value.trim();
-if (!ans) return;
-
-const acceptedList = (currentState.correctText || "").split("/").map(s => normalizeChar(s)).filter(Boolean);
-const userNorm = normalizeChar(ans);
-const isMatch = acceptedList.some(acc => acc && (userNorm === acc || (acc.length >= 4 && userNorm.includes(acc))));
-
-const canonicalText = isMatch ? (currentState.correctText || "").split("/")[0].trim() : ans;
-inputEl.value = "";
-document.getElementById('r3Feedback').innerText = "";
-
-await updateDoc(doc(db, "quizGame", "state"), {
-[`r3Submissions.${myName}`]: { text: canonicalText, ts: Date.now() }
-});
 };
 
 window.nominatePlayer = async (targetPlayer) => {
