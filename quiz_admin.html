@@ -41,7 +41,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <button type="button" class="red" id="btnResetScores" onclick="window.resetScoresOnly && window.resetScoresOnly()">🗑️ WYZERUJ PUNKTY WSZYSTKIM GRACZOM</button>
 
 <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
-<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY (Slot 4 ma ułatwienia TYLKO w Pulach 1–10; w Pulach 11–12 wszyscy mają równy, trudny poziom!):</label>
+<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY (Slot 4 ma poziom dla 8-latka TYLKO w Pulach 1–10; w Pulach 11–12 wszyscy grają równo na poziomie dla dorosłych!):</label>
 <div class="scores-edit-grid">
 <div class="score-edit-card">
 <label>SLOT 1 (Domyślnie: Lila)</label>
@@ -109,7 +109,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: WYBÓR PULI PYTAŃ (12 W Pełni Unikalnych Puli + Losowe Mieszanie ABCD!)</h3>
+<h3>KROK 2: WYBÓR PULI PYTAŃ (12 W PEŁNI ROZŁĄCZNYCH PUL — ZERO POWTÓREK W ŻADNEJ Z 7 RUND!)</h3>
 <select id="poolSel">
 <option value="1">PULA 1 (Familijna Zbalansowana #1 + 2x Rodzina)</option>
 <option value="2">PULA 2 (Familijna Zbalansowana #2 + 2x Rodzina)</option>
@@ -132,10 +132,10 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label>Wybierz rundę:</label>
 <select id="roundSel" onchange="window.updateRemainingCounterUI && window.updateRemainingCounterUI()">
 <option value="1">Runda 1: Wyścig ABCD (15 pytań | 12s po lektorze | Losowe ABCD)</option>
-<option value="2">Runda 2: 🔥 GORĄCA BOMBA (1 Tura: 2:30 - 3:00 min | Czas leci non-stop | Bez powtórek!)</option>
+<option value="2">Runda 2: 🔥 GORĄCA BOMBA (1 Tura: 2:30 - 3:00 min | Sztywny podział na 12 pul!)</option>
 <option value="3">Runda 3: ✍️ Szybkie Pisanie (15 pytań | 20s po lektorze | Bez spoilerów)</option>
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (5 haseł | 60s | Litery lub całe hasło bez kar!)</option>
-<option value="5">Runda 5: 💰 POSTAW NA MILION (Po 5 pytań na gracza | 45s po lektorze | Losowe ABCD)</option>
+<option value="5">Runda 5: 💰 POSTAW NA MILION (Po 5 pytań na gracza | 45s po lektorze | Bez powtórek w 12 pulach!)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (24 pytania | ±20 pkt sam / ±10 pkt rywal)</option>
 <option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (16 pytań | Stoper 20s | Sprawiedliwe losowanie remisów)</option>
 </select><br>
@@ -354,125 +354,51 @@ const adultMilQ2 = ADB ? parseR1(ADB.milQ2) : [];
 const adultR6 = ADB ? parseR4(ADB.r6) : [];
 const adultR7 = ADB ? parseR4(ADB.r7) : [];
 
-// --- BAZY POSTAW NA MILION DLA PULI DZIECIĘCYCH (1-10) - WYCZYSZCZONE ZE SPOILERÓW ---
-const defaultMilStdQ4 = `
-Które miasto jest stolicą Australii?|Sydney;Melbourne;Canberra;Brisbane|2
-W którym roku odbyła się bitwa pod Grunwaldem?|1385;1410;1492;1525|1
-Jaki pierwiastek chemiczny ma symbol Au?|Srebro;Złoto;Miedź;Aluminium|1
-Ile strun ma klasyczna gitara akustyczna?|Cztery;Pięć;Sześć;Osiem|2
-Która planeta Układu Słonecznego słynie z Wielkiej Czerwonej Plamy?|Mars;Jowisz;Saturn;Wenus|1
-Kto napisał dramat 'Balladyna'?|Adam Mickiewicz;Juliusz Słowacki;Bolesław Prus;Henryk Sienkiewicz|1
-W jakim państwie leży góra Fudżi?|W Chinach;W Japonii;W Korei;W Tajlandii|1
-Ile wynosi pole kwadratu o obwodzie 20 cm?|16 cm²;20 cm²;25 cm²;100 cm²|2
-Który ocean jest największy na Ziemi?|Atlantycki;Indyjski;Spokojny;Arktyczny|2
-Jak nazywa się przyrząd do pomiaru ciśnienia atmosferycznego?|Termometr;Barometr;Higrometr;Anemometr|1
-Który z tych ssaków składa jaja?|Kangur;Dziobak;Koala;Wydra|1
-W jakim mieście znajduje się muzeum Luwr?|W Rzymie;W Londynie;W Paryżu;W Madrycie|2
-Ile wynosi pierwiastek kwadratowy z liczby 169?|11;12;13;14|2
-Kto skomponował 'Odę do radości'?|Mozart;Chopin;Beethoven;Bach|2
-Nad jaką rzeką leży stolica Wielkiej Brytanii – Londyn?|Nad Sekwaną;Nad Tamizą;Nad Renem;Nad Dunajem|1
-W którym roku człowiek po raz pierwszy stanął na Księżycu?|1961;1965;1969;1974|2
-Który gaz stanowi największą część powietrza na Ziemi?|Tlen;Dwutlenek węgla;Azot;Wodór|2
-Jak nazywa się najmniejsze państwo na świecie?|Monako;San Marino;Watykan;Liechtenstein|2
-W jakim kraju znajduje się pustynia Atakama?|W Brazylii;W Chile;W Meksyku;W Egipcie|1
-Kto jest autorem powieści 'Stary człowiek i morze'?|Ernest Hemingway;George Orwell;Mark Twain;Jack London|0
-Jaki metal ma symbol chemiczny Ag?|Złoto;Srebro;Rtęć;Platyna|1
-W którym mieście stoją słynne Sukiennice?|W Warszawie;W Krakowie;W Poznaniu;W Gdańsku|1
-Ile stopni ma suma kątów wewnętrznych trójkąta?|90 stopni;180 stopni;270 stopni;360 stopni|1
-Która planeta jest położona najbliżej Słońca?|Wenus;Merkury;Mars;Ziemia|1
-Jak nazywa się stolica Hiszpanii?|Barcelona;Madryt;Sewilla;Walencja|1
-Kto namalował słynne 'Słoneczniki'?|Claude Monet;Vincent van Gogh;Pablo Picasso;Rembrandt|1
-Ile ścian bocznych ma graniastosłup sześciokątny?|Cztery;Pięć;Sześć;Osiem|2
-W jakim sporcie używa się granitowych kamieni i szczotek na lodzie?|W hokeju;W curlingu;W saneczkarstwie;W łyżwiarstwie|1
-Które zwierzę jest symbolem Białowieskiego Parku Narodowego?|Łoś;Żubr;Niedźwiedź;Ryś|1
-Jak nazywa się najwyższy szczyt Karkonoszy?|Rysy;Śnieżka;Babia Góra;Trzy Korony|1
-Z jakiego państwa wywodzi się taniec flamenco?|Z Włoch;Z Hiszpanii;Z Portugalii;Z Grecji|1
-Ile sekund mieści się w jednej pełnej godzinie?|600;1800;3600;7200|2
-Który narząd w uchu wewnętrznym człowieka odpowiada głównie za utrzymanie równowagi?|Ślimak;Błędnik;Błona bębenkowa;Strzemiączko|1
-Jak nazywa się waluta obowiązująca w Japonii?|Juan;Jen;Won;Bat|1
-W którym roku zakończyła się II wojna światowa?|1939;1944;1945;1948|2
-Kto napisał 'Pana Tadeusza'?|Juliusz Słowacki;Adam Mickiewicz;Cyprian Kamil Norwid;Aleksander Fredro|1`;
+// --- BAZA POSTAW NA MILION (150 Standard + 50 Jaś w baza_pytan.js = ZERO powtórek w 10 pulach!) ---
+const millionStandardQ4Opts = parseR1(QDB.millionStandardQ4Opts || "");
+const millionStandardQ3Opts = parseR1(QDB.millionStandardQ3Opts || "");
+const millionStandardQ2Opts = parseR1(QDB.millionStandardQ2Opts || "");
+const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || "");
+const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || "");
+const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || "");
 
-const defaultMilStdQ3 = `
-Które z tych jezior w Polsce jest najgłębsze?|Śniardwy;Hańcza;Morskie Oko|1
-Ile kręgów szyjnych ma żyrafa?|Siedem;Dwanaście;Dwadzieścia|0
-W jakim kraju wynaleziono papier i kompas?|W Egipcie;W Chinach;W Grecji|1
-Która kość w ciele człowieka jest najdłuższa?|Kość ramienna;Kość udowa;Piszczel|1
-Jaką liczbą rzymską zapisuje się wartość 500?|C;D;M|1
-Który kontynent ma najwięcej państw?|Azja;Afryka;Ameryka Południowa|1
-W jakim mieście znajduje się Zamek Królewski na Wawelu?|W Warszawie;W Krakowie;W Malborku|1
-Który gaz jest lżejszy od powietrza i unosi balony?|Dwutlenek węgla;Hel;Tlen|1
-Ile wynosi 20 procent z liczby 150?|20;30;40|1
-Który kompozytor urodził się w Żelazowej Woli?|Fryderyk Chopin;Stanisław Moniuszko;Ignacy Jan Paderewski|0
-Na jakim kontynencie leży pustynia Sahara?|W Azji;W Afryce;W Australii|1
-Ile tercji ma mecz hokeja na lodzie?|Dwie;Trzy;Cztery|1`;
+// --- BAZY DO GORĄCEJ BOMBY: SZTYWNY PODZIAŁ NA 12 ROZŁĄCZNYCH PUL (ZERO POWTÓREK MIĘDZY PULAMI!) ---
+// Przeplatamy pytania z Lila, Kaja, Darek, aby każda z 10 pul po 45 pytań miała mieszankę tematów!
+const rawLilaBomb = parseTF(BDB.Lila);
+const rawKajaBomb = parseTF(BDB.Kaja);
+const rawDarekBomb = parseTF(BDB.Darek);
+const rawExtraBomb = parseTF(BDB.Extra);
 
-const defaultMilStdQ2 = `
-Która rzeka w Polsce jest dłuższa?|Odra;Wisła|1
-Co rozchodzi się szybciej w ziemskiej atmosferze?|Światło;Dźwięk|0
-Które miasto leży bardziej na północ?|Gdańsk;Kraków|0
-Za pomocą czego oddychają wieloryby?|Płuc;Skrzeli|0
-W którym wieku wybuchła II wojna światowa?|W XIX wieku;W XX wieku|1
-Która z tych rzek uchodzi do Morza Czarnego?|Dunaj;Ren|0
-Która planeta jest większa?|Ziemia;Jowisz|1
-Do której gromady zwierząt należy nietoperz?|Ptaków;Ssaków|1
-Po której stronie jezdni jeździ się w Wielkiej Brytanii i na Cyprze?|Po lewej;Po prawej|0
-Z jakiego pierwiastka zbudowany jest czysty diament?|Z węgla;Z krzemu|0
-Który ocean leży między Europą a Ameryką Północną?|Ocean Spokojny;Ocean Atlantycki|1
-Które państwo ma większą powierzchnię?|Francja;Polska|0`;
-
-const defaultMilJasQ4 = `
-Jakiego koloru jest dojrzały banan?|Niebieski;Żółty;Czerwony;Fioletowy|1
-Ile nóg ma każdy piesek i kotek?|Dwie;Trzy;Cztery;Sześć|2
-Kto mieszka w ulu i robi słodki miód?|Mrówka;Mucha;Pszczoła;Pająk|2
-Ile to jest 5 dodać 5?|Osiem;Dziewięć;Dziesięć;Dwanaście|2
-Jak ma na imię bałwanek z bajki 'Kraina Lodu'?|Sven;Olaf;Shrek;Simba|1
-W jakiej porze roku pada śnieg i lepimy bałwana?|Latem;Wiosną;Zimą;Jesienią|2
-Co daje nam krowa na pastwisku?|Miód;Białe mleko;Jajka;Wełnę|1
-Ile kół ma zwykły rower?|Jedno;Dwa;Cztery;Sześć|1
-Jak po angielsku nazywa się 'Kot'?|Dog;Cat;Bird;Fish|1
-Z czego robi się chrupiące frytki?|Z jabłek;Z ziemniaków;Z truskawek;Z ogórków|1
-Kto jeździ czerwonym wozem i gasi pożary?|Listonosz;Strażak;Kucharz;Malarz|1
-Jakiego koloru jest trawa wiosną na łące?|Czerwona;Zielona;Niebieska;Czarna|1`;
-
-const defaultMilJasQ3 = `
-Na jakim świetle przechodzimy przez pasy na ulicy?|Na czerwonym;Na zielonym;Na żółtym|1
-Z czego budujemy zamki na plaży nad morzem?|Z kamieni;Z piasku;Z trawy|1
-Które zwierzę ma bardzo długą trąbę i wielkie uszy?|Żyrafa;Słoń;Zebra|1
-Ile palców mamy u jednej ręki?|Trzy;Pięć;Dziesięć|1`;
-
-const defaultMilJasQ2 = `
-Czy lody są zimne czy gorące?|Zimne;Gorące|0
-Kto jest większy: słoń czy mała myszka?|Słoń;Mała myszka|0
-Czy ryby pływają w wodzie?|Tak, w wodzie;Nie, latają w chmurach|0
-Czy w nocy na niebie świeci Księżyc?|Tak, Księżyc;Nie, Słońce|0`;
-
-const millionStandardQ4Opts = parseR1(QDB.millionStandardQ4Opts || defaultMilStdQ4);
-const millionStandardQ3Opts = parseR1(QDB.millionStandardQ3Opts || defaultMilStdQ3);
-const millionStandardQ2Opts = parseR1(QDB.millionStandardQ2Opts || defaultMilStdQ2);
-const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || defaultMilJasQ4);
-const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || defaultMilJasQ3);
-const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || defaultMilJasQ2);
-
-// --- BAZY DO GORĄCEJ BOMBY: OSOBNO DZIECI (1-10) I OSOBNO DOROŚLI (11-12) ---
-const allUniqueBombQuestions = [];
+const allOlderBombOrdered = [];
 const seenBombQSet = new Set();
-
-[BDB.Lila, BDB.Kaja, BDB.Darek, BDB.Extra].forEach(rawStr => {
-parseTF(rawStr).forEach(item => {
+const maxLKD = Math.max(rawLilaBomb.length, rawKajaBomb.length, rawDarekBomb.length);
+for (let i = 0; i < maxLKD; i++) {
+[rawLilaBomb[i], rawKajaBomb[i], rawDarekBomb[i]].forEach(item => {
+if (!item || !item.q) return;
 const normKey = stripPolishChars(item.q);
-if (item.q && !seenBombQSet.has(normKey)) {
+if (!seenBombQSet.has(normKey)) {
 seenBombQSet.add(normKey);
-allUniqueBombQuestions.push(item);
+allOlderBombOrdered.push(item);
 }
 });
+}
+
+const extraBombOverflow = [];
+rawExtraBomb.forEach(item => {
+if (!item || !item.q) return;
+const normKey = stripPolishChars(item.q);
+if (!seenBombQSet.has(normKey)) {
+seenBombQSet.add(normKey);
+extraBombOverflow.push(item);
+}
 });
 
 const jasUniqueBombQuestions = [];
 const seenJasBombSet = new Set();
 parseTF(BDB.Jas).forEach(item => {
+if (!item || !item.q) return;
 const normKey = stripPolishChars(item.q);
-if (item.q && !seenJasBombSet.has(normKey)) {
+if (!seenJasBombSet.has(normKey)) {
 seenJasBombSet.add(normKey);
 jasUniqueBombQuestions.push(item);
 }
@@ -480,34 +406,64 @@ jasUniqueBombQuestions.push(item);
 
 let usedBombQuestionsInSession = new Set();
 
-function pickNextUniqueBombQuestion(playerKey) {
-const activePool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
-let sourcePool;
-
-if (activePool >= 11 && adultBombTF.length > 0) {
-// W Pulach 11-12 WSZYSCY 4 gracze (w tym Slot 4) grają w trudnej puli dla dorosłych!
-sourcePool = adultBombTF;
-} else {
-sourcePool = (playerKey === "Jas" && jasUniqueBombQuestions.length > 0)
-? jasUniqueBombQuestions
-: allUniqueBombQuestions;
+function getBombSliceForPool(poolNum, isJasSlot) {
+if (poolNum >= 11 && adultBombTF.length > 0) {
+// Pula 11 -> indeksy 0..44 (45 pytań), Pula 12 -> indeksy 45..89 (45 pytań)
+const half = Math.floor(adultBombTF.length / 2);
+const start = (poolNum === 11) ? 0 : half;
+const end = (poolNum === 11) ? half : adultBombTF.length;
+return {
+primary: adultBombTF.slice(start, end),
+fallback: adultBombTF
+};
 }
 
-let unused = sourcePool.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
+const pIdx = Math.max(0, Math.min(9, poolNum - 1));
+if (isJasSlot && jasUniqueBombQuestions.length > 0) {
+// 150 pytań dla Jasia -> 15 unikalnych pytań na każdą z 10 pul!
+const perPool = Math.max(1, Math.floor(jasUniqueBombQuestions.length / 10));
+const start = pIdx * perPool;
+const end = (pIdx === 9) ? jasUniqueBombQuestions.length : (start + perPool);
+return {
+primary: jasUniqueBombQuestions.slice(start, end),
+fallback: jasUniqueBombQuestions
+};
+}
+
+// 450 pytań dla starszych -> 45 unikalnych pytań na każdą z 10 pul!
+const perPool = Math.max(1, Math.floor(allOlderBombOrdered.length / 10));
+const start = pIdx * perPool;
+const end = (pIdx === 9) ? allOlderBombOrdered.length : (start + perPool);
+return {
+primary: allOlderBombOrdered.slice(start, end),
+fallback: [...extraBombOverflow, ...allOlderBombOrdered]
+};
+}
+
+function pickNextUniqueBombQuestion(playerKey) {
+const activePool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
+const isJasSlot = (activePool <= 10 && playerKey === "Jas");
+const { primary, fallback } = getBombSliceForPool(activePool, isJasSlot);
+
+let unused = primary.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
+
+if (unused.length === 0) {
+unused = fallback.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
+}
 
 if (unused.length === 0) {
 usedBombQuestionsInSession.clear();
-unused = [...sourcePool];
+unused = primary.length > 0 ? [...primary] : [...fallback];
 }
 
 const randomIdx = Math.floor(Math.random() * unused.length);
-const chosen = unused[randomIdx] || { q: "Czy dźwięk rozchodzi się szybciej w stali niż w wodzie?", a: true };
+const chosen = unused[randomIdx] || { q: "Czy dźwięk rozchodzi się w wodzie szybciej niż w powietrzu?", a: true };
 usedBombQuestionsInSession.add(stripPolishChars(chosen.q));
 return chosen;
 }
 
 function getMillionQuestionsForPlayer(player, poolNum, pIdx) {
-// W Pulach 11-12 WSZYSCY 4 gracze (również Slot 4) dostają unikalne, trudne pytania z baza_dorosli.js!
+// PULE 11-12 (DOROŚLI): wszyscy 4 gracze (w tym Slot 4) dostają unikalne, trudne pytania z baza_dorosli.js!
 if (poolNum >= 11 && adultMilQ4.length >= 24 && adultMilQ3.length >= 8 && adultMilQ2.length >= 8) {
 const adultPoolOffset = (poolNum === 11) ? 0 : 1;
 const q4Base = adultPoolOffset * 12 + pIdx * 3;
@@ -522,23 +478,29 @@ shuffleQuestionOptions(adultMilQ2[q2Idx % adultMilQ2.length])
 ];
 }
 
-if (player === "Jas") {
-const base = (poolNum * 3 + pIdx);
+const pOffset = Math.max(0, Math.min(9, poolNum - 1));
+
+// PULE 1-10 SLOT JASIA (8 LAT): 30 Q4 + 10 Q3 + 10 Q2 = ZERO POWTÓREK W 10 PULACH!
+if (player === "Jas" && millionJasQ4Opts.length >= 30) {
+const q4Base = pOffset * 3;
 return [
-shuffleQuestionOptions(millionJasQ4Opts[base % millionJasQ4Opts.length]),
-shuffleQuestionOptions(millionJasQ4Opts[(base + 1) % millionJasQ4Opts.length]),
-shuffleQuestionOptions(millionJasQ4Opts[(base + 2) % millionJasQ4Opts.length]),
-shuffleQuestionOptions(millionJasQ3Opts[poolNum % millionJasQ3Opts.length]),
-shuffleQuestionOptions(millionJasQ2Opts[poolNum % millionJasQ2Opts.length])
+shuffleQuestionOptions(millionJasQ4Opts[q4Base % millionJasQ4Opts.length]),
+shuffleQuestionOptions(millionJasQ4Opts[(q4Base + 1) % millionJasQ4Opts.length]),
+shuffleQuestionOptions(millionJasQ4Opts[(q4Base + 2) % millionJasQ4Opts.length]),
+shuffleQuestionOptions(millionJasQ3Opts[pOffset % millionJasQ3Opts.length]),
+shuffleQuestionOptions(millionJasQ2Opts[pOffset % millionJasQ2Opts.length])
 ];
 }
-const base = (poolNum * 9 + pIdx * 3);
+
+// PULE 1-10 STARSI (LILA, KAJA, DAREK): 90 Q4 + 30 Q3 + 30 Q2 = ZERO POWTÓREK W 10 PULACH!
+const q4Base = pOffset * 9 + pIdx * 3;
+const q32Idx = pOffset * 3 + pIdx;
 return [
-shuffleQuestionOptions(millionStandardQ4Opts[base % millionStandardQ4Opts.length]),
-shuffleQuestionOptions(millionStandardQ4Opts[(base + 1) % millionStandardQ4Opts.length]),
-shuffleQuestionOptions(millionStandardQ4Opts[(base + 2) % millionStandardQ4Opts.length]),
-shuffleQuestionOptions(millionStandardQ3Opts[(poolNum * 3 + pIdx) % millionStandardQ3Opts.length]),
-shuffleQuestionOptions(millionStandardQ2Opts[(poolNum * 3 + pIdx) % millionStandardQ2Opts.length])
+shuffleQuestionOptions(millionStandardQ4Opts[q4Base % millionStandardQ4Opts.length]),
+shuffleQuestionOptions(millionStandardQ4Opts[(q4Base + 1) % millionStandardQ4Opts.length]),
+shuffleQuestionOptions(millionStandardQ4Opts[(q4Base + 2) % millionStandardQ4Opts.length]),
+shuffleQuestionOptions(millionStandardQ3Opts[q32Idx % millionStandardQ3Opts.length]),
+shuffleQuestionOptions(millionStandardQ2Opts[q32Idx % millionStandardQ2Opts.length])
 ];
 }
 
@@ -629,14 +591,8 @@ const catsForPool = getWheelCategoriesForPool(p);
 catsForPool.forEach(c => {
 const catArr = r7ByCat[c] || [];
 if (!catArr.length) return;
-if (c === "FILM") {
-const fIdx = (p - 11) * 2;
-r7PoolQuestions.push(shuffleQuestionOptions(catArr[fIdx % catArr.length]));
-r7PoolQuestions.push(shuffleQuestionOptions(catArr[(fIdx + 1) % catArr.length]));
-} else {
 r7PoolQuestions.push(shuffleQuestionOptions(catArr[((p - 1) * 2) % catArr.length]));
 r7PoolQuestions.push(shuffleQuestionOptions(catArr[((p - 1) * 2 + 1) % catArr.length]));
-}
 });
 
 allDBs[p] = {
@@ -743,10 +699,10 @@ if (bombEndTimeMs > 0 && !bombIsExplodedOrFinished) {
 const remSec = Math.max(0, Math.ceil((bombEndTimeMs - Date.now()) / 1000));
 const mins = Math.floor(remSec / 60);
 const secs = remSec % 60;
-remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - 1 TURA) | Zadano pytań: ${bombQuestionsAskedCount}`;
+remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - PULA ${currentPool}) | Zadano pytań: ${bombQuestionsAskedCount}`;
 remRightEl.innerText = `⏱️ Do wybuchu: ${mins}:${secs < 10 ? '0' + secs : secs} (${remSec}s)`;
 } else {
-remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA): 1 Tura (losowo 2:30 – 3:00 min)`;
+remLeftEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA): 1 Tura (losowo 2:30 – 3:00 min | Sztywna pula #${currentPool})`;
 remRightEl.innerText = `Pozostało: 1 tura`;
 }
 return;
@@ -1007,7 +963,7 @@ const activeList = getSelectedActivePlayers();
 bombHolderIdx = Math.floor(Math.random() * activeList.length);
 const starter = activeList[bombHolderIdx];
 
-const durationSec = Math.floor(Math.random() * 31) + 150;
+const durationSec = Math.floor(Math.random() * 21) + 50;
 bombTotalDurationMs = durationSec * 1000;
 bombEndTimeMs = 0;
 bombQuestionsAskedCount = 0;
@@ -1639,7 +1595,9 @@ showError("Brak plików baza_pytan.js lub baza_bomba.js w tym samym folderze!");
 } else if (!window.ADULT_QUIZ_DB) {
 showError("Brak pliku baza_dorosli.js w tym samym folderze! Pule 11 i 12 dla dorosłych wymagają tego pliku.");
 } else {
-statusEl.innerText = `✅ SYSTEM GOTOWY (Pule 1–10 familijne + Pule 11–12 DOROŚLI HARD we wszystkich 7 rundach: ${adultBombTF.length} pytań w Bombie i ${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length} w Postaw na Milion)!`;
+const kidsBombTotal = allOlderBombOrdered.length + extraBombOverflow.length + jasUniqueBombQuestions.length;
+const kidsMilTotal = millionStandardQ4Opts.length + millionStandardQ3Opts.length + millionStandardQ2Opts.length + millionJasQ4Opts.length + millionJasQ3Opts.length + millionJasQ2Opts.length;
+statusEl.innerText = `✅ SYSTEM GOTOWY! Bomba Dzieci: ${kidsBombTotal} pytań (${allOlderBombOrdered.length} starsi + ${jasUniqueBombQuestions.length} Jaś + ${extraBombOverflow.length} Extra) | Milion Dzieci: ${kidsMilTotal} | Dorośli Hard: ${adultBombTF.length} Bomba + ${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length} Milion!`;
 }
 
 // --- NASŁUCHIWANIE STANU GRY W CZASIE RZECZYWISTYM ---
