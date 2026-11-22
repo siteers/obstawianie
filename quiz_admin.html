@@ -32,6 +32,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <!-- ZEWNĘTRZNE BAZY PYTAŃ (w tym samym folderze) -->
 <script src="baza_pytan.js"></script>
 <script src="baza_bomba.js"></script>
+<script src="baza_dorosli.js"></script>
 </head>
 <body>
 
@@ -40,7 +41,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <button type="button" class="red" id="btnResetScores" onclick="window.resetScoresOnly && window.resetScoresOnly()">🗑️ WYZERUJ PUNKTY WSZYSTKIM GRACZOM</button>
 
 <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
-<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY (możesz zmienić imiona dla 4 slotów, Slot 4 ma łatwiejsze pytania w R5):</label>
+<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY (Slot 4 ma ułatwienia TYLKO w Pulach 1–10; w Pulach 11–12 wszyscy mają równy, trudny poziom!):</label>
 <div class="scores-edit-grid">
 <div class="score-edit-card">
 <label>SLOT 1 (Domyślnie: Lila)</label>
@@ -55,7 +56,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <div class="score-edit-row"><input type="text" id="custom-name-Darek" value="Darek"></div>
 </div>
 <div class="score-edit-card">
-<label>SLOT 4 (Domyślnie: Jaś - Ułatwienia)</label>
+<label>SLOT 4 (Domyślnie: Jaś — równy w P11–12)</label>
 <div class="score-edit-row"><input type="text" id="custom-name-Jas" value="Jaś"></div>
 </div>
 </div>
@@ -120,8 +121,8 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="8">PULA 8 (Familijna Zbalansowana #8 + 2x Rodzina)</option>
 <option value="9">PULA 9 (Dzieci - Trudniejsza #9 + 2x Rodzina)</option>
 <option value="10">PULA 10 (Dzieci - Trudniejsza #10 + 2x Rodzina)</option>
-<option value="11">PULA 11 (🔥 DLA DOROSŁYCH #1 - Film, Nauka, Świat)</option>
-<option value="12">PULA 12 (🔥 DLA DOROSŁYCH #2 - Film, Kultura, Historia)</option>
+<option value="11">PULA 11 (🔥 DOROŚLI HARD #1 — Nauka, Inżynieria, Świat, Kino | Równe 7 Rund)</option>
+<option value="12">PULA 12 (🔥 DOROŚLI HARD #2 — Ekonomia, Historia, Technika, Film | Równe 7 Rund)</option>
 </select>
 <button type="button" class="purple" id="btnSendPool" onclick="window.sendPoolChoice && window.sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
 </div>
@@ -183,7 +184,7 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- FUNKCJA LOSOWEGO MIESZANIA ODPOWIEDZI A/B/C/D (KONIEC ZE STAŁĄ ODPOWIEDZIĄ "B"!) ---
+// --- FUNKCJA LOSOWEGO MIESZANIA ODPOWIEDZI A/B/C/D ---
 function shuffleQuestionOptions(qObj) {
 if (!qObj || !Array.isArray(qObj.o) || qObj.o.length < 2) return qObj;
 const pairs = qObj.o.map((text, idx) => ({
@@ -209,7 +210,7 @@ c: newCorrectIdx >= 0 ? newCorrectIdx : 0
 };
 }
 
-// --- AUTOMATYCZNY FILTR ANTY-SPOILEROWY (USUWA PODPOWIEDZI ZDRADZAJĄCE ODPOWIEDŹ W TREŚCI PYTANIA) ---
+// --- AUTOMATYCZNY FILTR ANTY-SPOILEROWY ---
 function stripPolishChars(s) {
 return (s || "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/ł/g, "l");
 }
@@ -242,6 +243,14 @@ cleaned = cleaned
 return cleaned;
 }
 
+function sanitizeBombText(qText) {
+return (qText || "")
+.replace(/\s*\(czy dzieli się[^)]*\)/gi, "")
+.replace(/\s*\(bez azotu\)/gi, "")
+.replace(/\s{2,}/g, " ")
+.trim();
+}
+
 const parseR1 = (str) => (str || "").trim().split('\n').filter(Boolean).map(l => {
 let [q, o, c] = l.split('|');
 const opts = o.split(';').map(x => x.trim());
@@ -271,7 +280,7 @@ return shuffleQuestionOptions({ cat: cat.trim(), q: cleanQ, o: opts, c: cIdx });
 
 const parseTF = (str) => (str || "").trim().split('\n').filter(Boolean).map(l => {
 let [q, ans] = l.split('|');
-return { q: (q || "").trim(), a: (ans || "").trim() === "1" };
+return { q: sanitizeBombText(q), a: (ans || "").trim() === "1" };
 });
 
 function arrangeNoAdjacentCategories(items, seed = 1) {
@@ -325,6 +334,7 @@ statusEl.innerText = `✅ Zapisano własne imiona graczy: ${Object.values(player
 // --- POBIERANIE BAZ PYTAŃ Z ZEWNĘTRZNYCH PLIKÓW JS ---
 const QDB = window.QUIZ_QUESTIONS_RAW || {};
 const BDB = window.BOMB_TF_RAW || {};
+const ADB = window.ADULT_QUIZ_DB || null;
 
 const masterR1 = parseR1(QDB.masterR1);
 const masterR2 = parseWheel(QDB.masterR2);
@@ -333,6 +343,18 @@ const familyR4Questions = parseR4(QDB.familyR4Questions);
 const generalR4Questions = parseR4(QDB.generalR4Questions);
 const rawR6_Dedicated = parseR4(QDB.rawR6_Dedicated);
 
+// Baza dla dorosłych (Pule 11 i 12 — wszystkie 7 rund)
+const adultR1 = ADB ? parseR1(ADB.r1) : [];
+const adultBombTF = ADB ? parseTF(ADB.bombTF) : [];
+const adultR3 = ADB ? parseR3(ADB.r3) : [];
+const adultR4 = ADB ? parseWheel(ADB.r4) : [];
+const adultMilQ4 = ADB ? parseR1(ADB.milQ4) : [];
+const adultMilQ3 = ADB ? parseR1(ADB.milQ3) : [];
+const adultMilQ2 = ADB ? parseR1(ADB.milQ2) : [];
+const adultR6 = ADB ? parseR4(ADB.r6) : [];
+const adultR7 = ADB ? parseR4(ADB.r7) : [];
+
+// --- BAZY POSTAW NA MILION DLA PULI DZIECIĘCYCH (1-10) - WYCZYSZCZONE ZE SPOILERÓW ---
 const defaultMilStdQ4 = `
 Które miasto jest stolicą Australii?|Sydney;Melbourne;Canberra;Brisbane|2
 W którym roku odbyła się bitwa pod Grunwaldem?|1385;1410;1492;1525|1
@@ -340,40 +362,40 @@ Jaki pierwiastek chemiczny ma symbol Au?|Srebro;Złoto;Miedź;Aluminium|1
 Ile strun ma klasyczna gitara akustyczna?|Cztery;Pięć;Sześć;Osiem|2
 Która planeta Układu Słonecznego słynie z Wielkiej Czerwonej Plamy?|Mars;Jowisz;Saturn;Wenus|1
 Kto napisał dramat 'Balladyna'?|Adam Mickiewicz;Juliusz Słowacki;Bolesław Prus;Henryk Sienkiewicz|1
-W jakim państwie leży góra Fudżi (Fuji)?|W Chinach;W Japonii;W Korei;W Tajlandii|1
+W jakim państwie leży góra Fudżi?|W Chinach;W Japonii;W Korei;W Tajlandii|1
 Ile wynosi pole kwadratu o obwodzie 20 cm?|16 cm²;20 cm²;25 cm²;100 cm²|2
-Który ocean jest największy na Ziemi?|Atlantycki;Indyjski;Spokojny (Pacyfik);Arktyczny|2
+Który ocean jest największy na Ziemi?|Atlantycki;Indyjski;Spokojny;Arktyczny|2
 Jak nazywa się przyrząd do pomiaru ciśnienia atmosferycznego?|Termometr;Barometr;Higrometr;Anemometr|1
 Który z tych ssaków składa jaja?|Kangur;Dziobak;Koala;Wydra|1
 W jakim mieście znajduje się muzeum Luwr?|W Rzymie;W Londynie;W Paryżu;W Madrycie|2
 Ile wynosi pierwiastek kwadratowy z liczby 169?|11;12;13;14|2
-Kto skomponował słynną 'Odę do radości' (hymn UE)?|Mozart;Chopin;Beethoven;Bach|2
+Kto skomponował 'Odę do radości'?|Mozart;Chopin;Beethoven;Bach|2
 Nad jaką rzeką leży stolica Wielkiej Brytanii – Londyn?|Nad Sekwaną;Nad Tamizą;Nad Renem;Nad Dunajem|1
 W którym roku człowiek po raz pierwszy stanął na Księżycu?|1961;1965;1969;1974|2
-Który gaz stanowi największą część (ok. 78%) powietrza na Ziemi?|Tlen;Dwutlenek węgla;Azot;Wodór|2
+Który gaz stanowi największą część powietrza na Ziemi?|Tlen;Dwutlenek węgla;Azot;Wodór|2
 Jak nazywa się najmniejsze państwo na świecie?|Monako;San Marino;Watykan;Liechtenstein|2
 W jakim kraju znajduje się pustynia Atakama?|W Brazylii;W Chile;W Meksyku;W Egipcie|1
 Kto jest autorem powieści 'Stary człowiek i morze'?|Ernest Hemingway;George Orwell;Mark Twain;Jack London|0
 Jaki metal ma symbol chemiczny Ag?|Złoto;Srebro;Rtęć;Platyna|1
 W którym mieście stoją słynne Sukiennice?|W Warszawie;W Krakowie;W Poznaniu;W Gdańsku|1
-Ile stopni ma kąt prosty?|45 stopni;90 stopni;120 stopni;180 stopni|1
+Ile stopni ma suma kątów wewnętrznych trójkąta?|90 stopni;180 stopni;270 stopni;360 stopni|1
 Która planeta jest położona najbliżej Słońca?|Wenus;Merkury;Mars;Ziemia|1
 Jak nazywa się stolica Hiszpanii?|Barcelona;Madryt;Sewilla;Walencja|1
-Kto namalował obraz 'Słoneczniki'?|Claude Monet;Vincent van Gogh;Pablo Picasso;Rembrandt|1
-Ile boków ma siedmiokąt?|Pięć;Sześć;Siedem;Osiem|2
-W jakim sporcie używa się kamieni i szczotek na lodzie?|W hokeju;W curlingu;W saneczkarstwie;W łyżwiarstwie|1
+Kto namalował słynne 'Słoneczniki'?|Claude Monet;Vincent van Gogh;Pablo Picasso;Rembrandt|1
+Ile ścian bocznych ma graniastosłup sześciokątny?|Cztery;Pięć;Sześć;Osiem|2
+W jakim sporcie używa się granitowych kamieni i szczotek na lodzie?|W hokeju;W curlingu;W saneczkarstwie;W łyżwiarstwie|1
 Które zwierzę jest symbolem Białowieskiego Parku Narodowego?|Łoś;Żubr;Niedźwiedź;Ryś|1
 Jak nazywa się najwyższy szczyt Karkonoszy?|Rysy;Śnieżka;Babia Góra;Trzy Korony|1
 Z jakiego państwa wywodzi się taniec flamenco?|Z Włoch;Z Hiszpanii;Z Portugalii;Z Grecji|1
-Ile minut liczy dokładnie półtorej godziny?|75 minut;90 minut;100 minut;120 minut|1
-Który zmysł odpowiada za równowagę (znajduje się w uchu wewnętrznym)?|Wzrok;Błędnik (zmysł równowagi);Węch;Dotyk|1
+Ile sekund mieści się w jednej pełnej godzinie?|600;1800;3600;7200|2
+Który narząd w uchu wewnętrznym człowieka odpowiada głównie za utrzymanie równowagi?|Ślimak;Błędnik;Błona bębenkowa;Strzemiączko|1
 Jak nazywa się waluta obowiązująca w Japonii?|Juan;Jen;Won;Bat|1
 W którym roku zakończyła się II wojna światowa?|1939;1944;1945;1948|2
 Kto napisał 'Pana Tadeusza'?|Juliusz Słowacki;Adam Mickiewicz;Cyprian Kamil Norwid;Aleksander Fredro|1`;
 
 const defaultMilStdQ3 = `
 Które z tych jezior w Polsce jest najgłębsze?|Śniardwy;Hańcza;Morskie Oko|1
-Ile kręgów szyjnych ma żyrafa (tyle samo co człowiek)?|Siedem;Dwanaście;Dwadzieścia|0
+Ile kręgów szyjnych ma żyrafa?|Siedem;Dwanaście;Dwadzieścia|0
 W jakim kraju wynaleziono papier i kompas?|W Egipcie;W Chinach;W Grecji|1
 Która kość w ciele człowieka jest najdłuższa?|Kość ramienna;Kość udowa;Piszczel|1
 Jaką liczbą rzymską zapisuje się wartość 500?|C;D;M|1
@@ -387,17 +409,17 @@ Ile tercji ma mecz hokeja na lodzie?|Dwie;Trzy;Cztery|1`;
 
 const defaultMilStdQ2 = `
 Która rzeka w Polsce jest dłuższa?|Odra;Wisła|1
-Czy światło porusza się szybciej niż dźwięk?|Tak (Światło);Nie (Dźwięk)|0
+Co rozchodzi się szybciej w ziemskiej atmosferze?|Światło;Dźwięk|0
 Które miasto leży bardziej na północ?|Gdańsk;Kraków|0
-Czy wieloryb oddycha za pomocą płuc czy skrzeli?|Za pomocą płuc;Za pomocą skrzeli|0
+Za pomocą czego oddychają wieloryby?|Płuc;Skrzeli|0
 W którym wieku wybuchła II wojna światowa?|W XIX wieku;W XX wieku|1
-Czy zero jest liczbą parzystą?|Tak;Nie|0
+Która z tych rzek uchodzi do Morza Czarnego?|Dunaj;Ren|0
 Która planeta jest większa?|Ziemia;Jowisz|1
-Czy nietoperz jest ptakiem czy ssakiem?|Ptakiem;Ssakiem|1
+Do której gromady zwierząt należy nietoperz?|Ptaków;Ssaków|1
 Po której stronie jezdni jeździ się w Wielkiej Brytanii i na Cyprze?|Po lewej;Po prawej|0
-Czy diament składa się z czystego węgla?|Tak;Nie|0
+Z jakiego pierwiastka zbudowany jest czysty diament?|Z węgla;Z krzemu|0
 Który ocean leży między Europą a Ameryką Północną?|Ocean Spokojny;Ocean Atlantycki|1
-Czy rok przestępny ma 366 dni?|Tak (366 dni);Nie (364 dni)|0`;
+Które państwo ma większą powierzchnię?|Francja;Polska|0`;
 
 const defaultMilJasQ4 = `
 Jakiego koloru jest dojrzały banan?|Niebieski;Żółty;Czerwony;Fioletowy|1
@@ -432,69 +454,7 @@ const millionJasQ4Opts = parseR1(QDB.millionJasQ4Opts || defaultMilJasQ4);
 const millionJasQ3Opts = parseR1(QDB.millionJasQ3Opts || defaultMilJasQ3);
 const millionJasQ2Opts = parseR1(QDB.millionJasQ2Opts || defaultMilJasQ2);
 
-// --- DUŻA, WSPÓLNA I UNIKALNA BAZA PYTAŃ DO GORĄCEJ BOMBY (ZERO POWTÓRZEŃ MIĘDZY GRACZAMI!) ---
-const extraBuiltInBombTF = parseTF(`
-Czy Ziemia krąży wokół Słońca?|1
-Czy tydzień ma siedem dni?|1
-Czy lód powstaje z zamarzniętej wody?|1
-Czy Słońce świeci w nocy na bezchmurnym niebie?|0
-Czy ryby oddychają pod wodą za pomocą skrzeli?|1
-Czy krowa daje mleko?|1
-Czy koty potrafią miauczeć?|1
-Czy luty ma trzydzieści pięć dni?|0
-Czy w Polsce stolicą jest Warszawa?|1
-Czy pająk ma osiem odnóży?|1
-Czy banany rosną pod ziemią jak ziemniaki?|0
-Czy tęcza pojawia się po deszczu, gdy świeci słońce?|1
-Czy niedźwiedź polarny ma białe futro?|1
-Czy pingwiny potrafią latać wysoko w chmurach?|0
-Czy w jednej godzinie mieści się sześćdziesiąt minut?|1
-Czy człowiek ma dwa serca?|0
-Czy delfin jest ssakiem?|1
-Czy trójkąt ma cztery boki?|0
-Czy Wisła płynie przez Kraków i Warszawę?|1
-Czy cytryna ma bardzo kwaśny smak?|1
-Czy ślimak nosi swój domek (muszlę) na grzbiecie?|1
-Czy straż pożarna jeździ czerwonymi wozami?|1
-Czy Księżyc jest zrobiony z żółtego sera?|0
-Czy zimą dni są krótsze niż latem?|1
-Czy żyrafa ma bardzo krótką szyję?|0
-Czy pszczoły produkują miód?|1
-Czy w roku jest dwanaście miesięcy?|1
-Czy kangury żyją na wolności w Australii?|1
-Czy ogórek jest koloru niebieskiego?|0
-Czy w piłce nożnej bramkarz może łapać piłkę rękami w polu karnym?|1
-Czy wielbłąd ma na grzbiecie jeden lub dwa garby?|1
-Czy pociąg jeździ po szynach kolejowych?|1
-Czy mrówki mieszkają w mrowisku?|1
-Czy nietoperze są aktywne głównie w nocy?|1
-Czy lód topi się w wysokiej temperaturze?|1
-Czy słoń jest mniejszy od chomika?|0
-Czy marchewka rośnie korzeniem w ziemi?|1
-Czy zebra ma czarno-białe paski?|1
-Czy samolot pływa pod wodą?|0
-Czy w alfabecie pierwszą literą jest A?|1
-Czy dwa razy dwa daje pięć?|0
-Czy Bałtyk to morze leżące na północy Polski?|1
-Czy papuga potrafi naśladować ludzką mowę?|1
-Czy jeż ma na grzbiecie ostre kolce?|1
-Czy truskawki rosną na wysokich drzewach?|0
-Czy kompas wskazuje kierunek północny?|1
-Czy złoto jest metalem szlachetnym?|1
-Czy ośmiornica ma osiem ramion (macki)?|1
-Czy bocian odlatuje z Polski na zimę do ciepłych krajów?|1
-Czy kwadrat ma wszystkie cztery boki równej długości?|1
-Czy kameleon potrafi zmieniać kolor swojej skóry?|1
-Czy Sahara to największa gorąca pustynia na świecie?|1
-Czy żaba potrafi skakać?|1
-Czy dźwięk rozchodzi się szybciej niż światło?|0
-Czy Mount Everest to najwyższa góra na Ziemi?|1
-Czy pomidor jest czerwony, gdy dojrzeje?|1
-Czy kura znosi jajka?|1
-Czy rekiny żyją w słonych morzach i oceanach?|1
-Czy zegar służy do mierzenia temperatury?|0
-Czy wiewiórka zbiera orzechy i żołędzie na zimę?|1`);
-
+// --- BAZY DO GORĄCEJ BOMBY: OSOBNO DZIECI (1-10) I OSOBNO DOROŚLI (11-12) ---
 const allUniqueBombQuestions = [];
 const seenBombQSet = new Set();
 
@@ -507,13 +467,6 @@ allUniqueBombQuestions.push(item);
 }
 });
 });
-extraBuiltInBombTF.forEach(item => {
-const normKey = stripPolishChars(item.q);
-if (item.q && !seenBombQSet.has(normKey)) {
-seenBombQSet.add(normKey);
-allUniqueBombQuestions.push(item);
-}
-});
 
 const jasUniqueBombQuestions = [];
 const seenJasBombSet = new Set();
@@ -524,20 +477,21 @@ seenJasBombSet.add(normKey);
 jasUniqueBombQuestions.push(item);
 }
 });
-extraBuiltInBombTF.forEach(item => {
-const normKey = stripPolishChars(item.q);
-if (item.q && !seenJasBombSet.has(normKey)) {
-seenJasBombSet.add(normKey);
-jasUniqueBombQuestions.push(item);
-}
-});
 
 let usedBombQuestionsInSession = new Set();
 
 function pickNextUniqueBombQuestion(playerKey) {
-const sourcePool = (playerKey === "Jas" && jasUniqueBombQuestions.length > 0)
+const activePool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
+let sourcePool;
+
+if (activePool >= 11 && adultBombTF.length > 0) {
+// W Pulach 11-12 WSZYSCY 4 gracze (w tym Slot 4) grają w trudnej puli dla dorosłych!
+sourcePool = adultBombTF;
+} else {
+sourcePool = (playerKey === "Jas" && jasUniqueBombQuestions.length > 0)
 ? jasUniqueBombQuestions
 : allUniqueBombQuestions;
+}
 
 let unused = sourcePool.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
 
@@ -547,12 +501,27 @@ unused = [...sourcePool];
 }
 
 const randomIdx = Math.floor(Math.random() * unused.length);
-const chosen = unused[randomIdx] || { q: "Czy Ziemia krąży wokół Słońca?", a: true };
+const chosen = unused[randomIdx] || { q: "Czy dźwięk rozchodzi się szybciej w stali niż w wodzie?", a: true };
 usedBombQuestionsInSession.add(stripPolishChars(chosen.q));
 return chosen;
 }
 
 function getMillionQuestionsForPlayer(player, poolNum, pIdx) {
+// W Pulach 11-12 WSZYSCY 4 gracze (również Slot 4) dostają unikalne, trudne pytania z baza_dorosli.js!
+if (poolNum >= 11 && adultMilQ4.length >= 24 && adultMilQ3.length >= 8 && adultMilQ2.length >= 8) {
+const adultPoolOffset = (poolNum === 11) ? 0 : 1;
+const q4Base = adultPoolOffset * 12 + pIdx * 3;
+const q3Idx = adultPoolOffset * 4 + pIdx;
+const q2Idx = adultPoolOffset * 4 + pIdx;
+return [
+shuffleQuestionOptions(adultMilQ4[q4Base % adultMilQ4.length]),
+shuffleQuestionOptions(adultMilQ4[(q4Base + 1) % adultMilQ4.length]),
+shuffleQuestionOptions(adultMilQ4[(q4Base + 2) % adultMilQ4.length]),
+shuffleQuestionOptions(adultMilQ3[q3Idx % adultMilQ3.length]),
+shuffleQuestionOptions(adultMilQ2[q2Idx % adultMilQ2.length])
+];
+}
+
 if (player === "Jas") {
 const base = (poolNum * 3 + pIdx);
 return [
@@ -597,9 +566,42 @@ const r7ByCat = {};
 r7ByCat[c] = rawR6_Dedicated.filter(item => item.cat === c);
 });
 
+const adultR7ByCat = {};
+r7WheelCategoriesAdults.forEach(c => {
+adultR7ByCat[c] = adultR7.filter(item => item.cat === c);
+});
+
 // --- BUDOWANIE 12 W PEŁNI UNIKALNYCH PULI PYTAŃ WE WSZYSTKICH 7 RUNDACH (1-12) ---
 const allDBs = {};
 for (let p = 1; p <= 12; p++) {
+if (p >= 11 && ADB && adultR1.length >= 30) {
+const offset = p - 11; // 0 dla Puli 11, 1 dla Puli 12
+const r1AdultSlice = adultR1.slice(offset * 15, offset * 15 + 15).map(shuffleQuestionOptions);
+const r3AdultSlice = adultR3.slice(offset * 15, offset * 15 + 15);
+const r4AdultSlice = arrangeNoAdjacentCategories(adultR4.slice(offset * 5, offset * 5 + 5), p);
+const r6AdultSlice = arrangeNoAdjacentCategories(adultR6.slice(offset * 24, offset * 24 + 24).map(shuffleQuestionOptions), p);
+
+const r7AdultPool = [];
+r7WheelCategoriesAdults.forEach(c => {
+const catArr = adultR7ByCat[c] || [];
+if (catArr.length >= 4) {
+r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2]));
+r7AdultPool.push(shuffleQuestionOptions(catArr[offset * 2 + 1]));
+}
+});
+
+allDBs[p] = {
+1: r1AdultSlice,
+2: {},
+3: r3AdultSlice,
+4: r4AdultSlice,
+5: {},
+6: r6AdultSlice,
+7: r7AdultPool
+};
+continue;
+}
+
 const r1Slice = [];
 const r3Slice = [];
 for (let i = 0; i < 15; i++) {
@@ -656,7 +658,7 @@ let r7CarryOverPool = 0;
 let currentState = null;
 let r6Controller = "";
 
-// Pamięć wygranych losowań przy remisie w R6/R7 (gwarantuje sprawiedliwą rotację!)
+// Pamięć wygranych losowań przy remisie w R6/R7
 let r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 let lastR7TieWinner = "";
 
@@ -664,22 +666,18 @@ function pickFairRandomTieWinner(tiedPlayers) {
 if (!tiedPlayers || tiedPlayers.length === 0) return "Lila";
 if (tiedPlayers.length === 1) return tiedPlayers[0];
 
-// 1. Szukamy najmniejszej liczby wygranych losowań wśród aktualnie remisujących
 let minWins = Infinity;
 tiedPlayers.forEach(p => {
 const w = r7TieWinCounts[p] || 0;
 if (w < minWins) minWins = w;
 });
 
-// 2. Bierzemy tylko tych graczy, którzy wygrywali losowanie najrzadziej
 let candidates = tiedPlayers.filter(p => (r7TieWinCounts[p] || 0) === minWins);
 
-// 3. Jeśli nadal jest więcej niż 1 kandydat, wykluczamy osobę, która wygrała poprzedni remis
 if (candidates.length > 1 && lastR7TieWinner && candidates.includes(lastR7TieWinner)) {
 candidates = candidates.filter(p => p !== lastR7TieWinner);
 }
 
-// 4. Kryptograficzne losowanie spośród odfiltrowanych kandydatów
 let chosenIndex = 0;
 if (window.crypto && window.crypto.getRandomValues) {
 const randArr = new Uint32Array(1);
@@ -696,7 +694,7 @@ return winner;
 }
 
 // ============================================================================
-// ZMIENNE DLA RUNDY 2: GORĄCA BOMBA (1 TURA, 2:30 - 3:00 MIN, CZAS LECI NON-STOP!)
+// ZMIENNE DLA RUNDY 2: GORĄCA BOMBA
 // ============================================================================
 let bombTurnNum = 0;
 let bombHolderIdx = 0;
@@ -735,7 +733,7 @@ let lastR1ResolvedKey = "";
 let lastR3ResolvedKey = "";
 let lastR4FullGuessKey = "";
 
-// --- FUNKCJA AKTUALIZUJĄCA LICZNIK POZOSTAŁYCH PYTAŃ W PANELU ADMINA ---
+// --- LICZNIK POZOSTAŁYCH PYTAŃ W PANELU ADMINA ---
 function updateRemainingCounterUI() {
 const r = parseInt(document.getElementById('roundSel').value, 10) || 1;
 const activeList = getSelectedActivePlayers();
@@ -996,13 +994,10 @@ answerTick: Date.now()
 
 // ============================================================================
 // RUNDA 2: GORĄCA BOMBA
-// - TYLKO 1 TURA trwająca losowo od 2:30 do 3:00 min (150 - 180 sekund)
-// - Czas bomby leci CIĄGLE (również w trakcie czytania pytania przez lektora!)
-// - Zero zatrzymywania na 1.5s przed końcem - wybuch następuje punktualnie co do milisekundy!
-// - Wspólna unikalna pula pytań (zero powtórek między Kają a Darkiem!)
 // ============================================================================
 async function prepareBombTurnWaitReady(turnIndex) {
 clearAllAdminTimers();
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 bombTurnNum = turnIndex;
 if (bombTurnNum > 1) {
 await triggerRoundSummary(2);
@@ -1019,7 +1014,7 @@ bombQuestionsAskedCount = 0;
 bombIsExplodedOrFinished = false;
 updateRemainingCounterUI();
 
-statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - 1 TURA: ${(durationSec/60).toFixed(1)} min)! Zaczyna gracz: ${getDisplayName(starter)}. Czekam na GOTOWOŚĆ graczy (lub kliknij START GRY)...`;
+statusEl.innerText = `💣 RUNDA 2 (GORĄCA BOMBA - PULA ${currentPool} | ${(durationSec/60).toFixed(1)} min)! Zaczyna gracz: ${getDisplayName(starter)}. Czekam na GOTOWOŚĆ graczy (lub kliknij START GRY)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_wait_ready",
@@ -1078,6 +1073,7 @@ await explodeBombNow();
 
 async function sendNextBombQuestionContinuous() {
 if (bombIsExplodedOrFinished) return;
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 
 startContinuousBombCountdownIfNeeded();
 
@@ -1096,14 +1092,14 @@ const progressRatio = Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationM
 const nowTick = Date.now();
 updateRemainingCounterUI();
 
-statusEl.innerText = `🔥 BOMBA W GRZE (Pytanie #${bombQuestionsAskedCount}) -> ${getDisplayName(holder)} (Pozostało: ${(remMs/1000).toFixed(1)}s - czas leci cały czas!)`;
+statusEl.innerText = `🔥 BOMBA W GRZE (Pula ${currentPool} | Pytanie #${bombQuestionsAskedCount}) -> ${getDisplayName(holder)} (Pozostało: ${(remMs/1000).toFixed(1)}s)`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_running",
 round: 2,
 bombTurn: 1,
 nominated: holder,
-r5Age: r5Ages[holder] || 10,
+r5Age: currentPool >= 11 ? 30 : (r5Ages[holder] || 10),
 question: qItem.q,
 r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
 bombProgress: progressRatio,
@@ -1147,10 +1143,11 @@ triggerRoundSummary(2);
 }
 
 // ============================================================================
-// RUNDA 5: POSTAW NA MILION (200 PKT, 45s PO LEKTORZE, NIEROZŁOŻONE PRZEPADAJĄ!)
+// RUNDA 5: POSTAW NA MILION
 // ============================================================================
 async function startMillionForPlayer(pIdx) {
 clearAllAdminTimers();
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 const activeList = getSelectedActivePlayers();
 while (pIdx < r5Order.length && !activeList.includes(r5Order[pIdx])) { pIdx++; }
 milPlayerIdx = pIdx;
@@ -1163,7 +1160,7 @@ milCurrentPoints = 200;
 const player = r5Order[milPlayerIdx];
 updateRemainingCounterUI();
 
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ na swoim telefonie (lub kliknij START GRY tutaj)...`;
+statusEl.innerText = `💰 Runda 5 (Postaw na Milion - Pula ${currentPool}): Czekam aż ${getDisplayName(player)} kliknie GOTOWOŚĆ na swoim telefonie (lub kliknij START GRY tutaj)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_wait_ready",
@@ -1229,6 +1226,7 @@ await startMillionTrapdoorSequence(sanitizedBets, lostUnallocated);
 
 async function sendMillionQuestionToPlayer() {
 clearAllAdminTimers();
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
 const activeList = getSelectedActivePlayers();
 const player = r5Order[milPlayerIdx];
 const pQuestions = getMillionQuestionsForPlayer(player, currentPool, milPlayerIdx);
@@ -1243,7 +1241,7 @@ const maxTrapsAllowed = milQIdx < 3 ? 3 : (milQIdx === 3 ? 2 : 1);
 const nowTick = Date.now();
 updateRemainingCounterUI();
 
-statusEl.innerText = `💰 Runda 5 (Postaw na Milion) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | Lektor czyta pytanie (stoper 45s ruszy po lektorze)...`;
+statusEl.innerText = `💰 Runda 5 (Pula ${currentPool}) - Gracz: ${getDisplayName(player)} | Pytanie ${milQIdx + 1}/5 | Lektor czyta pytanie (stoper 45s ruszy po lektorze)...`;
 
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r5_mil_speaking",
@@ -1409,7 +1407,6 @@ if (val > maxBid) maxBid = val;
 
 const topPlayers = activeList.filter(p => (parseInt(rawBids[p], 10) || 5) === maxBid);
 const wasRandomDraw = topPlayers.length > 1;
-// Sprawiedliwa rotacja przy remisie najwyższych ofert!
 const winnerPlayer = wasRandomDraw ? pickFairRandomTieWinner(topPlayers) : topPlayers[0];
 
 for (let p of activeList) {
@@ -1434,6 +1431,7 @@ speechTick: Date.now()
 
 // --- STEROWANIE GŁÓWNE ADMINA ---
 async function adminForceContinue() {
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
 const selRound = parseInt(document.getElementById('roundSel').value) || 1;
 if (currentState && currentState.round === selRound) {
 if (selRound === 2 && currentState.status === "r2_bomb_wait_ready") {
@@ -1479,7 +1477,11 @@ statusEl.innerText = "Status: Punkty wyzerowane, wszyscy 4 gracze włączeni.";
 async function sendPoolChoice() {
 try {
 clearAllAdminTimers();
-currentPool = parseInt(document.getElementById('poolSel').value);
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
+if (currentPool >= 11 && !ADB) {
+showError("Brak pliku baza_dorosli.js w folderze! Zapisz go obok quiz_admin.html i odśwież stronę.");
+return;
+}
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 };
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
 r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
@@ -1487,18 +1489,23 @@ lastR7TieWinner = "";
 usedBombQuestionsInSession.clear();
 let activeList = getSelectedActivePlayers();
 updateRemainingCounterUI();
+const modeLabel = currentPool >= 11 ? " (TRYB DOROŚLI HARD — RÓWNY POZIOM)" : "";
 await setDoc(doc(db, "quizGame", "state"), {
-status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}! Czekamy na przycisk START.`,
+status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}${modeLabel}! Czekamy na przycisk START.`,
 blocked: [], usedOptions: [], activePlayers: activeList, playerNames: playerNamesMap, pool: currentPool
 });
-statusEl.innerText = `Status: Załadowano PULĘ ${currentPool} (Grają: ${activeList.map(getDisplayName).join(", ")}). Kliknij START GRY!`;
+statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}${modeLabel} (Grają: ${activeList.map(getDisplayName).join(", ")}). Kliknij START GRY!`;
 } catch (err) { showError(err.message); }
 }
 
 async function nextQuestion() {
 try {
-currentPool = parseInt(document.getElementById('poolSel').value) || 1;
-let r = parseInt(document.getElementById('roundSel').value);
+currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
+if (currentPool >= 11 && !ADB) {
+showError("Brak pliku baza_dorosli.js w folderze! Zapisz go obok quiz_admin.html i odśwież stronę.");
+return;
+}
+let r = parseInt(document.getElementById('roundSel').value, 10);
 let activeList = getSelectedActivePlayers();
 
 if (r === 2) {
@@ -1629,8 +1636,10 @@ updateRemainingCounterUI();
 
 if (!window.QUIZ_QUESTIONS_RAW || !window.BOMB_TF_RAW) {
 showError("Brak plików baza_pytan.js lub baza_bomba.js w tym samym folderze!");
+} else if (!window.ADULT_QUIZ_DB) {
+showError("Brak pliku baza_dorosli.js w tym samym folderze! Pule 11 i 12 dla dorosłych wymagają tego pliku.");
 } else {
-statusEl.innerText = `✅ SYSTEM GOTOWY (Losowe ABCD + Bomba 2:30-3:00 min non-stop + Licznik pytań + Sprawiedliwe losowanie remisów)!`;
+statusEl.innerText = `✅ SYSTEM GOTOWY (Pule 1–10 familijne + Pule 11–12 DOROŚLI HARD we wszystkich 7 rundach: ${adultBombTF.length} pytań w Bombie i ${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length} w Postaw na Milion)!`;
 }
 
 // --- NASŁUCHIWANIE STANU GRY W CZASIE RZECZYWISTYM ---
@@ -1691,7 +1700,7 @@ finalizeR1Question();
 }
 }
 
-// RUNDA 2: GORĄCA BOMBA (1 TURA, CZAS LECI NON-STOP!)
+// RUNDA 2: GORĄCA BOMBA
 if (currentState.round === 2 && currentState.status === "r2_bomb_wait_ready") {
 const activeList = (currentState.activePlayers && currentState.activePlayers.length > 0) ? currentState.activePlayers : getSelectedActivePlayers();
 const readyList = currentState.readyPlayers || [];
