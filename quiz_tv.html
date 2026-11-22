@@ -1818,7 +1818,9 @@ timerInterval = setInterval(async () => {
 timeLeft--;
 if (timeLeft <= 0) {
 clearInterval(timerInterval); tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false); timerEl.innerText = "0";
-if ((data.round === 6 || data.round === 7) && data.nominated) await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
+if (data.round === 1) await updateDoc(doc(db, "quizGame", "state"), { r1TimeUpTick: Date.now() });
+else if (data.round === 3) await updateDoc(doc(db, "quizGame", "state"), { r3TimeUpTick: Date.now() });
+else if ((data.round === 6 || data.round === 7) && data.nominated) await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
 else if (data.round === 6 || data.round === 7) await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
 } else {
 timerEl.innerText = timeLeft;
