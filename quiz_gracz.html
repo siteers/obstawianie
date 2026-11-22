@@ -264,11 +264,11 @@ padding: 10px 2px; font-size: 13px; font-weight: 900; cursor: pointer;
 <div class="r3-closest-area" id="ui-r3-closest">
 <div class="r3-closest-q" id="r3ClosestQText">...</div>
 <div class="r3-num-wrap">
-<input type="number" class="num-r3" id="r3GuessInput" placeholder="Wpisz liczbę..." inputmode="decimal" autocomplete="off">
+<input type="text" class="num-r3" id="r3GuessInput" placeholder="Wpisz liczbę..." inputmode="numeric" pattern="[0-9]*" autocomplete="off">
 <div class="r3-unit-badge" id="r3UnitBadge">km</div>
 </div>
 <div class="feedback-msg" id="r3Feedback"></div>
-<button class="btn-ready" style="padding:16px;" onclick="sendClosestGuess()">🎯 ZATWIERDŹ LICZBĘ!</button>
+<button type="button" class="btn-ready" id="btnSendR3Guess" style="padding:16px;" onclick="sendClosestGuess()">🎯 ZATWIERDŹ LICZBĘ!</button>
 </div>
 
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
@@ -393,6 +393,9 @@ else { miniImg.removeAttribute('src'); miniImg.style.display = "none"; }
 
 let currentWheelTick = null;
 let lastR3SpeechTick = 0;
+let myLocalR3Guess = null;
+let myLocalR3Tick = 0;
+let isSendingR3Guess = false;
 let lastR6BlindSpeechTick = 0;
 let lastMilBetTick = 0;
 let padWheelInterval = null;
@@ -732,26 +735,48 @@ await updateDoc(doc(db, "quizGame", "state"), { status: "r2_bomb_answered", r5Gi
 // RUNDA 3: 🎯 KTO NAJBLIŻEJ? — WYSYŁANIE LICZBY
 // ============================================================================
 window.sendClosestGuess = async () => {
-if (!currentState || currentState.status !== "reading" || currentState.round !== 3) return;
+if (!currentState || currentState.status !== "reading" || currentState.round !== 3 || isSendingR3Guess) return;
 const inp = document.getElementById('r3GuessInput');
 const fb = document.getElementById('r3Feedback');
-const rawStr = (inp.value || "").trim().replace(",", ".");
+const btn = document.getElementById('btnSendR3Guess');
+const rawStr = (inp.value || "").replace(/\s+/g, "").replace(",", ".");
 if (rawStr === "") {
 fb.innerText = "⚠️ WPISZ LICZBĘ ZANIM WYŚLESZ!";
 return;
 }
 const numVal = Number(rawStr);
 if (!Number.isFinite(numVal)) {
-fb.innerText = "⚠️ WPISZ POPRAWNĄ LICZBĘ!";
+fb.innerText = "⚠️ WPISZ POPRAWNĄ LICZBĘ (SAME CYFRY)!";
 return;
 }
 const cleanNum = Math.round(numVal);
-fb.innerText = "";
+isSendingR3Guess = true;
+fb.style.color = "#ffd700";
+fb.innerText = "⏳ Wysyłanie Twojej liczby...";
+if (btn) { btn.disabled = true; btn.innerText = "⏳ ZAPISYWANIE..."; }
 inp.blur();
 
-await updateDoc(doc(db, "quizGame", "state"), {
-[`r3Guesses.${myName}`]: { val: cleanNum, ts: Date.now() }
-});
+const sendPayload = { [`r3Guesses.${myName}`]: { val: cleanNum, ts: Date.now() } };
+let savedOk = false;
+for (let attempt = 0; attempt < 2 && !savedOk; attempt++) {
+try {
+await updateDoc(doc(db, "quizGame", "state"), sendPayload);
+savedOk = true;
+} catch (err) {
+if (attempt === 1) {
+fb.style.color = "#ff4757";
+fb.innerText = "❌ Błąd sieci — kliknij ponownie!";
+}
+}
+}
+isSendingR3Guess = false;
+if (btn) { btn.disabled = false; btn.innerText = "🎯 ZATWIERDŹ LICZBĘ!"; }
+if (savedOk) {
+myLocalR3Guess = cleanNum;
+myLocalR3Tick = currentState.speechTick || 0;
+fb.innerText = "";
+updatePadUI();
+}
 };
 
 // Enter w polu liczbowym R3 wysyła typ
@@ -1014,6 +1039,17 @@ return (winnersArr || []).some(w => w === pKey || w.startsWith(pKey + " ") || w.
 }
 
 function updatePadUI() {
+// Ochrona przed migotaniem i zjadaniem kliknięć podczas wpisywania w R3 (np. gdy inni gracze wysyłają lub działa watchdog co 2s)
+if (currentState && currentState.status === "reading" && currentState.round === 3) {
+const activeCheck = getActivePlayers(currentState);
+const myServerGuess = (currentState.r3Guesses || {})[myName];
+const hasSubmittedLocal = (myLocalR3Guess !== null && myLocalR3Tick === (currentState.speechTick || 0));
+const r3BoxEl = document.getElementById('ui-r3-closest');
+if (activeCheck.includes(myName) && !myServerGuess && !hasSubmittedLocal && r3BoxEl && r3BoxEl.style.display === 'flex' && currentState.speechTick === lastR3SpeechTick) {
+return;
+}
+}
+
 document.getElementById('ui-abcd').style.display = 'none';
 document.getElementById('ui-ready').style.display = 'none';
 document.getElementById('ui-bomb').style.display = 'none';
@@ -1295,6 +1331,8 @@ return;
 if (currentState.status === "speaking") {
 if (currentState.round === 3 && currentState.speechTick !== lastR3SpeechTick) {
 lastR3SpeechTick = currentState.speechTick;
+myLocalR3Guess = null;
+myLocalR3Tick = 0;
 document.getElementById('r3GuessInput').value = "";
 document.getElementById('r3Feedback').innerText = "";
 }
@@ -1410,12 +1448,15 @@ return;
 if (currentState.round === 3) {
 if (currentState.speechTick !== lastR3SpeechTick) {
 lastR3SpeechTick = currentState.speechTick;
+myLocalR3Guess = null;
+myLocalR3Tick = 0;
 document.getElementById('r3GuessInput').value = "";
 document.getElementById('r3Feedback').innerText = "";
 }
 const myGuess = (currentState.r3Guesses || {})[myName];
-if (myGuess !== undefined && myGuess !== null) {
-const gVal = (typeof myGuess === 'object') ? myGuess.val : myGuess;
+const hasLocal = (myLocalR3Guess !== null && myLocalR3Tick === (currentState.speechTick || 0));
+if ((myGuess !== undefined && myGuess !== null) || hasLocal) {
+const gVal = (myGuess !== undefined && myGuess !== null) ? ((typeof myGuess === 'object') ? myGuess.val : myGuess) : myLocalR3Guess;
 const unitStr = currentState.correctUnit ? ` ${currentState.correctUnit}` : "";
 document.getElementById('padStatus').innerText = "🔒 LICZBA ZAPISANA!";
 lockedEl.classList.add('win-msg');
