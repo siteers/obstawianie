@@ -1,193 +1,166 @@
 // ============================================================================
-// BAZA PYTAŃ CYBER-QUIZ: CZĘŚĆ 1 z 2 (RUNDY 1, 3, 4, 6 - 12 UNIKALNYCH PULI)
+// KOMPLETNA BAZA PYTAŃ CYBER-QUIZ — PULE 1–10 (DZIECI & FAMILIJNE)
+// Wyczyszczona ze spoilerów, nawiasów w opcjach, błędów merytorycznych i powtórek.
+// Pule 1–8: familijne (8–11 lat) | Pule 9–10: wyraźnie trudniejsze (5–7 klasa)
+// Pule 11–12 dla dorosłych obsługiwane są przez osobny plik baza_dorosli.js
 // ============================================================================
 window.QUIZ_QUESTIONS_RAW = window.QUIZ_QUESTIONS_RAW || {};
 
-// --- RUNDA 1: WYŚCIG ABCD (180 PYTAŃ: 1-120 Pule 1-8, 121-150 Pule 9-10 Trudniejsze, 151-180 Pule 11-12 Dorośli) ---
+// --- RUNDA 1: WYŚCIG ABCD (150 pytań: 1–120 Pule 1–8 | 121–150 Pule 9–10 Trudniejsze) ---
 window.QUIZ_QUESTIONS_RAW.masterR1 = `
 Która planeta jest największa w Układzie Słonecznym?|Ziemia;Mars;Jowisz;Saturn|2
-Ile nóg ma typowy pająk?|Sześć;Osiem;Dziesięć;Dwanaście|1
-W jakim mieście we Włoszech znajdują się słynne kanały i gondole?|W Mediolanie;W Wenecji;W Turynie;W Bolonii|1
-Jak nazywa się żółty pokemon Asha?|Charmander;Squirtle;Pikachu;Bulbasaur|2
-Ile to jest 8 x 8?|54;56;64;48|2
-Jaki kolor ma kamień szlachetny szmaragd?|Czerwony;Niebieski;Zielony;Żółty|2
-Najdłuższa rzeka w Polsce to:|Odra;Wisła;Warta;Bug|1
-Kto napisał 'Akademię Pana Kleksa'?|Jan Brzechwa;Julian Tuwim;H. Sienkiewicz;A. Mickiewicz|0
-Co jest głównym pożywieniem pandy wielkiej?|Mięso;Liście dębu;Bambus;Banany|2
-Ile dni ma rok przestępny?|365;366;364;360|1
-W jakiej wodzie żyją wieloryby w oceanach?|W słodkiej;W słonej;W źródlanej;W destylowanej|1
-Co ma najniższą temperaturę?|Kostka lodu;Wrzątek;Para wodna;Ciepła herbata|0
-Jak ma na imię młodsza siostra Elsy z Krainy Lodu?|Vaiana;Anna;Ariel;Mulan|1
-Które z tych zwierząt należy do gromady gadów?|Żaba;Wąż;Pies;Bocian|1
-Jak nazywa się kontynent, na którym leży Polska?|Azja;Ameryka;Europa;Afryka|2
-Ile to jest 100 - 35?|65;75;55;45|0
-Jaki instrument muzyczny posiada czarno-białe klawisze?|Gitara;Skrzypce;Pianino;Flet|2
-Z jakiego surowca wytapia się w hucie zwykłe szkło?|Z wody;Z piasku kwarcowego;Z gliny;Z drewna|1
-Jak nazywa się sześcian z oczkami od 1 do 6 używany w grach planszowych?|Stożek;Kostka do gry;Kula;Walec|1
-Kto zbudował wielki ceglany zamek w Malborku?|Krzyżacy;Wikingowie;Rzymianie;Szwedzi|0
-Który miesiąc rozpoczyna nowy rok kalendarzowy?|Luty;Styczeń;Marzec;Grudzień|1
-Jak nazywa się najmniejszy i najzimniejszy ocean na Ziemi (wokół bieguna północnego)?|Atlantycki;Indyjski;Arktyczny;Spokojny|2
-Jak nazywa się nauka o gwiazdach, planetach i kosmosie?|Biologia;Chemia;Geografia;Astronomia|3
-Jaki jest najszybszy ptak na świecie podczas lotu nurkowego?|Sokół wędrowny;Gołąb;Wróbel;Kaczka|0
-Z jakiego kraju pochodzi oryginalna pizza neapolitańska?|Z Grecji;Z Hiszpanii;Z Włoch;Z Węgier|2
-Który z tych instrumentów należy do grupy dętych blaszanych?|Gitara;Skrzypce;Trąbka;Perkusja|2
-W jakim kraju afrykańskim stoi Wielka Piramida Cheopsa?|W Maroku;W Egipcie;W Kenii;W RPA|1
-Największe powierzchniowo państwo na świecie to:|USA;Chiny;Rosja;Kanada|2
-Jak nazywa się galaktyka, w której znajduje się nasze Słońce?|Andromeda;Droga Mleczna;Wielki Obłok;Mgławica Oriona|1
-Starożytny amfiteatr w Rzymie, gdzie walczyli gladiatorzy, to:|Partenon;Luwr;Koloseum;Akropol|2
-W którym roku wybuchła II Wojna Światowa?|1914;1939;1945;1989|1
-Kto napisał polską epopeję narodową 'Pan Tadeusz'?|J. Słowacki;J. Kochanowski;A. Mickiewicz;B. Prus|2
-Która część rośliny odpowiada za pobieranie wody i soli mineralnych z gleby?|Kwiat;Owoc;Korzeń;Pąk|2
+W jakim włoskim mieście zamiast zwykłych ulic w centrum płyną kanały z gondolami?|W Mediolanie;W Wenecji;W Turynie;W Bolonii|1
+Jak nazywa się żółty stworek będący najwierniejszym towarzyszem Asha w serii Pokémon?|Charmander;Squirtle;Pikachu;Bulbasaur|2
+Ile wynosi iloczyn liczb 8 i 8?|54;56;64;48|2
+Jaki kolor ma kamień szlachetny zwany szmaragdem?|Czerwony;Niebieski;Zielony;Fioletowy|2
+Która rzeka w Polsce jest najdłuższa?|Odra;Wisła;Warta;Bug|1
+Kto napisał książkę 'Akademia Pana Kleksa'?|Jan Brzechwa;Julian Tuwim;Henryk Sienkiewicz;Adam Mickiewicz|0
+Co stanowi główny składnik diety pandy wielkiej?|Liście eukaliptusa;Owoce leśne;Pędy bambusa;Korzenie drzew|2
+Ile dni liczy rok przestępny?|364;365;366;368|2
+Które z tych zwierząt należy do gromady gadów?|Żaba;Wąż;Nietoperz;Delfin|1
+Ile wynosi wynik odejmowania 100 minus 37?|63;67;73;53|0
+Z jakiego głównego surowca wytapia się w hutach tradycyjne szkło?|Z gliny;Z piasku kwarcowego;Z wapienia;Z żywicy|1
+Kto wybudował ogromny ceglany zamek w Malborku?|Krzyżacy;Wikingowie;Rzymianie;Szwedzi|0
+Który ocean jest najmniejszy i najpłytszy na Ziemi?|Atlantycki;Indyjski;Arktyczny;Spokojny|2
+Jak nazywa się dziedzina nauki badająca gwiazdy, planety i galaktyki?|Biologia;Geologia;Geografia;Astronomia|3
+Który ptak osiąga największą prędkość na świecie podczas lotu nurkowego?|Sokół wędrowny;Orzeł przedni;Jaskółka;Albatros|0
+Z jakiego miasta we Włoszech wywodzi się oryginalna pizza neapolitańska?|Z Rzymu;Z Mediolanu;Z Neapolu;Z Wenecji|2
+Który z poniższych instrumentów należy do grupy dętych blaszanych?|Flet prosty;Klarnet;Trąbka;Skrzypce|2
+W jakim kraju stoi Wielka Piramida Cheopsa?|W Maroku;W Egipcie;W Jordanii;W Sudanie|1
+Które państwo ma największą powierzchnię na świecie?|Stany Zjednoczone;Chiny;Rosja;Kanada|2
+Jak nazywa się galaktyka, w której znajduje się nasz Układ Słoneczny?|Andromeda;Droga Mleczna;Wielki Obłok Magellana;Sombrero|1
+Jak nazywa się słynny starożytny amfiteatr w Rzymie?|Partenon;Akropol;Koloseum;Panteon|2
+W którym roku wybuchła II wojna światowa?|1914;1939;1945;1920|1
+Kto jest autorem polskiej epopei narodowej 'Pan Tadeusz'?|Juliusz Słowacki;Jan Kochanowski;Adam Mickiewicz;Bolesław Prus|2
+Która część rośliny pobiera wodę wraz z solami mineralnymi z gleby?|Łodyga;Liść;Korzeń;Kwiat|2
 W jakim starożytnym kraju narodziła się tradycja Igrzysk Olimpijskich?|We Włoszech;W Grecji;W Egipcie;W Persji|1
-Ile lat żyje przeciętnie zadbany kot domowy?|Tylko 2 lata;Około 12-16 lat;Ponad 80 lat;Dokładnie 50 lat|1
-Z jakiego kraju wywodzi się potrawa Sushi?|Z Chin;Z Japonii;Z Tajlandii;Z Indii|1
-Jak po angielsku powiesz 'Biblioteka'?|Bookstore;Library;School;Museum|1
-Jak nazywa się słynna wieża zegarowa w Londynie?|Eiffla;Big Ben (Elizabeth Tower);Krzywa Wieża;Empire State|1
-Z ilu województw składa się obecnie Polska?|14;15;16;17|2
-W której części Polski leżą góry Tatry?|Na północy;Na południu;Na zachodzie;W centrum|1
-Ile wynosi pierwiastek kwadratowy z 81?|7;8;9;10|2
-Jak brzmi prawdziwe imię i nazwisko superbohatera Spider-Mana?|Tony Stark;Peter Parker;Bruce Wayne;Clark Kent|1
-Z jakich dwóch pierwiastków składa się cząsteczka wody (H2O)?|Tlen i Azot;Wodór i Tlen;Węgiel i Tlen;Wodór i Hel|1
-Który owad wytwarza kokony z nici prawdziwego jedwabiu?|Pająk krzyżak;Pszczoła;Jedwabnik morwowy;Biedronka|2
-Kto stworzył pierwszą wersję gry komputerowej Minecraft?|Markus Persson (Notch);Elon Musk;Bill Gates;Steve Jobs|0
-Co oznacza popularny skrót PC w informatyce?|Personal Computer;Play Console;Power Control;Pocket Calculator|0
-Jaki stan skupienia ma kostka lodu?|Ciekły;Gazowy;Stały;Plazmowy|2
-Które drzewo liściaste rodzi owoce w kolczastych łupinach zwane kasztanami?|Świerk;Sosna;Kasztanowiec;Brzoza|2
-Na jakim wzgórzu w Krakowie znajduje się Zamek Królewski i Katedra?|Na Gubałówce;Na Wawelu;Na Jasnej Górze;Na Ślęży|1
-Jaka waluta obowiązuje w Wielkiej Brytanii?|Euro;Funt szterling;Dolar;Frank|1
-Ile minut ma półtorej godziny?|60;75;90;100|2
-Nad jakim morzem leży Polska?|Nad Czarnym;Nad Śródziemnym;Nad Bałtyckim;Nad Północnym|2
-Jak nazywa się zielony ogr z bagien, mąż królewny Fiony?|Gargamel;Shrek;Hulk;Sulley|1
-Które zwierzę z Australii nosi swoje małe w torbie na brzuchu?|Niedźwiedź;Małpa;Kangur;Słoń|2
-Ile to jest 6 x 7?|36;42;48;49|1
-Który z tych materiałów jest przyciągany przez magnes?|Drewno;Plastik;Żelazo;Szkło|2
+Z jakiego kraju wywodzi się tradycyjna potrawa sushi?|Z Chin;Z Japonii;Z Tajlandii;Z Korei Południowej|1
+Jak po angielsku nazywa się 'Biblioteka'?|Bookstore;Library;Museum;Notebook|1
+Jak potocznie nazywa się słynna wieża zegarowa przy parlamencie w Londynie?|Tower Bridge;Big Ben;London Eye;Buckingham|1
+Na ile województw podzielona jest obecnie Polska?|14;15;16;18|2
+Ile wynosi pierwiastek kwadratowy z liczby 81?|7;8;9;11|2
+Jak nazywa się prawdziwa tożsamość superbohatera Spider-Mana?|Tony Stark;Peter Parker;Bruce Wayne;Clark Kent|1
+Z jakich dwóch pierwiastków chemicznych zbudowana jest cząsteczka wody?|Tlenu i azotu;Wodoru i tlenu;Węgla i tlenu;Wodoru i helu|1
+Który owad wytwarza cenne włókna wykorzystywane do tkania delikatnych materiałów w Azji?|Pająk krzyżak;Trzmiel;Jedwabnik morwowy;Szarańcza|2
+Kto stworzył pierwotną wersję gry komputerowej Minecraft?|Markus Persson;Elon Musk;Bill Gates;Gabe Newell|0
+Co oznacza skrót PC w odniesieniu do komputera?|Personal Computer;Play Console;Power Control;Private Code|0
+Na jakim wzgórzu w Krakowie wznosi się Zamek Królewski?|Na Gubałówce;Na Wawelu;Na Jasnej Górze;Na Ślęży|1
+Jaka waluta obowiązuje w Wielkiej Brytanii?|Euro;Funt szterling;Dolar;Korona|1
+Ile minut trwa półtorej godziny?|60;75;90;105|2
+Które zwierzę z Australii wychowuje młode w torbie na brzuchu?|Dziobak;Leniwiec;Kangur;Tapir|2
+Ile wynosi wynik mnożenia 6 razy 7?|36;42;48;49|1
+Który z poniższych metali jest silnie przyciągany przez zwykły magnes?|Miedź;Aluminium;Żelazo;Złoto|2
 Z jakiego polskiego miasta pochodzą najsłynniejsze pierniki?|Z Krakowa;Z Torunia;Z Poznania;Z Gdańska|1
-Jak nazywa się przyrząd nawigacyjny z igłą magnetyczną wskazującą północ?|Termometr;Stoper;Kompas;Teleskop|2
-Który kolorowy ptak tropikalny potrafi naśladować ludzką mowę?|Wróbel;Papuga;Bocian;Jaskółka|1
-Jaki kolor ma kamień szlachetny o nazwie rubin?|Zielony;Niebieski;Czerwony;Żółty|2
-Ile łącznie palców u obu rąk i obu stóp ma człowiek?|10;15;20;24|2
-Z jakiego państwa pochodzą słynne klocki LEGO?|Z Niemiec;Z Danii;Z Polski;Ze Szwecji|1
-Która pora roku następuje bezpośrednio po lecie?|Wiosna;Zima;Jesień;Przedwiośnie|2
-Ile to jest 250 + 150?|300;350;400;450|2
-Jak nazywa się lekarz zajmujący się leczeniem zwierząt?|Dentysta;Okulista;Weterynarz;Pediatra|2
-W jakiej bajce występuje drewniany pajacyk, któremu od kłamstw rośnie nos?|Kopciuszek;Pinokio;Piotruś Pan;Aladyn|1
-Który z wymienionych ssaków potrafi aktywnie latać dzięki błonie na skrzydłach?|Wiewiórka;Nietoperz;Struś;Wydra|1
-Jak nazywa się góra w Tatrach przypominająca swoim kształtem śpiącego rycerza?|Rysy;Śnieżka;Giewont;Kasprowy Wierch|2
-Ile splecionych kół znajduje się na fladze olimpijskiej?|4;5;6;7|1
-Co potrafi robić kameleon, aby ukryć się wśród liści na gałęzi?|Ucieka pod wodę;Zmienia barwę skóry;Zrzuca pancerz;Szczeka|1
-Jak po angielsku powiesz słowo 'Szkoła'?|House;School;Shop;Street|1
-Z jakich ziaren produkuje się tabliczki czekolady?|Z kawy;Z kakaowca;Z pszenicy;Z kukurydzy|1
-Które miasto było pierwszą historyczną stolicą Polski za Mieszka I?|Kraków;Warszawa;Gniezno;Lublin|2
-W jakim sporcie zawodnicy jeżdżą na łyżwach i uderzają kijami w gumowy krążek?|W curlingu;W hokeju na lodzie;W polo;W krykiecie|1
-Jak nazywa się wąsaty hydraulik w czerwonej czapce z gier Nintendo?|Sonic;Mario;Link;Pac-Man|1
-Ile godzin mają łącznie dwie pełne doby?|24;36;48;72|2
-Które potężne rogate zwierzę jest symbolem Puszczy Białowieskiej?|Łoś;Niedźwiedź;Żubr;Wilk|2
-Jakim kolorem na mapach fizycznych oznacza się niziny?|Żółtym;Zielonym;Niebieskim;Brązowym|1
-Ile to jest 9 x 9?|72;81;90;99|1
-W jakim polskim mieście znajduje się słynny Kościół Mariacki z hejnałem?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|2
-Jak nazywa się przyrząd do mierzenia temperatury powietrza lub ciała?|Barometr;Termometr;Kompas;Stetoskop|1
-Który z tych owadów mieszka w ulu i produkuje wosk oraz miód?|Osa;Szerszeń;Pszczoła miodna;Trzmiel|2
-Jak po angielsku powiesz 'Rower'?|Car;Bike (Bicycle);Train;Boat|1
-Z jakiego kontynentu przywieziono dawniej do Europy ziemniaki, kukurydzę i pomidory?|Z Azji;Z Ameryki;Z Australii;Z Antarktydy|1
-Ile minut trwa standardowa lekcja w polskiej szkole?|30;45;60;50|1
-Kto jest gadatliwym przyjacielem Shreka o długich uszach i czterech kopytach?|Kot w Butach;Osioł;Ciastek;Pinokio|1
-Ile to jest 500 podzielone przez 5?|50;100;150;250|1
-Co mierzymy na wadze w kilogramach, gramach i tonach?|Długość;Czas;Masę (ciężar);Prędkość|2
-Która księżniczka z baśni zgubiła o północy na schodach szklany pantofelek?|Śnieżka;Kopciuszek;Roszpunka;Bella|1
-W jakim europejskim kraju stoi słynna Krzywa Wieża w Pizie?|W Hiszpanii;We Francji;We Włoszech;W Grecji|2
-Ile zer ma w zapisie liczba jeden milion?|Cztery;Pięć;Sześć;Siedem|2
-Który z tych ptaków śpiewających zostaje w Polsce na zimę i chętnie odwiedza karmniki?|Bocian;Jaskółka;Sikorka bogatka;Kukułka|2
-Jak po angielsku nazywa się kolor 'Niebieski'?|Red;Green;Blue;Yellow|2
-Czym żywi się większość gąsienic zanim zmieni się w pięknego motyla?|Mięsem;Liśćmi roślin;Rybią ikrą;Kamieniami|1
-W jakim polskim mieście w południe na wieży ratusza trykają się dwa koziołki?|We Wrocławiu;W Poznaniu;W Szczecinie;W Łodzi|1
-Jak nazywają się małe żółte stworki w niebieskich ogrodniczkach z filmu 'Gru'?|Smerfy;Minionki;Gremliny;Trolle|1
-Ile to jest 12 x 5?|50;55;60;65|2
-Który zmysł pozwala nam słyszeć muzykę i śpiew ptaków?|Wzrok;Węch;Słuch;Dotyk|2
-Jak nazywa się najwyższy łańcuch górski w Europie (z górą Mont Blanc)?|Tatry;Alpy;Karpaty;Góry Świętokrzyskie|1
-W jakim miesiącu zaczyna się kalendarzowa wiosna?|W lutym;W marcu;W kwietniu;W maju|1
-Jak po angielsku powiesz 'Śniadanie'?|Dinner;Lunch;Breakfast;Snack|2
-Które morskie zwierzę ma 8 ramion z przyssawkami i potrafi wypuścić chmurę atramentu?|Rekin;Ośmiornica;Delfin;Meduza|1
-Z jakich ziaren praży się słony lub karmelowy popcorn w kinie?|Z pszenicy;Z ryżu;Z kukurydzy;Z owsa|2
-Ile boków ma figura geometryczna o nazwie sześciokąt?|Cztery;Pięć;Sześć;Osiem|2
-Które polskie miasto słynie z setek małych figurek krasnali ukrytych na chodnikach?|Kraków;Wrocław;Gdańsk;Katowice|1
-Która planeta krąży wokół Słońca pomiędzy Wenus a Marsem?|Merkury;Ziemia;Jowisz;Saturn|1
-Co jest głównym surowcem do wyrobu twarogu, jogurtu i kefiru?|Mąka;Mleko;Jajka;Olej|1
-Jak nazywa się płochliwy pies-detektyw z kreskówki, przyjaciel Kudłatego?|Pluto;Reksio;Scooby-Doo;Burek|2
-Ile to jest 1000 minus 300?|600;700;800;900|1
-W jakim sporcie drużynowym rzuca się pomarańczową piłką do obręczy na wysokości 3 metrów?|W siatkówce;W piłce ręcznej;W koszykówce;W tenisie|2
-Jak po angielsku powiesz 'Nauczyciel'?|Doctor;Driver;Teacher;Player|2
-Które drzewo liściaste ma charakterystyczną białą korę z czarnymi paskami?|Dąb;Brzoza;Klon;Lipa|1
-Co jest stolicą Grecji?|Rzym;Ateny;Kair;Madryt|1
-Co zakładamy na głowę podczas jazdy na rowerze lub nartach dla ochrony przed urazem?|Czapkę z daszkiem;Kask;Nauszniki;Kapelusz|1
-Jak miał na imię ojciec Simby w filmie 'Król Lew'?|Skaza;Mufasa;Timon;Pumba|1
-Ile centymetrów mieści się w pół metra?|25 cm;50 cm;75 cm;100 cm|1
-Jak nazywa się wysoki wiatrak z łopatami, który zamienia siłę wiatru na prąd elektryczny?|Turbina wiatrowa;Panel słoneczny;Piorunochron;Akumulator|0
-Ile dni ma miesiąc kwiecień?|28;29;30;31|2
-Jak nazywa się największy dziki kot żyjący w Azji (ma rude futro w czarne paski)?|Lew;Tygrys;Gepard;Ryś|1
-Ile to jest 7 x 8?|48;54;56;64|2
-Nad jaką rzeką leży stolica Francji – Paryż?|Nad Tamizą;Nad Sekwaną;Nad Dunajem;Nad Wisłą|1
-Jak nazywa się przyjaciel Kubusia Puchatka w paski, który uwielbia skakać na ogonie?|Kłapouchy;Tygrysek;Królik;Sowa|1
-Który instrument muzyczny trzyma się pod brodą i gra na nim smyczkiem?|Flet;Trąbka;Skrzypce;Bęben|2
-Jak po angielsku powiesz słowo 'Książka'?|Pen;Book;Desk;Bag|1
-Z jakiego metalu szlachetnego robi się medale za pierwsze miejsce?|Ze srebra;Ze złota;Z miedzi;Z żelaza|1
+Jaki przyrząd służy podróżnikom do wyznaczania stron świata za pomocą igły magnetycznej?|Barometr;Sekstant;Kompas;Stoper|2
+Jaki kolor ma kamień szlachetny zwany rubinem?|Zielony;Niebieski;Czerwony;Żółty|2
+Z jakiego kraju pochodzą słynne klocki LEGO?|Z Niemiec;Z Danii;Z Holandii;Ze Szwecji|1
+Ile wynosi suma 250 i 175?|400;415;425;435|2
+W której klasycznej baśni występuje drewniany pajacyk wystrugany przez mistrza Geppetta?|Kopciuszek;Pinokio;Piotruś Pan;Dziadek do orzechów|1
+Który z poniższych ssaków potrafi aktywnie latać?|Wiewiórka pospolita;Nietoperz;Struś;Wydra|1
+Jak nazywa się tatrzański masyw górski przypominający sylwetkę śpiącego rycerza?|Rysy;Śnieżka;Giewont;Kasprowy Wierch|2
+Ile splecionych ze sobą kół znajduje się na fladze olimpijskiej?|4;5;6;7|1
+Z jakiego powodu kameleon słynie ze zmiany barwy swojej skóry?|Chłodzi się pod wodą;Komunikuje nastrój i wtapia w otoczenie;Ostrzega przed burzą;Przyciąga ptaki|1
+Z nasion jakiej tropikalnej rośliny powstaje kakao i czekolada?|Z kawowca;Z kakaowca;Z wanilii;Z palmy kokosowej|1
+Które polskie miasto było pierwszą historyczną stolicą państwa Polan za Mieszka I?|Kraków;Warszawa;Gniezno;Lublin|2
+W jakiej dyscyplinie sportowej zawodnicy na łyżwach wbijają kijami gumowy krążek do bramki?|W curlingu;W hokeju na lodzie;W polo;W krykiecie|1
+Ile godzin liczą łącznie dwie pełne doby?|24;36;48;72|2
+Które potężne zwierzę z rogami jest symbolem Puszczy Białowieskiej?|Łoś;Jeleń;Żubr;Daniel|2
+Jakim kolorem oznacza się niziny na klasycznych mapach hipsometrycznych?|Żółtym;Zielonym;Niebieskim;Brązowym|1
+Ile wynosi wynik mnożenia 9 razy 9?|72;81;90;99|1
+W jakim mieście z wieży Kościoła Mariackiego co godzinę grany jest hejnał?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|2
+Jak nazywa się przyrząd służący do pomiaru temperatury ciała lub powietrza?|Barometr;Termometr;Higrometr;Stetoskop|1
+Z jakiego kontynentu przywieziono do Europy ziemniaki, kukurydzę i pomidory?|Z Azji;Z Ameryki;Z Australii;Z Afryki|1
+Ile wynosi wynik dzielenia 500 przez 5?|50;100;125;250|1
+W jakim kraju znajduje się słynna Krzywa Wieża w Pizie?|W Hiszpanii;We Francji;We Włoszech;W Grecji|2
+Ile zer zapisujemy w liczbie jeden milion?|Cztery;Pięć;Sześć;Siedem|2
+Który z tych ptaków zostaje w Polsce na zimę i odwiedza karmniki?|Bocian biały;Jaskółka dymówka;Sikorka bogatka;Kukułka|2
+W jakim mieście w południe na wieży ratusza trykają się dwa metalowe koziołki?|We Wrocławiu;W Poznaniu;W Szczecinie;W Toruniu|1
+Ile wynosi wynik mnożenia 12 razy 5?|50;55;60;65|2
+W którym łańcuchu górskim leży najwyższy szczyt Unii Europejskiej – Mont Blanc?|W Pirenejach;W Alpach;W Karpatach;W Apeninach|1
+W którym miesiącu rozpoczyna się kalendarzowa wiosna?|W lutym;W marcu;W kwietniu;W maju|1
+Jak po angielsku nazywa się pierwszy posiłek dnia – 'Śniadanie'?|Dinner;Lunch;Breakfast;Supper|2
+Które morskie zwierzę ma osiem ramion z przyssawkami i potrafi wypuścić chmurę atramentu?|Rekin;Ośmiornica;Delfin;Meduza|1
+Z ziaren jakiej rośliny powstaje prażony popcorn?|Z pszenicy;Z ryżu;Z kukurydzy;Z owsa|2
+Ile boków ma figura geometryczna nazywana sześciokątem?|Cztery;Pięć;Sześć;Osiem|2
+Które polskie miasto słynie z setek małych figurek krasnali ukrytych w przestrzeni miejskiej?|Kraków;Wrocław;Gdańsk;Katowice|1
+Która planeta Układu Słonecznego krąży między Wenus a Marsem?|Merkury;Ziemia;Jowisz;Saturn|1
+Ile wynosi wynik odejmowania 1000 minus 340?|640;660;740;760|1
+W którym sporcie drużynowym zdobywa się punkty, rzucając piłkę do obręczy na wysokości 3,05 metra?|W siatkówce;W piłce ręcznej;W koszykówce;W tenisie|2
+Które drzewo liściaste wyróżnia się charakterystyczną białą korą z ciemnymi smugami?|Dąb;Brzoza;Klon;Lipa|1
+Jak nazywa się stolica Grecji?|Rzym;Ateny;Saloniki;Nikozja|1
+Jak miał na imię ojciec Simby w filmie animowanym 'Król Lew'?|Skaza;Mufasa;Rafiki;Timon|1
+Ile centymetrów mieści się w połowie metra?|25;50;75;100|1
+Ile dni liczy miesiąc kwiecień?|28;29;30;31|2
+Który z wielkich dzikich kotów żyje naturalnie w Azji i ma pomarańczowe futro w czarne pręgi?|Lew;Tygrys;Gepard;Jaguar|1
+Ile wynosi wynik mnożenia 7 razy 8?|48;54;56;64|2
+Nad jaką rzeką położona jest stolica Francji – Paryż?|Nad Tamizą;Nad Sekwaną;Nad Dunajem;Nad Renem|1
+Na jakim instrumencie muzycznym gra się, trzymając go pod brodą i przesuwając po strunach smyczkiem?|Na flecie;Na wiolonczeli;Na skrzypcach;Na gitarze|2
 Ile minut mają łącznie dwie pełne godziny?|90;100;120;150|2
-Jak nazywa się podziemna część grzyba przypominająca gęste białe nitki?|Kapelusz;Trzon;Grzybnia;Korzeń|2
-Który ptak nielotny w smokingu doskonale pływa w lodowatych wodach Antarktydy?|Bocian;Pingwin;Orzeł;Mewa|1
-W jakim państwie leżą miasta Barcelona, Walencja i Sewilla?|We Włoszech;W Portugalii;W Hiszpanii;We Francji|2
-Ile to jest 45 + 55?|90;95;100;110|2
-Jak ma na imię renifer Kristoffa z filmu 'Kraina Lodu'?|Sven;Bambi;Rudolf;Mustang|0
-Czym pokryta jest skóra większości ryb (np. karpia)?|Piórami;Futrem;Łuskami;Kolcami|2
-Jak po angielsku nazywa się kolor 'Zielony'?|Red;Yellow;Green;Orange|2
-Który pojazd komunikacji miejskiej jeździ po szynach na powierzchni ulic i ma pantograf?|Autobus;Tramwaj;Trolejbus;Prom|1
-Ile boków ma ośmiokąt?|Sześć;Siedem;Osiem;Dziesięć|2
-Jak nazywa się posąg w Egipcie z ciałem lwa i głową faraona?|Koloseum;Wielki Sfinks;Partenon;Statua Wolności|1
-W jakiej grze planszowej przesuwa się bierki i mówi 'Szach i mat'?|W warcabach;W szachach;W chińczyku;W domino|1
-Ile to jest 36 podzielone przez 4?|7;8;9;10|2
-Jak nazywa się pora dnia, gdy Słońce chowa się za horyzontem?|Świt;Południe;Zachód słońca (zmierzch);Północ|2
-Które zwierzę z lasu ma rude futerko, puszysty ogon i chowa orzechy w dziupli?|Jeż;Borsuk;Wiewiórka;Zając|2
-Jak po angielsku powiesz słowo 'Gruszka'?|Pear;Plum;Peach;Lemon|0
-Jak nazywa się tradycyjny strój japoński przypominający długi szlafrok przewiązany pasem?|Sari;Kimono;Kilt;Ponczo|1
-Ile kół ma klasyczny samochód osobowy podczas jazdy po drodze?|Dwa;Trzy;Cztery;Sześć|2
-Który organ wewnątrz czaszki odpowiada za myślenie, pamięć i emocje?|Serce;Płuca;Mózg;Żołądek|2
-W jakiej bajce Disneya występuje dziewczyna z Chin, która w przebraniu żołnierza wyrusza na wojnę z małym smokiem Mushu?|Król Lew;Mulan;Herkules;Tarzan|1
-Ile to jest 15 x 3?|35;40;45;50|2
-Jak nazywa się przyrząd optyczny na trójnogu służący do obserwacji księżyca i planet?|Mikroskop;Teleskop;Lupa;Okulary|1
-Która rzeka przepływa przez Szczecin i wpływa do Zalewu Szczecińskiego?|Wisła;Odra;Bug;San|1
-Jak po angielsku powiesz liczbę 'Dziesięć'?|Five;Eight;Ten;Twelve|2
-Z czego pszczoły zbierają pyłek i słodki nektar na łące?|Z kamieni;Z kwiatów;Z mchu;Z piasku|1
-Kto wyreżyserował kultowy film 'Pulp Fiction' oraz 'Bękarty wojny'?|Steven Spielberg;Quentin Tarantino;Martin Scorsese;Christopher Nolan|1
-W jakim mieście doszło do katastrofy elektrowni jądrowej w kwietniu 1986 roku?|W Fukushimie;W Prypeci (Czarnobylu);W Mińsku;W Kijowie|1
-Jaki pierwiastek chemiczny oznaczany jest symbolem Fe?|Fluor;Fosfor;Żelazo;Ferm|2
-Kto zagrał główną rolę Jacka Dawsona w filmie 'Titanic' (1997)?|Brad Pitt;Leonardo DiCaprio;Tom Cruise;Johnny Depp|1
-W którym roku Polska wstąpiła do Unii Europejskiej?|1999;2004;2007;2010|1
-Jak nazywa się stolica Australii?|Sydney;Melbourne;Canberra;Perth|2
-Który zespół rockowy nagrał utwór 'Bohemian Rhapsody'?|The Beatles;Pink Floyd;Queen;Led Zeppelin|2
-Ile wynosi przybliżona prędkość światła w próżni?|300 km/s;30 000 km/s;300 000 km/s;3 000 000 km/s|2
-Kto jest autorem powieści 'Zbrodnia i kara'?|Lew Tołstoj;Fiodor Dostojewski;Anton Czechow;Michaił Bułhakow|1
-Jaką walutą posługują się mieszkańcy Szwajcarii?|Euro;Koroną szwajcarską;Frankiem szwajcarskim;Dolarem|2
-Który hormon nazywany jest potocznie 'hormonem stresu'?|Insulina;Kortyzol;Melatonina;Serotonina|1
+Jak nazywa się podziemna sieć białych nitek będąca główną częścią grzyba?|Kapelusz;Trzon;Grzybnia;Kłącze|2
+Który ptak nielotny doskonale nurkuje i pływa w lodowatych wodach wokół Antarktydy?|Albatros;Pingwin;Pelikan;Kormoran|1
+W jakim kraju leżą miasta Barcelona, Walencja i Sewilla?|We Włoszech;W Portugalii;W Hiszpanii;We Francji|2
+Jak ma na imię renifer będący towarzyszem Kristoffa w 'Krainie Lodu'?|Sven;Bambi;Rudolf;Maximus|0
+Czym pokryta jest skóra większości ryb, na przykład karpia lub okonia?|Piórami;Futrem;Łuskami;Pancerzem chitynowym|2
+Ile boków ma figura zwana ośmiokątem?|Sześć;Siedem;Osiem;Dziesięć|2
+Jak nazywa się monumentalny egipski posąg z ciałem lwa i ludzką głową stojący przy piramidach w Gizie?|Kolos Rodyjski;Wielki Sfinks;Obelisk;Anubis|1
+W której grze planszowej rozgrywka kończy się okrzykiem 'Szach i mat'?|W warcabach;W szachach;W go;W domino|1
+Ile wynosi wynik dzielenia 54 przez 6?|7;8;9;11|2
+Jak po angielsku nazywa się owoc 'Gruszka'?|Pear;Plum;Peach;Grape|0
+Jak nazywa się tradycyjny japoński strój w formie długiej szaty przewiązywanej szerokim pasem?|Sari;Kimono;Kilt;Ponczo|1
+Która bajka Disneya opowiada o dziewczynie z Chin, która w przebraniu żołnierza wyrusza na wojnę zamiast chorego ojca?|Vaiana;Mulan;Merida Waleczna;Pocahontas|1
+Ile wynosi wynik mnożenia 15 razy 3?|35;40;45;55|2
+Jak nazywa się przyrząd optyczny służący do obserwacji odległych planet i gwiazd?|Mikroskop;Teleskop;Spektrometr;Kompas|1
+Która duża polska rzeka przepływa przez Wrocław oraz Szczecin?|Wisła;Odra;Bug;San|1
+Ile dni ma luty w roku przestępnym?|28;29;30;31|1
+Jak nazywa się stolica Austrii?|Zurych;Wiedeń;Salzburg;Praga|1
+Który z poniższych krajów NIE graniczy lądowo z Polską?|Litwa;Czechy;Węgry;Słowacja|2
+Jak nazywa się zjawisko odbijania fal dźwiękowych od przeszkody, pozwalające nietoperzom orientować się w ciemności?|Fotosynteza;Echolokacja;Grawitacja;Hibernacja|1
+Który kontynent leży w całości na półkuli południowej i pokrywa go gruby lądolód?|Australia;Antarktyda;Ameryka Południowa;Afryka|1
+Jak nazywa się słynny angielski pisarz, autor dramatu 'Romeo i Julia'?|Karol Dickens;William Szekspir;J.R.R. Tolkien;Daniel Defoe|1
+Które państwo słynie z fiordów, reniferów i zorzy polarnej na północy Europy?|Dania;Norwegia;Holandia;Belgia|1
+Ile wynosi 50 procent z liczby 84?|32;40;42;44|2
+Jak nazywa się największa wyspa leżąca na Morzu Śródziemnym?|Kreta;Sycylia;Cypr;Sardynia|1
+Który bohater mitologii greckiej wykonał dwanaście ciężkich prac?|Achilles;Herakles;Odyseusz;Perseusz|1
+W którym mieście znajduje się znana na całym świecie opera z dachem przypominającym białe żagle?|W Melbourne;W Sydney;W Auckland;W Tokio|1
+Jak nazywa się cienka warstwa gazu w stratosferze chroniąca Ziemię przed nadmiernym promieniowaniem ultrafioletowym?|Warstwa ozonowa;Powłoka węglowa;Strefa metanu;Jonosfera|0
+Który z poniższych wulkanów zniszczył starożytne miasto Pompeje w 79 roku n.e.?|Etna;Wezuwiusz;Stromboli;Fudżi|1
+Jak nazywa się najmniejsza jednostka budulcowa każdego żywego organizmu?|Tkanka;Komórka;Narząd;Układ|1
+Który kontynent ma największą liczbę ludności na świecie?|Afryka;Europa;Azja;Ameryka Północna|2
+Ile wynosi obwód trójkąta równobocznego o boku długości 9 cm?|18 cm;24 cm;27 cm;36 cm|2
+Który metal o czerwonawym odcieniu jest powszechnie stosowany do produkcji przewodów elektrycznych?|Cynk;Miedź;Ołów;Cyna|1
+W którym roku Polska odzyskała niepodległość po 123 latach zaborów?|1914;1918;1920;1925|1
+Jak nazywa się proces, w którym ciało stałe zamienia się bezpośrednio w gaz bez topnienia?|Parowanie;Skraplanie;Sublimacja;Krzepnięcie|2
+Który pierwiastek chemiczny oznaczany jest w układzie okresowym symbolem Fe?|Fluor;Fosfor;Żelazo;Ferm|2
+Który polski król założył w 1364 roku pierwszą uczelnię wyższą w Polsce – Akademię Krakowską?|Bolesław Chrobry;Kazimierz Wielki;Władysław Jagiełło;Zygmunt Stary|1
+Ile wynosi wartość potęgi 2 do potęgi czwartej?|8;12;16;32|2
 W jakim kraju znajduje się starożytne miasto Inków – Machu Picchu?|W Meksyku;W Peru;W Chile;W Kolumbii|1
-Kto skomponował słynne 'Cztery pory roku'?|Johann Sebastian Bach;Antonio Vivaldi;Wolfgang Amadeus Mozart;Giuseppe Verdi|1
-Jaki tytuł nosi pierwsza część filmowej trylogii 'Władca Pierścieni'?|Dwie wieże;Powrót króla;Drużyna Pierścienia;Niezwykła podróż|2
-W którym roku człowiek po raz pierwszy wylądował na Księżycu (misja Apollo 11)?|1961;1969;1972;1975|1
-Kto namalował słynny surrealistyczny obraz 'Trwałość pamięci' (miękkie zegary)?|Pablo Picasso;Salvador Dalí;Vincent van Gogh;Claude Monet|1
-Jak nazywa się najgłębszy rów oceaniczny na Ziemi?|Rów Jawajski;Rów Mariański;Rów Atakamski;Rów Portorykański|1
-W którym filmie pojawia się postać hakera Neo granego przez Keanu Reevesa?|Incepcja;Matrix;Blade Runner;Johnny Mnemonic|1
-Jaka jest stolica Kanady?|Toronto;Montreal;Ottawa;Vancouver|2
-Który polski reżyser otrzymał Oscara za całokształt twórczości w 2000 roku?|Roman Polański;Andrzej Wajda;Krzysztof Kieślowski;Jerzy Hoffman|1
-Ile kręgów liczy odcinek szyjny kręgosłupa u człowieka?|5;7;9;12|1
-Z jakiego państwa wywodzi się koncern motoryzacyjny Volvo?|Z Niemiec;Ze Szwecji;Z Finlandii;Z USA|1
-Kto napisał dramat 'Romeo i Julia' oraz 'Makbet'?|Molier;William Szekspir;Johann Wolfgang Goethe;Sofokles|1
-W jakim kraju odbyły się Mistrzostwa Świata w Piłce Nożnej w 2022 roku?|W Rosji;W Katarze;W Brazylii;W RPA|1
-Jak nazywa się skala używana do określania siły trzęsień ziemi?|Skala Beauforta;Skala Richtera;Skala Kelvina;Skala Mohsa|1
-Kto wcielił się w postać Tony'ego Starka (Iron Mana) w uniwersum Marvela?|Chris Evans;Robert Downey Jr.;Chris Hemsworth;Mark Ruffalo|1
-Jak nazywa się cieśnina oddzielająca Azję od Ameryki Północnej?|Cieśnina Magellana;Cieśnina Beringa;Cieśnina Kaletańska;Cieśnina Ormuz|1
-W którym roku upadł Mur Berliński?|1985;1989;1991;1993|1
-Jaki gaz szlachetny ma najniższą liczbę atomową (2) w układzie okresowym?|Neon;Argon;Hel;Krypton|2
-Kto jest autorem obrazu 'Dama z gronostajem' (łasiczką)?|Michał Anioł;Leonardo da Vinci;Rembrandt;Caravaggio|1
+Które naczynia krwionośne wyprowadzają krew z serca w stronę narządów ciała?|Żyły;Tętnice;Naczynia limfatyczne;Oskrzela|1
+W którym roku podpisano unię lubelską, tworząc Rzeczpospolitą Obojga Narodów?|1410;1525;1569;1683|2
+Jak nazywa się najgłębszy rów oceaniczny na Ziemi?|Rów Jawajski;Rów Mariański;Rów Atakamski;Rów Tonga|1
+Który kompozytor jest autorem słynnego cyklu koncertów skrzypcowych 'Cztery pory roku'?|Jan Sebastian Bach;Antonio Vivaldi;Wolfgang Amadeusz Mozart;Fryderyk Chopin|1
+Ile stopni wynosi suma kątów wewnętrznych w dowolnym czworokącie?|180 stopni;270 stopni;360 stopni;540 stopni|2
+Jak nazywa się cieśnina oddzielająca Azję od Ameryki Północnej?|Cieśnina Magellana;Cieśnina Beringa;Cieśnina Gibraltarska;Cieśnina Bosfor|1
+Który gaz stanowi około 78 procent objętości powietrza w ziemskiej atmosferze?|Tlen;Dwutlenek węgla;Azot;Argon|2
+Kto namalował obraz 'Dama z gronostajem', znajdujący się w Muzeum Czartoryskich w Krakowie?|Michał Anioł;Leonardo da Vinci;Rafael Santi;Jan Matejko|1
+W jakich jednostkach mierzy się opór elektryczny w układzie SI?|W woltach;W amperach;W omach;W watach|2
+Jak nazywa się stolica Kanady?|Toronto;Montreal;Ottawa;Vancouver|2
+Który polski pisarz zdobył w 1924 roku Literacką Nagrodę Nobla za powieść 'Chłopi'?|Henryk Sienkiewicz;Władysław Reymont;Bolesław Prus;Stefan Żeromski|1
+Ile kręgów liczy odcinek szyjny kręgosłupa zarówno u człowieka, jak i u żyrafy?|5;7;9;12|1
+Który stan skupienia materii nie ma ani własnego kształtu, ani stałej objętości?|Ciało stałe;Ciecz;Gaz;Kryształ|2
+W którym roku odbył się pierwszy w historii załogowy lot człowieka na Księżyc?|1961;1965;1969;1972|2
+Jak nazywa się skala służąca do określania twardości minerałów od talku do diamentu?|Skala Richtera;Skala Beauforta;Skala Mohsa;Skala Kelvina|2
+Które z poniższych państw leży jednocześnie w Europie i w Azji?|Grecja;Turcja;Bułgaria;Węgry|1
+Kto jest autorem powieści 'Kamienie na szaniec'?|Henryk Sienkiewicz;Aleksander Kamiński;Edmund Niziurski;Alfred Szklarski|1
+Ile wynosi 15 procent z liczby 200?|15;25;30;45|2
+Który organ w ciele człowieka produkuje żółć pomagającą w trawieniu tłuszczów?|Trzustka;Wątroba;Śledziona;Nerka|1
+W którym roku upadł Mur Berliński?|1980;1985;1989;1993|2
+Jak nazywa się największy księżyc Jowisza i całego Układu Słonecznego?|Europa;Tytan;Ganimedes;Io|2
+Która rzeka przepływa przez aż dziesięć państw Europy, w tym Wiedeń i Budapeszt?|Ren;Dunaj;Łaba;Sekwana|1
+Jak nazywa się siła działająca w cieczy pionowo do góry, dzięki której statki nie toną?|Siła tarcia;Siła wyporu;Siła bezwładności;Siła odśrodkowa|1
+Który z poniższych pierwiastków należy do grupy gazów szlachetnych?|Chlor;Hel;Sód;Siarka|1
 `;
 
-// --- RUNDA 4: ODSŁANIANIE HASŁA (60 HASEŁ: 12 PUL PO 5 HASEŁ) ---
+// --- RUNDA 4: ODSŁANIANIE HASŁA (50 haseł: po 5 na każdą z 10 pul) ---
 window.QUIZ_QUESTIONS_RAW.masterR2 = `
 ANIMACJA|KRAINA LODU
 DESERY|LODY WANILIOWE
@@ -233,698 +206,795 @@ PRZYGODA|WYSPA SKARBÓW
 OCEAN|GDZIE JEST NEMO
 ROŚLINY|ZIELONA DŻUNGLA
 STADION|RZUT KARNY
-KOSMOS|PIERWSZY CZŁOWIEK NA KSIĘŻYCU
+KOSMOS|LĄDOWANIE NA KSIĘŻYCU
 STAROŻYTNOŚĆ|EGIPSKIE PIRAMIDY
 KOMEDIA|EPOKA LODOWCOWA
 HIMALAJE|MOUNT EVEREST
 INSTRUMENTY|FORTEPIAN I SKRZYPCE
 HISTORIA|ZAMEK W MALBORKU
-KINO ŚWIATOWE|OJCIEC CHRZESTNY
-LITERATURA|WŁADCA PIERŚCIENI
-FIZYKA|TEORIA WZGLĘDNOŚCI
-HISTORIA|UPADEK MURU BERLIŃSKIEGO
-GEOGRAFIA|WIELKI KANION KOLORADO
-SERIALE|GRA O TRON
-MALARSTWO|GWIEŹDZISTA NOC VAN GOGHA
-ARCHITEKTURA|KRZYWA WIEŻA W PIZIE
-PODRÓŻE|KOLEJ TRANSSYBERYJSKA
-KULTURA|FESTIWAL FILMOWY W CANNES
 `;
 
-// --- RUNDA 3: SZYBKIE PISANIE (180 PYTAŃ: 12 PUL PO 15 PYTAŃ) ---
+// --- RUNDA 3: SZYBKIE PISANIE (150 pytań: 1–120 Pule 1–8 | 121–150 Pule 9–10 Trudniejsze) ---
 window.QUIZ_QUESTIONS_RAW.masterR3 = `
 Stolica Niemiec to...|Berlin
-Z jakiego owocu robi się suszone rodzynki?|Z winogron / Winogrona / Winogrono
-Mąż krowy na pastwisku to...|Byk
-Wynik dodawania dwóch liczb to...|Suma
-Ile boków ma każdy trójkąt?|Trzy / 3
+Z jakich owoców suszy się rodzynki?|Winogrona / Z winogron / Winogrono
+Samiec krowy na pastwisku to...|Byk
+Wynik dodawania dwóch liczb w matematyce to...|Suma
+Ile boków ma każdy trójkąt?|3 / Trzy
 Stolica Hiszpanii to...|Madryt
 Ostre narzędzie drwala do rąbania drewna to...|Siekiera / Topór
-Jak nazywa się drewniany domek dla pszczół w pasiece?|Ul
+Jak nazywa się domek dla pszczół w pasiece?|Ul
 Przeciwieństwo słowa 'zimno' to...|Ciepło / Gorąco
-Jak po angielsku jest 'pies'?|Dog
-W jakim sporcie odbija się rakietką lekką lotkę z piórkami?|Badminton / Kometka
-Z jakiego warzywa robi się chrupiące frytki?|Z ziemniaków / Ziemniaki / Ziemniak
-Jak ma na imię wyższy brat Mario w zielonej czapce?|Luigi
-Zwierzę gospodarskie z kręconym ogonkiem i ryjkiem, które mieszka w chlewiku to...|Świnia / Świnka / Prosię
-Który miesiąc w roku jest najkrótszy (ma 28 lub 29 dni)?|Luty
+Jak po angielsku nazywa się 'pies'?|Dog
+W jakim sporcie odbija się rakietką lekką lotkę nad siatką?|Badminton / W badmintonie / Kometka
+Z jakiego warzywa robi się tradycyjne frytki?|Ziemniaki / Z ziemniaków / Ziemniak
+Jak ma na imię wyższy brat hydraulika Mario w zielonej czapce?|Luigi
+Który miesiąc w roku ma najmniej dni?|Luty
 Słodki, gęsty przysmak produkowany przez pszczoły to...|Miód
-Jak nazywa się góra z kraterem, z której podczas erupcji wypływa gorąca lawa?|Wulkan
-Kto roznosi listy i paczki do skrzynek pocztowych?|Listonosz / Kurier
-Jaki kolor ma skórka dojrzałego banana?|Żółty
-Jak po angielsku jest 'drzewo'?|Tree
-Który nadgryziony owoc znajduje się w logo firmy Apple (iPhone)?|Jabłko / Apple
-Z jakiego białego proszku ze zmielonego zboża wyrabia się ciasto na chleb?|Z mąki / Mąka
-Jakim narządem oddychają pod wodą ryby?|Skrzelami / Skrzela
-Jak po angielsku jest cyfra 'jeden'?|One
-Która planeta nazywana jest 'Czerwoną Planetą'?|Mars
+Góra z kraterem, z której podczas erupcji wydobywa się gorąca lawa, to...|Wulkan
+Kto doręcza listy do skrzynek pocztowych?|Listonosz / Kurier
+Jak po angielsku nazywa się 'drzewo'?|Tree
+Z jakiego białego proszku ze zmielonego zboża wyrabia się ciasto na chleb?|Mąka / Z mąki
+Jakim narządem oddychają ryby pod wodą?|Skrzela / Skrzelami
+Która planeta nazywana jest Czerwoną Planetą?|Mars
 Wynik mnożenia w matematyce to...|Iloczyn
-Przedmiot szkolny, na którym uczymy się o dawnych królach i bitwach to...|Historia
-Słodkie białe kryształki sypane łyżeczką do herbaty to...|Cukier
-Jak po angielsku jest 'księżyc'?|Moon
-Kto napisał baśnie 'Brzydkie Kaczątko' oraz 'Królowa Śniegu'?|Andersen / Hans Christian Andersen
+Przedmiot szkolny o dawnych królach, bitwach i cywilizacjach to...|Historia
+Jak po angielsku nazywa się 'księżyc'?|Moon
+Nazwisko duńskiego autora baśni 'Brzydkie Kaczątko' i 'Królowa Śniegu' to...|Andersen / Hans Christian Andersen
 Największy ocean na Ziemi to Ocean...|Spokojny / Pacyfik
-Stolica naszych południowych sąsiadów - Czech to...|Praga
+Stolica naszych południowych sąsiadów – Czech – to...|Praga
 Wynik odejmowania w matematyce to...|Różnica
-Jak po angielsku jest 'dziewczynka'?|Girl
-Drzewo iglaste, które ubieramy w bombki i światełka na Boże Narodzenie to...|Choinka / Świerk / Jodła
-Zielony płaz, który kumka w stawie i wysoko skacze to...|Żaba / Ropucha
-W jakich stopniach mierzymy temperaturę powietrza w Polsce?|Celsjusza / Celsjusz
+Jak po angielsku nazywa się 'dziewczynka'?|Girl
+Zielony płaz, który kumka w stawie i daleko skacze, to...|Żaba / Ropucha
+W jakiej skali stopni mierzymy temperaturę powietrza w Polsce?|Celsjusza / Celsjusz
 Gaz w powietrzu niezbędny ludziom i zwierzętom do oddychania to...|Tlen
-Duży ptak wodny z długą wygiętą szyją i białymi piórami pływający po stawie to...|Łabędź
+Duży biały ptak wodny z długą wygiętą szyją to...|Łabędź
 Biały drapieżnik żyjący wśród lodów Arktyki to...|Niedźwiedź polarny / Niedźwiedź
 Ile to jest 12 razy 12?|144
 Stolica Francji to...|Paryż
-Jak po angielsku jest 'słońce'?|Sun
-Słynny polski piłkarz grający w reprezentacji z numerem 9 to...|Lewandowski / Robert Lewandowski
-Urządzenie z obiektywem służące do robienia zdjęć to...|Aparat / Aparat fotograficzny
-W jakim państwie stoi Wieża Eiffla?|We Francji / Francja
-Najzimniejszy, całkowicie skuty lodem kontynent na południu Ziemi to...|Antarktyda
-Twarde białe części tworzące szkielet człowieka to...|Kości
+Jak po angielsku nazywa się 'słońce'?|Sun
+Nazwisko słynnego polskiego napastnika grającego z numerem 9 w reprezentacji to...|Lewandowski / Robert Lewandowski
+W jakim państwie stoi Wieża Eiffla?|Francja / We Francji
+Najzimniejszy kontynent na południu Ziemi to...|Antarktyda
 Gdynia i Sopot tworzą Trójmiasto razem z...|Gdańskiem / Gdańsk
-Przenośny, zamykany komputer osobisty z ekranem i klawiaturą to...|Laptop / Notebook
-Zamarznięta woda zwisająca zimą z brzegu dachu w kształcie stożka to...|Sopel / Sopel lodu
-Jak po angielsku jest 'samochód'?|Car / Auto
-Ptak, który podrzuca swoje jajka do cudzych gniazd i woła 'ku-ku' to...|Kukułka
+Przenośny komputer z otwieranym ekranem i klawiaturą to...|Laptop / Notebook
+Stożek zamarzniętej wody zwisający zimą z krawędzi dachu to...|Sopel / Sopel lodu
+Ptak podrzucający swoje jajka do cudzych gniazd to...|Kukułka
 Ile groszy mieści się w jednej złotówce?|100 / Sto
 Stolica Polski to...|Warszawa
-Afrykańskie zwierzę w czarno-białe paski podobne do konia to...|Zebra
+Afrykańskie zwierzę w czarno-białe paski spokrewnione z koniem to...|Zebra
 Jak ma na imię mały, różowy przyjaciel Kubusia Puchatka?|Prosiaczek
 Ile to jest 9 razy 5?|45
-Ptak domowy, który znosi jajka w kurniku i gdacze to...|Kura / Kwoka
-Jak po angielsku jest 'mleko'?|Milk
-Zwierzę nazywane królem zwierząt (z wielką grzywą) to...|Lew
-Kolorowy łuk na niebie po deszczu, gdy świeci słońce to...|Tęcza
-Ile godzin ma jedna pełna doba?|24 / Dwadzieścia cztery
-Czerwony owad w czarne kropki na skrzydełkach to...|Biedronka
-Jak po angielsku jest 'dom'?|House / Home
-Z czego dzieci budują babki i zamki na nadmorskiej plaży?|Z piasku / Piasek
-Kto jeździ czerwonym wozem na sygnale i gasi pożary?|Strażak / Straż pożarna
-Ile boków ma każdy kwadrat?|4 / Cztery
-Jak nazywa się okręt zdolny pływać głęboko pod powierzchnią wody?|Łódź podwodna / Okręt podwodny
-Jak po angielsku jest 'woda'?|Water
-Małe stworzenie, które nosi spiralną muszlę na grzbiecie i powoli pełza to...|Ślimak
-Ile to jest 100 odjąć 25?|75
-W jakim miesiącu obchodzimy Mikołajki i Święta Bożego Narodzenia?|W grudniu / Grudzień
-Ile centymetrów ma dokładnie jeden metr?|100 / Sto
-Jak nazywa się młode konia i klaczy?|Źrebak / Źrebię
+Jak po angielsku nazywa się 'mleko'?|Milk
+Wielki afrykański kot nazywany królem zwierząt to...|Lew
+Kolorowy łuk na niebie pojawiający się po deszczu przy słońcu to...|Tęcza
+Ile godzin ma jedna doba?|24 / Dwadzieścia cztery
+Czerwony owad w czarne kropki zjadający mszyce to...|Biedronka
+Jak po angielsku nazywa się 'dom'?|House / Home
+Kto przyjeżdża czerwonym wozem na sygnale do pożaru?|Strażak / Straż pożarna
+Statek zdolny do zanurzania się i pływania pod powierzchnią morza to...|Okręt podwodny / Łódź podwodna
+Jak po angielsku nazywa się 'woda'?|Water
+Mięczak noszący spiralną muszlę na grzbiecie to...|Ślimak
+Ile to jest 100 minus 25?|75
+W którym miesiącu obchodzimy Mikołajki i Boże Narodzenie?|Grudzień / W grudniu
+Ile centymetrów mieści się w jednym metrze?|100 / Sto
+Jak nazywa się młode konia?|Źrebak / Źrebię
 Ile minut ma jedna godzina?|60 / Sześćdziesiąt
-Jak po angielsku jest 'ryba'?|Fish
-Kolor powstający ze zmieszania farby czerwonej i białej to...|Różowy / Róż
-Zwierzę z długimi uszami, które uwielbia chrupać marchewkę to...|Królik / Zając
+Jak po angielsku nazywa się 'ryba'?|Fish
+Kolor powstający po zmieszaniu farby czerwonej i białej to...|Różowy / Róż
 Ile to jest 7 razy 7?|49
-Czerwone warzywo z zieloną szypułką, z którego robi się ketchup i zupę pomidorową to...|Pomidor
-Czym zapinamy kurtkę (ma drobne ząbki i metalowy suwak)?|Zamek / Suwak / Zamek błyskawiczny
-Jak po angielsku jest kolor 'czarny'?|Black
-Jak nazywa się biała kula ze śniegu z marchewkowym nosem lepiona zimą na podwórku?|Bałwan / Bałwanek
-Ile łap ma każdy pies i kot?|4 / Cztery
+Czerwone warzywo z zieloną szypułką będące podstawą ketchupu to...|Pomidor
+Zapięcie w kurtce z drobnymi ząbkami przesuwane uchwytem to...|Suwak / Zamek / Zamek błyskawiczny
+Jak po angielsku nazywa się kolor 'czarny'?|Black
 Szklany zbiornik z wodą i roślinkami dla domowych rybek to...|Akwarium
-Przeciwieństwo słowa 'dzień' to...|Noc
-Jak po angielsku jest 'ptak'?|Bird
-Gra zespołowa, w której przebija się piłkę dłońmi nad wysoką siatką to...|Siatkówka
-Ile to jest 50 dodać 50?|100 / Sto
-Lekarz, do którego idziemy wyleczyć ząb i założyć plombę to...|Dentysta / Stomatolog
-Jak po angielsku jest 'chłopiec'?|Boy
-Duży zielony owoc z czerwoną, bardzo soczystą i słodką zawartością oraz czarnymi pestkami to...|Arbuz
-Z czego ubija się tradycyjne masło?|Ze śmietany / Z mleka / Śmietanka
-Ile dni ma jeden pełny tydzień?|7 / Siedem
-Gorąca kraina pełna wydm piasku, wielbłądów i oaz to...|Pustynia
-Jak nazywa się samica lwa?|Lwica
+Jak po angielsku nazywa się 'ptak'?|Bird
+Gra zespołowa polegająca na przebijaniu piłki dłońmi nad wysoką siatką to...|Siatkówka
+Lekarz zajmujący się leczeniem zębów to...|Dentysta / Stomatolog
+Jak po angielsku nazywa się 'chłopiec'?|Boy
+Duży zielony owoc z bardzo soczystym czerwonym miąższem i czarnymi pestkami to...|Arbuz
+Z jakiego produktu mlecznego ubija się tradycyjne masło?|Śmietana / Ze śmietany / Śmietanka / Mleko / Z mleka
+Gorąca, sucha kraina pełna wydm piaskowych i oaz to...|Pustynia
+Samica lwa to...|Lwica
 Ile to jest 8 razy 5?|40 / Czterdzieści
-Jak po angielsku jest 'król'?|King
-Najzimniejsza pora roku ze śniegiem i mrozem to...|Zima
-Roślina pustynna, która zamiast zwykłych liści ma ostre kolce (ciernie) to...|Kaktus
-Ile palców u jednej dłoni ma człowiek?|5 / Pięć
-Jak po angielsku jest cyfra 'dwa'?|Two
-Domowy pupil, który mruczy, pije mleko i łapie myszy to...|Kot / Kotek
-Ile to jest 90 odjąć 30?|60
-Człowiek, który w specjalnym skafandrze leci rakietą w przestrzeń kosmiczną to...|Astronauta / Kosmonauta
-Urządzenie w kuchni z szybą, w którym pieczemy w wysokiej temperaturze ciasta to...|Piekarnik / Piec
-Jak po angielsku jest kolor 'czerwony'?|Red
-Co zakładamy zimą na dłonie, żeby nie marzły nam palce?|Rękawiczki / Rękawice
+Jak po angielsku nazywa się 'król'?|King
+Roślina pustynna pokryta kolcami zamiast zwykłych liści to...|Kaktus
+Ile to jest 90 minus 35?|55
+Człowiek lecący statkiem kosmicznym poza atmosferę Ziemi to...|Astronauta / Kosmonauta
+Urządzenie w kuchni z szybą służące do pieczenia ciast i zapiekanek to...|Piekarnik / Piec
 Ile to jest 6 razy 6?|36
-Duży kopiec z igieł sosnowych w lesie zbudowany przez mrówki to...|Mrowisko
-Jak po angielsku jest 'siostra'?|Sister
-Który zmysł człowieka znajduje się w oczach i pozwala widzieć?|Wzrok
-Z jakiego owocu cytrusowego wyciska się sok pomarańczowy?|Z pomarańczy / Pomarańcza
-Ile kół ma klasyczna hulajnoga dwukołowa?|2 / Dwa
-Co nosimy na nosie ze szkłami, aby lepiej widzieć lub chronić oczy przed słońcem?|Okulary
-Jak po angielsku jest cyfra 'trzy'?|Three
-Co jesienią żółknie i opada z drzew na ziemię?|Liście
-Kwaśny, żółty owoc cytrusowy dodawany do herbaty to...|Cytryna
+Duży kopiec z igieł sosnowych w lesie zbudowany przez pracowite owady to...|Mrowisko
+Jak po angielsku nazywa się 'siostra'?|Sister
+Z jakiego owocu cytrusowego wyciska się słodki, jaskrawy sok śniadaniowy?|Pomarańcza / Z pomarańczy
+Kwaśny żółty owoc cytrusowy często dodawany do herbaty to...|Cytryna
 Ile to jest 4 razy 8?|32
-Jak po angielsku jest 'chleb'?|Bread
-Miejsce z wielkim ekranem i fotelami, do którego chodzimy oglądać filmy i jeść popcorn to...|Kino
-Ile miesięcy ma jeden rok?|12 / Dwanaście
-Zwierzę z Afryki w łatki o najdłuższej szyi na świecie to...|Żyrafa
-Z czego pszczoły budują plastry w ulu (oraz robi się z tego świece)?|Z wosku / Wosk
-Ile to jest 200 podzielić przez 2?|100 / Sto
-Białe warzywo w łupinach podzielone na ostro pachnące ząbki (dodawane do masła czosnkowego) to...|Czosnek
-Jak nazywa się kraina na północy Finlandii, w której mieszka Święty Mikołaj?|Laponia
-Wodne zwierzę z twardym pancerzem i szczypcami, które chodzi bokiem lub do tyłu to...|Krab / Rak
-Ile to jest 15 dodać 15?|30 / Trzydzieści
+Jak po angielsku nazywa się 'chleb'?|Bread
+Zwierzę z Afryki o najdłuższej szyi na świecie to...|Żyrafa
+Substancja wytwarzana przez pszczoły do budowy plastrów w ulu to...|Wosk / Z wosku
+Ile to jest 240 podzielone przez 2?|120
+Białe warzywo dzielące się na ostro pachnące ząbki to...|Czosnek
+Mroźna kraina na północy Finlandii kojarzona ze Świętym Mikołajem to...|Laponia
+Skorupiak ze szczypcami poruszający się bokiem po dnie morza to...|Krab / Rak
 Ile to jest 3 razy 9?|27
-Zwierzę leśne z ostrymi kolcami na grzbiecie, które zwija się w kulkę to...|Jeż
-Po czym nauczyciel pisze kredą w tradycyjnej sali szkolnej?|Po tablicy / Tablica
-Ile to jest 10 razy 10?|100 / Sto
-Jak nazywa się sieć utkana z cienkich nitek przez pająka w rogu pokoju?|Pajęczyna / Sieć
-Jak nazywa się zimowy pojazd z płozami ciągnięty po śniegu przez renifery lub konie?|Sanie / Sanki
-Ile pór roku mamy w Polsce?|4 / Cztery
-Jak po angielsku jest kolor 'biały'?|White
-Z jakich palonych ziaren parzy się czarną poranną kawę?|Z ziaren kawy / Z kawy / Kawa
-Ile to jest 50 odjąć 20?|30
-Jak nazywa się obracająca się na podstawce kula będąca modelem Ziemi?|Globus
-Jak nazywa się posiłek jedzony wieczorem przed snem?|Kolacja
-Ile to jest 20 dodać 40?|60
-Jak nazywa się przyrząd ze szczecinką, na który nakładamy pastę do mycia zębów?|Szczoteczka / Szczoteczka do zębów
-Jaki kolor powstaje po zmieszaniu farby żółtej i czerwonej?|Pomarańczowy / Pomarańczowym
-Ile minut ma pół godziny?|30 / Trzydzieści
-Jak nazywa się biały napój od krowy dodawany do płatków śniadaniowych?|Mleko
-Jak po angielsku powiesz liczbę 'Pięć'?|Five
-Co otwieramy nad głową na spacerze, gdy zaczyna padać ulewny deszcz?|Parasol / Parasolkę
-Jak nazywa się stolica Rosji?|Moskwa
+Leśny ssak pokryty kolcami, który w zagrożeniu zwija się w kulkę, to...|Jeż
+Sieć utkana z cienkich nitek przez pająka w rogu pokoju to...|Pajęczyna / Sieć
+Zimowy pojazd na płozach ciągnięty przez konie lub renifery to...|Sanie / Sanki
+Obracająca się na podstawce kula będąca modelem Ziemi to...|Globus
+Kolor powstający po zmieszaniu farby żółtej i czerwonej to...|Pomarańczowy
+Ile minut trwa pół godziny?|30 / Trzydzieści
+Stolica Rosji to...|Moskwa
+Stolica Włoch to...|Rzym
+Jak po angielsku nazywa się 'szkoła'?|School
+Najwyższy szczyt Polski leżący w Tatrach to...|Rysy
+Który zmysł człowieka pozwala wyczuwać zapachy?|Węch
+Jak nazywa się kontynent, na którym leżą Brazylia i Argentyna?|Ameryka Południowa
+W jakim mieście stoi słynny posąg Statuy Wolności?|Nowy Jork / W Nowym Jorku
+Ile to jest 11 razy 6?|66
+Jak nazywa się młode krowy?|Cielę / Cielak
+Z jakiego ziarna powstaje tradycyjna mąka na chleb żytni?|Żyto / Z żyta
+Jak nazywa się największe zwierzę na Ziemi żyjące w oceanach?|Płetwal błękitny / Wieloryb
+Jak po angielsku nazywa się 'kwiat'?|Flower
+Który miesiąc następuje bezpośrednio po sierpniu?|Wrzesień
+Ile to jest 72 podzielone przez 8?|9 / Dziewięć
+Jak nazywa się stolica Norwegii?|Oslo
 Stolica Japonii to...|Tokio
-Pierwiastek chemiczny o symbolu O to...|Tlen
+Symbol chemiczny tlenu w układzie okresowym to...|O
 Waluta obowiązująca w Czechach to...|Korona / Korona czeska
-Nazwisko polskiego astronoma, który 'wstrzymał Słońce i ruszył Ziemię' to...|Kopernik / Mikołaj Kopernik
+Nazwisko astronoma urodzonego w Toruniu, autora teorii heliocentrycznej, to...|Kopernik / Mikołaj Kopernik
 Najdłuższa rzeka w Ameryce Południowej to...|Amazonka
 Ile stopni ma kąt prosty?|90 / Dziewięćdziesiąt
-W jakim mieście stoi Koloseum?|W Rzymie / Rzym
-Kto napisał dramat 'Dziady'?|Mickiewicz / Adam Mickiewicz
-Najwyższy szczyt w polskich Tatrach to...|Rysy
-Jaki gaz stanowi większość (78%) powietrza na Ziemi?|Azot
-Stolica Norwegii to...|Oslo
-Nazwisko reżysera filmu 'Lista Schindlera' i 'Park Jurajski' to...|Spielberg / Steven Spielberg
-W jakim państwie leży miasto Dubaj?|ZEA / Zjednoczone Emiraty Arabskie
-Jak nazywa się satelita naturalny Ziemi?|Księżyc
-Ile wynosi pierwiastek kwadratowy ze 100?|10 / Dziesięć
+Nazwisko autora dramatu 'Dziady' to...|Mickiewicz / Adam Mickiewicz
+Gaz stanowiący około 78 procent ziemskiej atmosfery to...|Azot
+Nazwisko reżysera filmów 'Park Jurajski' i 'Lista Schindlera' to...|Spielberg / Steven Spielberg
+Państwo, w którym leży słynne miasto Dubaj, to...|ZEA / Zjednoczone Emiraty Arabskie
 Stolica Kanady to...|Ottawa
-Kto namalował obraz 'Mona Lisa'?|Leonardo da Vinci / Da Vinci
-Jak nazywa się nauka o dziedziczeniu i genach?|Genetyka
-W którym roku wybuchła I wojna światowa?|1914
+Imię i nazwisko twórcy obrazu 'Mona Lisa' to...|Leonardo da Vinci / Da Vinci
+Dziedzina biologii zajmująca się badaniem genów i dziedziczenia to...|Genetyka
+Rok wybuchu I wojny światowej to...|1914
 Stolica Portugalii to...|Lizbona
-Jak nazywa się najtwardszy naturalny minerał na Ziemi?|Diament
-Ile minut ma jedna czwarta godziny (kwadrans)?|15 / Piętnaście
-Jak nazywa się waluta Japonii?|Jen / Yen
-Który kontynent jest największy pod względem powierzchni?|Azja
+Najtwardszy naturalny minerał na Ziemi to...|Diament
+Waluta obowiązująca w Japonii to...|Jen / Yen
+Największy kontynent na świecie pod względem powierzchni to...|Azja
 Stolica Argentyny to...|Buenos Aires
-Jak nazywa się przyrząd do mierzenia ciśnienia atmosferycznego?|Barometr
-W jakim mieście znajduje się muzeum Luwr?|W Paryżu / Paryż
-Kto napisał powieść 'Lalka'?|Bolesław Prus / Prus
-Ile lat liczy jedno stulecie (wiek)?|100 / Sto
+Przyrząd służący do pomiaru ciśnienia atmosferycznego to...|Barometr
+Miasto, w którym znajduje się słynne muzeum Luwr, to...|Paryż / W Paryżu
+Nazwisko autora powieści 'Lalka' to...|Prus / Bolesław Prus
 Stolica Grecji to...|Ateny
+Pierwiastek chemiczny o symbolu Au to...|Złoto
+Ile wynosi pierwiastek kwadratowy z liczby 144?|12 / Dwanaście
+Największa pustynia gorąca na Ziemi to...|Sahara
+Najdłuższa rzeka płynąca w Europie to...|Wołga
+Rok chrztu Polski za panowania Mieszka I to...|966
+Siedziba rządu i parlamentu Szwajcarii to...|Berno
+Najwyższy szczyt Afryki to...|Kilimandżaro
 `;
 
-// --- RUNDA 6: RYZYKO - 24 PYTANIA RODZINA / DOROŚLI (PO 2 NA KAŻDĄ Z 12 PUL!) ---
+// --- RUNDA 5: POSTAW NA MILION (150 unikalnych pytań Standard + 50 Jaś = zero powtórek w 10 pulach!) ---
+window.QUIZ_QUESTIONS_RAW.millionStandardQ4Opts = `
+Które miasto jest stolicą Australii?|Sydney;Melbourne;Canberra;Brisbane|2
+W którym roku odbyła się bitwa pod Grunwaldem?|1385;1410;1492;1525|1
+Jaki pierwiastek chemiczny oznaczany jest symbolem Au?|Srebro;Złoto;Miedź;Aluminium|1
+Ile strun ma klasyczna gitara akustyczna?|Cztery;Pięć;Sześć;Osiem|2
+Która planeta Układu Słonecznego słynie z Wielkiej Czerwonej Plamy?|Mars;Jowisz;Saturn;Wenus|1
+Kto napisał dramat 'Balladyna'?|Adam Mickiewicz;Juliusz Słowacki;Bolesław Prus;Henryk Sienkiewicz|1
+W jakim państwie leży słynny wulkan Fudżi?|W Chinach;W Japonii;W Korei Południowej;W Indonezji|1
+Ile wynosi pole kwadratu o obwodzie 20 cm?|16 cm²;20 cm²;25 cm²;100 cm²|2
+Który ocean zajmuje największą powierzchnię na Ziemi?|Atlantycki;Indyjski;Spokojny;Arktyczny|2
+Jak nazywa się przyrząd do pomiaru ciśnienia atmosferycznego?|Termometr;Barometr;Higrometr;Anemometr|1
+Który z poniższych ssaków składa jaja?|Kangur;Dziobak;Koala;Wydra|1
+W jakim mieście mieści się muzeum Luwr?|W Rzymie;W Londynie;W Paryżu;W Madrycie|2
+Ile wynosi pierwiastek kwadratowy z liczby 169?|11;12;13;14|2
+Kto skomponował 'Odę do radości'?|Wolfgang Amadeusz Mozart;Fryderyk Chopin;Ludwig van Beethoven;Jan Sebastian Bach|2
+Nad jaką rzeką leży stolica Wielkiej Brytanii – Londyn?|Nad Sekwaną;Nad Tamizą;Nad Renem;Nad Dunajem|1
+W którym roku człowiek po raz pierwszy stanął na Księżycu?|1961;1965;1969;1974|2
+Który gaz stanowi największą część ziemskiego powietrza?|Tlen;Dwutlenek węgla;Azot;Wodór|2
+Jak nazywa się najmniejsze państwo świata?|Monako;San Marino;Watykan;Liechtenstein|2
+Na terytorium którego państwa leży pustynia Atakama?|Brazylii;Chile;Meksyku;Egiptu|1
+Kto jest autorem powieści 'Stary człowiek i morze'?|Ernest Hemingway;George Orwell;Mark Twain;Jack London|0
+Jaki metal ma symbol chemiczny Ag?|Złoto;Srebro;Rtęć;Platyna|1
+W którym polskim mieście na Rynku Głównym stoją Sukiennice?|W Warszawie;W Krakowie;W Poznaniu;W Gdańsku|1
+Ile stopni wynosi suma kątów wewnętrznych trójkąta?|90 stopni;180 stopni;270 stopni;360 stopni|1
+Która planeta znajduje się najbliżej Słońca?|Wenus;Merkury;Mars;Ziemia|1
+Jak nazywa się stolica Hiszpanii?|Barcelona;Madryt;Sewilla;Walencja|1
+Kto namalował słynny cykl obrazów 'Słoneczniki'?|Claude Monet;Vincent van Gogh;Pablo Picasso;Rembrandt|1
+Ile ścian bocznych ma graniastosłup sześciokątny?|Cztery;Pięć;Sześć;Osiem|2
+W jakim sporcie zimowym zawodnicy suną granitowe kamienie po lodzie?|W hokeju;W curlingu;W saneczkarstwie;W biathlonie|1
+Które zwierzę jest symbolem Białowieskiego Parku Narodowego?|Łoś;Żubr;Niedźwiedź;Ryś|1
+Jak nazywa się najwyższy szczyt Karkonoszy?|Rysy;Śnieżka;Babia Góra;Trzy Korony|1
+Z jakiego państwa wywodzi się taniec flamenco?|Z Włoch;Z Hiszpanii;Z Portugalii;Z Grecji|1
+Ile sekund mieści się w jednej pełnej godzinie?|600;1800;3600;7200|2
+Która struktura w uchu wewnętrznym odpowiada głównie za zmysł równowagi?|Ślimak;Błędnik;Błona bębenkowa;Strzemiączko|1
+Jak nazywa się waluta obowiązująca w Japonii?|Juan;Jen;Won;Bat|1
+W którym roku zakończyła się II wojna światowa?|1939;1944;1945;1948|2
+Kto napisał epopeję narodową 'Pan Tadeusz'?|Juliusz Słowacki;Adam Mickiewicz;Cyprian Kamil Norwid;Aleksander Fredro|1
+Które państwo w Ameryce Południowej słynie z ruin Machu Picchu?|Argentyna;Peru;Boliwia;Kolumbia|1
+Ile wynosi wynik działania 18 razy 5?|80;85;90;95|2
+Który z poniższych pierwiastków jest w temperaturze pokojowej ciekłym metalem?|Cynk;Ołów;Rtęć;Miedź|2
+Jak nazywa się cieśnina oddzielająca Europę od Afryki przy Hiszpanii?|Bosfor;Gibraltarska;Magellana;Beringa|1
+Który król Polski pokonał wojska tureckie pod Wiedniem w 1683 roku?|Stefan Batory;Jan III Sobieski;Kazimierz Wielki;Zygmunt Stary|1
+Jak nazywa się największe jezioro na świecie, nazywane też morzem?|Bajkał;Morze Kaspijskie;Jezioro Wiktorii;Jezioro Górne|1
+Który hormon wytwarzany przez trzustkę obniża poziom cukru we krwi?|Adrenalina;Insulina;Melatonina;Tyroksyna|1
+W jakim mieście znajduje się bazylika Sagrada Família zaprojektowana przez Gaudiego?|W Madrycie;W Barcelonie;W Walencji;W Sewilli|1
+Ile wynosi 25 procent z liczby 320?|60;70;80;90|2
+Jak nazywa się polski noblista, autor powieści 'Quo vadis'?|Władysław Reymont;Henryk Sienkiewicz;Bolesław Prus;Czesław Miłosz|1
+Który z poniższych kontynentów leży w całości na półkuli południowej?|Afryka;Australia;Azja;Ameryka Południowa|1
+Jak nazywa się proces, w którym rośliny wytwarzają pokarm przy udziale światła?|Oddychanie;Fotosynteza;Fermentacja;Parowanie|1
+W którym kraju znajduje się starożytne miasto Petra wykute w różowej skale?|W Egipcie;W Jordanii;W Maroku;W Tunezji|1
+Ile wynosi wartość potęgi 3 do potęgi trzeciej?|9;18;27;81|2
+Jak nazywa się największy księżyc planety Saturn?|Europa;Tytan;Ganimedes;Fobos|1
+Które polskie miasto słynie z festiwalu polskiej piosenki w amfiteatrze?|Sopot;Opole;Kielce;Rzeszów|1
+Który z tych instrumentów muzycznych ma klawisze i struny uderzane młoteczkami?|Akordeon;Fortepian;Organy piszczałkowe;Harfa|1
+Jak nazywa się stolica Norwegii?|Sztokholm;Oslo;Helsinki;Kopenhaga|1
+Ile boków ma dziesięciokąt?|Osiem;Dziewięć;Dziesięć;Dwanaście|2
+Który narząd ludzkiego ciała oczyszcza krew ze szkodliwych substancji i produkuje mocz?|Wątroba;Nerka;Śledziona;Żołądek|1
+W jakim kraju leży słynny posąg Chrystusa Odkupiciela w Rio de Janeiro?|W Argentynie;W Brazylii;W Meksyku;W Portugalii|1
+Który żeglarz jako pierwszy opłynął Przylądek Dobrej Nadziei i dotarł drogą morską do Indii?|Krzysztof Kolumb;Vasco da Gama;Marco Polo;James Cook|1
+Ile wynosi pole prostokąta o bokach 7 cm i 9 cm?|32 cm²;56 cm²;63 cm²;72 cm²|2
+Który z poniższych ptaków jest nielotem żyjącym naturalnie w Australii?|Kondor;Emu;Pelikan;Bocian|1
+W którym roku Polska przystąpiła do Unii Europejskiej?|1999;2001;2004;2007|2
+Jak nazywa się słynna rzeka przepływająca przez Rzym?|Pad;Tyber;Arno;Dunaj|1
+Który z poniższych gazów wykorzystuje się do napełniania żarówek i należy do gazów szlachetnych?|Tlen;Argon;Wodór;Metan|1
+Jak nazywa się znany włoski kompozytor, twórca 'Czterech pór roku'?|Giuseppe Verdi;Antonio Vivaldi;Giacomo Puccini;Niccolò Paganini|1
+Ile metrów mieści się w dwóch i pół kilometra?|250;2050;2500;25000|2
+Która z tych pustyń znajduje się na kontynencie azjatyckim?|Sahara;Gobi;Kalahari;Atakama|1
+Jak nazywał się pierwszy sztuczny satelita Ziemi wystrzelony w 1957 roku?|Apollo 1;Sputnik 1;Voyager 1;Wostok 1|1
+Który z poniższych polskich królów widnieje na banknocie o nominale 100 złotych?|Mieszko I;Władysław Jagiełło;Kazimierz Wielki;Bolesław Chrobry|1
+Jak nazywa się największy gryzoń żyjący obecnie na świecie?|Bóbr europejski;Kapibara wielka;Jeżozwierz;Nutria|1
+Ile wynosi wynik dzielenia 144 przez 12?|10;11;12;14|2
+W jakim mieście w Polsce znajduje się słynny Park Śląski i Planetarium Śląskie?|W Gliwicach;W Chorzowie;W Sosnowcu;W Tychach|1
+Który pierwiastek chemiczny oznaczany jest symbolem Na?|Azot;Sód;Neon;Nikiel|1
+Jak nazywa się słynny angielski detektyw mieszkający przy Baker Street 221B?|Herkules Poirot;Sherlock Holmes;Filip Marlowe;Ojciec Brown|1
+W jakim państwie leży słynny kanał łączący Ocean Atlantycki z Oceanem Spokojnym?|W Egipcie;W Panamie;W Meksyku;W Kolumbii|1
+Ile wynosi 40 procent z liczby 250?|80;90;100;120|2
+Który z poniższych dinozaurów miał charakterystyczne kostne płyty wzdłuż grzbietu?|Tyranozaur;Stegozaur;Welociraptor;Diplodok|1
+Jak nazywa się najwyższy czynny wulkan w Europie, leżący na Sycylii?|Wezuwiusz;Etna;Stromboli;Hekla|1
+Który organ człowieka pompuje krew przez dwa obiegi – mały i duży?|Płuca;Serce;Wątroba;Mózg|1
+W którym roku Polska przyjęła chrzest za panowania księcia Mieszka I?|966;1000;1025;1138|0
+Jak nazywa się stolica Kanady?|Toronto;Montreal;Ottawa;Vancouver|2
+Ile stopni ma kąt półpełny?|90 stopni;120 stopni;180 stopni;360 stopni|2
+Który polski wynalazca skonstruował lampę naftową w XIX wieku?|Mikołaj Kopernik;Ignacy Łukasiewicz;Jan Szczepanik;Stefan Banach|1
+Z jakiego kraju pochodzi słynny pisarz baśni Hans Christian Andersen?|Ze Szwecji;Z Danii;Z Norwegii;Z Niemiec|1
+Która z tych rzek jest najdłuższą rzeką Ameryki Północnej (wraz z Missouri)?|Rio Grande;Missisipi;Kolorado;Jukon|1
+Ile krawędzi posiada każdy graniastosłup czworokątny, np. sześcian?|6;8;10;12|3
+Jak nazywa się pasmo górskie w Polsce z najwyższym szczytem Tarnicą?|Tatry;Bieszczady;Pieniny;Sudety|1
+Który z poniższych metali ma symbol chemiczny Cu?|Węgiel;Miedź;Wapń;Chrom|1
+W jakim sporcie olimpijskim rozgrywa się turnieje Wielkiego Szlema w Melbourne, Paryżu, Londynie i Nowym Jorku?|W golfie;W tenisie ziemnym;W lekkoatletyce;W badmintonie|1
+Jak nazywa się stolica Portugalii?|Porto;Lizbona;Faro;Madryt|1
+Ile wynosi wynik działania 7 + 8 razy 3?|45;31;27;36|1
+`;
+
+window.QUIZ_QUESTIONS_RAW.millionStandardQ3Opts = `
+Które z tych polskich jezior jest najgłębsze?|Śniardwy;Hańcza;Morskie Oko|1
+Ile kręgów szyjnych ma żyrafa?|Siedem;Dwanaście;Dwadzieścia|0
+W jakim kraju wynaleziono papier i kompas?|W Egipcie;W Chinach;W Grecji|1
+Która kość w ludzkim szkielecie jest najdłuższa?|Kość ramienna;Kość udowa;Kość piszczelowa|1
+Jaką literą w systemie rzymskim zapisuje się liczbę 500?|C;D;M|1
+Na którym kontynencie znajduje się najwięcej państw?|W Azji;W Afryce;W Ameryce Południowej|1
+W którym polskim mieście znajduje się Zamek Królewski na Wawelu?|W Warszawie;W Krakowie;W Malborku|1
+Który gaz jest lżejszy od powietrza i unosi balony ku górze?|Dwutlenek węgla;Hel;Tlen|1
+Ile wynosi 20 procent z liczby 150?|20;30;40|1
+Który polski kompozytor urodził się w Żelazowej Woli?|Fryderyk Chopin;Stanisław Moniuszko;Ignacy Jan Paderewski|0
+Na jakim kontynencie rozciąga się pustynia Sahara?|W Azji;W Afryce;W Australii|1
+Z ilu tercji składa się mecz hokeja na lodzie?|Z dwóch;Z trzech;Z czterech|1
+Która z tych planet ma najwięcej znanych księżyców?|Mars;Ziemia;Saturn|2
+Jak nazywa się największa wyspa na świecie?|Madagaskar;Grenlandia;Islandia|1
+Który pierwiastek ma symbol chemiczny O?|Złoto;Tlen;Ołów|1
+W którym mieście odbyły się Letnie Igrzyska Olimpijskie w 2024 roku?|W Tokio;W Paryżu;W Londynie|1
+Które drzewo iglaste w Polsce zrzuca swoje igły na zimę?|Świerk;Modrzew;Sosna|1
+Ile wynosi wynik mnożenia 14 razy 4?|48;56;64|1
+Która z tych rzek przepływa przez Paryż?|Tamiza;Sekwana;Ren|1
+Kto napisał słynną powieść 'Robinson Crusoe'?|Daniel Defoe;Juliusz Verne;Mark Twain|0
+Które z tych państw leży na Półwyspie Iberyjskim?|Włochy;Portugalia;Grecja|1
+Jak nazywa się jednostka natężenia prądu elektrycznego?|Wolt;Amper;Wat|1
+Które z tych zwierząt należy do płazów?|Jaszczurka;Salamandra plamista;Zaskroniec|1
+W jakim mieście leży słynny budynek opery w kształcie białych żagli?|W Sydney;W Nowym Jorku;W Tokio|0
+Który król przeniósł siedzibę dworu królewskiego z Krakowa do Warszawy?|Kazimierz Wielki;Zygmunt III Waza;Stefan Batory|1
+Ile milimetrów mieści się w 8 centymetrach?|8;80;800|1
+Która z tych liczb jest liczbą pierwszą?|21;23;27|1
+W jakim państwie narodziła się sztuka walki judo?|W Chinach;W Japonii;W Korei|1
+Która z tych wysp leży na Morzu Śródziemnym?|Islandia;Cypr;Madagaskar|1
+Jak nazywa się najwyższy szczyt w pasmie Bieszczadów po stronie polskiej?|Śnieżka;Tarnica;Babia Góra|1
+`;
+
+window.QUIZ_QUESTIONS_RAW.millionStandardQ2Opts = `
+Która z tych rzek w Polsce jest dłuższa?|Odra;Wisła|1
+Co rozchodzi się szybciej w ziemskiej atmosferze?|Światło;Dźwięk|0
+Które polskie miasto leży bardziej na północ?|Gdańsk;Kraków|0
+Za pomocą czego oddychają wieloryby?|Płuc;Skrzeli|0
+W którym wieku wybuchła II wojna światowa?|W XIX wieku;W XX wieku|1
+Która z tych europejskich rzek uchodzi do Morza Czarnego?|Dunaj;Ren|0
+Która planeta jest większa?|Ziemia;Jowisz|1
+Do której gromady zwierząt należy nietoperz?|Ptaków;Ssaków|1
+Po której stronie jezdni jeździ się w Wielkiej Brytanii i na Cyprze?|Po lewej;Po prawej|0
+Z jakiego pierwiastka składa się czysty diament?|Z węgla;Z krzemu|0
+Który ocean leży między Europą a Ameryką Północną?|Ocean Spokojny;Ocean Atlantycki|1
+Które z tych państw ma większą powierzchnię?|Francja;Polska|0
+Który szczyt górski jest wyższy?|Rysy;Śnieżka|0
+Który z tych ptaków potrafi latać?|Pingwin;Łabędź|1
+Które z tych mórz jest bardziej słone?|Morze Bałtyckie;Morze Śródziemne|1
+Która z tych planet krąży bliżej Słońca?|Wenus;Mars|0
+Czy rok 2024 był rokiem przestępnym?|Tak;Nie|0
+Które państwo leży w Ameryce Południowej?|Argentyna;Meksyk|0
+Który z tych instrumentów jest instrumentem dętym?|Trąbka;Wiolonczela|0
+Która z tych liczb jest większa?|Trzy czwarte;Dwie trzecie|0
+Które z tych zwierząt składa jaja?|Delfin;Żółw morski|1
+Który z tych kontynentów jest większy?|Afryka;Europa|0
+Które polskie miasto leży nad Odrą?|Wrocław;Toruń|0
+Który pierwiastek jest lżejszy od powietrza?|Hel;Dwutlenek węgla|0
+Który ze znanych odkrywców żył wcześniej?|Krzysztof Kolumb;Neil Armstrong|0
+Które z tych słów po angielsku oznacza 'jesień'?|Autumn;Spring|0
+Który z tych kotów osiąga większą prędkość w sprincie?|Lew;Gepard|1
+Która z tych figur ma więcej wierzchołków?|Sześciokąt;Pięciokąt|0
+Która z tych rzek przepływa przez Egipt?|Nil;Eufrat|0
+Czy grzyby należą w biologii do królestwa roślin?|Tak;Nie|1
+`;
+
+window.QUIZ_QUESTIONS_RAW.millionJasQ4Opts = `
+Która planeta Układu Słonecznego znajduje się najbliżej Słońca?|Mars;Merkury;Saturn;Neptun|1
+W którym polskim mieście stoi słynny Zamek Królewski na Wawelu?|W Gdańsku;W Krakowie;W Poznaniu;We Wrocławiu|1
+Które z tych zwierząt potrafi zmieniać kolor skóry, aby wtopić się w otoczenie?|Jeleń;Kameleon;Bóbr;Jeż|1
+Ile minut trwa półtorej godziny?|60 minut;75 minut;90 minut;120 minut|2
+Jak nazywa się najwyższy szczyt w polskich Tatrach?|Giewont;Rysy;Śnieżka;Kasprowy Wierch|1
+Na jakim kontynencie żyją na wolności kangury i koale?|W Afryce;W Ameryce;W Australii;W Azji|2
+Który z bohaterów filmu 'Toy Story' jest zabawką kosmonautą?|Chudy;Buzz Astral;Rex;Zurg|1
+Ile boków ma figura geometryczna zwana pięciokątem?|Cztery;Pięć;Sześć;Siedem|1
+Jak po angielsku nazywa się pora roku 'Zima'?|Spring;Summer;Autumn;Winter|3
+Które zwierzę leśne buduje tamy na rzekach z gałęzi i pni drzew?|Wydra;Bóbr;Lis;Borsuk|1
+Z jakiego polskiego miasta pochodzą najsłynniejsze pierniki?|Z Krakowa;Z Torunia;Z Sopotu;Z Lublina|1
+Jak nazywa się przyrząd, którego igła magnetyczna wskazuje północ?|Termometr;Kompas;Mikroskop;Stoper|1
+Ile wynosi wynik mnożenia 6 razy 4?|18;20;24;28|2
+Który ptak odlatuje z Polski na zimę do ciepłych krajów?|Sikorka;Wróbel;Bocian;Sroka|2
+Jak nazywa się czarny smok z filmu 'Jak wytresować smoka'?|Mushu;Szczerbatek;Tabaluga;Smaug|1
+Jaką nazwę nosi najdłuższa rzeka w Polsce?|Odra;Warta;Wisła;San|2
+Z nasion jakiej rośliny produkuje się czekoladę?|Z pszenicy;Z kakaowca;Z kukurydzy;Ze słonecznika|1
+Ile godzin liczy jedna pełna doba?|12;18;24;36|2
+Który owoc spada jesienią z drzewa zwanego dębem?|Kasztan;Żołądź;Orzech włoski;Szyszka|1
+Jak po angielsku nazywa się zwierzę 'Rekin'?|Whale;Dolphin;Shark;Turtle|2
+W jakim kraju stoją słynne starożytne piramidy i Sfinks?|W Grecji;W Egipcie;We Włoszech;W Hiszpanii|1
+Ile wynosi wynik odejmowania 100 minus 35?|55;65;75;85|1
+Która planeta słynie z wielkich pierścieni z lodu i skał?|Mars;Merkury;Saturn;Wenus|2
+W jakiej bajce główny bohater uczy się magii w szkole Hogwart?|Opowieści z Narnii;Harry Potter;Władca Pierścieni;Aladyn|1
+W którym europejskim mieście stoi słynna Wieża Eiffla?|W Rzymie;W Paryżu;W Londynie;W Madrycie|1
+Jak nazywa się największy dziki kot w pręgi żyjący w Azji?|Gepard;Tygrys;Ryś;Puma|1
+Ile wynosi wynik dodawania 35 i 45?|70;75;80;85|2
+Jak nazywa się król lemurów z filmu animowanego 'Madagaskar'?|Alex;Król Julian;Skipper;Mort|1
+W którym polskim mieście nad morzem stoi zabytkowy dźwig portowy Żuraw?|W Szczecinie;W Gdańsku;W Kołobrzegu;W Ustce|1
+Jak po angielsku nazywa się kolorowe zjawisko na niebie – 'Tęcza'?|Cloud;Rainbow;Thunder;Shadow|1
+`;
+
+window.QUIZ_QUESTIONS_RAW.millionJasQ3Opts = `
+Które z tych zwierząt jest ssakiem, a nie rybą?|Rekin;Delfin;Karp|1
+W jakim polskim mieście można spotkać figurki krasnali na chodnikach?|We Wrocławiu;W Zakopanem;W Toruniu|0
+Ile centymetrów mieści się w jednym metrze?|10;50;100|2
+Który z tych dinozaurów był groźnym mięsożercą?|Triceratops;Tyranozaur;Diplodok|1
+Która planeta nazywana jest Czerwoną Planetą?|Wenus;Mars;Jowisz|1
+Jak nazywa się stolica Włoch, w której stoi starożytne Koloseum?|Wenecja;Rzym;Mediolan|1
+Ile nóg ma każdy pająk?|Sześć;Osiem;Dziesięć|1
+Co jest głównym pokarmem pandy wielkiej?|Pędy bambusa;Ryby;Żołędzie|0
+W jakim sporcie na lodzie zawodnicy grają kijami i krążkiem?|W koszykówce;W hokeju na lodzie;W siatkówce|1
+Która figura geometryczna ma wszystkie cztery boki równej długości i cztery kąty proste?|Trójkąt;Kwadrat;Koło|1
+`;
+
+window.QUIZ_QUESTIONS_RAW.millionJasQ2Opts = `
+Która planeta jest większa?|Ziemia;Jowisz|1
+Który kontynent jest zimniejszy?|Afryka;Antarktyda|1
+Które zwierzę biega szybciej?|Gepard;Koń|0
+Która rzeka przepływa przez Warszawę?|Wisła;Odra|0
+Czy nietoperz jest ptakiem czy ssakiem?|Ptakiem;Ssakiem|1
+Który miesiąc ma mniej dni?|Luty;Lipiec|0
+Czy Słońce jest gwiazdą czy planetą?|Gwiazdą;Planetą|0
+Które góry w Polsce są wyższe?|Tatry;Góry Świętokrzyskie|0
+Z czego powstaje kostka lodu?|Z zamarzniętej wody;Z piasku|0
+Które zwierzę śpi zimą w gawrze?|Niedźwiedź brunatny;Zając|0
+`;
+
+// --- RUNDA 6: RYZYKO — 20 PYTAŃ RODZINNYCH (po 2 na każdą z 10 pul) ---
 window.QUIZ_QUESTIONS_RAW.familyR4Questions = `
-RODZINA|W jakim miesiącu ma urodziny dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
-RODZINA|Jak ma na drugie imię Mama/Ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
-RODZINA|W jakim mieście urodziła się Mama/Ciocia Ola?|Katowice;Chorzów;Sosnowiec;Bytom|1
-RODZINA|Jak ma na nazwisko panieńskie Babcia Ela?|Lis;Wilk;Kot;Zając|1
-RODZINA|Jak ma na imię najmłodszy uśmiechnięty kuzyn w naszej rodzinie?|Kubuś;Bartuś;Tomek;Adaś|1
-RODZINA|Kto w naszej rodzinie jest rodzoną siostrą Mamy/Cioci Ani?|Ciocia Kasia;Mama/Ciocia Ola;Babcia Ela;Ciocia Basia|1
-RODZINA|W jakim mieście mieszka i pracuje wujek Krzysiek?|W Krakowie;W Katowicach;We Wrocławiu;W Poznaniu|1
-RODZINA|Jakiej marki samochodem jeździ obecnie wujek Krzysiek?|Toyota;Škoda (Scala);Ford;Opel|1
-RODZINA|Do której klasy chodzi obecnie Lila w roku szkolnym?|Do 3. klasy;Do 4. klasy;Do 5. klasy;Do 6. klasy|2
-RODZINA|Do której klasy chodzi obecnie Jaś?|Do 1. klasy;Do 2. klasy;Do 3. klasy;Do 4. klasy|1
-RODZINA|Którzy dwaj agenci z naszej drużyny chodzą do czwartej klasy?|Lila i Jaś;Kaja i Darek;Darek i Jaś;Lila i Kaja|1
-RODZINA|W jakim pięknym kraju nad Morzem Adriatyckim byliśmy razem na wrześniowych wakacjach?|W Hiszpanii;W Chorwacji;W Bułgarii;W Portugalii|1
-RODZINA|Jaką słoneczną wyspę odwiedziliśmy podczas wiosennej rodzinnej wycieczki w kwietniu?|Sycylię;Maltę;Kretę;Majorkę|1
-RODZINA|Czym zawodowo zajmuje się wujek Krzysiek w Katowicach?|Leczy zęby;Sterowaniem ruchem drogowym i sygnalizacją (ITS);Piecze chleb;Uczy w szkole|1
-RODZINA|Jak nazywa się dzielnica Katowic, z której pochodzi rodzinny dom z ogrodem?|Piotrowice;Załęże;Ligota;Brynow|1
-RODZINA|Kto w naszej rodzinie przygotowuje najlepsze domowe obiady i świąteczne wypieki dla wnuków?|Sąsiadka;Babcia Ela;Listonosz;Burmistrz|1
-RODZINA|Jakim rodzajem samochodu podróżowaliśmy razem po Chorwacji?|Czerwonym kabrioletem;Volkswagenem z automatyczną skrzynią;Ciężarówką;Autobusem piętrowym|1
-RODZINA|Ile łącznie wnucząt (waszej czwórki razem z małym Bartusiem) ma Babcia Ela?|Troje;Czworo;Pięcioro;Sześcioro|2
-RODZINA|W jakim śląskim mieście obok Katowic wujek Krzysiek ma swoje mieszkanie na ulicy Wolności?|W Gliwicach;W Rudzie Śląskiej;W Zabrzu;W Tychach|1
-RODZINA|Na jaką słoneczną wyspę leżącą na Morzu Śródziemnym wybraliśmy się w naszą wielką 10-osobową podróż?|Na Islandię;Na Cypr (do Paphos);Na Madagaskar;Na Grenlandię|1
-KINO|Który film zdobył Oscara dla najlepszego filmu w 2020 roku jako pierwszy film nieanglojęzyczny?|Roma;Parasite;Drive My Car;Na Zachodzie bez zmian|1
-NAUKA|Jaka cząstka elementarna ma ładunek elektryczny ujemny?|Proton;Neutron;Elektron;Foton|2
-HISTORIA|W którym roku podpisano Konstytucję 3 Maja w Rzeczypospolitej?|1772;1791;1795;1807|1
-KULTURA|W jakim mieście odbywa się co roku słynny festiwal filmowy ze Złotą Palmą?|W Wenecji;W Berlinie;W Cannes;W Karlowych Warach|2
+RODZINA|W jakim miesiącu urodziny obchodzi dziadek Janusz?|Styczeń;Luty;Marzec;Kwiecień|1
+RODZINA|Jakie drugie imię ma Mama lub Ciocia Ania?|Maria;Katarzyna;Ewa;Zofia|0
+RODZINA|W jakim śląskim mieście urodziła się Mama lub Ciocia Ola?|Katowice;Chorzów;Sosnowiec;Bytom|1
+RODZINA|Jakie nazwisko panieńskie nosiła Babcia Ela?|Lis;Wilk;Kot;Zając|1
+RODZINA|Jak ma na imię najmłodszy kuzyn w naszej rodzinnej ekipie?|Kubuś;Bartuś;Tomek;Adaś|1
+RODZINA|Kto w naszej rodzinie jest rodzoną siostrą Ani?|Ciocia Kasia;Ciocia Ola;Babcia Ela;Ciocia Basia|1
+RODZINA|W jakim mieście pracuje wujek Krzysiek?|W Krakowie;W Katowicach;We Wrocławiu;W Gliwicach|1
+RODZINA|Jaką marką samochodu jeździ obecnie wujek Krzysiek?|Toyota;Škoda;Ford;Volkswagen|1
+RODZINA|W jakim mieście mieszka obecnie wujek Krzysiek?|W Sosnowcu;W Chorzowie;W Zabrzu;W Bytomiu|1
+RODZINA|Jaki konkretny model samochodu ma wujek Krzysiek?|Octavia;Scala;Fabia;Superb|1
+RODZINA|Jak nazywa się nadmorska miejscowość w Chorwacji, w pobliżu której byliśmy razem we wrześniu na wakacjach?|Dubrownik;Opatija;Split;Zadar|1
+RODZINA|W jakim kraju nad Morzem Adriatyckim byliśmy razem na wrześniowych wakacjach?|W Hiszpanii;W Chorwacji;W Bułgarii;W Grecji|1
+RODZINA|Jaką słoneczną wyspę na Morzu Śródziemnym odwiedziliśmy wiosną podczas rodzinnej wycieczki w kwietniu?|Sycylię;Maltę;Kretę;Majorkę|1
+RODZINA|Czym zawodowo zajmuje się wujek Krzysiek w Katowicach?|Projektowaniem mostów;Sterowaniem ruchem drogowym i sygnalizacją;Naprawą samolotów;Programowaniem gier|1
+RODZINA|Jak nazywa się dzielnica Katowic, w której znajduje się rodzinny dom z ogrodem?|Piotrowice;Załęże;Ligota;Brynów|1
+RODZINA|Który z poniższych wypieków wujek Krzysiek najchętniej piecze w domu w piekarniku?|Sernik wiedeński;Szarlotkę i pleśniaka;Tort bezowy;Pączki z różą|1
+RODZINA|Jakiej marki samochód wypożyczyliśmy podczas wspólnych wakacji w Chorwacji?|Renault;Volkswagen;Toyota;Peugeot|1
+RODZINA|Ile łącznie wnucząt, licząc całą czwórkę razem z małym Bartusiem, ma Babcia Ela?|Troje;Czworo;Pięcioro;Sześcioro|2
+RODZINA|W jakim śląskim mieście obok Katowic znajduje się mieszkanie wujka Krzyśka?|W Gliwicach;W Rudzie Śląskiej;W Zabrzu;W Tychach|1
+RODZINA|Do jakiego nadmorskiego miasta na Cyprze zaplanowaliśmy wielką rodzinną wyprawę w grudniu?|Do Larnaki;Do Paphos;Do Limassol;Do Nikozji|1
 `;
 
-// --- RUNDA 6: RYZYKO - 264 PYTANIA OGÓLNE (PO 22 NA KAŻDĄ Z 12 PUL!) ---
+// --- RUNDA 6: RYZYKO — 220 PYTAŃ OGÓLNYCH (po 22 na każdą z 10 pul; Pule 9–10 trudniejsze) ---
 window.QUIZ_QUESTIONS_RAW.generalR4Questions = `
 PODRÓŻE|W jakim wyspiarskim państwie na Morzu Śródziemnym leży nadmorski kurort Paphos?|W Grecji;Na Cyprze;Na Malcie;We Włoszech|1
-SPORT|Ilu zawodników jednej drużyny gra na boisku w piłkę nożną?|9;10;11;12|2
-MATEMATYKA|Ile to jest (20 + 30) - 10?|40;30;50;60|0
-MATEMATYKA|((8 x 7) + 44) - 100 = ?|0;1;10;100|0
+SPORT|Ilu zawodników jednej drużyny przebywa na boisku podczas meczu piłki nożnej?|9;10;11;12|2
+MATEMATYKA|Ile wynosi wynik działania: 8 razy 7 dodać 44 minus 100?|0;1;10;20|0
 MATEMATYKA|Ile sztuk liczy dokładnie jeden tuzin?|10;12;15;20|1
-GEOGRAFIA|Na jakim kontynencie leży Egipt i rzeka Nil?|Europa;Azja;Ameryka;Afryka|3
-GEOGRAFIA|Jaki jest najmniejszy kontynent na świecie?|Australia;Europa;Antarktyda;Azja|0
-ANGIELSKI|Jak jest 'ananas' po angielsku?|Apple;Pineapple;Banana;Orange|1
-ANGIELSKI|Jak jest 'szary' po angielsku?|Green;Blue;Grey;Black|2
-ZWIERZĘTA|Jakie jest najszybsze zwierzę lądowe na świecie?|Lew;Gepard;Tygrys;Kangur|1
-ZWIERZĘTA|Jak nazywa się największy ssak morski na Ziemi?|Rekin wielorybi;Płetwal błękitny;Orka;Delfin|1
-BIOLOGIA|Który narząd nieustannie pompuje krew w naszym organizmie?|Płuca;Żołądek;Serce;Wątroba|2
-KOSMOS|Gwiazda znajdująca się w centrum naszego Układu Słonecznego to:|Księżyc;Słońce;Mars;Wenus|1
-KOSMOS|Kto jako pierwszy człowiek w historii stanął na Księżycu w 1969 roku?|Neil Armstrong;Jurij Gagarin;Buzz Aldrin;Mikołaj Kopernik|0
-BAJKI|Kto mieszka w ananasie na dnie morza w Bikini Dolnym?|Patryk Rozgwiazda;Skalmar;SpongeBob Kanciastoporty;Pan Krab|2
-BAJKI|Czego używa Harry Potter do latania podczas meczów Quidditcha?|Latającego dywanu;Magicznej miotły;Rakiety;Smoka|1
+GEOGRAFIA|Na jakim kontynencie leży Egipt i rzeka Nil?|W Europie;W Azji;W Ameryce;W Afryce|3
+GEOGRAFIA|Który kontynent ma najmniejszą powierzchnię na Ziemi?|Australia;Europa;Antarktyda;Ameryka Południowa|0
+ANGIELSKI|Jak po angielsku nazywa się egzotyczny owoc 'ananas'?|Apple;Pineapple;Peach;Plum|1
+ANGIELSKI|Jak po angielsku nazywa się kolor 'szary'?|Green;Blue;Grey;Brown|2
+ZWIERZĘTA|Które zwierzę lądowe osiąga największą prędkość w biegu na świecie?|Lew;Gepard;Antylopa;Kangur|1
+ZWIERZĘTA|Jak nazywa się największy ssak morski żyjący na Ziemi?|Rekin wielorybi;Płetwal błękitny;Orka;Kaszalot|1
+BIOLOGIA|Który narząd nieustannie pompuje krew przez cały organizm człowieka?|Płuca;Żołądek;Serce;Wątroba|2
+KOSMOS|Kto jako pierwszy człowiek w historii postawił stopę na Księżycu w 1969 roku?|Neil Armstrong;Jurij Gagarin;Buzz Aldrin;John Glenn|0
+BAJKI|Kto mieszka w wielkim ananasie na dnie morza w Bikini Dolnym?|Patryk Rozgwiazda;Skalmar;SpongeBob Kanciastoporty;Pan Krab|2
+BAJKI|Czego używa Harry Potter do latania podczas szkolnych meczów Quidditcha?|Latającego dywanu;Magicznej miotły;Skrzydlatego konia;Peleryny|1
 MUZYKA|Ile strun ma tradycyjna gitara klasyczna?|4;5;6;7|2
-HISTORIA|Który król według przysłowia zastał Polskę drewnianą, a zostawił murowaną?|Bolesław Chrobry;Kazimierz Wielki;Mieszko I;Władysław Jagiełło|1
-POGODA|Jak nazywają się kulki lodu spadające z chmur podczas letniej burzy?|Deszcz;Grad;Mżawka;Rosa|1
-ANATOMIA|Z ilu zębów składa się pełne uzębienie dorosłego człowieka?|28;30;32;34|2
-TECHNOLOGIA|Kto jest współzałożycielem firmy Microsoft?|Steve Jobs;Mark Zuckerberg;Bill Gates;Elon Musk|2
-LITERATURA|Który pisarz zasłynął baśniami o Małej Syrence i Calineczce?|Bracia Grimm;Hans Christian Andersen;Jan Brzechwa;Julian Tuwim|1
-SPORT|Co ile lat odbywają się Letnie Igrzyska Olimpijskie?|Co 2 lata;Co 3 lata;Co 4 lata;Co 5 lat|2
-PRZYRODA|Jak nazywają się drobne otwory w liściach roślin, przez które roślina wymienia gazy?|Korzenie;Aparaty szparkowe;Słoje;Pąki|1
-ASTRONOMIA|Która planeta słynie z najokazalszych pierścieni z lodu i skał?|Uran;Neptun;Jowisz;Saturn|3
-MATEMATYKA|Ile to jest 100 podzielone na 4?|20;25;30;50|1
-GEOGRAFIA|Które z tych państw graniczy z Polską przez góry od południa?|Niemcy;Czechy;Szwecja;Litwa|1
-MATEMATYKA|Ile to jest 3 x 15?|35;40;45;50|2
-BAJKI|Jak ma na imię szeryf-kowboj z filmu 'Toy Story'?|Buzz Astral;Chudy;Rex;Zurg|1
-PRZYRODA|Z jakiego drzewa jesienią spadają żołędzie?|Z sosny;Z kasztanowca;Z dębu;Z brzozy|2
-ANGIELSKI|Co oznacza angielskie słowo 'Butterfly'?|Masło;Mucha;Motyl;Ptak|2
-SPORT|Ile minut trwa regulaminowy czas meczu piłki nożnej (obie połowy razem)?|45 minut;60 minut;80 minut;90 minut|3
-HISTORIA|Jaki legendarny potwór mieszkał w jamie pod wzgórzem wawelskim w Krakowie?|Bazyliszek;Smok Wawelski;Syrenka;Gryf|1
-KOSMOS|Jak nazywa się naturalny satelita Ziemi oświetlający nocne niebo?|Mars;Słońce;Księżyc;Wenus|2
-ZWIERZĘTA|Ile garbów na grzbiecie ma wielbłąd zwany dromaderem (żyjący na Saharze)?|Jeden;Dwa;Trzy;Cztery|0
-KULINARIA|Z jakich czerwonych warzyw (owoców) powstaje klasyczny sos Bolognese i włoska passata?|Z papryki;Z pomidorów;Z buraków;Z rzodkiewki|1
-MATEMATYKA|Ile wynosi obwód kwadratu o boku długości 5 cm?|10 cm;15 cm;20 cm;25 cm|2
-GEOGRAFIA|W jakim nadmorskim mieście w Polsce stoi słynna Fontanna Neptuna na Długim Targu?|W Krakowie;W Gdańsku;W Warszawie;We Wrocławiu|1
-GRY|Zielony potwór w grze Minecraft, który podchodzi po cichu, syczy i wybucha to:|Zombie;Creeper;Szkielet;Enderman|1
-ANGIELSKI|Jak po angielsku powiesz zwrot 'Dziękuję'?|Please;Hello;Thank you;Sorry|2
-MUZYKA|Jaki taniec ludowy znajduje się w tytule polskiego hymnu narodowego?|Polonez;Krakowiak;Mazurek;Oberek|2
-BIOLOGIA|Który zmysł odpowiada za wyczuwanie zapachów kwiatów i jedzenia?|Wzrok;Słuch;Węch;Smak|2
+HISTORIA|Który król według znanego powiedzenia zastał Polskę drewnianą, a zostawił murowaną?|Bolesław Chrobry;Kazimierz Wielki;Mieszko I;Władysław Jagiełło|1
+POGODA|Jak nazywają się bryłki lodu spadające z chmur podczas gwałtownej letniej burzy?|Szron;Grad;Mżawka;Rosa|1
+ANATOMIA|Z ilu zębów składa się pełne stałe uzębienie dorosłego człowieka?|28;30;32;34|2
+TECHNOLOGIA|Kto jest jednym ze słynnych współzałożycieli firmy Microsoft?|Steve Jobs;Mark Zuckerberg;Bill Gates;Elon Musk|2
+LITERATURA|Który duński pisarz stworzył baśnie 'Mała Syrenka' oraz 'Calineczka'?|Bracia Grimm;Hans Christian Andersen;Jan Brzechwa;Charles Perrault|1
+SPORT|Co ile lat organizowane są Letnie Igrzyska Olimpijskie?|Co 2 lata;Co 3 lata;Co 4 lata;Co 5 lat|2
+PRZYRODA|Jak nazywają się mikroskopijne otwory w liściach, przez które roślina prowadzi wymianę gazową?|Korzenie;Aparaty szparkowe;Słoje;Pąki|1
+ASTRONOMIA|Która planeta Układu Słonecznego słynie z najbardziej okazałych pierścieni z lodu i skał?|Uran;Neptun;Jowisz;Saturn|3
+MATEMATYKA|Ile wynosi wynik dzielenia 100 przez 4?|20;25;30;50|1
+GEOGRAFIA|Które z poniższych państw graniczy z Polską przez góry od strony południowej?|Niemcy;Czechy;Szwecja;Litwa|1
+MATEMATYKA|Ile wynosi wynik mnożenia 3 razy 17?|41;49;51;57|2
+BAJKI|Jak ma na imię szeryf kowboj z serii filmów 'Toy Story'?|Buzz Astral;Chudy;Rex;Zurg|1
+PRZYRODA|Z jakiego drzewa jesienią opadają na ziemię żołędzie?|Z sosny;Z kasztanowca;Z dębu;Z brzozy|2
+ANGIELSKI|Co oznacza angielskie słowo 'Butterfly'?|Ważka;Mucha;Motyl;Chrząszcz|2
+SPORT|Ile minut trwa regulaminowy czas gry w meczu piłki nożnej bez doliczonych minut?|60 minut;75 minut;80 minut;90 minut|3
+HISTORIA|Jaki legendarny potwór zamieszkiwał według podania jamę pod krakowskim Wawelem?|Bazyliszek;Smok Wawelski;Gryf;Warszawska Syrenka|1
+ZWIERZĘTA|Ile garbów na grzbiecie posiada wielbłąd jednogarbny zwany dromaderem?|Jeden;Dwa;Trzy;Żadnego|0
+KULINARIA|Z jakich czerwonych owoców botanicznych powstaje klasyczny włoski sos bolognese?|Z papryki;Z pomidorów;Z buraków;Z rzodkiewki|1
+MATEMATYKA|Ile wynosi obwód kwadratu o boku długości 6 cm?|12 cm;18 cm;24 cm;36 cm|2
+GEOGRAFIA|W jakim polskim mieście na Długim Targu stoi zabytkowa Fontanna Neptuna?|W Krakowie;W Gdańsku;W Warszawie;We Wrocławiu|1
+GRY|Zielony stwór w grze Minecraft, który podkrada się cicho, syczy i wybucha, to:|Zombie;Creeper;Szkielet;Enderman|1
+ANGIELSKI|Który z poniższych zwrotów po angielsku oznacza 'Przepraszam'?|Please;Thank you;Sorry;Welcome|2
+MUZYKA|Nazwa jakiego polskiego tańca ludowego występuje w tytule naszego hymnu narodowego?|Polonez;Krakowiak;Mazurek;Oberek|2
+BIOLOGIA|Który ze zmysłów człowieka pozwala rozpoznawać zapachy?|Wzrok;Słuch;Węch;Smak|2
 BAJKI|Ilu krasnoludków przyjęło pod swój dach Królewnę Śnieżkę?|Pięciu;Sześciu;Siedmiu;Ośmiu|2
-TECHNOLOGIA|Jakiego małego urządzenia z rolką używamy do przesuwania kursora na ekranie komputera?|Klawiatury;Myszki;Głośnika;Drukarki|1
-PRZYRODA|Który leśny grzyb ma czerwony kapelusz w białe kropki i jest trujący?|Borowik szlachetny;Pieczarka;Muchomor czerwony;Kurka|2
-SPORT|W jakiej dyscyplinie sportowej wielkie turnieje wielkoszlemowe wygrywa Iga Świątek?|W siatkówce;W pływaniu;W tenisie ziemnym;W lekkoatletyce|2
-MATEMATYKA|Jaka liczba będzie następna w ciągu: 2, 4, 8, 16, ...?|20;24;32;64|2
-GEOGRAFIA|Na jakim kontynencie żyją w naturze kangury oraz dziobaki?|W Afryce;W Australii;W Azji;W Europie|1
-TRANSPORT|Co oznacza czerwone światło na sygnalizatorze świetlnym dla kierowców i pieszych?|Idź śmiało;Przygotuj się;Stój! (Zakaz wejścia/wjazdu);Skręć w lewo|2
-ANGIELSKI|Którym dniem tygodnia jest angielski 'Monday'?|Wtorkiem;Piątkiem;Poniedziałkiem;Niedzielą|2
-ZWIERZĘTA|Które wodne zwierzę z szerokim płaskim ogonem buduje tamy z gałęzi na rzekach?|Wydra;Bóbr;Borsuk;Szop pracz|1
-LITERATURA|Jak nazywał się wierny słoń, którym opiekowali się Staś i Nel w 'W pustyni i w puszczy'?|Dumbo;King;Saba;Bimbo|1
-NAUKA|W jakiej temperaturze wrze (gotuje się) czysta woda przy normalnym ciśnieniu?|50°C;90°C;100°C;120°C|2
-BAJKI|Jakiego koloru skórę mają wszystkie Smerfy?|Zielonego;Żółtego;Niebieskiego;Czerwonego|2
-GEOGRAFIA|W jakich najwyższych górach świata w Azji leży szczyt Mount Everest?|W Alpach;W Tatrach;W Himalajach;W Andach|2
-MATEMATYKA|Ile to jest 72 podzielone przez 9?|6;7;8;9|2
-CHEMIA|Jaki dwuliterowy symbol chemiczny ma pierwiastek złoto?|Ag;Au;Zn;Cu|1
-LOTNICTWO|W którym z tych cypryjskich miast znajduje się największe lotnisko międzynarodowe wyspy?|W Nikozji;W Larnace;W Limassol;W Ajia Napa|1
-HISTORIA|W którym roku rycerze króla Władysława Jagiełły pokonali Krzyżaków pod Grunwaldem?|1410;966;1525;1918|0
-JĘZYKI ŚWIATA|Jaki język (obok tureckiego) jest językiem urzędowym mieszkańców Cypru?|Hiszpański;Włoski;Grecki;Niemiecki|2
-MUZYKA|Który genialny kompozytor napisał utwór 'Dla Elizy' oraz 'Odę do radości'?|Fryderyk Chopin;Ludwig van Beethoven;Wolfgang Amadeusz Mozart;Jan Sebastian Bach|1
-GEOGRAFIA|Jak nazywa się najmniejsze państwo świata położone wewnątrz Rzymu?|Monako;Malta;Watykan;San Marino|2
-LITERATURA|Kto jest autorką serii książek o młodym czarodzieju Harrym Potterze?|J.R.R. Tolkien;J.K. Rowling;C.S. Lewis;Astrid Lindgren|1
+PRZYRODA|Który z poniższych leśnych grzybów ma czerwony kapelusz w białe plamki i jest trujący?|Borowik szlachetny;Pieczarka;Muchomor czerwony;Kurka|2
+SPORT|W jakiej dyscyplinie sportowej wielkoszlemowe turnieje wygrywa Iga Świątek?|W siatkówce;W pływaniu;W tenisie ziemnym;W lekkoatletyce|2
+MATEMATYKA|Jaka liczba jest kolejnym wyrazem ciągu: 2, 4, 8, 16, ...?|20;24;32;64|2
+GEOGRAFIA|Na jakim kontynencie żyją w naturze dziobaki i kangury?|W Afryce;W Australii;W Azji;W Ameryce Południowej|1
+ANGIELSKI|Który dzień tygodnia nosi po angielsku nazwę 'Monday'?|Wtorek;Piątek;Poniedziałek;Niedziela|2
+ZWIERZĘTA|Który wodny gryzoń z szerokim płaskim ogonem buduje tamy z gałęzi na rzekach?|Wydra;Bóbr;Borsuk;Szop pracz|1
+LITERATURA|Jak nazywał się słoń, którym opiekowali się Staś i Nel w powieści 'W pustyni i w puszczy'?|Dumbo;King;Saba;Bimbo|1
+NAUKA|W jakiej temperaturze wrze czysta woda przy normalnym ciśnieniu atmosferycznym?|50 stopni C;90 stopni C;100 stopni C;120 stopni C|2
+BAJKI|Jakiego koloru skórę mają bajkowe Smerfy?|Zielonego;Żółtego;Niebieskiego;Fioletowego|2
+GEOGRAFIA|W którym łańcuchu górskim w Azji wznosi się najwyższy szczyt Ziemi – Mount Everest?|W Alpach;W Andach;W Himalajach;W Kaukazie|2
+MATEMATYKA|Ile wynosi wynik dzielenia 72 przez 9?|6;7;8;9|2
+CHEMIA|Jaki symbol chemiczny ma w układzie okresowym złoto?|Ag;Au;Zn;Cu|1
+LOTNICTWO|W którym z cypryjskich miast znajduje się największy międzynarodowy port lotniczy wyspy?|W Nikozji;W Larnace;W Limassol;W Ajia Napa|1
+HISTORIA|W którym roku wojska polsko-litewskie pokonały Krzyżaków pod Grunwaldem?|1410;966;1525;1918|0
+JĘZYKI|Jaki język, obok tureckiego, jest językiem urzędowym na Cyprze?|Hiszpański;Włoski;Grecki;Francuski|2
+MUZYKA|Który wybitny niemiecki kompozytor stworzył miniaturę 'Dla Elizy' i IX Symfonię?|Fryderyk Chopin;Ludwig van Beethoven;Wolfgang Amadeusz Mozart;Jan Sebastian Bach|1
+GEOGRAFIA|Jak nazywa się najmniejsze niepodległe państwo świata otoczone przez Rzym?|Monako;Malta;Watykan;San Marino|2
+LITERATURA|Kto jest autorką serii siedmiu powieści o Harrym Potterze?|J.R.R. Tolkien;J.K. Rowling;C.S. Lewis;Astrid Lindgren|1
 MATEMATYKA|Ile wynosi pierwiastek kwadratowy z liczby 144?|10;11;12;14|2
-BIOLOGIA|Co jest najtwardszą częścią w całym organizmie człowieka?|Kość udowa;Szkliwo zębów;Paznokieć;Chrząstka|1
-SPORT|Z jakiego azjatyckiego kraju wywodzi się sztuka walki Karate i Judo?|Z Chin;Z Korei;Z Japonii;Z Tajlandii|2
-ASTRONOMIA|Która planeta posiada słynny antycyklon zwany Wielką Czerwoną Plamą?|Mars;Wenus;Jowisz;Neptun|2
-RUCH DROGOWY|Po której stronie jezdni poruszają się samochody w Wielkiej Brytanii, Australii i na Cyprze?|Po prawej;Po lewej;Po środku;Zależy od pory dnia|1
-TECHNOLOGIA|Kto był współzałożycielem i wieloletnim szefem firmy Apple?|Steve Jobs;Bill Gates;Jeff Bezos;Mark Zuckerberg|0
-FILM|W jakiej sadze filmowej występuje Darth Vader, Luke Skywalker i mistrz Yoda?|Star Trek;Harry Potter;Gwiezdne Wojny (Star Wars);Władca Pierścieni|2
-MATEMATYKA|Ile wynosi wynik działania: 5 + 5 x 5 (pamiętaj o kolejności działań!)?|50;25;30;15|2
-GEOGRAFIA|W jakim azjatyckim państwie zbudowano długi na tysiące kilometrów Wielki Mur?|W Japonii;W Chinach;W Indiach;W Korei|1
-ANATOMIA|Jak nazywa się najdłuższa i najmocniejsza kość w ciele człowieka?|Kość udowa;Kość ramienna;Żebro;Obojczyk|0
-ANGIELSKI|Jaki kolor oznacza angielskie słowo 'Yellow'?|Zielony;Czarny;Żółty;Biały|2
-HISTORIA|Kto stanął na czele odradzającego się państwa polskiego w listopadzie 1918 roku?|Lech Wałęsa;Józef Piłsudski;Tadeusz Kościuszko;Jan III Sobieski|1
-KULINARIA|Z jakiego gotowanego warzywa wyrabia się tradycyjne polskie kopytka i włoskie kluseczki gnocchi?|Z buraków;Z kapusty;Z ziemniaków;Z kalafiora|2
-PRZYRODA|Które długowieczne drzewo (np. słynny Bartek) uchodzi w Polsce za symbol siły?|Sosna;Dąb;Brzoza;Wierzba|1
-MATEMATYKA|Ile stopni ma dokładnie kąt prosty?|45 stopni;90 stopni;180 stopni;360 stopni|1
+BIOLOGIA|Co jest najtwardszą tkanką w całym ludzkim organizmie?|Kość udowa;Szkliwo zębów;Paznokieć;Chrząstka|1
+SPORT|Z jakiego azjatyckiego kraju wywodzą się sztuki walki karate oraz judo?|Z Chin;Z Korei Południowej;Z Japonii;Z Tajlandii|2
+ASTRONOMIA|Na której planecie szaleje potężny antycyklon zwany Wielką Czerwoną Plamą?|Na Marsie;Na Wenus;Na Jowiszu;Na Neptunie|2
+RUCH DROGOWY|Po której stronie jezdni poruszają się pojazdy w Wielkiej Brytanii, Australii i na Cyprze?|Po prawej;Po lewej;Zależy od rodzaju drogi;Po obu naprzemiennie|1
+TECHNOLOGIA|Kto był słynnym współzałożycielem i wieloletnim prezesem firmy Apple?|Steve Jobs;Bill Gates;Jeff Bezos;Mark Zuckerberg|0
+FILM|W której sadze filmowej występują Darth Vader, Luke Skywalker i mistrz Yoda?|Star Trek;Diuna;Gwiezdne Wojny;Władca Pierścieni|2
+MATEMATYKA|Ile wynosi wynik działania 5 dodać 5 razy 5 zgodnie z kolejnością działań?|50;25;30;15|2
+GEOGRAFIA|Na terytorium którego azjatyckiego państwa rozciąga się Wielki Mur?|Japonii;Chin;Indii;Korei Południowej|1
+ANATOMIA|Która kość w ludzkim ciele jest najdłuższa i najmocniejsza?|Kość udowa;Kość ramienna;Żebro;Obojczyk|0
+ANGIELSKI|Który kolor oznacza angielskie słowo 'Yellow'?|Zielony;Pomarańczowy;Żółty;Biały|2
+HISTORIA|Kto stanął na czele odradzającego się państwa polskiego w listopadzie 1918 roku?|Ignacy Paderewski;Józef Piłsudski;Tadeusz Kościuszko;Roman Dmowski|1
+KULINARIA|Z jakiego gotowanego warzywa przygotowuje się polskie kopytka i włoskie gnocchi?|Z buraków;Z kapusty;Z ziemniaków;Z kalafiora|2
+PRZYRODA|Które długowieczne drzewo, jak słynny Bartek spod Kielc, uchodzi za symbol siły?|Sosna;Dąb;Brzoza;Wierzba|1
+MATEMATYKA|Ile stopni wynosi miara kąta prostego?|45 stopni;90 stopni;180 stopni;360 stopni|1
 WALUTY|Jaką walutą płaci się we Włoszech, Grecji, Hiszpanii oraz na Cyprze?|Dolarami;Funtami;Euro;Frankami|2
-LITERATURA|Który błędny rycerz z powieści Cervantesa walczył z wiatrakami?|Król Artur;Don Kichot;Robin Hood;Zorro|1
-ZWIERZĘTA|Który drapieżny ssak z czarnymi łatami wokół oczu uwielbia przemywać jedzenie w wodzie?|Borsuk;Szop pracz;Wydra;Kuna|1
-SPORT|Jakiego koloru jest koszulka lidera wyścigu kolarskiego Tour de France?|Żółtego;Czerwonego;Czarnego;Niebieskiego|0
-GEOGRAFIA|Przez jaką europejską stolicę przepływa rzeka Tamiza?|Przez Paryż;Przez Londyn;Przez Berlin;Przez Madryt|1
-MUZYKA|Z jakiego skandynawskiego kraju pochodzi legendarny zespół ABBA?|Z Danii;Ze Szwecji;Z Norwegii;Z Finlandii|1
-MATEMATYKA|Ile w przybliżeniu wynosi słynna liczba Pi?|2.14;3.14;4.14;5.14|1
-ZWIERZĘTA|Ile kręgów szyjnych ma wysoka żyrafa (dokładnie tyle samo co człowiek!)?|Siedem;Dwadzieścia;Czterdzieści;Sto|0
+LITERATURA|Który błędny rycerz z powieści Cervantesa stoczył walkę z wiatrakami?|Król Artur;Don Kichot;Robin Hood;Zorro|1
+ZWIERZĘTA|Który ssak z ciemną maską wokół oczu znany jest z obmywania pokarmu w wodzie?|Borsuk;Szop pracz;Wydra;Kuna|1
+SPORT|Jakiego koloru jest koszulka lidera klasyfikacji generalnej wyścigu Tour de France?|Żółtego;Czerwonego;Czarnego;Różowego|0
+GEOGRAFIA|Przez jaką europejską stolicę przepływa rzeka Tamiza?|Przez Paryż;Przez Londyn;Przez Berlin;Przez Dublin|1
+MUZYKA|Z jakiego skandynawskiego państwa pochodzi legendarny zespół popowy ABBA?|Z Danii;Ze Szwecji;Z Norwegii;Z Finlandii|1
+MATEMATYKA|Ile wynosi przybliżenie liczby Pi do dwóch miejsc po przecinku?|2,14;3,14;3,41;4,13|1
+ZWIERZĘTA|Ile kręgów szyjnych znajduje się w długiej szyi żyrafy?|Siedem;Czternaście;Dwadzieścia jeden;Czterdzieści|0
 MATEMATYKA|Ile wynosi pole prostokąta o bokach długości 4 cm i 6 cm?|10 cm²;20 cm²;24 cm²;30 cm²|2
-BAJKI|Jak nazywa się mały błazenek z kreskówki, którego szukał w oceanie tata Marlin?|Florek;Nemo;Rekinek;Sebastian|1
-GEOGRAFIA|Jak nazywa się ciepłe morze leżące pomiędzy Europą, Afryką i Azją?|Morze Bałtyckie;Morze Śródziemne;Morze Północne;Morze Barentsa|1
+BAJKI|Jak nazywa się mała rybka błazenek, której szukał w oceanie ojciec Marlin?|Florek;Nemo;Dory;Sebastian|1
+GEOGRAFIA|Jak nazywa się ciepłe morze położone między Europą, Afryką i Azją?|Morze Bałtyckie;Morze Śródziemne;Morze Północne;Morze Barentsa|1
 ANGIELSKI|Co oznacza angielskie słowo 'Window'?|Drzwi;Okno;Podłoga;Sufit|1
-SPORT|Ilu zawodników jednej drużyny znajduje się jednocześnie na boisku do siatkówki?|5;6;7;11|1
-KOSMOS|Która mała, skalista planeta znajduje się najbliżej Słońca?|Wenus;Mars;Merkury;Pluton|2
-PRZYRODA|Który nocny ptak jest w bajkach i przysłowiach symbolem mądrości?|Kruk;Sowa;Orzeł;Bocian|1
+SPORT|Ilu zawodników jednej drużyny znajduje się naraz na boisku w siatkówce halowej?|5;6;7;9|1
+KOSMOS|Która niewielka skalista planeta krąży najbliżej Słońca?|Wenus;Mars;Merkury;Pluton|2
+PRZYRODA|Który nocny ptak drapieżny od starożytności jest symbolem mądrości?|Kruk;Sowa;Orzeł;Jastrząb|1
 HISTORIA|Jak miała na imię czeska księżniczka, pierwsza chrześcijańska żona Mieszka I?|Bona Sforza;Jadwiga;Dobrawa;Kinga|2
-KULINARIA|Z jakiego kraju wywodzi się maślany rogalik w kształcie półksiężyca (Croissant)?|Z Włoch;Z Francji;Z Hiszpanii;Z Anglii|1
-MATEMATYKA|Ile to jest 150 odjąć 75?|65;75;85;95|1
-GRY|W jakiej serii gier komputerowych buduje się domy i kieruje życiem Simów z zielonym kryształem nad głową?|Roblox;The Sims;Fortnite;Minecraft|1
-BIOLOGIA|Ile skrzydeł posiada dorosły motyl?|Dwa;Cztery (dwie pary);Sześć;Osiem|1
-MUZYKA|Jak nazywa się cienka pałeczka, za pomocą której dyrygent kieruje orkiestrą?|Smyczek;Batuta;Kamerton;Flet|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Brat'?|Sister;Mother;Brother;Father|2
-GEOGRAFIA|Które z tych dużych polskich miast leży nad rzeką Odrą?|Warszawa;Kraków;Wrocław;Gdańsk|2
-TRANSPORT|Jak nazywa się szybka kolej miejska kursująca w tunelach pod ziemią?|Tramwaj;Trolejbus;Metro;Kolejka górska|2
-BAJKI|Który mieszkaniec Stumilowego Lasu często gubił swój przyczepiany ogon?|Tygrysek;Kłapouchy;Maleństwo;Prosiaczek|1
-NAUKA|Jaki lekki gaz wtłacza się do balonów odpustowych, aby same unosiły się w górę?|Tlen;Hel;Dwutlenek węgla;Azot|1
-MATEMATYKA|Ile to jest 11 pomnożone przez 11?|111;121;131;144|1
-ZWIERZĘTA|Jakie charakterystyczne umaszczenie ma pies rasy dalmatyńczyk?|Czarny w białe paski;Biały w czarne cętki;Czerwono-złoty;Szary|1
-SPORT|Co biegacze w sztafecie przekazują sobie z ręki do ręki na bieżni?|Piłeczkę;Pałeczkę sztafetową;Chorągiewkę;Szarfę|1
-LITERATURA|Jak miała na imię bohaterka książki, która pobiegła za Białym Królikiem do Krainy Czarów?|Dorotka;Alicja;Łucja;Klara|1
-PRZYRODA|Jak nazywa się młode lwa?|Szczenię;Lwiątko;Źrebię;Cielę|1
+KULINARIA|Z jakiego europejskiego kraju wywodzi się słynny maślany rogalik croissant?|Z Włoch;Z Francji;Z Hiszpanii;Z Belgii|1
+MATEMATYKA|Ile wynosi wynik odejmowania 150 minus 75?|65;75;85;95|1
+GRY|W której serii gier kieruje się życiem wirtualnych postaci z zielonym kryształem nad głową?|Roblox;The Sims;Fortnite;Minecraft|1
+BIOLOGIA|Ile skrzydeł posiada dorosły motyl?|Dwa;Cztery;Sześć;Osiem|1
+MUZYKA|Jak nazywa się cienka pałeczka używana przez dyrygenta do prowadzenia orkiestry?|Smyczek;Batuta;Kamerton;Metronom|1
+ANGIELSKI|Jak po angielsku nazywa się 'Brat'?|Sister;Cousin;Brother;Uncle|2
+GEOGRAFIA|Które z poniższych polskich miast leży nad rzeką Odrą?|Warszawa;Kraków;Wrocław;Gdańsk|2
+TRANSPORT|Jak nazywa się szybka kolej miejska kursująca głównie w podziemnych tunelach?|Tramwaj;Trolejbus;Metro;Kolejka linowa|2
+BAJKI|Który mieszkaniec Stumilowego Lasu nieustannie gubił swój przyczepiany ogon?|Tygrysek;Kłapouchy;Maleństwo;Prosiaczek|1
+NAUKA|Jakim lekkim, niepalnym gazem napełnia się kolorowe balony, aby same unosiły się w górę?|Tlenem;Helem;Dwutlenkiem węgla;Azotem|1
+MATEMATYKA|Ile wynosi iloczyn liczb 11 i 11?|111;121;131;144|1
+ZWIERZĘTA|Jakie umaszczenie wyróżnia psy rasy dalmatyńczyk?|Czarne w białe pręgi;Białe w czarne cętki;Rudo-białe;Jednolicie szare|1
+SPORT|Co biegacze przekazują sobie z rąk do rąk podczas biegu sztafetowego?|Piłeczkę;Pałeczkę sztafetową;Chorągiewkę;Szarfę|1
+LITERATURA|Jak miała na imię dziewczynka z książki Lewisa Carrolla, która pobiegła za Białym Królikiem?|Dorotka;Alicja;Łucja;Klara|1
 ANGIELSKI|Którą porę roku oznacza angielskie słowo 'Summer'?|Zimę;Wiosnę;Lato;Jesień|2
-GEOGRAFIA|Który skandynawski kraj słynie z głębokich zatok zwanych fiordami oraz trolli?|Hiszpania;Norwegia;Węgry;Grecja|1
-TECHNOLOGIA|Jak nazywa się technologia bezprzewodowego internetu domowego?|Bluetooth;Wi-Fi;USB;GPS|1
-BAJKI|Kto zamieszkiwał magiczną oliwną lampę znalezioną przez Aladyna w jaskini?|Zły czarnoksiężnik;Niebieski Dżin;Latający smok;Małpka Abu|1
-MATEMATYKA|Ile kwadransów (po 15 minut) mieści się w jednej pełnej godzinie?|2;3;4;6|2
-HISTORIA|Czego dotyczyło wielkie odkrycie polskiego astronoma Mikołaja Kopernika?|Odkrycia Ameryki;Że Ziemia i planety krążą wokół Słońca;Wynalezienia druku;Odkrycia prądu|1
-ZWIERZĘTA|Który zwinny drapieżnik wodny o smukłym ciele uwielbia polować na ryby w rzekach?|Kret;Wydra europejska;Jeż;Borsuk|1
-KOSMOS|Jak nazywa się czerwony łazik NASA, który wylądował na Marsie w 2012 roku?|Curiosity;Apollo;Voyager;Sputnik|0
+GEOGRAFIA|Który skandynawski kraj słynie z głębokich zatok zwanych fiordami?|Szwecja;Norwegia;Dania;Finlandia|1
+TECHNOLOGIA|Jak nazywa się najpopularniejszy standard bezprzewodowej sieci lokalnej w domu?|Bluetooth;Wi-Fi;USB;GPS|1
+BAJKI|Kto zamieszkiwał magiczną oliwną lampę odnalezioną przez Aladyna?|Zły wezyr;Niebieski Dżin;Złoty smok;Małpka Abu|1
+MATEMATYKA|Ile pełnych kwadransów mieści się w jednej godzinie?|2;3;4;6|2
+HISTORIA|Z jakim przełomowym odkryciem wiąże się nazwisko polskiego astronoma Mikołaja Kopernika?|Z odkryciem Ameryki;Z teorią krążenia Ziemi wokół Słońca;Z wynalezieniem druku;Z odkryciem grawitacji|1
+ZWIERZĘTA|Który zwinny ssak wodny o smukłym ciele poluje na ryby w czystych rzekach?|Kret;Wydra europejska;Jeż;Borsuk|1
+KOSMOS|Jak nazywał się amerykański łazik NASA, który wylądował w kraterze Gale na Marsie w 2012 roku?|Curiosity;Apollo;Voyager;Sputnik|0
 GEOGRAFIA|Jak nazywa się stolica Portugalii?|Madryt;Lizbona;Porto;Sewilla|1
-BAJKI|Jak nazywa się mała syrenka z czerwoną czupryną, córka króla Trytona?|Vaiana;Arielka;Dzwoneczek;Jasmina|1
-MATEMATYKA|Ile wynosi połowa z liczby 250?|100;115;125;150|2
-SPORT|W jakim sporcie używa się czepka, okularów i pokonuje długość basenu kraulem?|W wioślarstwie;W pływaniu;W żeglarstwie;W nurkowaniu|1
-PRZYRODA|Jak nazywa się żółty wiosenny kwiat, który po przekwitnięciu zmienia się w puszystego dmuchawca?|Stokrotka;Mniszek lekarski (mlecz);Tulipan;Przebiśnieg|1
-ANGIELSKI|Co oznacza angielskie słowo 'Cloud'?|Słońce;Wiatr;Chmura;Śnieg|2
-HISTORIA|W jakim polskim mieście znajduje się słynny pomnik Syrenki nad Wisłą?|W Gdańsku;W Krakowie;W Warszawie;W Toruniu|2
-KULINARIA|Z jakiego owocu robi się tradycyjne powidła do pączków?|Ze śliwek lub płatków róży;Z bananów;Z arbuza;Z cytryn|0
-BIOLOGIA|Jak nazywa się zielony barwnik w liściach roślin niezbędny do fotosyntezy?|Melanina;Chlorofil;Karoten;Hemoglobina|1
-GRY|Jak nazywa się kulisty żółty bohater starej gry zręcznościowej, który zjada kropki w labiryncie?|Sonic;Pac-Man;Kirby;Bomberman|1
-MUZYKA|Który z tych instrumentów jest największy i najniżej brzmiący w rodzinie smyczkowej?|Skrzypce;Altówka;Wiolonczela;Kontrabas|3
-TRANSPORT|Jak nazywa się statek powietrzny napełniany gorącym powietrzem z koszem pod spodem?|Sterowiec;Szybowiec;Balon;Paralotnia|2
-LITERATURA|Jak nazywał się mały chłopiec wychowany przez wilki w dżungli (bohater 'Księgi dżungli')?|Tarzan;Mowgli;Piotruś Pan;Aladyn|1
-NAUKA|Jaki przyrząd z soczewkami pozwala zobaczyć w laboratorium maleńkie bakterie i komórki?|Teleskop;Lornetka;Mikroskop;Peryskop|2
-ZWIERZĘTA|Który wysoki ptak brodzący o popielatych piórach słynie z głośnego klangoru o poranku na bagnach?|Wróbel;Żuraw;Gołąb;Sroka|1
-GEOGRAFIA|Jak nazywa się cieśnina oddzielająca Europę od Afryki przy Hiszpanii?|Bosfor;Gibraltarska;La Manche;Magellana|1
-MATEMATYKA|Ile stopni ma kąt półpełny (tworzący linię prostą)?|90 stopni;120 stopni;180 stopni;360 stopni|2
-BAJKI|Jak nazywa się zabawka-kosmonauta z filmu 'Toy Story' (przyjaciel Chudego)?|Zurg;Buzz Astral;Rex;Cienki|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Ogród'?|Kitchen;Garage;Garden;Balcony|2
-SPORT|Ile setów trzeba wygrać, aby zwyciężyć w standardowym meczu siatkówki?|Dwa;Trzy;Cztery;Pięć|1
-KOSMOS|Która planeta Układu Słonecznego wiruje 'na boku' i ma błękitno-zielonkawy kolor?|Mars;Merkury;Uran;Jowisz|2
-PRZYRODA|Jak nazywają się drzewa, które zamiast płaskich liści mają szpilki i szyszki?|Drzewa liściaste;Drzewa iglaste;Krzewy owocowe;Paprocie|1
-HISTORIA|Który słynny żeglarz w 1492 roku wypłynął na trzech statkach i odkrył Amerykę?|Ferdynand Magellan;Krzysztof Kolumb;Vasco da Gama;Marco Polo|1
-KULINARIA|Jak nazywa się japońska zupa z makaronem, bulionem i dodatkami?|Barszcz;Ramen;Gazpacho;Gulasz|1
-ANATOMIA|Która część oka ma kolor (np. niebieski, zielony lub brązowy) i otacza źrenicę?|Powieka;Tęczówka;Rzęsa;Siatkówka|1
-TECHNOLOGIA|Co oznacza skrót USB używany przy podłączaniu pendrive'a lub myszki?|Ultra Speed Box;Universal Serial Bus;United System Base;User Screen Button|1
-MATEMATYKA|Ile to jest 8 pomnożone przez 9?|64;72;81;63|1
-ZWIERZĘTA|Który ssak z Ameryki Południowej ma twardy pancerz z płytek i zwija się w kulkę?|Jeżozwierz;Pancernik;Mrówkojad;Kapibara|1
-GEOGRAFIA|Jak nazywa się stolica Austrii położona nad Dunajem?|Zurych;Wiedeń;Monachium;Praga|1
-BAJKI|Jak ma na imię córka wampira Draculi w filmie animowanym 'Hotel Transylwania'?|Mavis;Wanda;Bella;Koralina|0
-MUZYKA|Ile klawiszy (białych i czarnych łącznie) ma pełnowymiarowy fortepian koncertowy?|66;72;88;100|2
-ANGIELSKI|Co oznacza angielskie słowo 'Mountain'?|Rzeka;Jezioro;Góra;Las|2
-SPORT|Jak nazywa się element boiska do tenisa, który dzieli kort na dwie równe połowy?|Bramka;Siatka;Kosz;Płotek|1
-POGODA|Jakim przyrządem mierzy się prędkość wiatru na stacji meteorologicznej?|Termometrem;Wiatromierzem (anemometrem);Kompasem;Zegarem|1
-LITERATURA|W jakiej szafie rodzeństwo Pevensie odkryło przejście do magicznej krainy Narnii?|W starej szafie na ubrania;W lodówce;W skrzyni skarbów;W kredensie|0
-BIOLOGIA|Które z tych zwierząt jest płazem i przechodzi przeobrażenie z kijanki?|Jaszczurka;Żaba trawna;Węgorz;Ślimak|1
-HISTORIA|Jak nazywała się pierwsza stolica królów Polski przed Warszawą (przez ponad 500 lat)?|Poznań;Gdańsk;Kraków;Wrocław|2
-MATEMATYKA|Jaka jest największa liczba trzycyfrowa?|900;990;999;1000|2
-KOSMOS|Jak nazywa się Międzynarodowa Stacja Kosmiczna krążąca na orbicie wokół Ziemi (skrót)?|ISS;NASA;UFO;GPS|0
-ZWIERZĘTA|Który największy gryzoń świata z Ameryki Południowej uwielbia pływać i przyjaźni się z innymi zwierzętami?|Bóbr;Kapibara;Świnka morska;Chomik|1
-GEOGRAFIA|W jakim kraju leżą miasta Toronto, Montreal i Vancouver?|W USA;W Kanadzie;W Australii;W Wielkiej Brytanii|1
-BAJKI|Jak nazywa się mały zielony smok z kreskówki, który chroni Zieloną Krainę przed bałwanem Arktosem?|Smok Wawelski;Tabaluga;Szczerbatek;Mushu|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Pociąg'?|Plane;Ship;Train;Truck|2
-SPORT|Jakiego koloru kartkę pokazuje sędzia piłkarski za bardzo poważny faul, wyrzucając gracza z boiska?|Żółtą;Czerwoną;Zieloną;Niebieską|1
-KULINARIA|Z jakiego ziarna gotuje się białą bazę do sushi oraz risotto?|Z kaszy gryczanej;Z ryżu;Z soczewicy;Z grochu|1
-PRZYRODA|Który z tych owadów świeci wieczorem swoim odwłokiem w letnie noce?|Biedronka;Świetlik (robaczek świętojański);Pasikonik;Mrówka|1
-TECHNOLOGIA|Jak nazywa się przenośny bank energii służący do ładowania telefonu w podróży?|Router;Powerbank;Modem;Pendrive|1
-MATEMATYKA|Ile to jest 60 podzielone przez 5?|10;12;14;15|1
-HISTORIA|Jak nazywał się słynny polski pianista i kompozytor urodzony w Żelazowej Woli?|Stanisław Moniuszko;Fryderyk Chopin;Ignacy Jan Paderewski;Henryk Wieniawski|1
-ZWIERZĘTA|Czym żywi się dorosły komar (samica), a czym samiec komara?|Oba piją wodę;Samica krwią, a samiec nektarem kwiatów;Oba jedzą liście;Jedzą inne owady|1
-GEOGRAFIA|Jak nazywa się morze o niezwykle słonej wodzie, w którym nie da się utonąć (na granicy Izraela i Jordanii)?|Morze Czarne;Morze Martwe;Morze Czerwone;Morze Żółte|1
-BAJKI|Jak ma na imię dzielna polinezyjska dziewczyna, która płynie łodzią przez ocean z półbogiem Mauim?|Mulan;Vaiana (Moana);Pocahontas;Merida|1
-MUZYKA|Jak nazywa się pięć poziomych linii w zeszycie muzycznym, na których zapisuje się nuty?|Klucz wiolinowy;Pięciolinia;Takt;Gama|1
+BAJKI|Jak nazywa się mała syrenka z czerwoną czupryną, córka króla Trytona?|Vaiana;Ariel;Dzwoneczek;Jasmina|1
+MATEMATYKA|Ile wynosi dokładnie połowa z liczby 250?|100;115;125;150|2
+PRZYRODA|Jak nazywa się żółty wiosenny kwiat, który po przekwitnięciu zamienia się w dmuchawca?|Stokrotka;Mniszek lekarski;Tulipan;Przebiśnieg|1
+ANGIELSKI|Co oznacza angielskie słowo 'Cloud'?|Słońce;Wiatr;Chmura;Mgła|2
+HISTORIA|W jakim polskim mieście znajduje się znany pomnik Syrenki nad Wisłą?|W Gdańsku;W Krakowie;W Warszawie;W Toruniu|2
+KULINARIA|Z jakich owoców przygotowuje się klasyczne ciemne powidła do ciast i pączków?|Ze śliwek węgierek;Z bananów;Z arbuza;Z cytryn|0
+BIOLOGIA|Jak nazywa się zielony barwnik w liściach roślin niezbędny do przeprowadzania fotosyntezy?|Melanina;Chlorofil;Karoten;Hemoglobina|1
+GRY|Jak nazywa się żółty bohater klasycznej gry zręcznościowej, który zjada kropki w labiryncie?|Sonic;Pac-Man;Kirby;Bomberman|1
+MUZYKA|Który z poniższych instrumentów smyczkowych jest największy i brzmi najniżej?|Skrzypce;Altówka;Wiolonczela;Kontrabas|3
+TRANSPORT|Jak nazywa się statek powietrzny unoszący się dzięki gorącemu powietrzu z koszem pod spodem?|Sterowiec;Szybowiec;Balon;Paralotnia|2
+LITERATURA|Jak nazywał się chłopiec wychowany przez wilki w 'Księdze dżungli' Rudyarda Kiplinga?|Tarzan;Mowgli;Piotruś Pan;Aladyn|1
+NAUKA|Jaki przyrząd optyczny pozwala oglądać w laboratorium komórki i bakterie?|Teleskop;Lornetka;Mikroskop;Peryskop|2
+ZWIERZĘTA|Który wysoki ptak brodzący o popielatych piórach słynie z donośnego klangoru o świcie?|Czapla;Żuraw;Bocian czarny;Kormoran|1
+GEOGRAFIA|Która cieśnina oddziela Półwysep Iberyjski od północnej Afryki?|Bosfor;Gibraltarska;La Manche;Magellana|1
+MATEMATYKA|Ile stopni wynosi miara kąta półpełnego?|90 stopni;120 stopni;180 stopni;360 stopni|2
+BAJKI|Jak nazywa się przyjaciel kowboja Chudego z filmu 'Toy Story' – zabawka kosmonauta?|Zurg;Buzz Astral;Rex;Cienki|1
+ANGIELSKI|Jak po angielsku nazywa się 'Ogród'?|Kitchen;Garage;Garden;Balcony|2
+SPORT|Ile wygranych setów daje zwycięstwo w standardowym meczu siatkówki halowej?|Dwa;Trzy;Cztery;Pięć|1
+KOSMOS|Która planeta Układu Słonecznego wiruje niemal leżąc na boku?|Mars;Merkury;Uran;Jowisz|2
+HISTORIA|Który słynny żeglarz w 1492 roku dopłynął na trzech statkach do wysp Ameryki?|Ferdynand Magellan;Krzysztof Kolumb;Vasco da Gama;Marco Polo|1
+KULINARIA|Jak nazywa się popularna japońska zupa z makaronem, esencjonalnym bulionem i dodatkami?|Barszcz;Ramen;Gazpacho;Pho|1
+ANATOMIA|Która część ludzkiego oka nadaje mu kolor i otacza czarną źrenicę?|Powieka;Tęczówka;Rogówka;Siatkówka|1
+TECHNOLOGIA|Co oznacza popularny skrót złącza komputerowego USB?|Ultra Speed Box;Universal Serial Bus;United System Base;User Screen Button|1
+MATEMATYKA|Ile wynosi iloczyn liczb 8 i 9?|64;72;81;63|1
+ZWIERZĘTA|Który ssak z Ameryki Południowej posiada pancerz ze sztywnych płytek i potrafi zwinąć się w kulę?|Jeżozwierz;Pancernik;Mrówkojad;Kapibara|1
+GEOGRAFIA|Jak nazywa się stolica Austrii położona nad rzeką Dunaj?|Zurych;Wiedeń;Monachium;Bratysława|1
+BAJKI|Jak ma na imię córka Draculi w serii filmów animowanych 'Hotel Transylwania'?|Mavis;Wanda;Bella;Koralina|0
+MUZYKA|Ile łącznie klawiszy białych i czarnych posiada standardowy fortepian koncertowy?|66;72;88;100|2
+ANGIELSKI|Co oznacza angielskie słowo 'Mountain'?|Rzeka;Jezioro;Góra;Dolina|2
+POGODA|Jak nazywa się przyrząd służący na stacjach pogodowych do mierzenia prędkości wiatru?|Barometr;Anemometr;Higrometr;Termometr|1
+LITERATURA|Przez jaki mebel rodzeństwo Pevensie przeszło do magicznej krainy Narnii?|Przez starą szafę na ubrania;Przez sekretne drzwi w kominku;Przez kufer na strychu;Przez lustro w salonie|0
+BIOLOGIA|Które z poniższych zwierząt należy do gromady płazów i przechodzi przeobrażenie z kijanki?|Jaszczurka zwinka;Żaba trawna;Węgorz;Ślimak|1
+HISTORIA|Które polskie miasto było stolicą kraju bezpośrednio przed Warszawą przez ponad pięć stuleci?|Poznań;Gdańsk;Kraków;Wrocław|2
+MATEMATYKA|Jaka jest największa dodatnia liczba trzycyfrowa?|900;990;999;1000|2
+KOSMOS|Jakim trzyliterowym skrótem określa się Międzynarodową Stację Kosmiczną?|ISS;NASA;ESA;GPS|0
+ZWIERZĘTA|Który największy współczesny gryzoń z Ameryki Południowej świetnie pływa i żyje w stadach?|Bóbr;Kapibara;Świnka morska;Nutria|1
+GEOGRAFIA|W jakim kraju leżą wielkie metropolie Toronto, Montreal i Vancouver?|W USA;W Kanadzie;W Australii;W Nowej Zelandii|1
+BAJKI|Jak nazywa się mały zielony smok z kreskówki, który broni Zielonej Krainy przed Arktosem?|Szczerbatek;Tabaluga;Mushu;Smok Wawelski|1
+ANGIELSKI|Jak po angielsku nazywa się 'Pociąg'?|Plane;Ship;Train;Truck|2
+KULINARIA|Z jakiego ziarna przygotowuje się bazę do japońskiego sushi oraz włoskiego risotto?|Z kaszy gryczanej;Z ryżu;Z soczewicy;Z jęczmienia|1
+PRZYRODA|Który owad potrafi emitować własne światło odwłokiem w ciepłe letnie noce?|Biedronka;Świetlik świętojański;Pasikonik;Chrabąszcz|1
+TECHNOLOGIA|Jak nazywa się przenośny akumulator służący do ładowania telefonu w podróży?|Router;Powerbank;Modem;Pendrive|1
+MATEMATYKA|Ile wynosi wynik dzielenia 60 przez 5?|10;12;14;15|1
+HISTORIA|Jak nazywał się wybitny polski pianista i kompozytor urodzony w Żelazowej Woli?|Stanisław Moniuszko;Fryderyk Chopin;Ignacy Jan Paderewski;Henryk Wieniawski|1
+ZWIERZĘTA|Czym żywią się dorosłe samice komarów przed złożeniem jaj, a czym samce?|Oba piją wodę;Samice krwią, a samce nektarem kwiatów;Oba jedzą liście;Samce krwią, a samice pyłkiem|1
+GEOGRAFIA|Jak nazywa się niezwykle słone jezioro bezodpływowe na granicy Izraela i Jordanii, w którym człowiek unosi się na wodzie?|Morze Czarne;Morze Martwe;Morze Czerwone;Morze Żółte|1
+BAJKI|Jak ma na imię polinezyjska bohaterka filmu Disneya, która wypływa na ocean z półbogiem Mauim?|Mulan;Vaiana;Pocahontas;Merida|1
+MUZYKA|Jak nazywa się układ pięciu poziomych linii służący do zapisu nut muzycznych?|Klucz wiolinowy;Pięciolinia;Takt;Partytura|1
 ANGIELSKI|Co oznacza angielski przymiotnik 'Fast'?|Wolny;Szybki;Ciężki;Wysoki|1
-SPORT|W jakiej dyscyplinie sportowej zawodnicy zjeżdżają na czas po lodowym torze na specjalnych sankach?|W biathlonie;W saneczkarstwie / bobslejach;W curlingu;W hokeju|1
-NAUKA|Który metal w temperaturze pokojowej jest cieczą (dawniej stosowany w termometrach)?|Żelazo;Rtęć;Ołów;Srebro|1
-LITERATURA|Jak miał na imię chłopiec z blizną w kształcie błyskawicy na czole?|Ron Weasley;Harry Potter;Percy Jackson;Frodo Baggins|1
-MATEMATYKA|Ile wierzchołków (rogów) ma sześcian?|4;6;8;12|2
-KOSMOS|Jak nazywa się zjawisko świecenia kolorowych świateł na niebie blisko biegunów Ziemi?|Tęcza;Zorza polarna;Zaćmienie;Kometa|1
-ZWIERZĘTA|Który ptak drapieżny potrafi obrócić głowę prawie o 270 stopni bez poruszania tułowiem?|Jastrząb;Puszczyk (sowa);Krogulec;Sokół|1
-GEOGRAFIA|Jak nazywa się stolica Węgier podzielona rzeką Dunaj na dwie części?|Bukareszt;Budapeszt;Bratysława;Belgrad|1
-BAJKI|Jak nazywa się wiewiór z 'Epoki Lodowcowej', który bez przerwy goni swojego żołędzia?|Sid;Wiewiór (Scrat);Maniek;Diego|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Most'?|Road;Tower;Bridge;Tunnel|2
-SPORT|Ilu zawodników liczy drużyna koszykówki przebywająca jednocześnie na parkiecie?|4;5;6;7|1
-KULINARIA|Jak nazywa się tradycyjny polski chłodnik lub zupa gotowana z czerwonych buraków?|Żurek;Barszcz czerwony;Kapuśniak;Ogórkowa|1
-PRZYRODA|Które drzewo ma charakterystyczne liście obecne na fladze Kanady i daje słodki syrop?|Dąb;Klon;Buk;Brzoza|1
-TECHNOLOGIA|Jak nazywa się program służący do przeglądania stron internetowych (np. Chrome, Safari)?|Edytor tekstu;Przeglądarka internetowa;Antywirus;Kalkulator|1
-MATEMATYKA|Ile to jest 13 dodać 27?|30;38;40;42|2
-HISTORIA|Jak nazywało się pismo obrazkowe używane przez starożytnych Egipcjan na ścianach świątyń?|Alfabet łaciński;Hieroglify;Runy;Cyrylica|1
-ZWIERZĘTA|Który morski ssak słynie z inteligencji, porozumiewa się gwizdami i wyskakuje ponad fale?|Rekin;Delfin;Murena;Płaszczka|1
-GEOGRAFIA|Jak nazywa się największe jezioro w Polsce (położone na Mazurach)?|Mamry;Śniardwy;Morskie Oko;Hańcza|1
-BAJKI|Jak nazywa się mały drewniany warsztat, w którym majster Geppetto wystrugał Pinokia?|Pałac;Stolarnia;Kuźnia;Piekarnia|1
-MUZYKA|Jak nazywa się śpiew wykonywany przez zespół głosów bez żadnego akompaniamentu instrumentów?|Playback;A cappella;Solo;Duet|1
-ANGIELSKI|Co oznacza angielskie słowo 'Snow'?|Deszcz;Wiatr;Śnieg;Mgła|2
-SPORT|W jakim sporcie zimowym zawodnicy biegają na nartach i strzelają z karabinka do tarcz?|W kombinacji norweskiej;W biathlonie;W curlingu;W skeletonie|1
-BIOLOGIA|Ile par odnóży krocznych mają wszystkie owady (np. mrówka, pszczoła, chrząszcz)?|Dwie pary (4 nogi);Trzy pary (6 nóg);Cztery pary (8 nóg);Pięć par (10 nóg)|1
-LITERATURA|Jak nazywał się pies Stasia i Nel z powieści 'W pustyni i w puszczy'?|Reksio;Saba;Burek;Lassie|1
-MATEMATYKA|Ile to jest 90 podzielone przez 3?|20;25;30;35|2
-KOSMOS|Jak nazywał się pierwszy sztuczny satelita Ziemi wystrzelony w kosmos w 1957 roku?|Apollo;Sputnik 1;Hubble;Voyager|1
-ZWIERZĘTA|Który afrykański ssak żyje w rzekach, ma ogromną paszczę i waży kilka ton?|Tapir;Hipopotam;Goryl;Zebra|1
-GEOGRAFIA|W jakim polskim mieście znajduje się słynna hala Spodek oraz ulica Mariacka?|W Krakowie;W Katowicach;W Poznaniu;W Łodzi|1
-BAJKI|Jak ma na imię pies Myszki Miki o długich uszach?|Goofy;Pluto;Scooby;Odie|1
-ANGIELSKI|Jak po angielsku powiesz liczbę 'Sto'?|Ten;Thousand;Hundred (One hundred);Million|2
-SPORT|W jakim sporcie używa się białej bili oraz kija do wbijania kolorowych kul do łuz na zielonym stole?|W kręglach;W bilardzie (snookerze);W golfie;W krokiecie|1
-KULINARIA|Z jakiego kraju pochodzą placki kukurydziane tortilla oraz tacos?|Z Włoch;Z Meksyku;Z Japonii;Z Grecji|1
-PRZYRODA|Jak nazywa się pora roku, w której kwitną przebiśniegi i drzewa wypuszczają pąki?|Jesień;Zima;Wiosna;Lato|2
-TECHNOLOGIA|Który klawisz na klawiaturze komputera służy do robienia odstępu między wyrazami?|Enter;Spacja;Shift;Backspace|1
-MATEMATYKA|Ile to jest 7 pomnożone przez 9?|56;63;72;69|1
-ZWIERZĘTA|Jak nazywa się ptak, który wykuwa dziuple w pniach drzew i jest nazywany 'lekarzem drzew'?|Jaskółka;Dzięcioł;Słowik;Skowronek|1
-GEOGRAFIA|Które państwo słynie z tulipanów, wiatraków oraz drewnianych chodaków?|Belgia;Holandia;Dania;Szwajcaria|1
-BAJKI|Jak miał na imię chłopiec, który nigdy nie chciał dorosnąć i mieszkał w Nibylandii?|Pinokio;Piotruś Pan;Kaj;Aladyn|1
-MUZYKA|Ile strun mają klasyczne skrzypce?|Trzy;Cztery;Pięć;Sześć|1
-ANGIELSKI|Co oznacza angielskie słowo 'Star'?|Księżyc;Gwiazda;Planeta;Niebo|1
-SPORT|Jak po angielsku nazywa się bramkarz w piłce nożnej?|Striker;Goalkeeper;Referee;Coach|1
-HISTORIA|Który polski król pokonał wojska tureckie w wielkiej bitwie pod Wiedniem w 1683 roku?|Zygmunt Stary;Jan III Sobieski;Stefan Batory;Kazimierz Odnowiciel|1
-BIOLOGIA|Który z tych ssaków mieszka pod ziemią i kopie korytarze, tworząc kopce na łące?|Wiewiórka;Kret;Zając;Jeleń|1
-MATEMATYKA|Ile to jest 400 podzielone przez 8?|40;50;60;80|1
-KOSMOS|Jak nazywa się wielka galaktyka spiralna sąsiadująca z naszą Drogą Mleczną?|Mgławica Kraba;Galaktyka Andromedy;Pas Oriona;Wielki Wóz|1
-KULINARIA|Z jakich zielonych owoców z dużą pestką przygotowuje się meksykański sos guacamole?|Z ogórków;Z awokado;Z kiwi;Z limonki|1
-PRZYRODA|Które drzewo iglaste ma miękkie igły rosnące w pęczkach, które jesienią żółkną i opadają?|Świerk;Modrzew;Sosna;Cis|1
-TECHNOLOGIA|Jak nazywa się mała kamera zamontowana nad ekranem laptopa do rozmów wideo?|Projektor;Kamera internetowa (webcam);Skaner;Mikrofon|1
-ZWIERZĘTA|Który leśny ssak z czarno-białymi pasami na pyszczku kopie głębokie nory i zapada w sen zimowy?|Wilk;Borsuk;Sarna;Jeleń|1
-FILM|Kto wyreżyserował filmy 'Incepcja', 'Interstellar' oraz 'Oppenheimer'?|Denis Villeneuve;Christopher Nolan;Ridley Scott;David Fincher|1
-NAUKA|Jaki gaz odpowiada za efekt cieplarniany i powstaje podczas spalania węgla?|Argon;Dwutlenek węgla (CO2);Wodór;Hel|1
-HISTORIA|W którym roku upadło Cesarstwo Zachodniorzymskie?|395 r.;476 r.;800 r.;1054 r.|1
-GEOGRAFIA|Przez jakie państwo przepływa rzeka Jangcy?|Przez Indie;Przez Chiny;Przez Japonię;Przez Wietnam|1
-LITERATURA|Kto napisał powieść 'Mistrz i Małgorzata'?|Fiodor Dostojewski;Michaił Bułhakow;Borys Pasternak;Aleksandr Sołżenicyn|1
-MUZYKA|Z jakiego miasta w Anglii pochodził zespół The Beatles?|Z Londynu;Z Liverpoolu;Z Manchesteru;Z Birmingham|1
-SZTUKA|W jakim muzeum w Madrycie znajdują się dzieła Francisco Goi i Velázqueza?|W Luwrze;W Prado;W Uffizi;W Ermitażu|1
-ANATOMIA|Który gruczoł w ludzkim ciele produkuje insulinę?|Wątroba;Trzustka;Tarczyca;Śledziona|1
-EKONOMIA|Jak nazywa się spadek wartości pieniądza skutkujący wzrostem cen towarów?|Deflacja;Inflacja;Recesja;Stagnacja|1
-SPORT|W którym mieście odbyły się Letnie Igrzyska Olimpijskie w 2024 roku?|W Tokio;W Paryżu;W Londynie;W Los Angeles|1
-CHEMIA|Jaką nazwę nosi kwas o wzorze chemicznym H2SO4?|Kwas solny;Kwas siarkowy;Kwas azotowy;Kwas węglowy|1
-FILM|Kto zagrał główną rolę w filmie 'Gladiator' (2000) Ridleya Scotta?|Mel Gibson;Russell Crowe;Joaquin Phoenix;Brad Pitt|1
-GEOGRAFIA|Jak nazywa się najwyższy szczyt w Andach i całej Ameryce Południowej?|Kilimandżaro;Aconcagua;McKinley;Mont Blanc|1
-HISTORIA|Kto był pierwszym prezydentem Stanów Zjednoczonych?|Thomas Jefferson;George Washington;Abraham Lincoln;Benjamin Franklin|1
-TECHNOLOGIA|Jaki język programowania ma w swoim logo dwa splecione węże?|Java;Python;C++;Rust|1
-KULINARIA|Z jakiego regionu Włoch pochodzi oryginalny ser Parmigiano Reggiano?|Z Toskanii;Z Emilii-Romanii (Parmy);Z Sycylii;Z Piemontu|1
-BIOLOGIA|Ile par chromosomów posiada zdrowa komórka somatyczna człowieka?|21 par;23 pary (46 szt.);24 pary;32 pary|1
-FIZYKA|W jakich jednostkach układu SI mierzy się częstotliwość fali?|W watach;W hercach (Hz);W dżulach;W niutonach|1
-LITERATURA|Który polski pisarz otrzymał Nagrodę Nobla za powieść 'Chłopi'?|Henryk Sienkiewicz;Władysław Reymont;Stefan Żeromski;Czesław Miłosz|1
-KOSMOS|Jak nazywa się największy księżyc Jowisza i jednocześnie największy w Układzie Słonecznym?|Tytan;Ganimedes;Kallisto;Tryton|1
-ARCHITEKTURA|W jakim mieście znajduje się słynna bazylika Sagrada Família zaprojektowana przez Gaudiego?|W Madrycie;W Barcelonie;W Lizbonie;W Sewilli|1
-HISTORIA|W którym roku miała miejsce bitwa pod Waterloo, kończąca rządy Napoleona?|1805;1812;1815;1830|2
-FILM|Jak nazywa się fikcyjna planeta pustynna z powieści i filmu 'Diuna'?|Tatooine;Arrakis;Pandora;Krypton|1
-GEOGRAFIA|Które państwo w Afryce ma największą liczbę ludności?|Egipt;Nigeria;RPA;Etiopia|1
-MUZYKA|Kto był charyzmatycznym wokalistą zespołu Queen?|Mick Jagger;Freddie Mercury;David Bowie;Elton John|1
-NAUKA|Kto sformułował teorię ewolucji drogą doboru naturalnego?|Gregor Mendel;Karol Darwin;Ludwik Pasteur;Aleksander Fleming|1
-SPORT|Ile wielkoszlemowych turniejów tenisowych rozgrywa się w ciągu jednego roku kalendarzowego?|Trzy;Cztery;Pięć;Sześć|1
-KULTURA|Jak nazywa się japońska sztuka składania papieru bez użycia kleju i nożyczek?|Ikebana;Origami;Bonsai;Kaligrafia|1
-ANATOMIA|Która grupa krwi uważana jest za uniwersalnego dawcę krwinek czerwonych?|AB Rh+;0 Rh-;A Rh+;B Rh-|1
-HISTORIA|Który cesarz rzymski miał według legendy podpalić Rzym i prześladować pierwszych chrześcijan?|Juliusz Cezar;Neron;Oktawian August;Marek Aureliusz|1
-GEOGRAFIA|Jak nazywa się wyspa, na której leżą dwa państwa: Haiti oraz Dominikana?|Kuba;Hispaniola (Haiti);Jamajka;Portoryko|1
-FILM|Który polski film w reżyserii Pawła Pawlikowskiego zdobył Oscara w 2015 roku?|Zimna wojna;Ida;Boże Ciało;Pokot|1
-FIZYKA|Jak nazywa się siła, która utrzymuje planety na orbitach wokół Słońca?|Siła tarcia;Siła grawitacji;Siła wyporu;Siła odśrodkowa|1
-LITERATURA|Jak nazywał się detektyw z ulicy Baker Street 221B stworzony przez Arthura Conana Doyle'a?|Herkules Poirot;Sherlock Holmes;Filip Marlowe;Ojciec Brown|1
-CHEMIA|Jaki pierwiastek chemiczny jest podstawowym budulcem diamentu oraz grafitu?|Krzem;Węgiel;Tytan;Srebro|1
-PODRÓŻE|Jak nazywa się słynny grobowiec z białego marmuru w Indiach (w Agrze)?|Angkor Wat;Tadż Mahal;Petra;Borobudur|1
-TECHNOLOGIA|W którym roku zaprezentowano pierwszego iPhone'a przez Steve'a Jobsa?|2004;2007;2010;2012|1
-BIOLOGIA|Jak nazywa się proces podziału komórki prowadzący do powstania dwóch identycznych komórek potomnych?|Mejoza;Mitoza;Fotosynteza;Osmoza|1
-MUZYKA|Jakim instrumentem muzycznym wirtuozersko posługiwał się Niccolò Paganini?|Fortepianem;Skrzypcami;Wiolonczelą;Fletem|1
-HISTORIA|Jak nazywał się statek, którym Karol Darwin odbył podróż dookoła świata?|Santa Maria;HMS Beagle;Mayflower;Endeavour|1
-GEOGRAFIA|Które miasto w Turcji leży jednocześnie na dwóch kontynentach – w Europie i w Azji?|Ankara;Stambuł;Izmir;Antalya|1
-FILM|Kto skomponował muzykę do filmów 'Gwiezdne Wojny', 'Szczęki' oraz 'Indiana Jones'?|Hans Zimmer;John Williams;Ennio Morricone;Howard Shore|1
-NAUKA|Ile stopni w skali Kelvina odpowiada temperaturze zera bezwzględnego?|0 K (-273,15°C);100 K;273 K;-100 K|0
-KULINARIA|Z jakiego kraju pochodzi tradycyjna zupa cebulowa zapiekana z grzanką i serem?|Z Włoch;Z Francji;Ze Szwajcarii;Z Belgii|1
+NAUKA|Który metal w temperaturze pokojowej występuje w stanie ciekłym?|Żelazo;Rtęć;Ołów;Cyna|1
+MATEMATYKA|Ile wierzchołków posiada każdy sześcian?|4;6;8;12|2
+KOSMOS|Jak nazywa się zjawisko świetlne tworzące barwne kurtyny na niebie w okolicach biegunów?|Miraż;Zorza polarna;Zaćmienie;Halo słoneczne|1
+ZWIERZĘTA|Który ptak drapieżny potrafi obrócić głowę o niemal 270 stopni bez poruszania tułowiem?|Jastrząb;Puszczyk;Krogulec;Sokół|1
+GEOGRAFIA|Jak nazywa się stolica Węgier podzielona Dunajem na Budę i Peszt?|Bukareszt;Budapeszt;Bratysława;Belgrad|1
+BAJKI|Jak nazywa się pechowy wiewiór z 'Epoki Lodowcowej', który ciągle goni swojego żołędzia?|Sid;Scrat;Maniek;Diego|1
+ANGIELSKI|Jak po angielsku nazywa się 'Most'?|Road;Tower;Bridge;Tunnel|2
+SPORT|Ilu zawodników jednej drużyny przebywa naraz na parkiecie podczas meczu koszykówki?|4;5;6;7|1
+PRZYRODA|Liść jakiego drzewa widnieje pośrodku flagi narodowej Kanady?|Dębu;Klonu;Buku;Brzozy|1
+HISTORIA|Jak nazywało się starożytne pismo obrazkowe wykuwane na ścianach egipskich świątyń?|Pismo klinowe;Hieroglify;Runy;Cyrylica|1
+GEOGRAFIA|Jak nazywa się największe pod względem powierzchni jezioro w Polsce?|Mamry;Śniardwy;Morskie Oko;Hańcza|1
+MUZYKA|Jak określa się śpiew wielogłosowy wykonywany bez akompaniamentu instrumentów?|Playback;A cappella;Solo;Recytatyw|1
+SPORT|W jakiej dyscyplinie zimowej zawodnicy łączą bieg narciarski ze strzelaniem z karabinka?|W kombinacji norweskiej;W biathlonie;W curlingu;W skeletonie|1
+BIOLOGIA|Ile par odnóży krocznych mają wszystkie dorosłe owady?|Dwie pary;Trzy pary;Cztery pary;Pięć par|1
+GEOGRAFIA|Które europejskie państwo słynie z pól tulipanów, wiatraków i gęstej sieci dróg rowerowych?|Belgia;Holandia;Dania;Szwajcaria|1
+HISTORIA|Który cesarz rzymski według tradycji oskarżył chrześcijan o wielki pożar Rzymu w 64 roku?|Juliusz Cezar;Neron;Oktawian August;Marek Aureliusz|1
+GEOGRAFIA|Przez terytorium którego wielkiego państwa azjatyckiego płynie rzeka Jangcy?|Indii;Chin;Japonii;Wietnamu|1
+NAUKA|Jaki bezbarwny gaz powstający przy spalaniu węgla ma największy udział w antropogenicznym efekcie cieplarnianym?|Argon;Dwutlenek węgla;Wodór;Hel|1
+HISTORIA|W którym roku upadło Cesarstwo Zachodniorzymskie, co uznaje się za koniec starożytności?|395;476;800;1054|1
+LITERATURA|Kto jest autorem klasycznej powieści 'Mistrz i Małgorzata'?|Fiodor Dostojewski;Michaił Bułhakow;Lew Tołstoj;Anton Czechow|1
+MUZYKA|Z jakiego angielskiego miasta portowego wywodził się zespół The Beatles?|Z Londynu;Z Liverpoolu;Z Manchesteru;Z Bristolu|1
+SZTUKA|W jakim słynnym muzeum w Madrycie zgromadzono obrazy Velázqueza i Goi?|W Luwrze;W Prado;W Uffizi;W Ermitażu|1
+ANATOMIA|Który gruczoł w ciele człowieka wytwarza hormon insulinę?|Wątroba;Trzustka;Tarczyca;Śledziona|1
+EKONOMIA|Jak nazywa się ogólny wzrost poziomu cen i spadek siły nabywczej pieniądza?|Deflacja;Inflacja;Recesja;Hossa|1
+CHEMIA|Jaką nazwę nosi silny kwas o wzorze chemicznym H2SO4?|Kwas solny;Kwas siarkowy;Kwas azotowy;Kwas węglowy|1
+FILM|Kto zagrał główną rolę Maximusa w filmie 'Gladiator' z 2000 roku?|Mel Gibson;Russell Crowe;Joaquin Phoenix;Brad Pitt|1
+GEOGRAFIA|Jak nazywa się najwyższy szczyt w Andach i całej Ameryce Południowej?|Kilimandżaro;Aconcagua;Denali;Mont Blanc|1
+HISTORIA|Kto został pierwszym prezydentem Stanów Zjednoczonych w 1789 roku?|Thomas Jefferson;George Washington;Abraham Lincoln;Benjamin Franklin|1
+TECHNOLOGIA|Który popularny język programowania nosi nazwę nawiązującą do brytyjskiej grupy komików Monty Python?|Java;Python;Ruby;Swift|1
+KULINARIA|Z okolic jakiego włoskiego miasta pochodzi oryginalny ser Parmigiano Reggiano?|Z Florencji;Z Parmy;Z Neapolu;Z Mediolanu|1
+BIOLOGIA|Ile par chromosomów znajduje się w zdrowej komórce somatycznej człowieka?|21 par;23 pary;24 pary;26 par|1
+FIZYKA|W jakich jednostkach układu SI wyraża się częstotliwość drgań i fal?|W watach;W hercach;W dżulach;W niutonach|1
+KOSMOS|Jak nazywa się największy księżyc Jowisza i zarazem całego Układu Słonecznego?|Tytan;Ganimedes;Kallisto;Tryton|1
+ARCHITEKTURA|W którym hiszpańskim mieście stoi słynna bazylika Sagrada Família?|W Madrycie;W Barcelonie;W Sewilli;W Walencji|1
+HISTORIA|W którym roku rozegrała się bitwa pod Waterloo kończąca epokę Napoleona?|1805;1812;1815;1830|2
+FILM|Jak nazywa się pustynna planeta z powieści i filmów 'Diuna'?|Tatooine;Arrakis;Pandora;Krypton|1
+GEOGRAFIA|Które państwo afrykańskie ma największą liczbę ludności?|Egipt;Nigeria;RPA;Kenia|1
+MUZYKA|Jak nazywał się charyzmatyczny wokalista brytyjskiego zespołu Queen?|Mick Jagger;Freddie Mercury;David Bowie;Elton John|1
+NAUKA|Który brytyjski przyrodnik ogłosił teorię ewolucji drogą doboru naturalnego?|Gregor Mendel;Karol Darwin;Ludwik Pasteur;Aleksander Fleming|1
+SPORT|Ile wielkoszlemowych turniejów tenisowych rozgrywa się co roku?|Trzy;Cztery;Pięć;Sześć|1
+KULTURA|Jak nazywa się tradycyjna japońska sztuka składania papieru bez użycia kleju i nożyczek?|Ikebana;Origami;Bonsai;Kaligrafia|1
+ANATOMIA|Która grupa krwi może zostać w nagłym wypadku przetoczona jako krwinki czerwone biorcy każdej innej grupy?|AB Rh+;0 Rh-;A Rh+;B Rh-|1
+GEOGRAFIA|Na której karaibskiej wyspie leżą dwa państwa – Haiti oraz Dominikana?|Na Kubie;Na Haiti;Na Jamajce;Na Portoryko|1
+FILM|Który polski film Pawła Pawlikowskiego zdobył w 2015 roku Oscara dla najlepszego filmu nieanglojęzycznego?|Zimna wojna;Ida;Boże Ciało;Katyń|1
+FIZYKA|Jaka siła utrzymuje planety Układu Słonecznego na ich orbitach wokół Słońca?|Siła tarcia;Siła grawitacji;Siła wyporu;Siła magnetyczna|1
+CHEMIA|Jaki pierwiastek chemiczny tworzy zarówno bardzo twardy diament, jak i miękki grafit?|Krzem;Węgiel;Tytan;Srebro|1
+PODRÓŻE|Jak nazywa się słynne białe marmurowe mauzoleum w indyjskim mieście Agra?|Angkor Wat;Tadż Mahal;Petra;Borobudur|1
+TECHNOLOGIA|W którym roku Steve Jobs zaprezentował pierwszego iPhone'a?|2004;2007;2010;2012|1
+BIOLOGIA|Jak nazywa się podział jądra komórkowego prowadzący do powstania dwóch identycznych komórek potomnych?|Mejoza;Mitoza;Osmoza;Transpiracja|1
+MUZYKA|Na jakim instrumencie wirtuozersko grał XIX-wieczny kompozytor Niccolò Paganini?|Na fortepianie;Na skrzypcach;Na wiolonczeli;Na flecie|1
+HISTORIA|Jak nazywał się brytyjski okręt, na którym Karol Darwin odbył słynną podróż naukową dookoła świata?|Santa Maria;HMS Beagle;Mayflower;Endeavour|1
+GEOGRAFIA|Które wielkie miasto Turcji leży jednocześnie na dwóch kontynentach – w Europie i w Azji?|Ankara;Stambuł;Izmir;Antalya|1
+FILM|Kto skomponował kultową muzykę do filmów 'Gwiezdne Wojny', 'Szczęki' i 'Indiana Jones'?|Hans Zimmer;John Williams;Ennio Morricone;Howard Shore|1
+FIZYKA|Ile wynosi temperatura zera bezwzględnego w skali Celsjusza?|Minus 100 stopni;Minus 273,15 stopnia;Minus 373 stopnie;Zero stopni|1
+KULINARIA|Z jakiego kraju pochodzi słynna zupa cebulowa zapiekana z grzanką i serem?|Z Włoch;Z Francji;Ze Szwajcarii;Z Belgii|1
+HISTORIA|W którym roku w Polsce uchwalono Konstytucję 3 Maja?|1772;1791;1795;1807|1
+NAUKA|Jaka cząstka elementarna krążąca wokół jądra atomowego ma ujemny ładunek elektryczny?|Proton;Neutron;Elektron;Foton|2
+KULTURA|W którym francuskim mieście odbywa się co roku słynny festiwal filmowy ze Złotą Palmą?|W Marsylii;W Cannes;W Nicei;W Lyonie|1
+FILM|Kto wyreżyserował filmy 'Incepcja', 'Interstellar' i 'Oppenheimer'?|Denis Villeneuve;Christopher Nolan;Ridley Scott;David Fincher|1
 `;
-// ============================================================================
-// BAZA PYTAŃ CYBER-QUIZ: CZĘŚĆ 2 z 2 (RUNDY 5, 7 - 12 UNIKALNYCH PULI)
-// ============================================================================
 
-// --- RUNDA 7: KOŁO KATEGORII (192 PYTAŃ: PO 16 PYTAŃ NA KAŻDĄ Z 12 PUL) ---
+// --- RUNDA 7: KOŁO KATEGORII — 160 PYTAŃ (8 kategorii x 20 pytań = po 16 na każdą z 10 pul) ---
 window.QUIZ_QUESTIONS_RAW.rawR6_Dedicated = `
-KOSMOS|Jak nazywa się pas skał krążących między Marsem a Jowiszem?|Pas Oriona;Pas Planetoid (Asteroid);Droga Mleczna;Mgławica|1
-KOSMOS|Która planeta w Układzie Słonecznym jest najgorętsza przez gęste chmury?|Merkury;Wenus;Mars;Jowisz|1
-KOSMOS|Jak nazywał się pierwszy pies wysłany w kosmos?|Burek;Szarik;Łajka;Reksio|2
-KOSMOS|Ile planet znajduje się łącznie w naszym Układzie Słonecznym?|Siedem;Osiem;Dziewięć;Dziesięć|1
-KOSMOS|Jak nazywa się zjawisko, gdy Księżyc w dzień zasłania Słońce?|Pełnia;Zaćmienie Słońca;Zorza polarna;Nów|1
-KOSMOS|Która planeta słynie z pięknego niebieskiego koloru i najsilniejszych wiatrów?|Mars;Merkury;Neptun;Wenus|2
-KOSMOS|Jak nazywa się ubranie ochronne używane przez ludzi w przestrzeni kosmicznej?|Kombinezon nurka;Skafander astronauty;Zbroja;Fartuch|1
-KOSMOS|Co ciągnie się na niebie za przelatującą blisko Słońca kometą?|Tęcza;Świetlisty warkocz (ogon);Chmura deszczowa;Smuga dymu|1
-KOSMOS|Jak nazywał się słynny program kosmiczny NASA, w ramach którego ludzie polecieli na Księżyc?|Apollo;Wostok;Gemini;Atlantis|0
-KOSMOS|Która gwiazda wskazuje podróżnikom na nocnym niebie kierunek północny?|Syriusz;Gwiazda Polarna;Alfa Centauri;Wega|1
-KOSMOS|Jak nazywa się największy księżyc Saturna posiadający gęstą atmosferę?|Fobos;Tytan;Europa;Io|1
-KOSMOS|Kto był pierwszym człowiekiem w historii, który poleciał w przestrzeń kosmiczną w 1961 roku?|Neil Armstrong;Jurij Gagarin;Mirosław Hermaszewski;John Glenn|1
-KOSMOS|Jak nazywa się polski astronauta, który odbył lot w kosmos w 1978 roku?|Piotr Żyła;Mirosław Hermaszewski;Mikołaj Kopernik;Jan Heweliusz|1
-KOSMOS|Czym jest Słońce pod względem astronomicznym?|Wielką planetą;Gwiazdą (żółtym karłem);Kometą;Meteorytem|1
-KOSMOS|Jak nazywa się słynny teleskop kosmiczny krążący na orbicie od 1990 roku?|Teleskop Hubble'a;Teleskop Edisona;Teleskop Newtona;Teleskop Tesli|0
-KOSMOS|Ile czasu potrzebuje Ziemia, aby wykonać jeden pełny obieg wokół Słońca?|Jedną dobę (24h);Jeden miesiąc;Jeden rok (365 dni);Dziesięć lat|2
-KOSMOS|Jak nazywa się skała z kosmosu, która spadła na powierzchnię Ziemi?|Asteroida;Meteoryt;Satelita;Kometa|1
-KOSMOS|Który z tych gwiazdozbiorów przypomina kształt wozu z dyszlem na północnym niebie?|Orion;Wielki Wóz (Wielka Niedźwiedzica);Kasjopeja;Skorpion|1
-KOSMOS|Jak nazywa się czarna strefa w kosmosie o tak silnej grawitacji, że nie ucieka z niej nawet światło?|Biała plama;Czarna dziura;Szara mgławica;Czerwony olbrzym|1
-KOSMOS|Ile księżyców posiada planeta Mars (Fobos i Deimos)?|Zero;Dwa;Cztery;Dwadzieścia|1
-KOSMOS|Jak nazywa się następca Teleskopu Hubble'a wystrzelony w grudniu 2021 roku?|Teleskop Keplera;Teleskop Jamesa Webba;Teleskop Spitzera;Teleskop Chandra|1
-KOSMOS|Jaka jest najbliższa Słońcu gwiazda (położona w układzie Alfa Centauri)?|Syriusz;Proxima Centauri;Betelgeza;Wega|1
-KOSMOS|Jak nazywa się granica wokół czarnej dziury, zza której nic nie może powrócić?|Pas Kuipera;Horyzont zdarzeń;Obłok Oorta;Punkt Lagrange'a|1
-KOSMOS|W którym roku Międzynarodowa Unia Astronomiczna zdegradowała Plutona do miana planety karłowatej?|1999;2006;2012;2015|1
-BAJKI|Jak ma na imię zielony jednooki stwór z filmu 'Potwory i Spółka'?|Sulley;Mike Wazowski;Randall;Boo|1
-BAJKI|Jakim zwierzęciem jest król Julian z filmu 'Madagaskar'?|Małpą;Lemurem;Wiewiórką;Szopem|1
-BAJKI|W jakiej bajce główny bohater Czkawka trenuje czarnego smoka o imieniu Szczerbatek?|Shrek;Jak wytresować smoka;Merida Waleczna;Zaplątani|1
-BAJKI|Czym z wielkim apetytem zajada się Kubuś Puchatek?|Marchewką;Miodkiem;Orzeszkami;Rybami|1
-BAJKI|Jak nazywa się szybki czerwony samochód wyścigowy z numerem 95 z filmu 'Auta'?|Złomek;Zygzak McQueen;Sally;Hudson|1
-BAJKI|Jakiego koloru są burzliwe włosy szkockiej księżniczki Meridy Walecznej?|Czarne;Blond;Rude (kręcone);Niebieskie|2
-BAJKI|Jak ma na imię gburowaty sąsiad SpongeBoba, który gra na klarnecie?|Patryk;Skalmar;Pan Krab;Plankton|1
-BAJKI|Kto uwięził długowłosą Roszpunkę w wysokiej wieży w lesie?|Zły Wilk;Matka Gothel;Czarownica z zachodu;Kapitan Hak|1
-BAJKI|Jak nazywa się niebieska rybka z problemami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Arielka;Dory;Kotwica;Perła|1
-BAJKI|Jakim zwierzęciem jest Pumba z filmu 'Król Lew' (przyjaciel surykatki Timona)?|Hieną;Guzcem;Antylopą;Pawianem|1
-BAJKI|Jak nazywa się zardzewiały holownik, najlepszy przyjaciel Zygzaka McQueena?|Sally;Złomek;Doc Hudson;Guido|1
-BAJKI|Jak ma na imię biały gruby robot medyczny z filmu 'Wielka Szóstka'?|Wall-E;Baymax;R2-D2;Optimus|1
-BAJKI|W jakim kraju rozgrywa się akcja filmu animowanego 'Coco' o chłopcu grającym na gitarze?|W Hiszpanii;W Meksyku;W Brazylii;We Włoszech|1
-BAJKI|Jak nazywa się zły brat Mufasy z blizną na oku w filmie 'Król Lew'?|Zazu;Skaza;Rafiki;Banzai|1
-BAJKI|Jakim zwierzęciem jest mistrz Po z filmu 'Kung Fu Panda'?|Tygrysem;Pandą wielką;Małpą;Żurawiem|1
-BAJKI|Jak ma na imię kameleon, wierny towarzysz Roszpunki z filmu 'Zaplątani'?|Maximus;Pascal;Fabiu;Rico|1
-BAJKI|Kto dowodzi czwórką pingwinów z Madagaskaru?|Kowalski;Skipper;Szeregowy;Rico|1
-BAJKI|Jak nazywa się czarownik, który wraz z kotem Klakierem poluje na Smerfy?|Baltazar;Gargamel;Merlin;Saruman|1
-BAJKI|W co zamieniła się kareta Kopciuszka o północy?|W myszkę;W dynię;W jabłko;W kamień|1
-BAJKI|Jak ma na imię mały chłopiec, właściciel zabawek Chudego i Buzza Astrala w 'Toy Story'?|Sid;Andy;Billy;Tommy|1
-FILM|Kto zagrał rolę Don Vito Corleone w pierwszej części 'Ojca Chrzestnego' (1972)?|Al Pacino;Marlon Brando;Robert De Niro;Joe Pesci|1
-FILM|Jak nazywa się statek kosmiczny w filmie 'Obcy – ósmy pasażer Nostromo'?|Enterprise;Nostromo;Millennium Falcon;Discovery|1
-FILM|Który aktor wcielił się w postać Jokera w filmie 'Mroczny Rycerz' (2008)?|Jared Leto;Heath Ledger;Jack Nicholson;Cesar Romero|1
-FILM|Ile statuetek Oscara zdobył film 'Władca Pierścieni: Powrót Króla' (wyrównując rekord Titanica)?|9;11;13;14|1
-ZWIERZĘTA|Który malutki ptaszek potrafi zawisać w powietrzu jak helikopter i latać do tyłu?|Wróbel;Koliber;Jaskółka;Sikorka|1
-ZWIERZĘTA|Jak nazywa się australijski torbacz, który śpi na drzewach i zjada liście eukaliptusa?|Panda;Koala;Grizzly;Leniwiec|1
-ZWIERZĘTA|Ile serc bije w ciele ośmiornicy?|Jedno;Dwa;Trzy;Cztery|2
-ZWIERZĘTA|Które zwierzę z Afryki ma potężny róg na nosie i grubą szarą skórę?|Hipopotam;Nosorożec;Bawół;Goryl|1
-ZWIERZĘTA|Jak nazywa się najwolniejszy ssak świata wiszący całymi dniami głową w dół na gałęziach?|Żółw;Leniwiec;Koala;Pancernik|1
-ZWIERZĘTA|Jak nazywa się afrykański dziki kot ze sterczącymi pędzelkami czarnych włosów na uszach?|Pantera;Karakal;Jaguar;Puma|1
-ZWIERZĘTA|Jakiego koloru są pióra dorosłego flaminga brodzącego w płytkiej wodzie?|Białego;Różowego;Niebieskiego;Zielonego|1
-ZWIERZĘTA|Który gad potrafi w razie niebezpieczeństwa odrzucić swój ogon, aby zmylić drapieżnika?|Żółw błotny;Jaszczurka zwinka;Krokodyl;Żmija|1
-ZWIERZĘTA|Jak nazywa się największa jaszczurka na świecie żyjąca na wyspach Indonezji?|Kameleon;Waran z Komodo;Gekon;Legwan|1
-ZWIERZĘTA|Który ssak morski z długim spiralnym kłem na głowie nazywany jest 'jednorożcem morskim'?|Mors;Narwal;Foka;Kaszalot|1
-ZWIERZĘTA|Jak nazywa się australijskie zwierzę z dziobem kaczki i ogonem bobra, które składa jaja?|Kangur;Dziobak;Wombat;Emu|1
-ZWIERZĘTA|Który wąż dusi swoją zdobycz zamiast używać jadu i należy do największych na świecie?|Żmija zygzakowata;Pyton (lub Anakonda);Kobra;Grzechotnik|1
-ZWIERZĘTA|Jakiego koloru jest skóra niedźwiedzia polarnego pod jego białym futrem?|Różowego;Czarnego;Białego;Niebieskiego|1
-ZWIERZĘTA|Jak nazywa się samiec jelenia posiadający rozłożyste poroże (wieńce)?|Kozioł;Byk;Knur;Tryk|1
-ZWIERZĘTA|Który owad potrafi podnieść ciężar wielokrotnie większy od masy własnego ciała?|Mucha;Mrówka;Motyl;Komar|1
-ZWIERZĘTA|Jak nazywa się największy ptak drapieżny żyjący w Polsce (z białym ogonem)?|Jastrząb;Bielik;Pustułka;Kania|1
-ZWIERZĘTA|Która ryba potrafi wytwarzać silne wyładowania prądu elektrycznego w wodzie?|Szczupak;Węgorz elektryczny;Karp;Łosoś|1
-ZWIERZĘTA|Jak nazywa się dzika świnia żyjąca w polskich lasach (młode są w paski i nazywają się warchlaki)?|Łoś;Dzik;Daniel;Muflon|1
-ZWIERZĘTA|Czym żywi się wielki rekin wielorybi (największa ryba oceanów)?|Fokami;Planktonem i drobnymi rybkami;Wodorostami;Żółwiami|1
-ZWIERZĘTA|Który ptak ma najdłuższy dziób w stosunku do długości swojego ciała?|Wróbel;Pelikan (lub Koliber mieczodzioby);Gołąb;Sroka|1
-ZWIERZĘTA|Który ssak lądowy posiada najdłuższą ciążę trwającą prawie 22 miesiące?|Żyrafa;Słoń afrykański;Nosorożec;Wielbłąd|1
-ZWIERZĘTA|Jak nazywa się jedyny kontynent na Ziemi, na którym nie występują naturalnie węże?|Australia;Antarktyda;Ameryka Północna;Europa|1
-ZWIERZĘTA|Które zwierzę morskie ma oczy wielkości piłki do koszykówki (największe w świecie zwierząt)?|Orka;Kałamarnica olbrzymia;Rekin biały;Mors|1
-ZWIERZĘTA|Jak nazywa się nauka zoologiczna zajmująca się badaniem ptaków?|Entomologia;Ornitologia;Ichtiologia;Herpetologia|1
-MATEMATYKA|Ile wynosi suma kątów wewnętrznych w każdym trójkącie?|90 stopni;180 stopni;270 stopni;360 stopni|1
-MATEMATYKA|Ile to jest 25 pomnożone przez 4?|80;90;100;120|2
-MATEMATYKA|Jak nazywa się czworokąt, który ma wszystkie 4 boki równej długości („kopnięty kwadrat”)?|Prostokąt;Trapez;Romb;Trójkąt|2
-MATEMATYKA|Ile kilogramów mieści się w pół tony?|50 kg;100 kg;500 kg;1000 kg|2
-MATEMATYKA|Jaka jest najmniejsza dodatnia liczba dwucyfrowa?|9;10;11;99|1
-MATEMATYKA|Ile to jest 15 + 15 + 15?|35;40;45;50|2
-MATEMATYKA|Ile krawędzi ma sześcian (np. kostka do gry)?|6;8;10;12|3
-MATEMATYKA|Jeśli z 30 jabłek zjedzono jedną trzecią (1/3), to ile jabłek zostało w koszyku?|10;15;20;25|2
-MATEMATYKA|Jak nazywa się wynik dzielenia dwóch liczb?|Suma;Różnica;Iloraz;Iloczyn|2
-MATEMATYKA|Ile minut upływa między godziną 14:15 a 15:00?|30 minut;45 minut;50 minut;60 minut|1
-MATEMATYKA|Ile ścian ma tradycyjna kostka sześcienna?|4;6;8;10|1
-MATEMATYKA|Jaki jest obwód trójkąta równobocznego o boku 7 cm?|14 cm;21 cm;28 cm;49 cm|1
-MATEMATYKA|Ile wynosi 10 procent z liczby 500?|5;50;100;25|1
-MATEMATYKA|Jaką liczbą rzymską zapisuje się wartość 50?|X;L;C;V|1
-MATEMATYKA|Ile to jest 8 razy 12?|86;96;106;88|1
-MATEMATYKA|Która z tych liczb jest liczbą parzystą?|13;27;48;91|2
-MATEMATYKA|Ile milimetrów ma 5 centymetrów?|5 mm;50 mm;500 mm;5000 mm|1
-MATEMATYKA|Ile wynosi pole kwadratu o boku 8 cm?|16 cm²;32 cm²;64 cm²;80 cm²|2
-MATEMATYKA|Jeśli film zaczął się o 17:30 i trwał półtorej godziny, to o której się skończył?|O 18:30;O 19:00;O 19:30;O 20:00|1
-MATEMATYKA|Ile to jest 1000 odjąć 450?|450;550;650;500|1
-MATEMATYKA|Ile wynosi wartość 2 do potęgi piątej (2^5)?|16;32;64;25|1
-MATEMATYKA|Jak nazywa się najdłuższy bok w trójkącie prostokątnym leżący naprzeciw kąta prostego?|Przyprostokątna;Przeciwprostokątna;Wysokość;Środkowa|1
-MATEMATYKA|Ile wynosi silnia z liczby 4 (czyli 4! = 1 x 2 x 3 x 4)?|12;24;16;48|1
-MATEMATYKA|Jaki wzór określa pole koła o promieniu r?|2*Pi*r;Pi * r²;Pi * d;r² / 2|1
-SPORT|Jak nazywa się legendarny polski skoczek narciarski z wąsem, zwany 'Orłem z Wisły'?|Kamil Stoch;Adam Małysz;Piotr Żyła;Dawid Kubacki|1
-SPORT|Jaki dystans (w przybliżeniu) muszą pokonać biegacze w maratonie?|10 km;21 km;42 km;100 km|2
-SPORT|W jakim sporcie olimpijskim zawodnicy w białych strojach i maskach walczą na szpady i florety?|W boksie;W szermierce;W judo;W łucznictwie|1
-SPORT|Ile punktów zdobywa koszykarz za celny rzut zza dalekiego łuku?|1 punkt;2 punkty;3 punkty;5 punktów|2
-SPORT|Jak nazywa się wznowienie gry w piłce nożnej z samego narożnika boiska?|Rzut karny;Rzut rożny (korner);Rzut wolny;Aut|1
-SPORT|Na jakiej nawierzchni rozgrywany jest słynny turniej tenisowy Wimbledon w Londynie?|Na mączce ceglanej;Na trawie;Na piasku;Na lodzie|1
-SPORT|Jakiego koloru jest pas mistrzowski w karate oraz judo?|Białego;Żółtego;Czerwonego;Czarnego|3
-SPORT|Ile kręgli stoi na końcu toru na początku rzutu w klasycznym bowlingu?|6;8;10;12|2
-SPORT|Z ilu części (tercji) składa się mecz hokeja na lodzie?|Z dwóch;Z trzech;Z czterech;Z pięciu|1
-SPORT|Jak nazywa się sport wodny, w którym płynie się na desce z przyczepionym żaglem?|Kajakarstwo;Windsurfing;Wioślarstwo;Nurkowanie|1
-SPORT|Z jakiej odległości wykonuje się rzut karny w piłce nożnej?|Z 5 metrów;Z 9 metrów;Z 11 metrów;Z 16 metrów|2
-SPORT|W jakim sporcie na lodzie zawodnicy szczotkują lód przed sunącym granitowym kamieniem?|W hokeju;W curlingu;W bobslejach;W łyżwiarstwie|1
-SPORT|Ile maksymalnie odbić piłki może wykonać drużyna siatkarska przed przebiciem jej na drugą stronę?|Jedno;Dwa;Trzy;Cztery|2
-SPORT|Jak nazywa się polski skoczek narciarski z Zębu, trzykrotny mistrz olimpijski?|Adam Małysz;Kamil Stoch;Piotr Żyła;Maciej Kot|1
-SPORT|W jakiej dyscyplinie lekkoatletycznej wielkie rekordy biła Anita Włodarczyk?|W skoku wzwyż;W rzucie młotem;W pchnięciu kulą;W biegu przez płotki|1
-SPORT|Jak nazywa się wyścig samochodowy bolidów, w którym startował Robert Kubica?|Rajd Dakar;Formuła 1 (F1);NASCAR;MotoGP|1
-SPORT|Ile minut trwa jedna połowa meczu piłki ręcznej (szczypiorniaka)?|15 minut;20 minut;30 minut;45 minut|2
-SPORT|Jak nazywa się styl pływacki przypominający ruchy żaby?|Kraul;Styl klasyczny (żabka);Motylek;Grzbiet|1
-SPORT|Co otrzymuje zwycięzca pierwszego miejsca na Igrzyskach Olimpijskich?|Złoty puchar;Złoty medal;Złotą koronę;Złote berło|1
-SPORT|Ilu zawodników liczy jedna drużyna na boisku w piłce ręcznej (razem z bramkarzem)?|5;6;7;9|2
-SPORT|Który tenisista jako pierwszy w historii przekroczył barierę 24 wygranych turniejów wielkoszlemowych u mężczyzn?|Roger Federer;Novak Djoković;Rafael Nadal;Andy Murray|1
-SPORT|W jakim mieście swoją siedzibę ma klub piłkarski Real oraz Atlético?|W Barcelonie;W Madrycie;W Sewilli;W Walencji|1
+KOSMOS|Jak nazywa się obszar wypełniony skalnymi obiektami krążącymi między orbitami Marsa i Jowisza?|Pas Oriona;Pas Planetoid;Pas Kuipera;Obłok Oorta|1
+KOSMOS|Która planeta Układu Słonecznego ma najwyższą temperaturę na powierzchni z powodu gęstej atmosfery?|Merkury;Wenus;Mars;Jowisz|1
+KOSMOS|Jak nazywał się pierwszy pies, który w 1957 roku znalazł się na orbicie okołoziemskiej?|Biełka;Striełka;Łajka;Szarik|2
+KOSMOS|Ile pełnoprawnych planet krąży obecnie w naszym Układzie Słonecznym według definicji z 2006 roku?|Siedem;Osiem;Dziewięć;Dziesięć|1
+KOSMOS|Jak nazywa się zjawisko astronomiczne, podczas którego Księżyc przesłania tarczę Słońca?|Pełnia;Zaćmienie Słońca;Zorza polarna;Zaćmienie Księżyca|1
+KOSMOS|Która gazowa planeta Układu Słonecznego jest najbardziej oddalona od Słońca i słynie z potężnych wiatrów?|Saturn;Uran;Neptun;Jowisz|2
+KOSMOS|Jak nazywa się świecąca smuga gazu i pyłu ciągnąca się za kometą zbliżającą się do Słońca?|Pierścień;Warkocz komety;Krater;Korona|1
+KOSMOS|Jak nazywał się amerykański program kosmiczny NASA, który doprowadził do lądowań na Księżycu?|Apollo;Wostok;Gemini;Mercury|0
+KOSMOS|Która gwiazda wyznacza podróżnikom na półkuli północnej kierunek północy?|Syriusz;Gwiazda Polarna;Alfa Centauri;Wega|1
+KOSMOS|Który księżyc Saturna jest jedynym księżycem w Układzie Słonecznym z gęstą atmosferą?|Fobos;Tytan;Europa;Io|1
+KOSMOS|Kto był pierwszym człowiekiem w historii, który wykonał lot orbitalny w kosmosie w 1961 roku?|Neil Armstrong;Jurij Gagarin;Mirosław Hermaszewski;John Glenn|1
+KOSMOS|Jak nazywał się pierwszy polski kosmonauta, który poleciał w kosmos w 1978 roku?|Jan Heweliusz;Mirosław Hermaszewski;Mikołaj Kopernik;Sławosz Uznański|1
+KOSMOS|Czym pod względem astronomicznym jest nasze Słońce?|Wielką planetą;Gwiazdą;Kometą;Galaktyką|1
+KOSMOS|Jak nazywa się słynny teleskop kosmiczny działający na orbicie Ziemi od 1990 roku?|Teleskop Hubble'a;Teleskop Keplera;Teleskop Newtona;Teleskop Galileusza|0
+KOSMOS|Jak nazywa się fragment kosmicznej skały, który przetrwał lot przez atmosferę i spadł na powierzchnię Ziemi?|Planetoida;Meteoryt;Kometa;Mgławica|1
+KOSMOS|Który znany asteryzm na północnym niebie przypomina kształt wozu i należy do Wielkiej Niedźwiedzicy?|Pas Oriona;Wielki Wóz;Krzyż Południa;Trójkąt Letni|1
+KOSMOS|Jak nazywa się obiekt w kosmosie o tak silnej grawitacji, że nie może z niego uciec nawet światło?|Biały karzeł;Czarna dziura;Pulsar;Czerwony olbrzym|1
+KOSMOS|Ile naturalnych księżyców krąży wokół planety Mars?|Zero;Dwa;Cztery;Osiem|1
+KOSMOS|Jak nazywa się potężny kosmiczny teleskop podczerwony wystrzelony w grudniu 2021 roku?|Teleskop Keplera;Teleskop Jamesa Webba;Teleskop Spitzera;Teleskop Chandra|1
+KOSMOS|Jaka gwiazda poza Słońcem znajduje się najbliżej Ziemi?|Syriusz;Proxima Centauri;Betelgeza;Wega|1
+BAJKI|Jak ma na imię zielony jednooki bohater z filmu 'Potwory i Spółka'?|Sulley;Mike Wazowski;Randall;Roz|1
+BAJKI|Jakim zwierzęciem jest samozwańczy król Julian z serii filmów 'Madagaskar'?|Szympansem;Lemurem katta;Leniwcem;Szopem|1
+BAJKI|W którym filmie animowanym młody wiking Czkawka zaprzyjaźnia się ze smokiem Nocną Furią?|Merida Waleczna;Jak wytresować smoka;Wielka Szóstka;Zaplątani|1
+BAJKI|Jak nazywa się czerwony samochód wyścigowy z numerem 95 z filmu 'Auta'?|Złomek;Zygzak McQueen;Doc Hudson;Jackson Sztorm|1
+BAJKI|Jak ma na imię gburowaty sąsiad SpongeBoba grający na klarnecie?|Patryk;Skalmar;Pan Krab;Plankton|1
+BAJKI|Kto uwięził długowłosą Roszpunkę w wysokiej ukrytej wieży w filmie 'Zaplątani'?|Zła Królowa;Matka Gothel;Diabolina;Urszula|1
+BAJKI|Jak nazywa się niebieska rybka z kłopotami z pamięcią krótkotrwałą z filmu 'Gdzie jest Nemo'?|Ariel;Dory;Perła;Flądra|1
+BAJKI|Jakim afrykańskim zwierzęciem jest Pumba, przyjaciel surykatki Timona w 'Królu Lwie'?|Hieną;Guzcem;Antylopą;Bawolicą|1
+BAJKI|Jak nazywa się sympatyczny zardzewiały holownik, najlepszy przyjaciel Zygzaka McQueena?|Sally;Złomek;Guido;Luigi|1
+BAJKI|Jak ma na imię biały nadmuchiwany robot medyczny z filmu 'Wielka Szóstka'?|Wall-E;Baymax;R2-D2;Bumblebee|1
+BAJKI|W jakim kraju rozgrywa się akcja filmu animowanego 'Coco' o chłopcu marzącym o grze na gitarze?|W Hiszpanii;W Meksyku;W Brazylii;W Argentynie|1
+BAJKI|Jak nazywał się zazdrosny brat króla Mufasy z blizną nad okiem w filmie 'Król Lew'?|Zazu;Skaza;Rafiki;Banzai|1
+BAJKI|Jak ma na imię główny bohater – smoczy wojownik – z serii 'Kung Fu Panda'?|Shifu;Po;Tai Lung;Oogway|1
+BAJKI|Jak nazywa się kameleon będący wiernym towarzyszem Roszpunki w 'Zaplątanych'?|Maximus;Pascal;Rico;Mushu|1
+BAJKI|Który z czwórki pingwinów z Madagaskaru dowodzi całą grupą?|Kowalski;Skipper;Szeregowy;Rico|1
+BAJKI|Jak nazywa się zły czarnoksiężnik, który z kotem Klakierem poluje na Smerfy?|Baltazar;Gargamel;Saruman;Jafar|1
+BAJKI|W jakie warzywo zamieniła się z powrotem kareta Kopciuszka o północy?|W kapustę;W dynię;W rzepę;W kabaczka|1
+BAJKI|Jak ma na imię chłopiec, który był pierwszym właścicielem Chudego i Buzza w 'Toy Story'?|Sid;Andy;Billy;Kevin|1
+BAJKI|W jakiej francuskiej stolicy toczy się akcja filmu 'Ratatuj' o szczurze gotującym w restauracji?|W Lyonie;W Paryżu;W Marsylii;W Bordeaux|1
+BAJKI|Jak nazywa się studio animacji założone m.in. przez Hayao Miyazakiego, twórcę 'Spirited Away'?|Pixar;Studio Ghibli;DreamWorks;Illumination|1
+ZWIERZĘTA|Który malutki ptak potrafi zawisać nieruchomo w powietrzu i latać do tyłu?|Wróbel;Koliber;Jaskółka;Jerzyk|1
+ZWIERZĘTA|Jak nazywa się australijski torbacz żywiący się niemal wyłącznie liśćmi eukaliptusa?|Wombat;Koala;Kangur drzewny;Leniwiec|1
+ZWIERZĘTA|Ile serc pracuje w ciele ośmiornicy?|Jedno;Dwa;Trzy;Cztery|2
+ZWIERZĘTA|Który afrykański ssak ma charakterystyczny róg z keratyny na pysku i bardzo grubą skórę?|Hipopotam;Nosorożec;Bawół afrykański;Tapir|1
+ZWIERZĘTA|Jak nazywa się najwolniejszy ssak lądowy świata spędzający większość życia na drzewach w Ameryce Południowej?|Koala;Leniwiec;Pancernik;Loris|1
+ZWIERZĘTA|Jak nazywa się smukły dziki kot ze sterczącymi czarnymi pędzelkami włosów na uszach?|Jaguar;Karakal;Puma;Ocelot|1
+ZWIERZĘTA|Jakiego koloru jest skóra niedźwiedzia polarnego pod jego białym futrem?|Różowego;Czarnego;Białego;Szarego|1
+ZWIERZĘTA|Który gad potrafi w razie ataku odrzucić ogon, aby uciec przed drapieżnikiem?|Żółw błotny;Jaszczurka zwinka;Krokodyl nilowy;Żmija zygzakowata|1
+ZWIERZĘTA|Jak nazywa się największa żyjąca jaszczurka świata zamieszkująca indonezyjskie wyspy?|Kameleon olbrzymi;Waran z Komodo;Legwan zielony;Gekon toke|1
+ZWIERZĘTA|Który arktyczny ssak morski z długim spiralnym kłem nazywany jest jednorożcem morskim?|Mors;Narwal;Białucha;Kaszalot|1
+ZWIERZĘTA|Jak nazywa się australijski ssak o dziobie przypominającym kaczy, który składa jaja?|Kolczatka;Dziobak;Wombat;Dingo|1
+ZWIERZĘTA|Który wielki wąż zabija zdobycz przez uduszenie, a nie za pomocą jadu?|Żmija zygzakowata;Anakonda;Kobra królewska;Grzechotnik|1
+ZWIERZĘTA|Jak w języku łowieckim nazywa się dorosły samiec jelenia z porożem?|Kozioł;Byk;Knur;Odyniec|1
+ZWIERZĘTA|Który z poniższych owadów potrafi unieść ciężar wielokrotnie przewyższający jego własną masę?|Mucha domowa;Mrówka;Ważka;Komar|1
+ZWIERZĘTA|Jak nazywa się największy ptak drapieżny gniazdujący w Polsce, z charakterystycznym białym ogonem?|Jastrząb;Bielik;Pustułka;Myszołów|1
+ZWIERZĘTA|Która południowoamerykańska ryba potrafi wytwarzać silne wyładowania elektryczne do ogłuszania ofiar?|Pirania;Węgorz elektryczny;Sum europejski;Murena|1
+ZWIERZĘTA|Czym żywi się rekin wielorybi – największa ryba oceanów?|Fokami;Planktonem i drobnymi rybkami;Żółwiami morskimi;Wodorostami|1
+ZWIERZĘTA|Który ssak lądowy przechodzi najdłuższą ciążę trwającą około 22 miesięcy?|Żyrafa;Słoń afrykański;Nosorożec biały;Wielbłąd dwugarbny|1
+ZWIERZĘTA|Na którym kontynencie nie występują w przyrodzie żadne gatunki węży?|W Australii;Na Antarktydzie;W Ameryce Północnej;W Europie|1
+ZWIERZĘTA|Jak nazywa się dział zoologii zajmujący się naukowym badaniem ptaków?|Entomologia;Ornitologia;Ichtiologia;Herpetologia|1
+MATEMATYKA|Ile wynosi suma miar kątów wewnętrznych w każdym trójkącie?|90 stopni;180 stopni;270 stopni;360 stopni|1
+MATEMATYKA|Ile wynosi wynik mnożenia 25 przez 4?|80;90;100;120|2
+MATEMATYKA|Jak nazywa się czworokąt o wszystkich czterech bokach równej długości, którego kąty nie muszą być proste?|Prostokąt;Trapez;Romb;Deltoid|2
+MATEMATYKA|Ile kilogramów mieści się w połowie jednej tony?|50 kg;250 kg;500 kg;1000 kg|2
+MATEMATYKA|Ile krawędzi ma każdy sześcian?|6;8;10;12|3
+MATEMATYKA|Jeśli z kosza z 30 jabłkami zjedzono jedną trzecią, ile jabłek w nim pozostało?|10;15;20;25|2
+MATEMATYKA|Jak w matematyce nazywa się wynik dzielenia dwóch liczb?|Suma;Różnica;Iloraz;Iloczyn|2
+MATEMATYKA|Ile minut upływa między godziną 14:15 a godziną 15:00?|30 minut;45 minut;50 minut;55 minut|1
+MATEMATYKA|Jaki jest obwód trójkąta równobocznego o boku długości 7 cm?|14 cm;21 cm;28 cm;49 cm|1
+MATEMATYKA|Ile wynosi 10 procent z liczby 540?|5,4;54;108;27|1
+MATEMATYKA|Jaką literą w systemie rzymskim zapisuje się liczbę 50?|X;L;C;D|1
+MATEMATYKA|Ile wynosi iloczyn liczb 8 i 12?|86;96;106;88|1
+MATEMATYKA|Ile milimetrów mieści się w 7 centymetrach?|7 mm;70 mm;700 mm;7000 mm|1
+MATEMATYKA|Ile wynosi pole kwadratu o boku długości 8 cm?|16 cm²;32 cm²;64 cm²;80 cm²|2
+MATEMATYKA|Film rozpoczął się o 17:35 i trwał 1 godzinę i 40 minut. O której godzinie się skończył?|O 19:05;O 19:15;O 19:25;O 18:55|1
+MATEMATYKA|Ile wynosi wynik odejmowania 1000 minus 465?|525;535;545;635|1
+MATEMATYKA|Ile wynosi wartość potęgi 2 do potęgi piątej?|16;32;64;25|1
+MATEMATYKA|Jak nazywa się najdłuższy bok w trójkącie prostokątnym, leżący naprzeciw kąta prostego?|Przyprostokątna;Przeciwprostokątna;Wysokość;Środkowa|1
+MATEMATYKA|Ile wynosi wartość silni z liczby 4, czyli 1 razy 2 razy 3 razy 4?|12;24;16;48|1
+MATEMATYKA|Jaki wzór pozwala obliczyć pole koła o promieniu r?|2 razy Pi razy r;Pi razy r kwadrat;Pi razy średnica;r kwadrat dzielone przez 2|1
+SPORT|Który słynny polski skoczek narciarski nosił przydomek 'Orzeł z Wisły'?|Kamil Stoch;Adam Małysz;Piotr Żyła;Dawid Kubacki|1
+SPORT|Jaki przybliżony dystans pokonują biegacze w klasycznym maratonie?|10 km;21 km;42 km;60 km|2
+SPORT|W jakiej dyscyplinie olimpijskiej zawodnicy w maskach walczą na szpady, florety i szable?|W boksie;W szermierce;W judo;W łucznictwie|1
+SPORT|Ile punktów zdobywa koszykarz za celny rzut oddany spoza dalekiego łuku?|1 punkt;2 punkty;3 punkty;4 punkty|2
+SPORT|Jak nazywa się wznowienie gry w piłce nożnej wykonywane z samego narożnika boiska?|Rzut wolny;Rzut rożny;Wrzut z autu;Rzut karny|1
+SPORT|Na jakiej nawierzchni rozgrywany jest wielkoszlemowy turniej tenisowy Wimbledon?|Na mączce ceglanej;Na trawie;Na nawierzchni twardej;Na dywanie|1
+SPORT|Jakiego koloru jest najwyższy podstawowy pas mistrzowski w karate oraz judo?|Brązowego;Niebieskiego;Czerwonego;Czarnego|3
+SPORT|Ile kręgli ustawia się na końcu toru na początku rzutu w klasycznym bowlingu?|6;8;10;12|2
+SPORT|Z ilu części zwanych tercjami składa się standardowy mecz hokeja na lodzie?|Z dwóch;Z trzech;Z czterech;Z pięciu|1
+SPORT|Jak nazywa się sport wodny polegający na pływaniu na desce z przymocowanym żaglem?|Kajakarstwo;Windsurfing;Wioślarstwo;Wakeboarding|1
+SPORT|Z jakiej odległości od linii bramkowej wykonuje się rzut karny w piłce nożnej?|Z 7 metrów;Z 9 metrów;Z 11 metrów;Z 16 metrów|2
+SPORT|W której dyscyplinie zimowej gracze szczotkują lód przed sunącym granitowym kamieniem?|W hokeju;W curlingu;W bobslejach;W saneczkarstwie|1
+SPORT|Ile maksymalnie odbić może wykonać drużyna siatkarska przed przebiciem piłki na stronę rywala?|Jedno;Dwa;Trzy;Cztery|2
+SPORT|Który polski skoczek narciarski z Zębu zdobył trzy złote medale olimpijskie?|Adam Małysz;Kamil Stoch;Piotr Żyła;Maciej Kot|1
+SPORT|W jakiej konkurencji lekkoatletycznej złote medale olimpijskie i rekordy świata zdobywała Anita Włodarczyk?|W skoku wzwyż;W rzucie młotem;W pchnięciu kulą;W rzucie dyskiem|1
+SPORT|Ile minut trwa jedna połowa regulaminowego meczu piłki ręcznej seniorów?|20 minut;25 minut;30 minut;45 minut|2
+SPORT|Który tenisista jako pierwszy wśród mężczyzn wygrał 24 tytuły wielkoszlemowe w singlu?|Roger Federer;Novak Djoković;Rafael Nadal;Andy Murray|1
+SPORT|W jakim hiszpańskim mieście swoją siedzibę mają oba wielkie kluby – Real oraz Atlético?|W Barcelonie;W Madrycie;W Sewilli;W Walencji|1
 SPORT|Ile minut trwa jedna kwarta meczu koszykówki w amerykańskiej lidze NBA?|10 minut;12 minut;15 minut;20 minut|1
-SPORT|Jak nazywa się najbardziej prestiżowy wieloetapowy wyścig kolarski rozgrywany we Włoszech?|Tour de France;Giro d'Italia;Vuelta a España;Tour de Pologne|1
-GEOGRAFIA|Jak nazywa się największa wyspa na świecie (w większości pokryta lodem)?|Madagaskar;Islandia;Grenlandia;Wielka Brytania|2
-GEOGRAFIA|W jakim europejskim państwie znajdują się czynne wulkany Etna i Wezuwiusz?|W Hiszpanii;We Włoszech;W Grecji;W Portugalii|1
-GEOGRAFIA|Która potężna rzeka w Ameryce Południowej płynie przez dżunglę i niesie najwięcej wody?|Nil;Missisipi;Amazonka;Wisła|2
+SPORT|Jak nazywa się jeden z trzech wielkich tourów kolarskich, rozgrywany co roku we Włoszech?|Tour de France;Giro d'Italia;Vuelta a España;Tour de Pologne|1
+GEOGRAFIA|Jak nazywa się największa wyspa na świecie?|Madagaskar;Islandia;Grenlandia;Nowa Gwinea|2
+GEOGRAFIA|Na terytorium którego europejskiego państwa znajdują się wulkany Etna i Wezuwiusz?|Hiszpanii;Włoch;Grecji;Portugalii|1
+GEOGRAFIA|Która potężna rzeka Ameryki Południowej niesie najwięcej wody na świecie?|Parana;Orinoko;Amazonka;Missisipi|2
 GEOGRAFIA|Jak nazywa się stolica Korei Południowej?|Pekin;Seul;Bangkok;Hanoi|1
-GEOGRAFIA|W jakiej miejscowości koło Krakowa znajduje się słynna zabytkowa kopalnia soli?|W Wieliczce;W Zakopanem;W Sopocie;W Toruniu|0
-GEOGRAFIA|Jak nazywa się największa gorąca pustynia świata położona w północnej Afryce?|Gobi;Sahara;Atakama;Kalahari|1
-GEOGRAFIA|Które państwo z Ameryki Północnej ma czerwony liść klonu na swojej fladze?|USA;Meksyk;Kanada;Brazylia|2
-GEOGRAFIA|W jakim pasmie górskim w Polsce leży szczyt Śnieżka?|W Tatrach;W Karkonoszach;W Bieszczadach;W Pieninach|1
-GEOGRAFIA|Który kanał wodny łączy Morze Śródziemne z Morzem Czerwonym przy Egipcie?|Kanał Panamski;Kanał Sueski;Kanał La Manche;Kanał Gliwicki|1
-GEOGRAFIA|Jak nazywa się najgłębsze jezioro na świecie położone na Syberii?|Śniardwy;Bajkał;Wiktorii;Tanganika|1
-GEOGRAFIA|Jak nazywa się stolica Stanów Zjednoczonych (USA)?|Nowy Jork;Waszyngton;Los Angeles;Chicago|1
-GEOGRAFIA|W jakich górach w Polsce płyną tratwy flisackie przełomem Dunajca (pod Trzema Koronami)?|W Bieszczadach;W Pieninach;W Sudetach;W Górach Stołowych|1
-GEOGRAFIA|Które państwo kształtem na mapie przypomina długiego buta (kozaka)?|Hiszpania;Włochy;Grecja;Norwegia|1
-GEOGRAFIA|Jak nazywa się stolica Szwajcarii (choć największym miastem jest Zurych)?|Genewa;Berno;Bazylea;Lozanna|1
-GEOGRAFIA|Nad jakim oceanem leżą wybrzeża Portugalii i zachodniej Francji?|Nad Spokojnym;Nad Atlantyckim;Nad Indyjskim;Nad Arktycznym|1
-GEOGRAFIA|Jak nazywa się najwyższy szczyt w Afryce pokryty śniegiem na szczycie?|Mount Everest;Kilimandżaro;Mont Blanc;Elbrus|1
-GEOGRAFIA|W jakim polskim mieście nad Bałtykiem znajduje się najdłuższe drewniane molo?|W Gdańsku;W Sopocie;W Gdyni;W Ustce|1
-GEOGRAFIA|Która europejska rzeka przepływa przez aż cztery stolice: Wiedeń, Bratysławę, Budapeszt i Belgrad?|Ren;Dunaj;Łaba;Sekwana|1
-GEOGRAFIA|Jak nazywa się półwysep w Europie, na którym leżą Hiszpania i Portugalia?|Apeniński;Iberyjski (Pirenejski);Skandynawski;Bałkański|1
-GEOGRAFIA|Jak nazywa się stolica Chin?|Tokio;Pekin;Szanghaj;Tajpej|1
-GEOGRAFIA|Jak nazywa się najbardziej sucha pustynia świata położona w Chile?|Sahara;Atakama;Gobi;Namib|1
-GEOGRAFIA|W jakim państwie znajduje się słynny fiord Geiranger oraz przylądek Nordkapp?|W Szwecji;W Norwegii;W Finlandii;W Islandii|1
-GEOGRAFIA|Jak nazywa się stolica Brazylii (zaprojektowana od podstaw w głębi lądu)?|Rio de Janeiro;Brasília;São Paulo;Salvador|1
-GEOGRAFIA|Które morze oddziela Półwysep Arabski od Afryki?|Morze Czarne;Morze Czerwone;Morze Kaspijskie;Morze Martwe|1
-ANGIELSKI|Co oznacza angielskie słowo 'Rainbow'?|Deszcz;Chmura;Tęcza;Piorun|2
-ANGIELSKI|Jak po angielsku powiesz słodki owoc 'Truskawka'?|Blueberry;Strawberry;Raspberry;Cherry|1
-ANGIELSKI|Co oznacza angielski zwrot 'Good night'?|Dzień dobry;Dobry wieczór;Dobranoc;Do widzenia|2
-ANGIELSKI|Jak po angielsku nazywa się rude leśne zwierzę 'Wiewiórka'?|Rabbit;Squirrel;Mouse;Fox|1
-ANGIELSKI|Który miesiąc po angielsku nazywa się 'December'?|Listopad;Grudzień;Styczeń;Październik|1
+GEOGRAFIA|W jakiej miejscowości niedaleko Krakowa znajduje się słynna zabytkowa kopalnia soli?|W Wieliczce;W Bochni;W Zakopanem;W Tarnowie|0
+GEOGRAFIA|Jak nazywa się największa gorąca pustynia na Ziemi?|Gobi;Sahara;Atakama;Kalahari|1
+GEOGRAFIA|Które państwo Ameryki Północnej ma czerwony liść klonu na swojej fladze?|Stany Zjednoczone;Meksyk;Kanada;Kuba|2
+GEOGRAFIA|W jakim pasmie górskim w Polsce leży najwyższy szczyt Sudetów – Śnieżka?|W Tatrach;W Karkonoszach;W Bieszczadach;W Pieninach|1
+GEOGRAFIA|Który słynny kanał żeglugowy w Egipcie łączy Morze Śródziemne z Morzem Czerwonym?|Kanał Panamski;Kanał Sueski;Kanał Koryncki;Kanał Kiloński|1
+GEOGRAFIA|Jak nazywa się najgłębsze jezioro na świecie, położone na Syberii?|Ładoga;Bajkał;Wiktorii;Tanganika|1
+GEOGRAFIA|Jak nazywa się stolica Stanów Zjednoczonych?|Nowy Jork;Waszyngton;Los Angeles;Chicago|1
+GEOGRAFIA|W których polskich górach turyści płyną drewnianymi tratwami przełomem Dunajca?|W Bieszczadach;W Pieninach;W Sudetach;W Gorcach|1
+GEOGRAFIA|Które państwo Europy swoim konturem na mapie przypomina długi but z obcasem?|Hiszpania;Włochy;Grecja;Chorwacja|1
+GEOGRAFIA|Jak nazywa się najwyższy szczyt kontynentu afrykańskiego?|Mount Kenya;Kilimandżaro;Atlas;Ruwenżori|1
+GEOGRAFIA|Która europejska rzeka przepływa przez cztery stolice: Wiedeń, Bratysławę, Budapeszt i Belgrad?|Ren;Dunaj;Łaba;Sekwana|1
+GEOGRAFIA|Na którym półwyspie w Europie leżą Hiszpania i Portugalia?|Na Apenińskim;Na Iberyjskim;Na Skandynawskim;Na Bałkańskim|1
+GEOGRAFIA|Jak nazywa się najbardziej sucha pustynia na Ziemi, położona w Chile?|Sahara;Atakama;Gobi;Namib|1
+GEOGRAFIA|Na terytorium którego państwa leży słynny fiord Geiranger oraz przylądek Nordkapp?|Szwecji;Norwegii;Finlandii;Islandii|1
+GEOGRAFIA|Jak nazywa się obecna stolica Brazylii, zaprojektowana od podstaw w głębi lądu?|Rio de Janeiro;Brasília;São Paulo;Salvador|1
+GEOGRAFIA|Które morze oddziela Półwysep Arabski od północno-wschodniej Afryki?|Morze Czarne;Morze Czerwone;Morze Kaspijskie;Morze Martwe|1
+ANGIELSKI|Jak po angielsku nazywa się słodki owoc 'Truskawka'?|Blueberry;Strawberry;Raspberry;Cherry|1
+ANGIELSKI|Jak po angielsku nazywa się leśne zwierzę 'Wiewiórka'?|Hedgehog;Squirrel;Badger;Fox|1
+ANGIELSKI|Który miesiąc nosi po angielsku nazwę 'December'?|Listopad;Grudzień;Styczeń;Październik|1
 ANGIELSKI|Co oznacza angielskie słowo 'Airplane'?|Statek;Pociąg;Samolot;Helikopter|2
-ANGIELSKI|Jak po angielsku powiesz liczbę 'Dwadzieścia'?|Twelve;Twenty;Two;Thirty|1
-ANGIELSKI|Co oznacza przymiotnik 'Happy'?|Smutny;Zmęczony;Szczęśliwy (wesoły);Głodny|2
-ANGIELSKI|Jak po angielsku nazywa się pomieszczenie 'Kuchnia'?|Bedroom;Bathroom;Kitchen;Garden|2
-ANGIELSKI|Co oznacza czasownik 'To swim'?|Biegać;Pływać;Skakać;Latać|1
-ANGIELSKI|Jak po angielsku powiesz słowo 'Słownik'?|Calendar;Dictionary;Notebook;Magazine|1
-ANGIELSKI|Co oznacza angielskie słowo 'Umbrella'?|Płaszcz;Parasol;Kalosze;Kapelusz|1
-ANGIELSKI|Którą część ciała oznacza słowo 'Shoulder'?|Kolano;Ramię (bark);Łokieć;Kostka|1
-ANGIELSKI|Jak po angielsku powiesz 'Strażak'?|Policeman;Firefighter;Postman;Builder|1
-ANGIELSKI|Co oznacza przymiotnik 'Heavy'?|Lekki;Ciężki;Pusty;Miękki|1
+ANGIELSKI|Jak po angielsku nazywa się liczba 'Dwadzieścia'?|Twelve;Twenty;Two;Thirty|1
+ANGIELSKI|Jak po angielsku nazywa się pomieszczenie 'Kuchnia'?|Bedroom;Bathroom;Kitchen;Attic|2
+ANGIELSKI|Jak po angielsku nazywa się książka ze zbiorem słów – 'Słownik'?|Calendar;Dictionary;Notebook;Magazine|1
+ANGIELSKI|Co oznacza angielskie słowo 'Umbrella'?|Płaszcz;Parasol;Kalosze;Szalik|1
+ANGIELSKI|Którą część ludzkiego ciała oznacza angielskie słowo 'Shoulder'?|Kolano;Ramię;Łokieć;Kostka|1
+ANGIELSKI|Jak po angielsku nazywa się zawód 'Strażak'?|Policeman;Firefighter;Postman;Builder|1
+ANGIELSKI|Co oznacza angielski przymiotnik 'Heavy'?|Lekki;Ciężki;Pusty;Wąski|1
 ANGIELSKI|Jak po angielsku nazywa się warzywo 'Ogórek'?|Tomato;Cucumber;Cabbage;Onion|1
-ANGIELSKI|Który dzień tygodnia to po angielsku 'Friday'?|Czwartek;Piątek;Sobota;Środa|1
-ANGIELSKI|Co oznacza słowo 'Mirror'?|Okno;Lustro;Obraz;Szafa|1
-ANGIELSKI|Jak po angielsku powiesz 'Wakacje'?|Weekend;Holidays (Vacation);Birthday;Morning|1
-ANGIELSKI|Co oznacza czasownik 'To sleep'?|Jeść;Spać;Czytać;Pisać|1
-ANGIELSKI|Co oznacza angielski rzeczownik 'Evidence' używany w kryminałach i prawie?|Wyrok;Dowód (materiał dowodowy);Świadek;Sędzia|1
-ANGIELSKI|Jak po angielsku powiesz przymiotnik 'Współczesny / Nowoczesny'?|Ancient;Contemporary;Obsolete;Medieval|1
-ANGIELSKI|Co oznacza angielski idiom 'Piece of cake'?|Trudne zadanie;Bułka z masłem (coś bardzo łatwego);Urodzinowe przyjęcie;Zakazany owoc|1
-ANGIELSKI|Jak po angielsku nazywa się 'Księgowy'?|Lawyer;Accountant;Architect;Surgeon|1
-HISTORIA|W którym roku Polska przyjęła chrzest za panowania księcia Mieszka I?|966;1000;1025;1410|0
-HISTORIA|Jak nazywali się dawni wojownicy ze Skandynawii pływający łodziami ze smoczymi głowami?|Rzymianie;Wikingowie;Samuraje;Spartanie|1
-HISTORIA|Kto udoskonalił i opatentował tradycyjną żarówkę elektryczną?|Albert Einstein;Thomas Edison;Nikola Tesla;Isaac Newton|1
-HISTORIA|Jak nazywała się wielka polska uczona, która dwukrotnie zdobyła Nagrodę Nobla?|Eliza Orzeszkowa;Maria Skłodowska-Curie;Wisława Szymborska;Królowa Jadwiga|1
-HISTORIA|Jakiego ptaka w złotej koronie widzimy na czerwonym tle w godle Polski?|Sokoła;Orła Białego;Bociana;Żurawia|1
-HISTORIA|W jakim starożytnym kraju rządzili Faraonowie i budowano piramidy?|W Grecji;W Rzymie;W Egipcie;W Chinach|2
-HISTORIA|Jak nazywał się wielki transatlantyk, który zatonął w 1912 roku po zderzeniu z górą lodową?|Odkrywca;Titanic;Santa Maria;Nautilus|1
-HISTORIA|Z jakiego miasta król Zygmunt III Waza przeniósł stolicę Polski do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2
-HISTORIA|Kto był pierwszym koronowanym królem Polski w 1025 roku?|Mieszko I;Bolesław Chrobry;Kazimierz Wielki;Władysław Łokietek|1
-HISTORIA|Kto w XV wieku wynalazł w Europie czcionkę drukarską i wydrukował pierwszą Biblię?|Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1
-HISTORIA|Jak nazywał się włoski malarz i wynalazca, który namalował słynny obraz 'Mona Lisa'?|Michał Anioł;Leonardo da Vinci;Rafael;Picasso|1
-HISTORIA|W jakim mieście w 1000 roku odbył się słynny Zjazd z udziałem cesarza Ottona III i Bolesława Chrobrego?|W Krakowie;W Gnieźnie;W Warszawie;W Malborku|1
-HISTORIA|Jak nazywali się dawni japońscy wojownicy walczący mieczem zwanym kataną?|Rycerze;Samuraje;Gladiatorzy;Muszkieterowie|1
-HISTORIA|Który polski król widnieje na banknocie o nominale 100 złotych?|Mieszko I;Władysław Jagiełło;Kazimierz Wielki;Bolesław Chrobry|1
-HISTORIA|Jak nazywał się słynny niedźwiedź, który służył w polskiej armii generała Andersa podczas II wojny światowej?|Baryła;Wojtek;Misiek;Grom|1
-HISTORIA|W którym miesiącu obchodzimy w Polsce Narodowe Święto Niepodległości (11 dnia)?|W maju;W listopadzie;W sierpniu;W styczniu|1
-HISTORIA|Kto skonstruował pierwszy działający telefon w XIX wieku?|Thomas Edison;Alexander Graham Bell;Bracia Wright;James Watt|1
-HISTORIA|Jak nazywali się bracia, którzy w 1903 roku wykonali pierwszy udany lot samolotem silnikowym?|Bracia Grimm;Bracia Wright;Bracia Lumiere;Bracia Golec|1
-HISTORIA|W jakim polskim mieście znajduje się klasztor na Jasnej Górze, którego broniono podczas potopu szwedzkiego?|W Krakowie;W Częstochowie;W Toruniu;W Lublinie|1
-HISTORIA|Jak nazywała się legendarna księżniczka z Krakowa, która nie chciała wyjść za mąż za Niemca?|Dobrawa;Wanda;Kinga;Jadwiga|1
-HISTORIA|W którym roku wybuchła Wielka Rewolucja Francuska (zdobycie Bastylii)?|1776;1789;1815;1848|1
-HISTORIA|Który wódz kartagiński przeprowadził armię wraz ze słoniami bojowymi przez Alpy na Rzym?|Scypion Afrykański;Hannibal Barkas;Spartakus;Dariusz Wielki|1
-HISTORIA|W jakim mieście podpisano w sierpniu 1980 roku porozumienia prowadzące do powstania 'Solidarności'?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|1
-HISTORIA|Która dynastia panowała w Polsce bezpośrednio po wygaśnięciu dynastii Piastów i Andegawenów?|Wazowie;Jagiellonowie;Wettynowie;Sobiescy|1
+ANGIELSKI|Który dzień tygodnia nosi po angielsku nazwę 'Thursday'?|Wtorek;Środa;Czwartek;Piątek|2
+ANGIELSKI|Co oznacza angielskie słowo 'Mirror'?|Okno;Lustro;Obraz;Szafa|1
+ANGIELSKI|Co oznacza angielski czasownik 'To whisper'?|Krzyczeć;Szeptać;Śpiewać;Ziewać|1
+ANGIELSKI|Jak po angielsku nazywa się warzywo 'Czosnek'?|Onion;Garlic;Carrot;Pepper|1
+ANGIELSKI|Co oznacza angielski rzeczownik 'Evidence' znany z seriali kryminalnych?|Wyrok;Dowód;Świadek;Sędzia|1
+ANGIELSKI|Jak po angielsku brzmi przymiotnik oznaczający 'Współczesny'?|Ancient;Contemporary;Obsolete;Medieval|1
+ANGIELSKI|Co oznacza angielski idiom 'Piece of cake'?|Trudne zadanie;Coś bardzo łatwego;Przyjęcie urodzinowe;Zakazany owoc|1
+ANGIELSKI|Jak po angielsku nazywa się zawód 'Księgowy'?|Lawyer;Accountant;Architect;Surgeon|1
+HISTORIA|W którym roku odbył się chrzest Polski za panowania Mieszka I?|966;1000;1025;1410|0
+HISTORIA|Jak nazywali się średniowieczni wojownicy ze Skandynawii pływający łodziami zwanych drakkarami?|Rzymianie;Wikingowie;Samuraje;Spartanie|1
+HISTORIA|Który amerykański wynalazca udoskonalił i upowszechnił praktyczną żarówkę elektryczną?|Albert Einstein;Thomas Edison;Nikola Tesla;Isaac Newton|1
+HISTORIA|Jak nazywała się słynna polska uczona, która zdobyła Nagrodę Nobla z fizyki i z chemii?|Eliza Orzeszkowa;Maria Skłodowska-Curie;Wisława Szymborska;Irena Sendlerowa|1
+HISTORIA|Jak nazywał się wielki brytyjski transatlantyk, który zatonął w 1912 roku po zderzeniu z górą lodową?|Lusitania;Titanic;Britannic;Queen Mary|1
+HISTORIA|Z którego miasta król Zygmunt III Waza przeniósł swoją stałą rezydencję do Warszawy?|Z Poznania;Z Gniezna;Z Krakowa;Z Gdańska|2
+HISTORIA|Kto został pierwszym koronowanym królem Polski w 1025 roku?|Mieszko I;Bolesław Chrobry;Kazimierz Wielki;Władysław Łokietek|1
+HISTORIA|Kto w XV wieku wynalazł w Europie ruchomą czcionkę drukarską?|Leonardo da Vinci;Johannes Gutenberg;Galileusz;Krzysztof Kolumb|1
+HISTORIA|Który renesansowy artysta i wynalazca namalował słynny portret 'Mona Lisa'?|Michał Anioł;Leonardo da Vinci;Rafael Santi;Sandro Botticelli|1
+HISTORIA|W którym mieście w roku 1000 odbył się zjazd cesarza Ottona III z Bolesławem Chrobrym?|W Krakowie;W Gnieźnie;W Poznaniu;W Malborku|1
+HISTORIA|Jak nazywali się dawni japońscy wojownicy posługujący się mieczem zwanym kataną?|Rycerze;Samuraje;Gladiatorzy;Muszkieterowie|1
+HISTORIA|Który polski król widnieje na współczesnym banknocie o nominale 100 złotych?|Mieszko I;Władysław Jagiełło;Kazimierz Wielki;Bolesław Chrobry|1
+HISTORIA|Jak nazywał się niedźwiedź brunatny służący w armii generała Andersa podczas II wojny światowej?|Baryła;Wojtek;Misiek;Grom|1
+HISTORIA|Kto opatentował pierwszy praktycznie działający telefon w 1876 roku?|Thomas Edison;Alexander Graham Bell;Bracia Wright;James Watt|1
+HISTORIA|Jak nazywali się amerykańscy bracia, którzy w 1903 roku wykonali pierwszy kontrolowany lot samolotem silnikowym?|Bracia Grimm;Bracia Wright;Bracia Lumière;Bracia Montgolfier|1
+HISTORIA|W którym polskim mieście znajduje się klasztor na Jasnej Górze broniony podczas potopu szwedzkiego?|W Krakowie;W Częstochowie;W Toruniu;W Sandomierzu|1
+HISTORIA|W którym roku wybuchła Wielka Rewolucja Francuska ze zdobyciem Bastylii?|1776;1789;1815;1848|1
+HISTORIA|Który kartagiński wódz przeprowadził swoją armię ze słoniami bojowymi przez Alpy przeciw Rzymowi?|Scypion Afrykański;Hannibal Barkas;Spartakus;Dariusz Wielki|1
+HISTORIA|W którym mieście w sierpniu 1980 roku podpisano najważniejsze porozumienia prowadzące do powstania 'Solidarności'?|W Warszawie;W Gdańsku;W Krakowie;W Poznaniu|1
+HISTORIA|Która dynastia zasiadła na polskim tronie po wygaśnięciu Piastów i krótkich rządach Andegawenów?|Wazowie;Jagiellonowie;Wettynowie;Sobiescy|1
 `;
