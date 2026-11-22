@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Cyber-Quiz | Admin (7 Rund + 12 Puli + Awatary)</title>
+<title>Cyber-Quiz | Admin (7 Rund + 16 Puli + Awatary)</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 body { font-family: sans-serif; background: #111; color: #fff; padding: 20px; max-width: 940px; margin: 0 auto; }
@@ -44,7 +44,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <button type="button" class="gold" id="btnClearAvatars" onclick="window.clearAllAvatars && window.clearAllAvatars()">🖼️ WYCZYŚĆ AWATARY GRACZY</button>
 
 <div style="margin-top: 15px; padding-top: 12px; border-top: 1px dashed #444;">
-<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY I PODGLĄD AWATARÓW (Slot 4 ma poziom dla 8-latka TYLKO w Pulach 1–10; w Pulach 11–12 wszyscy grają równo!):</label>
+<label style="color:#a855f7; font-weight:bold; font-size:14px; display:block;">🏷️ WŁASNE IMIONA GRACZY I PODGLĄD AWATARÓW (Slot 4 ma poziom dla 8-latka TYLKO w Pulach 1–14; w Pulach 15–16 wszyscy grają równo na poziomie dla dorosłych!):</label>
 <div class="scores-edit-grid">
 <div class="score-edit-card">
 <label><img id="av-prev-Lila" class="mini-av" alt=""> SLOT 1 (Lila) <span class="av-status-pill" id="av-st-Lila">brak foto</span></label>
@@ -112,7 +112,7 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 </div>
 
 <div class="box">
-<h3>KROK 2: WYBÓR PULI PYTAŃ (12 W PEŁNI ROZŁĄCZNYCH PUL — ZERO POWTÓREK W ŻADNEJ Z 7 RUND!)</h3>
+<h3>KROK 2: WYBÓR PULI PYTAŃ (16 W PEŁNI ROZŁĄCZNYCH PUL — ZERO POWTÓREK W ŻADNEJ Z 7 RUND!)</h3>
 <select id="poolSel">
 <option value="1">PULA 1 (Familijna Zbalansowana #1 + 2x Rodzina)</option>
 <option value="2">PULA 2 (Familijna Zbalansowana #2 + 2x Rodzina)</option>
@@ -122,10 +122,14 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <option value="6">PULA 6 (Familijna Zbalansowana #6 + 2x Rodzina)</option>
 <option value="7">PULA 7 (Familijna Zbalansowana #7 + 2x Rodzina)</option>
 <option value="8">PULA 8 (Familijna Zbalansowana #8 + 2x Rodzina)</option>
-<option value="9">PULA 9 (Dzieci - Trudniejsza #9 + 2x Rodzina)</option>
-<option value="10">PULA 10 (Dzieci - Trudniejsza #10 + 2x Rodzina)</option>
-<option value="11">PULA 11 (🔥 DOROŚLI HARD #1 — Nauka, Inżynieria, Świat, Kino | Równe 7 Rund)</option>
-<option value="12">PULA 12 (🔥 DOROŚLI HARD #2 — Ekonomia, Historia, Technika, Film | Równe 7 Rund)</option>
+<option value="9">PULA 9 (Familijna Zbalansowana #9 + 2x Rodzina)</option>
+<option value="10">PULA 10 (Familijna Zbalansowana #10 + 2x Rodzina)</option>
+<option value="11">PULA 11 (⚡ Dzieci - Trudniejsza #1 + 2x Rodzina)</option>
+<option value="12">PULA 12 (⚡ Dzieci - Trudniejsza #2 + 2x Rodzina)</option>
+<option value="13">PULA 13 (⚡ Dzieci - Trudniejsza #3 + 2x Rodzina)</option>
+<option value="14">PULA 14 (⚡ Dzieci - Trudniejsza #4 + 2x Rodzina)</option>
+<option value="15">PULA 15 (🔥 DOROŚLI HARD #1 — Nauka, Inżynieria, Świat, Kino | Równe 7 Rund)</option>
+<option value="16">PULA 16 (🔥 DOROŚLI HARD #2 — Ekonomia, Historia, Technika, Film | Równe 7 Rund)</option>
 </select>
 <button type="button" class="purple" id="btnSendPool" onclick="window.sendPoolChoice && window.sendPoolChoice()">📤 WYŚLIJ / ZATWIERDŹ PULĘ</button>
 </div>
@@ -135,10 +139,10 @@ select { padding: 12px; font-size: 15px; margin-right: 10px; border-radius: 8px;
 <label>Wybierz rundę:</label>
 <select id="roundSel" onchange="window.updateRemainingCounterUI && window.updateRemainingCounterUI()">
 <option value="1">Runda 1: Wyścig ABCD (15 pytań | 12s po lektorze | Losowe ABCD)</option>
-<option value="2">Runda 2: 🔥 GORĄCA BOMBA (1 Tura: 1:15 - 1:45 min | Sztywny podział na 12 pul!)</option>
+<option value="2">Runda 2: 🔥 GORĄCA BOMBA (1 Tura: 1:15 - 1:45 min | Sztywny podział na 16 pul!)</option>
 <option value="3">Runda 3: 🎯 KTO NAJBLIŻEJ? (5 pytań | 20s po lektorze | Oś liczbowa z awatarami + Bonus +10 za ideał!)</option>
 <option value="4">Runda 4: 🔤 Odsłanianie Hasła (5 haseł | 60s | Litery lub całe hasło bez kar!)</option>
-<option value="5">Runda 5: 💰 POSTAW NA MILION (Po 5 pytań na gracza | 45s po lektorze | Bez powtórek w 12 pulach!)</option>
+<option value="5">Runda 5: 💰 POSTAW NA MILION (Po 5 pytań na gracza | 45s po lektorze | Bez powtórek w 16 pulach!)</option>
 <option value="6">Runda 6: ⚡ Ryzyko - Wybieranie gracza (24 pytania | ±20 pkt sam / ±10 pkt rywal)</option>
 <option value="7">Runda 7: 🎡 KOŁO I TAJNE OBSTAWIANIE W CIEMNO (16 pytań | Stoper 20s | Sprawiedliwe losowanie remisów)</option>
 </select><br>
@@ -187,58 +191,78 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 
-// --- BAZA 60 PYTAŃ DO NOWEJ RUNDY 3: "KTO NAJBLIŻEJ?" (12 PUL x 5 PYTAŃ) ---
+// --- BAZA 80 PYTAŃ DO NOWEJ RUNDY 3: "KTO NAJBLIŻEJ?" (16 PUL x 5 PYTAŃ) ---
 const closestR3Raw = `
-Ile kilometrów długości ma najdłuższa rzeka w Polsce – Wisła?|1047|km
-Z ilu kości składa się szkielet dorosłego człowieka?|206|kości
-Ile metrów wysokości ma Pałac Kultury i Nauki w Warszawie razem z iglicą?|237|m
-W którym roku odbyła się kinowa premiera pierwszej części filmu 'Shrek'?|2001|r.
-Ile ziemskich dni trwa jeden pełny rok na Marsie?|687|dni
-Ile metrów nad poziomem morza ma polski wierzchołek najwyższego szczytu Polski – Rysów?|2499|m
-Ile państw należy obecnie do Unii Europejskiej?|27|państw
-Ile kilometrów wynosi całkowita długość rzeki Odry?|854|km
+Ile liter liczy oficjalny polski alfabet (razem z polskimi znakami, bez Q, V, X)?|32|liter
+Ile punktów wynosi maksymalny wynik, jaki można zdobyć w jednej perfekcyjnej grze w kręgle?|300|pkt
 W którym roku w kinach pojawiła się pierwsza część 'Krainy Lodu'?|2013|r.
+Ile minut trwa regulaminowy mecz hokeja na lodzie (trzy tercje razem, bez przerw)?|60|min
+Ile czarnych i białych pól znajduje się łącznie na klasycznej szachownicy?|64|pól
+Ile minut liczy dokładnie jedna pełna doba (24 godziny)?|1440|min
+W którym roku odbyły się pierwsze nowożytne Igrzyska Olimpijskie w Atenach?|1896|r.
+W którym roku odbyła się kinowa premiera pierwszej części filmu animowanego 'Toy Story'?|1995|r.
+W którym roku odbyła się kinowa premiera pierwszej części filmu 'Shrek'?|2001|r.
+Ile stałych zębów ma w pysku dorosły pies?|42|zęby
+W którym roku założono duńską firmę produkującą klocki LEGO?|1932|r.
+Ile kilometrów wynosi średnica Księżyca?|3474|km
+W którym roku Thomas Edison zaprezentował swoją działającą żarówkę elektryczną?|1879|r.
+Ile sekund potrzebuje światło ze Słońca, aby dotrzeć do Ziemi?|499|s
+W którym roku zatonął słynny transatlantyk 'Titanic'?|1912|r.
+W którym roku otwarto w Katowicach słynną halę widowiskowo-sportową Spodek?|1971|r.
+Ile stałych zębów ma dorosły kot domowy?|30|zębów
+Z ilu kości składa się szkielet dorosłego człowieka?|206|kości
+Ile metrów wysokości ma słynna Krzywa Wieża w Pizie?|56|m
+Ile klawiszy (białych i czarnych łącznie) posiada pełnowymiarowy fortepian koncertowy?|88|klawiszy
+Ile metrów wysokości ma słynna Wieża Eiffla w Paryżu razem z antenami?|330|m
+Ile kilometrów na godzinę wynosi maksymalna dozwolona prędkość auta osobowego na autostradzie w Polsce?|140|km/h
+Ile kilometrów wynosi w linii prostej odległość z Katowic do Warszawy?|260|km
+Ile państw członkowskich należy do Organizacji Narodów Zjednoczonych (ONZ)?|193|państw
+Ile ziemskich dni trwa jeden pełny rok na Marsie?|687|dni
+Ile metrów pod ziemią znajduje się najgłębszy, IX poziom Kopalni Soli w Wieliczce?|327|m
+Ile metrów wysokości ma najwyższy wieżowiec w Polsce i UE – Varso Tower w Warszawie z iglicą?|310|m
+W którym roku ukazała się pierwsza publiczna wersja gry 'Minecraft'?|2009|r.
+Ile stopni Celsjusza wynosi średnia temperatura na powierzchni Słońca?|5500|°C
 Ile kart znajduje się w pełnej, standardowej talii gry UNO?|108|kart
 Ile metrów nad poziomem morza ma najwyższy szczyt świata – Mount Everest?|8849|m
-Ile kilometrów na godzinę wynosi maksymalna dozwolona prędkość auta osobowego na autostradzie w Polsce?|140|km/h
-W którym roku ukazała się pierwsza publiczna wersja gry 'Minecraft'?|2009|r.
-Ile metrów wysokości ma Statua Wolności w Nowym Jorku razem z cokołem?|93|m
-Ile godzin liczy dokładnie jeden pełny tydzień (7 dób)?|168|godz.
-Ile metrów nad poziomem morza ma Śnieżka – najwyższy szczyt Karkonoszy?|1603|m
-W którym roku wydano pierwszą książkę o Harrym Potterze ('Kamień Filozoficzny')?|1997|r.
-Ile liter liczy oficjalny polski alfabet (razem z polskimi znakami, bez Q, V, X)?|32|liter
-Ile stałych zębów ma w pysku dorosły pies?|42|zęby
-Ile metrów wysokości ma słynna Krzywa Wieża w Pizie?|56|m
-Ile metrów pod ziemią znajduje się najgłębszy, IX poziom Kopalni Soli w Wieliczce?|327|m
-W którym roku Thomas Edison zaprezentował swoją działającą żarówkę elektryczną?|1879|r.
-Ile minut liczy dokładnie jedna pełna doba (24 godziny)?|1440|min
-Ile państw członkowskich należy do Organizacji Narodów Zjednoczonych (ONZ)?|193|państw
-W którym roku zatonął słynny transatlantyk 'Titanic'?|1912|r.
 Ile metrów wysokości ma słynny japoński wulkan Fudżi?|3776|m
-Ile kilometrów wynosi średnica Księżyca?|3474|km
-Ile stałych zębów ma dorosły kot domowy?|30|zębów
-W którym roku odbyła się premiera oryginalnej animacji Disneya 'Król Lew'?|1994|r.
-Ile metrów wysokości ma najwyższa kolejka górska w Polsce – Hyperion w Energylandii?|77|m
-Ile metrów wysokości ma najwyższy wieżowiec w Polsce i UE – Varso Tower w Warszawie z iglicą?|310|m
-Ile sekund potrzebuje światło ze Słońca, aby dotrzeć do Ziemi?|499|s
-W którym roku otwarto w Katowicach słynną halę widowiskowo-sportową Spodek?|1971|r.
 Ile kart bez jokerów znajduje się w klasycznej pełnej talii kart do gry?|52|karty
-Ile punktów wynosi maksymalny wynik, jaki można zdobyć w jednej perfekcyjnej grze w kręgle?|300|pkt
-Ile metrów wysokości ma najwyższy budynek świata – Burdż Chalifa w Dubaju?|828|m
-W którym roku założono duńską firmę produkującą klocki LEGO?|1932|r.
+Ile metrów wysokości ma Pałac Kultury i Nauki w Warszawie razem z iglicą?|237|m
+Ile kilometrów wynosi całkowita długość rzeki Odry?|854|km
+W którym roku powstał serwis internetowy YouTube?|2005|r.
+Ile metrów nad poziomem morza ma Śnieżka – najwyższy szczyt Karkonoszy?|1603|m
+Ile metrów nad poziomem morza ma najwyższy szczyt Bieszczadów po stronie polskiej – Tarnica?|1346|m
+Ile metrów wysokości ma Statua Wolności w Nowym Jorku razem z cokołem?|93|m
+Ile metrów nad poziomem morza ma polski wierzchołek najwyższego szczytu Polski – Rysów?|2499|m
+Ile państw należy obecnie do Unii Europejskiej?|27|państw
+Ile metrów długości ma słynne drewniane molo w Sopocie (część spacerowa wychodząca w morze)?|511|m
 Ile metrów długości ma pełnowymiarowe boisko piłkarskie na Stadionie Narodowym w Warszawie?|105|m
-Ile stopni Celsjusza wynosi średnia temperatura na powierzchni Słońca?|5500|°C
-W którym roku odbyły się pierwsze nowożytne Igrzyska Olimpijskie w Atenach?|1896|r.
-Ile kilometrów wynosi długość ziemskiego równika?|40075|km
-Ile metrów głębokości ma najgłębsze jezioro na świecie – syberyjski Bajkał?|1642|m
-W którym roku odbyła się premiera pierwszego pełnometrażowego filmu Disneya – 'Królewna Śnieżka'?|1937|r.
-Ile pierwiastków chemicznych znajduje się obecnie w układzie okresowym?|118|pierwiastków
-Ile metrów nad poziomem morza ma najwyższy szczyt Afryki – Kilimandżaro?|5895|m
-Ile kilometrów wynosi średnia odległość od Ziemi do Księżyca?|384400|km
-Ile metrów głębokości ma najgłębsze miejsce w oceanach – Głębia Challengera w Rowie Mariańskim?|10984|m
+Ile kilometrów długości ma polska linia brzegowa Morza Bałtyckiego (bez Zalewów)?|440|km
+W którym roku wydano pierwszą książkę o Harrym Potterze ('Kamień Filozoficzny')?|1997|r.
+Ile kilometrów długości ma najdłuższa rzeka w Polsce – Wisła?|1047|km
+Ile metrów wysokości ma najwyższa kolejka górska w Polsce – Hyperion w Energylandii?|77|m
+W którym roku odbyła się premiera oryginalnej animacji Disneya 'Król Lew'?|1994|r.
+Ile godzin liczy dokładnie jeden pełny tydzień (7 dób)?|168|godz.
+Ile metrów wysokości ma najwyższy budynek świata – Burdż Chalifa w Dubaju?|828|m
 W którym roku założono najstarszą polską uczelnię – Akademię Krakowską (dziś UJ)?|1364|r.
 Ile metrów wysokości ma najwyższy wodospad na świecie – Salto Ángel w Wenezueli?|979|m
+W którym roku pierwszy człowiek – Jurij Gagarin – odbył lot orbitalny w kosmosie?|1961|r.
+W którym roku odbyła się premiera pierwszego pełnometrażowego filmu Disneya – 'Królewna Śnieżka'?|1937|r.
+Ile metrów głębokości ma najgłębsze miejsce w oceanach – Głębia Challengera w Rowie Mariańskim?|10984|m
+Ile kilometrów na godzinę wynosi rekordowa prędkość lotu nurkowego sokoła wędrownego?|389|km/h
+Ile metrów głębokości ma najgłębsze jezioro na świecie – syberyjski Bajkał?|1642|m
+Ile metrów nad poziomem morza ma najwyższy szczyt Alp – Mont Blanc?|4808|m
+Ile kilometrów wynosi długość ziemskiego równika?|40075|km
 Ile stopni w skali Fahrenheita odpowiada temperaturze wrzenia wody (100 °C)?|212|°F
+Ile kilometrów długości ma najdłuższa rzeka w Europie – Wołga?|3531|km
+Ile kilometrów wynosi średnia odległość od Ziemi do Księżyca?|384400|km
+Ile metrów wysokości ma słynna zapora wodna nad Jeziorem Solińskim w Bieszczadach?|82|m
+Ile dni trwa pełny rok na najbliższej Słońcu planecie – Merkurym?|88|dni
+Ile metrów głębokości ma najgłębsze jezioro w Polsce – jezioro Hańcza?|108|m
+Ile metrów nad poziomem morza ma najwyższy szczyt Afryki – Kilimandżaro?|5895|m
+Ile pierwiastków chemicznych znajduje się obecnie w układzie okresowym?|118|pierwiastków
+Ile kilometrów wynosi długość najdłuższej rzeki Afryki – Nilu?|6650|km
+W którym roku wynaleziono w Europie druk z ruchomą czcionką (Biblia Gutenberga)?|1455|r.
+W którym roku zaprezentowano na świecie pierwszego smartfona iPhone?|2007|r.
 Ile kilometrów długości ma Kanał Sueski w Egipcie?|193|km
 Ile stopni Celsjusza wynosi temperatura topnienia czystego żelaza przy ciśnieniu atmosferycznym?|1538|°C
 W którym roku uruchomiono w Londynie pierwszą na świecie linię kolei podziemnej (metra)?|1863|r.
@@ -442,22 +466,22 @@ if (!seenJasBombSet.has(normKey)) { seenJasBombSet.add(normKey); jasUniqueBombQu
 let usedBombQuestionsInSession = new Set();
 
 function getBombSliceForPool(poolNum, isJasSlot) {
-if (poolNum >= 11 && adultBombTF.length > 0) {
+if (poolNum >= 15 && adultBombTF.length > 0) {
 const half = Math.floor(adultBombTF.length / 2);
-return { primary: adultBombTF.slice(poolNum === 11 ? 0 : half, poolNum === 11 ? half : adultBombTF.length), fallback: adultBombTF };
+return { primary: adultBombTF.slice(poolNum === 15 ? 0 : half, poolNum === 15 ? half : adultBombTF.length), fallback: adultBombTF };
 }
-const pIdx = Math.max(0, Math.min(9, poolNum - 1));
+const pIdx = Math.max(0, Math.min(13, poolNum - 1));
 if (isJasSlot && jasUniqueBombQuestions.length > 0) {
-const perPool = Math.max(1, Math.floor(jasUniqueBombQuestions.length / 10));
-return { primary: jasUniqueBombQuestions.slice(pIdx * perPool, pIdx === 9 ? jasUniqueBombQuestions.length : (pIdx + 1) * perPool), fallback: jasUniqueBombQuestions };
+const perPool = Math.max(1, Math.floor(jasUniqueBombQuestions.length / 14));
+return { primary: jasUniqueBombQuestions.slice(pIdx * perPool, pIdx === 13 ? jasUniqueBombQuestions.length : (pIdx + 1) * perPool), fallback: jasUniqueBombQuestions };
 }
-const perPool = Math.max(1, Math.floor(allOlderBombOrdered.length / 10));
-return { primary: allOlderBombOrdered.slice(pIdx * perPool, pIdx === 9 ? allOlderBombOrdered.length : (pIdx + 1) * perPool), fallback: [...extraBombOverflow, ...allOlderBombOrdered] };
+const perPool = Math.max(1, Math.floor(allOlderBombOrdered.length / 14));
+return { primary: allOlderBombOrdered.slice(pIdx * perPool, pIdx === 13 ? allOlderBombOrdered.length : (pIdx + 1) * perPool), fallback: [...extraBombOverflow, ...allOlderBombOrdered] };
 }
 
 function pickNextUniqueBombQuestion(playerKey) {
 const activePool = parseInt(document.getElementById('poolSel').value, 10) || currentPool || 1;
-const { primary, fallback } = getBombSliceForPool(activePool, activePool <= 10 && playerKey === "Jas");
+const { primary, fallback } = getBombSliceForPool(activePool, activePool <= 14 && playerKey === "Jas");
 let unused = primary.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
 if (unused.length === 0) unused = fallback.filter(item => !usedBombQuestionsInSession.has(stripPolishChars(item.q)));
 if (unused.length === 0) { usedBombQuestionsInSession.clear(); unused = primary.length > 0 ? [...primary] : [...fallback]; }
@@ -467,8 +491,8 @@ return chosen;
 }
 
 function getMillionQuestionsForPlayer(player, poolNum, pIdx) {
-if (poolNum >= 11 && adultMilQ4.length >= 24 && adultMilQ3.length >= 8 && adultMilQ2.length >= 8) {
-const off = (poolNum === 11) ? 0 : 1;
+if (poolNum >= 15 && adultMilQ4.length >= 24 && adultMilQ3.length >= 8 && adultMilQ2.length >= 8) {
+const off = (poolNum === 15) ? 0 : 1;
 const q4Base = off * 12 + pIdx * 3;
 return [
 shuffleQuestionOptions(adultMilQ4[q4Base % adultMilQ4.length]),
@@ -478,8 +502,8 @@ shuffleQuestionOptions(adultMilQ3[(off * 4 + pIdx) % adultMilQ3.length]),
 shuffleQuestionOptions(adultMilQ2[(off * 4 + pIdx) % adultMilQ2.length])
 ];
 }
-const pOffset = Math.max(0, Math.min(9, poolNum - 1));
-if (player === "Jas" && millionJasQ4Opts.length >= 30) {
+const pOffset = Math.max(0, Math.min(13, poolNum - 1));
+if (player === "Jas" && millionJasQ4Opts.length >= 42) {
 const q4Base = pOffset * 3;
 return [
 shuffleQuestionOptions(millionJasQ4Opts[q4Base % millionJasQ4Opts.length]),
@@ -504,7 +528,7 @@ const r5Order = ["Lila", "Kaja", "Darek", "Jas"];
 const r5Ages = { Lila: 11, Kaja: 10, Darek: 10, Jas: 8 };
 const r7WheelCategoriesKids = ["KOSMOS", "BAJKI", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
 const r7WheelCategoriesAdults = ["KOSMOS", "FILM", "ZWIERZĘTA", "MATEMATYKA", "SPORT", "GEOGRAFIA", "ANGIELSKI", "HISTORIA"];
-function getWheelCategoriesForPool(poolNum) { return poolNum >= 11 ? r7WheelCategoriesAdults : r7WheelCategoriesKids; }
+function getWheelCategoriesForPool(poolNum) { return poolNum >= 15 ? r7WheelCategoriesAdults : r7WheelCategoriesKids; }
 
 const roundTitlesSpeech = {
 1: "Runda pierwsza: Wyścig A B C D",
@@ -522,10 +546,10 @@ const adultR7ByCat = {};
 r7WheelCategoriesAdults.forEach(c => { adultR7ByCat[c] = adultR7.filter(item => item.cat === c); });
 
 const allDBs = {};
-for (let p = 1; p <= 12; p++) {
+for (let p = 1; p <= 16; p++) {
 const r3ClosestSlice = masterR3Closest.slice((p - 1) * 5, (p - 1) * 5 + 5);
-if (p >= 11 && ADB && adultR1.length >= 30) {
-const offset = p - 11;
+if (p >= 15 && ADB && adultR1.length >= 30) {
+const offset = p - 15;
 const r7AdultPool = [];
 r7WheelCategoriesAdults.forEach(c => {
 const catArr = adultR7ByCat[c] || [];
@@ -883,7 +907,7 @@ updateRemainingCounterUI();
 statusEl.innerText = `🔥 BOMBA W GRZE (Pula ${currentPool} | Pytanie #${bombQuestionsAskedCount}) -> ${getDisplayName(holder)} (Pozostało: ${(remMs/1000).toFixed(1)}s)`;
 await setDoc(doc(db, "quizGame", "state"), {
 status: "r2_bomb_running", round: 2, bombTurn: 1, nominated: holder,
-r5Age: currentPool >= 11 ? 30 : (r5Ages[holder] || 10), question: qItem.q, r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
+r5Age: currentPool >= 15 ? 30 : (r5Ages[holder] || 10), question: qItem.q, r5CorrectBool: qItem.a !== undefined ? qItem.a : true,
 bombProgress: Math.min(0.99, Math.max(0, 1 - (remMs / bombTotalDurationMs))), activePlayers: activeList, playerNames: playerNamesMap,
 tick: nowTick, speechTick: nowTick, pool: currentPool
 }, { merge: true });
@@ -1085,13 +1109,13 @@ async function sendPoolChoice() {
 try {
 clearAllAdminTimers();
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
-if (currentPool >= 11 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
+if (currentPool >= 15 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
 currentQIndex = { 1: -1, 2: -1, 3: -1, 4: -1, 5: -1, 6: -1, 7: -1 };
 r6Controller = ""; r7CarryOverPool = 0; usedR7Indices = []; lastR7WheelSegment = -1;
 r7TieWinCounts = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 }; lastR7TieWinner = ""; usedBombQuestionsInSession.clear();
 let activeList = getSelectedActivePlayers();
 updateRemainingCounterUI();
-const modeLabel = currentPool >= 11 ? " (TRYB DOROŚLI HARD — RÓWNY POZIOM)" : "";
+const modeLabel = currentPool >= 15 ? " (TRYB DOROŚLI HARD — RÓWNY POZIOM)" : (currentPool >= 11 ? " (DZIECI — TRUDNIEJSZA)" : "");
 await setDoc(doc(db, "quizGame", "state"), { status: "idle", round: 1, question: `Załadowano PULĘ ${currentPool}${modeLabel}! Czekamy na przycisk START.`, blocked: [], usedOptions: [], activePlayers: activeList, playerNames: playerNamesMap, pool: currentPool });
 statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}${modeLabel} (Grają: ${activeList.map(getDisplayName).join(", ")}). Kliknij START GRY!`;
 } catch (err) { showError(err.message); }
@@ -1100,7 +1124,7 @@ statusEl.innerText = `Status: Załadowano PULĘ ${currentPool}${modeLabel} (Graj
 async function nextQuestion() {
 try {
 currentPool = parseInt(document.getElementById('poolSel').value, 10) || 1;
-if (currentPool >= 11 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
+if (currentPool >= 15 && !ADB) { showError("Brak pliku baza_dorosli.js w folderze!"); return; }
 let r = parseInt(document.getElementById('roundSel').value, 10);
 let activeList = getSelectedActivePlayers();
 
@@ -1201,7 +1225,7 @@ else if (!window.ADULT_QUIZ_DB) showError("Brak pliku baza_dorosli.js!");
 else {
 const kidsBombTotal = allOlderBombOrdered.length + extraBombOverflow.length + jasUniqueBombQuestions.length;
 const kidsMilTotal = millionStandardQ4Opts.length + millionStandardQ3Opts.length + millionStandardQ2Opts.length + millionJasQ4Opts.length + millionJasQ3Opts.length + millionJasQ2Opts.length;
-statusEl.innerText = `✅ SYSTEM GOTOWY! R3 Kto Najbliżej: ${masterR3Closest.length} pytań (12x5) | Bomba: ${kidsBombTotal}+${adultBombTF.length} | Milion: ${kidsMilTotal}+${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length}`;
+statusEl.innerText = `✅ SYSTEM GOTOWY! 16 PUL | R3 Kto Najbliżej: ${masterR3Closest.length} pytań (16x5) | Bomba: ${kidsBombTotal}+${adultBombTF.length} | Milion: ${kidsMilTotal}+${adultMilQ4.length + adultMilQ3.length + adultMilQ2.length}`;
 }
 
 // --- NASŁUCHIWANIE STANU GRY ---
