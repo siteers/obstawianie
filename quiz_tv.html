@@ -2,7 +2,7 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>Cyber-Quiz | TV (7 Rund + 12 Puli)</title>
+<title>Cyber-Quiz | TV (7 Rund + 12 Puli + Awatary)</title>
 <style>
 :root { --cyan: #00d4ff; --gold: #d4af37; --bg: #050b14; --error: #ff4757; }
 body { margin: 0; background: var(--bg); color: #fff; font-family: sans-serif; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; }
@@ -37,20 +37,11 @@ body.shake-screen { animation: screenShake 0.65s cubic-bezier(.36,.07,.19,.97) b
 50% { border-color: #550000; background: rgba(80, 0, 0, 0.15); box-shadow: 0 0 0.5vw #ff0000; }
 }
 
-/* DYNAMICZNE PĘCZNIENIE I DRGANIE BOMBY 3D */
 @keyframes bomb3DThrob {
-0%, 100% {
-transform: scale(var(--b-scale, 0.9)) rotate(calc(var(--b-wobble, 2deg) * -1));
-}
-25% {
-transform: scale(calc(var(--b-scale, 0.9) * 1.05)) translate(-0.15vw, 0.1vw) rotate(var(--b-wobble, 2deg));
-}
-50% {
-transform: scale(calc(var(--b-scale, 0.9) * 1.11)) translate(0.15vw, -0.15vw) rotate(calc(var(--b-wobble, 2deg) * -0.8));
-}
-75% {
-transform: scale(calc(var(--b-scale, 0.9) * 1.04)) translate(-0.1vw, -0.1vw) rotate(var(--b-wobble, 2deg));
-}
+0%, 100% { transform: scale(var(--b-scale, 0.9)) rotate(calc(var(--b-wobble, 2deg) * -1)); }
+25% { transform: scale(calc(var(--b-scale, 0.9) * 1.05)) translate(-0.15vw, 0.1vw) rotate(var(--b-wobble, 2deg)); }
+50% { transform: scale(calc(var(--b-scale, 0.9) * 1.11)) translate(0.15vw, -0.15vw) rotate(calc(var(--b-wobble, 2deg) * -0.8)); }
+75% { transform: scale(calc(var(--b-scale, 0.9) * 1.04)) translate(-0.1vw, -0.1vw) rotate(var(--b-wobble, 2deg)); }
 }
 
 @keyframes sparkFlicker {
@@ -71,14 +62,29 @@ transform: scale(calc(var(--b-scale, 0.9) * 1.04)) translate(-0.1vw, -0.1vw) rot
 100% { transform: translate3d(0, 9.5vw, -160px) scale(0.15) rotateZ(48deg); opacity: 0; }
 }
 
+@keyframes flagPopIn {
+0% { transform: translateX(-50%) scale(0.15) translateY(1.5vw); opacity: 0; }
+65% { transform: translateX(-50%) scale(1.12) translateY(-0.2vw); opacity: 1; }
+100% { transform: translateX(-50%) scale(1) translateY(0); opacity: 1; }
+}
+
+@keyframes goldenSlamDown {
+0% { transform: translateX(-50%) translateY(-130%) scaleY(0.6); opacity: 0; }
+60% { transform: translateX(-50%) translateY(4%) scaleY(1.06); opacity: 1; }
+82% { transform: translateX(-50%) translateY(-2%) scaleY(0.98); opacity: 1; }
+100% { transform: translateX(-50%) translateY(0) scaleY(1); opacity: 1; }
+}
+
 .timer-box { position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%; width: 7.2vw; height: 7.2vw; display: none; align-items: center; justify-content: center; font-size: 2.7vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.4); z-index: 100; margin: 0 !important; }
 .timer-alert { border-color: var(--error) !important; color: var(--error) !important; box-shadow: 0 0 2.5vw rgba(255, 71, 87, 0.8) !important; animation: pulseTimer 0.5s infinite !important; }
 
-.score-corner { position: absolute; width: 14vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 1vw 1.2vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
+.score-corner { position: absolute; width: 15vw; background: rgba(0,0,0,0.85); border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 0.9vw 1vw; text-align: center; box-shadow: 0 0 1.5vw rgba(0, 212, 255, 0.2); transition: all 0.3s; z-index: 20; box-sizing: border-box; }
 .top-left { top: 1.5vw; left: 1.5vw; } .top-right { top: 1.5vw; right: 1.5vw; }
 .bottom-left { bottom: 1.5vw; left: 1.5vw; } .bottom-right { bottom: 1.5vw; right: 1.5vw; }
-.player-name { font-size: 1.7vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; }
-.player-score { font-size: 3vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.3vw; }
+.player-header-row { display: flex; align-items: center; justify-content: center; gap: 0.65vw; }
+.corner-avatar { width: 3vw; height: 3vw; border-radius: 50%; object-fit: cover; border: 0.18vw solid var(--gold); box-shadow: 0 0 0.8vw rgba(212,175,55,0.5); display: none; flex-shrink: 0; background: #111; }
+.player-name { font-size: 1.65vw; color: var(--gold); font-weight: 900; text-transform: uppercase; letter-spacing: 0.12vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player-score { font-size: 2.9vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.25vw; }
 .blocked-tag { display: none; font-size: 0.9vw; color: #fff; background: #ff0000; padding: 0.2vw 0.5vw; border-radius: 0.4vw; margin-top: 0.4vw; font-weight: 900; letter-spacing: 0.1vw; }
 
 .score-corner.blocked { animation: blockedFlash 0.8s infinite !important; }
@@ -103,312 +109,216 @@ transform: scale(calc(var(--b-scale, 0.9) * 1.04)) translate(-0.1vw, -0.1vw) rot
 .option.used-wrong { background: rgba(40, 0, 0, 0.4) !important; border-color: #555 !important; color: #666 !important; text-decoration: line-through; opacity: 0.35; box-shadow: none !important; }
 
 /* ============================================================================
-   RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM) + KOMIKSOWE BOOM!
+   RUNDA 3: 🎯 KTO NAJBLIŻEJ? — ANIMOWANA OŚ LICZBOWA Z AWATARAMI
    ============================================================================ */
-#r2-bomb-box {
-display: none; flex-direction: column; align-items: center; justify-content: center;
-margin: 0.4vw 0; position: relative; min-height: 18.5vw;
+#r3-axis-box {
+display: none; flex-direction: column; align-items: center; width: 100%;
+margin-top: 0.3vw; box-sizing: border-box;
 }
-#r2-bomb-stage {
-position: relative; width: 22vw; height: 15.5vw;
+#r3-axis-stage {
+position: relative; width: 100%; height: 19.6vw;
+background: radial-gradient(ellipse at 50% 90%, rgba(0, 212, 255, 0.14) 0%, rgba(5, 11, 20, 0.65) 75%);
+border: 0.15vw solid rgba(0, 212, 255, 0.35);
+border-radius: 1.2vw; overflow: hidden; box-sizing: border-box;
+}
+.r3-axis-line {
+position: absolute; left: 4%; right: 4%; bottom: 2.3vw; height: 0.42vw;
+background: linear-gradient(90deg, #0284c7, #00d4ff, #0284c7);
+border-radius: 0.3vw; box-shadow: 0 0 1.2vw rgba(0, 212, 255, 0.75);
+z-index: 2;
+}
+.r3-axis-endcap {
+position: absolute; bottom: 1.9vw; width: 0.25vw; height: 1.2vw;
+background: #00d4ff; z-index: 3;
+}
+.r3-axis-endcap.left-cap { left: 4%; }
+.r3-axis-endcap.right-cap { right: 4%; }
+.r3-axis-endcap.mid-cap { left: 50%; height: 0.8vw; bottom: 2.1vw; opacity: 0.55; }
+
+.r3-axis-tick-lbl {
+position: absolute; bottom: 0.45vw; font-size: 1.05vw; font-weight: 900;
+color: #94a3b8; font-family: monospace; z-index: 3; transition: all 0.4s;
+}
+#r3-axis-min { left: 4%; transform: translateX(-10%); }
+#r3-axis-mid { left: 50%; transform: translateX(-50%); opacity: 0.7; }
+#r3-axis-max { right: 4%; transform: translateX(10%); }
+
+.r3-flag-marker {
+position: absolute; bottom: 2.5vw; left: 50%;
+transform: translateX(-50%);
+display: flex; flex-direction: column; align-items: center;
+z-index: 10; opacity: 0; pointer-events: none;
+transition: left 0.75s cubic-bezier(0.25, 0.9, 0.3, 1);
+}
+.r3-flag-marker.visible {
+opacity: 1;
+animation: flagPopIn 0.42s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+.r3-flag-pill {
+display: flex; align-items: center; gap: 0.48vw;
+background: linear-gradient(145deg, #111c33, #070d1a);
+border: 0.2vw solid var(--cyan);
+border-radius: 2vw; padding: 0.28vw 0.75vw 0.28vw 0.32vw;
+box-shadow: 0 0.5vw 1.2vw rgba(0, 0, 0, 0.85), 0 0 0.9vw rgba(0, 212, 255, 0.4);
+white-space: nowrap; transition: transform 0.35s, border-color 0.35s, box-shadow 0.35s, background 0.35s;
+}
+.r3-flag-avatar {
+width: 2.45vw; height: 2.45vw; border-radius: 50%; object-fit: cover;
+border: 0.15vw solid #fff; flex-shrink: 0; background: #1e293b;
+}
+.r3-flag-initials {
+width: 2.45vw; height: 2.45vw; border-radius: 50%;
+border: 0.15vw solid #fff; flex-shrink: 0;
+background: linear-gradient(135deg, #0284c7, #1e293b);
 display: flex; align-items: center; justify-content: center;
-margin: 0.4vw auto;
+font-size: 1.15vw; font-weight: 900; color: #fff;
 }
+.r3-flag-text { display: flex; flex-direction: column; align-items: flex-start; line-height: 1.08; }
+.r3-flag-nick { font-size: 0.85vw; font-weight: 900; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05vw; }
+.r3-flag-val { font-size: 1.2vw; font-weight: 900; color: #fff; }
+
+.r3-flag-stem {
+width: 0.22vw; height: 1.4vw;
+background: linear-gradient(180deg, var(--cyan), rgba(0, 212, 255, 0.35));
+transition: height 0.55s ease, background 0.35s;
+}
+.r3-flag-dot {
+width: 0.78vw; height: 0.78vw; border-radius: 50%;
+background: #fff; border: 0.2vw solid var(--cyan);
+margin-bottom: -0.22vw; box-shadow: 0 0 0.7vw var(--cyan);
+}
+
+.r3-flag-marker.is-winner { z-index: 25; }
+.r3-flag-marker.is-winner .r3-flag-pill {
+border-color: #ffd700;
+background: linear-gradient(145deg, #422006, #1a1002);
+box-shadow: 0 0 2vw rgba(255, 215, 0, 0.9), 0 0.4vw 1vw rgba(0,0,0,0.9);
+transform: scale(1.1);
+}
+.r3-flag-marker.is-winner .r3-flag-nick { color: #fde047; }
+.r3-flag-marker.is-winner .r3-flag-val { color: #ffd700; }
+.r3-flag-marker.is-winner .r3-flag-stem { background: linear-gradient(180deg, #ffd700, rgba(255,215,0,0.4)); }
+.r3-flag-marker.is-winner .r3-flag-dot { border-color: #ffd700; box-shadow: 0 0 1vw #ffd700; }
+
+.r3-golden-drop {
+position: absolute; top: 0.4vw; bottom: 2.3vw; left: 50%;
+transform: translateX(-50%);
+display: none; flex-direction: column; align-items: center;
+z-index: 30; pointer-events: none;
+}
+.r3-golden-drop.slammed {
+display: flex;
+animation: goldenSlamDown 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.r3-golden-badge {
+background: linear-gradient(135deg, #fef08a 0%, #f59e0b 55%, #b45309 100%);
+color: #000; font-size: 1.3vw; font-weight: 900; padding: 0.35vw 1vw;
+border-radius: 0.65vw; border: 0.2vw solid #fff;
+box-shadow: 0 0 2.2vw rgba(255, 215, 0, 0.95), 0 0.4vw 1vw rgba(0,0,0,0.85);
+white-space: nowrap; text-transform: uppercase;
+}
+.r3-golden-beam {
+flex: 1; width: 0.42vw;
+background: linear-gradient(180deg, #ffffff 0%, #ffd700 40%, #f59e0b 100%);
+box-shadow: 0 0 1.8vw #ffd700, 0 0 0.5vw #ffffff;
+}
+.r3-golden-impact {
+width: 1.4vw; height: 1.4vw; border-radius: 50%;
+background: #fff; border: 0.3vw solid #ffd700;
+margin-bottom: -0.5vw; box-shadow: 0 0 2vw #ffd700;
+}
+
+/* RUNDA 2: GORĄCA BOMBA 3D */
+#r2-bomb-box { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.4vw 0; position: relative; min-height: 18.5vw; }
+#r2-bomb-stage { position: relative; width: 22vw; height: 15.5vw; display: flex; align-items: center; justify-content: center; margin: 0.4vw auto; }
 #r2-bomb-3d-wrap {
 width: 15.5vw; height: 15.5vw;
---b-scale: 0.88;
---b-wobble: 2deg;
---b-glow: 1.2vw;
---b-glow-color: rgba(0, 212, 255, 0.55);
+--b-scale: 0.88; --b-wobble: 2deg; --b-glow: 1.2vw; --b-glow-color: rgba(0, 212, 255, 0.55);
 animation: bomb3DThrob 0.75s infinite ease-in-out;
 filter: drop-shadow(0 1vw 1.5vw rgba(0,0,0,0.85)) drop-shadow(0 0 var(--b-glow) var(--b-glow-color));
-transition: filter 0.3s ease;
-will-change: transform, filter;
+transition: filter 0.3s ease; will-change: transform, filter;
 }
-#r2-bomb-3d-wrap svg {
-width: 100%; height: 100%; overflow: visible;
-}
-.spark-flicker-group {
-animation: sparkFlicker 0.14s infinite alternate;
-transform-origin: center;
-transform-box: fill-box;
-}
-
+#r2-bomb-3d-wrap svg { width: 100%; height: 100%; overflow: visible; }
+.spark-flicker-group { animation: sparkFlicker 0.14s infinite alternate; transform-origin: center; transform-box: fill-box; }
 .bomb-holder-banner { font-size: 2vw; font-weight: 900; color: #ff4757; text-transform: uppercase; letter-spacing: 0.15vw; text-shadow: 0 0 1.2vw #ff4757; margin-top: 0.5vw; z-index: 5; }
 .bomb-sub { font-size: 1.1vw; color: #cbd5e1; margin-top: 0.35vw; font-weight: bold; z-index: 5; }
-
 #comic-boom-wrap { display: none; width: 28vw; height: 17vw; margin: 0.2vw auto; animation: comicBoomPop 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; filter: drop-shadow(0 0 2.5vw rgba(255, 71, 87, 0.9)); }
 #comic-boom-wrap svg { width: 100%; height: 100%; overflow: visible; }
 
-/* ============================================================================
-   RUNDA 5: POSTAW NA MILION - REALISTYCZNE STUDIO 3D I ZAPADNIE Z PERSPEKTYWĄ
-   ============================================================================ */
+/* RUNDA 5: POSTAW NA MILION 3D */
 #r5-million-box {
 display: none; flex-direction: column; align-items: center; width: 100%;
 margin-top: 0.2vw; padding: 1.2vw 0.5vw 1.8vw 0.5vw; box-sizing: border-box;
-background:
-radial-gradient(ellipse at 50% 115%, rgba(0, 212, 255, 0.32) 0%, rgba(15, 23, 42, 0.92) 58%, transparent 80%),
-linear-gradient(180deg, rgba(5, 11, 20, 0) 0%, rgba(14, 30, 64, 0.65) 100%);
-border-radius: 1.6vw;
-position: relative;
-perspective: 1100px;
+background: radial-gradient(ellipse at 50% 115%, rgba(0, 212, 255, 0.32) 0%, rgba(15, 23, 42, 0.92) 58%, transparent 80%), linear-gradient(180deg, rgba(5, 11, 20, 0) 0%, rgba(14, 30, 64, 0.65) 100%);
+border-radius: 1.6vw; position: relative; perspective: 1100px;
 }
-
 #r5-million-box::before {
 content: ""; position: absolute; left: 3%; right: 3%; bottom: 0.6vw; height: 11.5vw;
 background: linear-gradient(180deg, rgba(203, 213, 225, 0.16) 0%, rgba(30, 41, 59, 0.55) 45%, rgba(2, 6, 23, 0.95) 100%);
-border-top: 0.22vw solid rgba(0, 212, 255, 0.55);
-border-bottom: 0.3vw solid rgba(0, 212, 255, 0.85);
+border-top: 0.22vw solid rgba(0, 212, 255, 0.55); border-bottom: 0.3vw solid rgba(0, 212, 255, 0.85);
 border-radius: 50% 50% 1.4vw 1.4vw / 2.2vw 2.2vw 1vw 1vw;
 box-shadow: 0 1.2vw 3vw rgba(0, 0, 0, 0.9), 0 0 2.5vw rgba(0, 212, 255, 0.28), inset 0 0.4vw 1.2vw rgba(255,255,255,0.18);
-transform: rotateX(28deg);
-pointer-events: none; z-index: 0;
+transform: rotateX(28deg); pointer-events: none; z-index: 0;
 }
-
-.mil-traps-grid {
-display: flex; justify-content: center; align-items: flex-end;
-gap: 1.5vw; width: 100%; padding: 0.4vw 0.5vw; box-sizing: border-box;
-transform-style: preserve-3d; z-index: 2;
-}
-
-.mil-station {
-flex: 1; max-width: 13.8vw; min-width: 11vw;
-display: flex; flex-direction: column; align-items: center;
-transform-style: preserve-3d; transition: transform 0.45s ease;
-}
-
+.mil-traps-grid { display: flex; justify-content: center; align-items: flex-end; gap: 1.5vw; width: 100%; padding: 0.4vw 0.5vw; box-sizing: border-box; transform-style: preserve-3d; z-index: 2; }
+.mil-station { flex: 1; max-width: 13.8vw; min-width: 11vw; display: flex; flex-direction: column; align-items: center; transform-style: preserve-3d; transition: transform 0.45s ease; }
 .mil-traps-grid.count-4 .mil-station:nth-child(1) { transform: translateY(1.1vw) rotateZ(-8deg) rotateY(10deg); }
 .mil-traps-grid.count-4 .mil-station:nth-child(2) { transform: translateY(-0.2vw) rotateZ(-2.5deg) rotateY(3deg); }
 .mil-traps-grid.count-4 .mil-station:nth-child(3) { transform: translateY(-0.2vw) rotateZ(2.5deg) rotateY(-3deg); }
 .mil-traps-grid.count-4 .mil-station:nth-child(4) { transform: translateY(1.1vw) rotateZ(8deg) rotateY(-10deg); }
-
 .mil-traps-grid.count-3 .mil-station:nth-child(1) { transform: translateY(0.8vw) rotateZ(-7deg) rotateY(8deg); }
 .mil-traps-grid.count-3 .mil-station:nth-child(2) { transform: translateY(-0.3vw) rotateZ(0deg); }
 .mil-traps-grid.count-3 .mil-station:nth-child(3) { transform: translateY(0.8vw) rotateZ(7deg) rotateY(-8deg); }
-
 .mil-traps-grid.count-2 .mil-station:nth-child(1) { transform: translateY(0.3vw) rotateZ(-5deg) rotateY(6deg); max-width: 16.5vw; }
 .mil-traps-grid.count-2 .mil-station:nth-child(2) { transform: translateY(0.3vw) rotateZ(5deg) rotateY(-6deg); max-width: 16.5vw; }
-
 .mil-monitor {
-width: 100%;
-background:
-radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.4) 0%, transparent 55%),
-linear-gradient(160deg, #0a1931 0%, #0f3460 52%, #040814 100%);
-border: 0.22vw solid #cbd5e1;
-outline: 0.14vw solid #0284c7;
-border-radius: 0.55vw;
-box-shadow:
-0 0.8vw 1.6vw rgba(0, 0, 0, 0.9),
-0 0 1.5vw rgba(0, 212, 255, 0.45),
-inset 0 0 1.2vw rgba(0, 212, 255, 0.35);
-display: flex; flex-direction: column; justify-content: space-between;
-min-height: 5.5vw; box-sizing: border-box; overflow: hidden;
-transform: rotateX(-12deg) translateZ(12px);
-transform-origin: bottom center;
-position: relative;
+width: 100%; background: radial-gradient(circle at 25% 25%, rgba(56, 189, 248, 0.4) 0%, transparent 55%), linear-gradient(160deg, #0a1931 0%, #0f3460 52%, #040814 100%);
+border: 0.22vw solid #cbd5e1; outline: 0.14vw solid #0284c7; border-radius: 0.55vw;
+box-shadow: 0 0.8vw 1.6vw rgba(0, 0, 0, 0.9), 0 0 1.5vw rgba(0, 212, 255, 0.45), inset 0 0 1.2vw rgba(0, 212, 255, 0.35);
+display: flex; flex-direction: column; justify-content: space-between; min-height: 5.5vw; box-sizing: border-box; overflow: hidden;
+transform: rotateX(-12deg) translateZ(12px); transform-origin: bottom center; position: relative;
 }
-.mil-monitor::before {
-content: ""; position: absolute; top: -40%; left: -30%; width: 70%; height: 180%;
-background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%);
-transform: rotate(25deg); pointer-events: none;
-}
-
-.mil-monitor-screen {
-padding: 0.55vw 0.45vw 0.4vw 0.45vw;
-display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1;
-}
-.mil-monitor-letter {
-font-size: 0.8vw; font-weight: 900; color: #38bdf8; letter-spacing: 0.15vw;
-text-transform: uppercase; margin-bottom: 0.15vw; text-shadow: 0 0 0.5vw #00d4ff;
-}
-.mil-monitor-ans {
-font-size: 1.12vw; font-weight: 900; color: #ffffff;
-text-shadow: 0 2px 6px #000, 0 0 8px rgba(0, 212, 255, 0.6);
-line-height: 1.15; text-transform: uppercase; word-break: break-word;
-}
-.mil-monitor-amount-bar {
-width: 100%;
-background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 50%, #94a3b8 100%);
-color: #0f172a; font-size: 1.05vw; font-weight: 900;
-padding: 0.18vw 0; text-align: center;
-border-top: 2px solid #fff;
-letter-spacing: 0.06vw;
-box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
-}
-.mil-monitor-amount-bar.active-bet {
-background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #f59e0b 100%);
-color: #000; text-shadow: 0 1px 0 rgba(255,255,255,0.7);
-}
-
-.mil-neck {
-width: 55%; height: 0.65vw;
-display: flex; justify-content: space-between; padding: 0 0.6vw; box-sizing: border-box;
-z-index: 1;
-}
-.mil-neck::before, .mil-neck::after {
-content: ""; width: 0.45vw; height: 100%;
-background: linear-gradient(90deg, #1e293b, #64748b, #0f172a);
-box-shadow: 0 0 6px #000;
-}
-
+.mil-monitor::before { content: ""; position: absolute; top: -40%; left: -30%; width: 70%; height: 180%; background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.12) 50%, rgba(255,255,255,0) 100%); transform: rotate(25deg); pointer-events: none; }
+.mil-monitor-screen { padding: 0.55vw 0.45vw 0.4vw 0.45vw; display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; }
+.mil-monitor-letter { font-size: 0.8vw; font-weight: 900; color: #38bdf8; letter-spacing: 0.15vw; text-transform: uppercase; margin-bottom: 0.15vw; text-shadow: 0 0 0.5vw #00d4ff; }
+.mil-monitor-ans { font-size: 1.12vw; font-weight: 900; color: #ffffff; text-shadow: 0 2px 6px #000, 0 0 8px rgba(0, 212, 255, 0.6); line-height: 1.15; text-transform: uppercase; word-break: break-word; }
+.mil-monitor-amount-bar { width: 100%; background: linear-gradient(90deg, #94a3b8 0%, #f8fafc 50%, #94a3b8 100%); color: #0f172a; font-size: 1.05vw; font-weight: 900; padding: 0.18vw 0; text-align: center; border-top: 2px solid #fff; letter-spacing: 0.06vw; box-shadow: inset 0 1px 3px rgba(0,0,0,0.4); }
+.mil-monitor-amount-bar.active-bet { background: linear-gradient(90deg, #f59e0b 0%, #fef08a 50%, #f59e0b 100%); color: #000; text-shadow: 0 1px 0 rgba(255,255,255,0.7); }
+.mil-neck { width: 55%; height: 0.65vw; display: flex; justify-content: space-between; padding: 0 0.6vw; box-sizing: border-box; z-index: 1; }
+.mil-neck::before, .mil-neck::after { content: ""; width: 0.45vw; height: 100%; background: linear-gradient(90deg, #1e293b, #64748b, #0f172a); box-shadow: 0 0 6px #000; }
 .mil-trap-frame {
-width: 100%; height: 9.6vw;
-background: #020408;
-border: 0.35vw solid #00e5ff;
-outline: 0.22vw solid #0f172a;
-border-radius: 0.75vw;
-box-shadow:
-0 0 1.8vw rgba(0, 229, 255, 0.9),
-0 1.2vw 2vw rgba(0, 0, 0, 0.95),
-inset 0 0 2.5vw #000000;
-position: relative; box-sizing: border-box;
-display: flex; align-items: center; justify-content: center;
-transform: rotateX(34deg);
-transform-origin: top center;
-transform-style: preserve-3d;
-overflow: hidden;
-transition: border-color 0.35s, box-shadow 0.35s;
+width: 100%; height: 9.6vw; background: #020408; border: 0.35vw solid #00e5ff; outline: 0.22vw solid #0f172a; border-radius: 0.75vw;
+box-shadow: 0 0 1.8vw rgba(0, 229, 255, 0.9), 0 1.2vw 2vw rgba(0, 0, 0, 0.95), inset 0 0 2.5vw #000000;
+position: relative; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+transform: rotateX(34deg); transform-origin: top center; transform-style: preserve-3d; overflow: hidden; transition: border-color 0.35s, box-shadow 0.35s;
 }
-
-.mil-trap-frame.has-cash {
-border-color: #38bdf8;
-box-shadow:
-0 0 2.4vw #00e5ff,
-0 0 0.6vw #ffffff,
-0 1.2vw 2vw rgba(0, 0, 0, 0.95),
-inset 0 0 2vw #000;
-}
-
-.mil-trap-frame.dropped {
-border-color: #ff1e27 !important;
-box-shadow:
-0 0 2.8vw #ff1e27,
-0 1.2vw 2vw rgba(0, 0, 0, 0.95),
-inset 0 0 3.5vw rgba(255, 0, 0, 0.75) !important;
-}
-
-.mil-trap-frame.safe-winner {
-border-color: #2ed573 !important;
-box-shadow:
-0 0 3.2vw #2ed573,
-0 0 0.8vw #ffffff,
-0 1.2vw 2vw rgba(0, 0, 0, 0.95),
-inset 0 0 2vw rgba(46, 213, 115, 0.55) !important;
-}
-
-.mil-trap-pit {
-position: absolute; inset: 0;
-background:
-repeating-linear-gradient(0deg, rgba(255, 30, 39, 0.12) 0px, rgba(255, 30, 39, 0.12) 2px, transparent 2px, transparent 10px),
-radial-gradient(circle at center, #3b040c 0%, #050203 70%, #000000 100%);
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-font-size: 1.25vw; font-weight: 900; color: #ff4757; letter-spacing: 0.12vw;
-z-index: 1; text-shadow: 0 0 1vw #ff0000;
-box-shadow: inset 0 0 2.5vw #000;
-}
-
-.mil-trap-doors {
-position: absolute; inset: 0.28vw;
-z-index: 2; display: flex;
-transform-style: preserve-3d;
-pointer-events: none;
-}
-.mil-door-leaf {
-flex: 1; height: 100%;
-background:
-radial-gradient(circle at 50% 40%, rgba(220, 38, 38, 0.35), transparent 70%),
-linear-gradient(135deg, #7f1d1d 0%, #450a0a 55%, #2a0404 100%);
-border: 0.12vw solid #1e293b;
-box-shadow: inset 0 0 1.2vw rgba(0, 0, 0, 0.85);
-transition: transform 0.55s cubic-bezier(0.6, 0.04, 0.98, 0.335), filter 0.45s ease;
-position: relative;
-}
-.mil-door-leaf.left-leaf {
-border-right: 2px solid #090d16;
-border-radius: 0.35vw 0 0 0.35vw;
-transform-origin: left center;
-}
-.mil-door-leaf.right-leaf {
-border-left: 1px solid rgba(255,255,255,0.12);
-border-radius: 0 0.35vw 0.35vw 0;
-transform-origin: right center;
-}
-.mil-door-leaf::after {
-content: ""; position: absolute; top: 15%; bottom: 15%; width: 3px;
-background: rgba(0, 0, 0, 0.5);
-}
-.mil-door-leaf.left-leaf::after { right: 0.35vw; }
-.mil-door-leaf.right-leaf::after { left: 0.35vw; }
-
-.mil-trap-frame.dropped .mil-door-leaf.left-leaf {
-transform: perspective(500px) rotateY(-78deg);
-filter: brightness(0.25);
-}
-.mil-trap-frame.dropped .mil-door-leaf.right-leaf {
-transform: perspective(500px) rotateY(78deg);
-filter: brightness(0.25);
-}
-
-.mil-cash-stage {
-position: absolute; inset: 0.4vw; z-index: 4;
-display: flex; flex-direction: column; align-items: center; justify-content: center;
-transform-style: preserve-3d; pointer-events: none;
-}
-.mil-trap-frame.dropped .mil-cash-stage {
-animation: cashPlunge3D 0.62s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
-}
-
-.mil-cash-bundles {
-display: flex; flex-wrap: wrap; justify-content: center; align-items: center;
-gap: 0.38vw 0.45vw; max-width: 11.2vw; padding: 0.2vw;
-transform: translateZ(14px);
-}
-
-.cash-bundle-3d {
-width: 2.35vw; height: 1.3vw;
-background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 45%, #94a3b8 100%);
-border: 1px solid #475569;
-border-radius: 2px;
-position: relative;
-box-shadow:
-0 1px 0 #94a3b8,
-0 2px 0 #64748b,
-0 3px 0 #94a3b8,
-0 4px 0 #475569,
-0 5px 0 #334155,
-0 6px 0 #1e293b,
-0 9px 10px rgba(0, 0, 0, 0.9);
-transform: rotateZ(var(--rot, 0deg));
-transition: transform 0.25s;
-}
-.cash-bundle-3d::before {
-content: ""; position: absolute; left: 33%; right: 33%; top: -1px; bottom: -6px;
-background: linear-gradient(180deg, #ef4444 0%, #b91c1c 65%, #7f1d1d 100%);
-border-left: 1px solid rgba(255,215,0,0.6);
-border-right: 1px solid rgba(255,215,0,0.6);
-box-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-.cash-bundle-3d::after {
-content: "100"; position: absolute; left: 3px; top: 2px;
-font-size: 0.48vw; font-weight: 900; color: #1e293b; opacity: 0.75; font-family: monospace;
-}
-
-.mil-bet-amount {
-margin-top: 0.35vw;
-font-size: 1.35vw; font-weight: 900; color: #ffd700;
-background: rgba(2, 6, 23, 0.9); padding: 0.15vw 0.65vw; border-radius: 0.4vw;
-border: 1px solid #ffd700;
-box-shadow: 0 4px 10px rgba(0,0,0,0.9), 0 0 10px rgba(255, 215, 0, 0.35);
-text-shadow: 0 2px 4px #000;
-transform: translateZ(20px);
-}
+.mil-trap-frame.has-cash { border-color: #38bdf8; box-shadow: 0 0 2.4vw #00e5ff, 0 0 0.6vw #ffffff, 0 1.2vw 2vw rgba(0, 0, 0, 0.95), inset 0 0 2vw #000; }
+.mil-trap-frame.dropped { border-color: #ff1e27 !important; box-shadow: 0 0 2.8vw #ff1e27, 0 1.2vw 2vw rgba(0, 0, 0, 0.95), inset 0 0 3.5vw rgba(255, 0, 0, 0.75) !important; }
+.mil-trap-frame.safe-winner { border-color: #2ed573 !important; box-shadow: 0 0 3.2vw #2ed573, 0 0 0.8vw #ffffff, 0 1.2vw 2vw rgba(0, 0, 0, 0.95), inset 0 0 2vw rgba(46, 213, 115, 0.55) !important; }
+.mil-trap-pit { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(255, 30, 39, 0.12) 0px, rgba(255, 30, 39, 0.12) 2px, transparent 2px, transparent 10px), radial-gradient(circle at center, #3b040c 0%, #050203 70%, #000000 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 1.25vw; font-weight: 900; color: #ff4757; letter-spacing: 0.12vw; z-index: 1; text-shadow: 0 0 1vw #ff0000; box-shadow: inset 0 0 2.5vw #000; }
+.mil-trap-doors { position: absolute; inset: 0.28vw; z-index: 2; display: flex; transform-style: preserve-3d; pointer-events: none; }
+.mil-door-leaf { flex: 1; height: 100%; background: radial-gradient(circle at 50% 40%, rgba(220, 38, 38, 0.35), transparent 70%), linear-gradient(135deg, #7f1d1d 0%, #450a0a 55%, #2a0404 100%); border: 0.12vw solid #1e293b; box-shadow: inset 0 0 1.2vw rgba(0, 0, 0, 0.85); transition: transform 0.55s cubic-bezier(0.6, 0.04, 0.98, 0.335), filter 0.45s ease; position: relative; }
+.mil-door-leaf.left-leaf { border-right: 2px solid #090d16; border-radius: 0.35vw 0 0 0.35vw; transform-origin: left center; }
+.mil-door-leaf.right-leaf { border-left: 1px solid rgba(255,255,255,0.12); border-radius: 0 0.35vw 0.35vw 0; transform-origin: right center; }
+.mil-door-leaf::after { content: ""; position: absolute; top: 15%; bottom: 15%; width: 3px; background: rgba(0, 0, 0, 0.5); }
+.mil-door-leaf.left-leaf::after { right: 0.35vw; } .mil-door-leaf.right-leaf::after { left: 0.35vw; }
+.mil-trap-frame.dropped .mil-door-leaf.left-leaf { transform: perspective(500px) rotateY(-78deg); filter: brightness(0.25); }
+.mil-trap-frame.dropped .mil-door-leaf.right-leaf { transform: perspective(500px) rotateY(78deg); filter: brightness(0.25); }
+.mil-cash-stage { position: absolute; inset: 0.4vw; z-index: 4; display: flex; flex-direction: column; align-items: center; justify-content: center; transform-style: preserve-3d; pointer-events: none; }
+.mil-trap-frame.dropped .mil-cash-stage { animation: cashPlunge3D 0.62s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards; }
+.mil-cash-bundles { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.38vw 0.45vw; max-width: 11.2vw; padding: 0.2vw; transform: translateZ(14px); }
+.cash-bundle-3d { width: 2.35vw; height: 1.3vw; background: linear-gradient(135deg, #f8fafc 0%, #cbd5e1 45%, #94a3b8 100%); border: 1px solid #475569; border-radius: 2px; position: relative; box-shadow: 0 1px 0 #94a3b8, 0 2px 0 #64748b, 0 3px 0 #94a3b8, 0 4px 0 #475569, 0 5px 0 #334155, 0 6px 0 #1e293b, 0 9px 10px rgba(0, 0, 0, 0.9); transform: rotateZ(var(--rot, 0deg)); transition: transform 0.25s; }
+.cash-bundle-3d::before { content: ""; position: absolute; left: 33%; right: 33%; top: -1px; bottom: -6px; background: linear-gradient(180deg, #ef4444 0%, #b91c1c 65%, #7f1d1d 100%); border-left: 1px solid rgba(255,215,0,0.6); border-right: 1px solid rgba(255,215,0,0.6); box-shadow: 0 1px 2px rgba(0,0,0,0.5); }
+.cash-bundle-3d::after { content: "100"; position: absolute; left: 3px; top: 2px; font-size: 0.48vw; font-weight: 900; color: #1e293b; opacity: 0.75; font-family: monospace; }
+.mil-bet-amount { margin-top: 0.35vw; font-size: 1.35vw; font-weight: 900; color: #ffd700; background: rgba(2, 6, 23, 0.9); padding: 0.15vw 0.65vw; border-radius: 0.4vw; border: 1px solid #ffd700; box-shadow: 0 4px 10px rgba(0,0,0,0.9), 0 0 10px rgba(255, 215, 0, 0.35); text-shadow: 0 2px 4px #000; transform: translateZ(20px); }
 
 .wheel-board { display: none; flex-wrap: wrap; justify-content: center; gap: 2vw; margin: 1.5vw 0; }
 .wheel-word { display: flex; gap: 0.4vw; }
 .wheel-letter { width: 3.1vw; height: 4.2vw; background: #111; border: 0.18vw solid #444; border-radius: 0.5vw; display: flex; align-items: center; justify-content: center; font-size: 2.2vw; font-weight: 900; color: #fff; transition: 0.3s; }
 .wheel-letter.revealed { background: var(--gold); color: #000; border-color: #fff; box-shadow: 0 0 1.2vw rgba(212,175,55,0.8); }
-.wheel-winners-list { display: none; justify-content: center; gap: 0.8vw; flex-wrap: wrap; margin-top: 1.2vw; }
-.wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.5vw 1vw; border-radius: 0.6vw; font-size: 1.3vw; font-weight: 900; }
+.wheel-winners-list { display: none; justify-content: center; gap: 0.7vw; flex-wrap: wrap; margin-top: 1vw; }
+.wheel-badge { background: rgba(0, 255, 0, 0.15); border: 0.15vw solid #00ff00; color: #00ff00; padding: 0.45vw 0.9vw; border-radius: 0.6vw; font-size: 1.15vw; font-weight: 900; }
+.wheel-badge.gold-badge { background: rgba(255, 215, 0, 0.2); border-color: #ffd700; color: #ffd700; box-shadow: 0 0 1vw rgba(255, 215, 0, 0.5); }
 .wheel-badge.wrong-badge { background: rgba(255, 71, 87, 0.15); border-color: #ff4757; color: #ff4757; }
 
 #r6-wheel-wrap { display: none; flex-direction: column; align-items: center; justify-content: center; margin: 0.5vw 0; position: relative; }
@@ -429,16 +339,20 @@ transform: translateZ(20px);
 
 #round-summary-view { display: none; flex-direction: column; align-items: center; width: 100%; }
 .summary-list { display: flex; flex-direction: column; gap: 0.8vw; width: 90%; margin: 1vw 0; }
-.summary-row { display: flex; justify-content: space-between; align-items: center; background: #111; border: 0.2vw solid var(--cyan); border-radius: 0.9vw; padding: 0.8vw 1.8vw; font-size: 1.8vw; font-weight: 900; }
+.summary-row { display: flex; justify-content: space-between; align-items: center; background: #111; border: 0.2vw solid var(--cyan); border-radius: 0.9vw; padding: 0.75vw 1.6vw; font-size: 1.75vw; font-weight: 900; }
 .summary-row.leader { border-color: var(--gold); background: rgba(212, 175, 55, 0.18); box-shadow: 0 0 1.5vw rgba(212, 175, 55, 0.4); }
+.summary-left-flex { display: flex; align-items: center; gap: 0.7vw; }
+.summary-av { width: 2.3vw; height: 2.3vw; border-radius: 50%; object-fit: cover; border: 0.14vw solid var(--gold); }
 .next-round-banner { margin-top: 0.8vw; font-size: 1.5vw; color: #2ed573; font-weight: 900; text-transform: uppercase; letter-spacing: 0.15vw; animation: pulse 1s infinite; }
 .ready-status-bar { margin-top: 0.6vw; font-size: 1.25vw; color: var(--cyan); font-weight: bold; }
 
 #podium-view { display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; z-index: 600; }
 .podium-title { font-size: 2.8vw; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 0.3vw; text-shadow: 0 0 2vw var(--gold); margin-bottom: 2vw; animation: pulse 1.2s infinite; }
 .podium-bars { display: flex; align-items: flex-end; justify-content: center; gap: 1.8vw; height: 27vw; width: 100%; }
-.podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 10vw; }
-.podium-avatar { font-size: 2.8vw; margin-bottom: 0.4vw; filter: drop-shadow(0 0 0.8vw rgba(255,255,255,0.5)); }
+.podium-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; width: 10.5vw; }
+.podium-avatar { font-size: 2.8vw; margin-bottom: 0.4vw; filter: drop-shadow(0 0 0.8vw rgba(255,255,255,0.5)); position: relative; }
+.podium-av-img { width: 4.8vw; height: 4.8vw; border-radius: 50%; object-fit: cover; border: 0.25vw solid var(--gold); box-shadow: 0 0 1.5vw rgba(255,215,0,0.6); display: block; }
+.podium-medal-corner { position: absolute; right: -0.5vw; bottom: -0.3vw; font-size: 2vw; }
 .podium-pname { font-size: 1.7vw; font-weight: 900; color: #fff; text-transform: uppercase; margin-bottom: 0.3vw; }
 .podium-pts { font-size: 1.4vw; font-weight: bold; color: var(--cyan); margin-bottom: 0.8vw; }
 .podium-pedestal { width: 100%; border-radius: 1vw 1vw 0 0; display: flex; align-items: center; justify-content: center; font-size: 3.5vw; font-weight: 900; color: #000; box-shadow: 0 0 2.5vw rgba(255,255,255,0.2); animation: growUp 1s ease-out forwards; transform-origin: bottom; }
@@ -455,10 +369,10 @@ transform: translateZ(20px);
 #tv-typed-answer { font-size: 1.8vw; color: #cbd5e1; margin-bottom: 1vw; display: none; }
 #tv-typed-answer span { color: var(--cyan); font-weight: 900; }
 
-.winner-announcement { font-size: 1.8vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.7vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
+.winner-announcement { font-size: 1.75vw; color: var(--gold); text-transform: uppercase; font-weight: 900; margin-top: 0.7vw; text-shadow: 0 0 1.5vw var(--gold); display: none; }
 .status-msg { font-size: 2.2vw; color: #00ff00; font-weight: 900; margin-top: 0.8vw; display: none; text-shadow: 0 0 1.5vw #00ff00; }
 
-.correct-answer-banner { display: none; margin-top: 1.2vw; padding: 0.8vw 1.5vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.7vw; color: #fff; font-weight: bold; }
+.correct-answer-banner { display: none; margin-top: 1vw; padding: 0.75vw 1.4vw; background: rgba(212, 175, 55, 0.15); border: 0.15vw solid var(--gold); border-radius: 0.8vw; font-size: 1.6vw; color: #fff; font-weight: bold; }
 .correct-answer-banner span { color: var(--gold); font-weight: 900; text-transform: uppercase; }
 
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
@@ -479,22 +393,34 @@ transform: translateZ(20px);
 <div class="timer-box" id="tv-timer">12</div>
 
 <div class="score-corner top-left" id="score-Lila">
+<div class="player-header-row">
+<img class="corner-avatar" id="avatar-Lila" alt="">
 <div class="player-name" id="name-Lila">Lila</div>
+</div>
 <div class="player-score" id="pts-Lila">0</div>
 <div class="blocked-tag">ZABLOKOWANY</div>
 </div>
 <div class="score-corner top-right" id="score-Kaja">
+<div class="player-header-row">
+<img class="corner-avatar" id="avatar-Kaja" alt="">
 <div class="player-name" id="name-Kaja">Kaja</div>
+</div>
 <div class="player-score" id="pts-Kaja">0</div>
 <div class="blocked-tag">ZABLOKOWANY</div>
 </div>
 <div class="score-corner bottom-left" id="score-Darek">
+<div class="player-header-row">
+<img class="corner-avatar" id="avatar-Darek" alt="">
 <div class="player-name" id="name-Darek">Darek</div>
+</div>
 <div class="player-score" id="pts-Darek">0</div>
 <div class="blocked-tag">ZABLOKOWANY</div>
 </div>
 <div class="score-corner bottom-right" id="score-Jas">
+<div class="player-header-row">
+<img class="corner-avatar" id="avatar-Jas" alt="">
 <div class="player-name" id="name-Jas">Jaś</div>
+</div>
 <div class="player-score" id="pts-Jas">0</div>
 <div class="blocked-tag">ZABLOKOWANY</div>
 </div>
@@ -504,7 +430,7 @@ transform: translateZ(20px);
 <div class="category-text" id="tv-cat">KATEGORIA</div>
 <div class="question-text" id="tv-question">Zaraz zaczynamy! Przygotujcie telefony.</div>
 
-<!-- RUNDA 2: GORĄCA BOMBA 3D (ROSNĄCA Z WYPALAJĄCYM SIĘ LONTEM) + KOMIKSOWE BOOM! -->
+<!-- RUNDA 2: GORĄCA BOMBA 3D -->
 <div id="r2-bomb-box">
 <div id="r2-bomb-stage">
 <div id="r2-bomb-3d-wrap">
@@ -556,7 +482,6 @@ transform: translateZ(20px);
 
 <circle cx="155" cy="182" r="88" fill="url(#bombSphere3D)" stroke="#050811" stroke-width="6"/>
 <circle id="bomb-heat-overlay" cx="155" cy="182" r="86" fill="url(#bombHeatGlow)" opacity="0"/>
-
 <ellipse cx="118" cy="135" rx="26" ry="14" transform="rotate(-32 118 135)" fill="#7dd3fc" opacity="0.48"/>
 <ellipse cx="112" cy="132" rx="12" ry="6.5" transform="rotate(-32 112 132)" fill="#ffffff" opacity="0.92"/>
 <circle cx="96" cy="156" r="5.5" fill="#ffffff" opacity="0.75"/>
@@ -613,6 +538,25 @@ transform: translateZ(20px);
 </div>
 <div class="bomb-holder-banner" id="r2-bomb-holder-txt">TRZYMA BOMBĘ: ...</div>
 <div class="bomb-sub" id="r2-bomb-sub">⏳ CZAS LECI NON-STOP (-1 PKT CO 2s) | DOBRZE: +10 PKT | BŁĄD: -5 PKT | WYBUCH: -10 PKT!</div>
+</div>
+
+<!-- RUNDA 3: 🎯 KTO NAJBLIŻEJ? — ANIMOWANA OŚ LICZBOWA -->
+<div id="r3-axis-box">
+<div id="r3-axis-stage">
+<div class="r3-axis-line"></div>
+<div class="r3-axis-endcap left-cap"></div>
+<div class="r3-axis-endcap mid-cap"></div>
+<div class="r3-axis-endcap right-cap"></div>
+<div class="r3-axis-tick-lbl" id="r3-axis-min">0</div>
+<div class="r3-axis-tick-lbl" id="r3-axis-mid">50</div>
+<div class="r3-axis-tick-lbl" id="r3-axis-max">100</div>
+<div id="r3-flags-layer"></div>
+<div class="r3-golden-drop" id="r3-golden-drop">
+<div class="r3-golden-badge" id="r3-golden-badge">🎯 0</div>
+<div class="r3-golden-beam"></div>
+<div class="r3-golden-impact"></div>
+</div>
+</div>
 </div>
 
 <!-- RUNDA 4: ODSŁANIANIE HASŁA -->
@@ -699,9 +643,10 @@ let speechSafetyTimer = null;
 let utteranceQueue = [];
 
 let playerNamesMap = { Lila: "Lila", Kaja: "Kaja", Darek: "Darek", Jas: "Jaś" };
-function getDisplayName(pKey) {
-return playerNamesMap[pKey] || pKey || "";
-}
+let playerAvatarsMap = { Lila: "", Kaja: "", Darek: "", Jas: "" };
+
+function getDisplayName(pKey) { return playerNamesMap[pKey] || pKey || ""; }
+
 function refreshTVPlayerNames() {
 ["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
 const dn = getDisplayName(k);
@@ -712,54 +657,367 @@ if (bEl) bEl.innerText = dn.toUpperCase();
 });
 }
 
-const roundOrdinalsFeminine = {
-1: "pierwszej",
-2: "drugiej",
-3: "trzeciej",
-4: "czwartej",
-5: "piątej",
-6: "szóstej",
-7: "siódmej"
-};
+function refreshTVPlayerAvatars() {
+["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
+const imgEl = document.getElementById(`avatar-${k}`);
+if (!imgEl) return;
+if (playerAvatarsMap[k]) {
+imgEl.src = playerAvatarsMap[k];
+imgEl.style.display = "block";
+} else {
+imgEl.removeAttribute('src');
+imgEl.style.display = "none";
+}
+});
+}
 
+onSnapshot(doc(db, "quizGame", "avatars"), (snap) => {
+const avData = snap.exists() ? snap.data() : {};
+["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
+playerAvatarsMap[k] = avData[k] || "";
+});
+refreshTVPlayerAvatars();
+});
+
+const roundOrdinalsFeminine = { 1: "pierwszej", 2: "drugiej", 3: "trzeciej", 4: "czwartej", 5: "piątej", 6: "szóstej", 7: "siódmej" };
+
+function formatPlNum(num) {
+if (num === undefined || num === null || isNaN(num)) return "";
+return Math.round(Number(num)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+}
+
+// ============================================================================
+// RUNDA 3: ANIMACJA OSI LICZBOWEJ (CHORĄGIEWKI PO KOLEI + SKALOWANIE + ZŁOTA LINIA!)
+// ============================================================================
+let r3AnimTimers = [];
+let r3AnimatingReveal = false;
+let lastR3AnimKey = "";
+
+function clearR3AnimTimers() {
+r3AnimTimers.forEach(t => clearTimeout(t));
+r3AnimTimers = [];
+r3AnimatingReveal = false;
+}
+
+function playFlagPopSound(stepIdx = 0) {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+const baseFreq = 360 + stepIdx * 65;
+osc.type = "triangle";
+osc.frequency.setValueAtTime(baseFreq, now);
+osc.frequency.exponentialRampToValueAtTime(baseFreq * 1.45, now + 0.11);
+g.gain.setValueAtTime(0.28, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.15);
+}
+
+function playAxisWhooshSound() {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+const osc = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+osc.type = "sine";
+osc.frequency.setValueAtTime(220, now);
+osc.frequency.exponentialRampToValueAtTime(620, now + 0.45);
+g.gain.setValueAtTime(0.18, now);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+osc.connect(g);
+g.connect(audioCtx.destination);
+osc.start(now);
+osc.stop(now + 0.52);
+}
+
+function playGoldenSlamSound() {
+if (!audioCtx) return;
+if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
+const now = audioCtx.currentTime;
+
+// Głęboki basowy huk
+const sub = audioCtx.createOscillator();
+const subG = audioCtx.createGain();
+sub.type = "sawtooth";
+sub.frequency.setValueAtTime(140, now);
+sub.frequency.exponentialRampToValueAtTime(32, now + 0.55);
+subG.gain.setValueAtTime(0.75, now);
+subG.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+sub.connect(subG);
+subG.connect(audioCtx.destination);
+sub.start(now);
+sub.stop(now + 0.62);
+
+// Złoty akord dźwiękowy
+[523.25, 659.25, 783.99, 1046.5].forEach((freq, idx) => {
+const o = audioCtx.createOscillator();
+const g = audioCtx.createGain();
+o.type = "triangle";
+o.frequency.setValueAtTime(freq, now + 0.05);
+g.gain.setValueAtTime(0.18, now + 0.05);
+g.gain.exponentialRampToValueAtTime(0.001, now + 0.85 + idx * 0.05);
+o.connect(g);
+g.connect(audioCtx.destination);
+o.start(now + 0.05);
+o.stop(now + 0.95);
+});
+}
+
+function mapValToAxisPct(val, minV, maxV) {
+if (maxV <= minV) return 50;
+const ratio = (val - minV) / (maxV - minV);
+return Math.max(6, Math.min(94, 6 + ratio * 88));
+}
+
+function applyNonOverlappingLayout(markerItems, minV, maxV) {
+// Oblicz pozycję poziomą % dla każdego znacznika
+const computed = markerItems.map(item => ({
+...item,
+pct: mapValToAxisPct(item.val, minV, maxV)
+}));
+
+// Sortujemy od lewej do prawej, żeby przydzielić wysokości słupków (0..3) bez nakładania się!
+const sorted = [...computed].sort((a, b) => (a.pct - b.pct) || a.slotOrder - b.slotOrder);
+const stemHeightsVw = [1.3, 5.0, 8.7, 12.4];
+const placed = [];
+
+sorted.forEach(item => {
+const occupiedTiers = placed
+.filter(other => Math.abs(other.pct - item.pct) < 14.5)
+.map(other => other._tier);
+
+let chosenTier = 0;
+for (let t = 0; t < 4; t++) {
+if (!occupiedTiers.includes(t)) {
+chosenTier = t;
+break;
+}
+}
+item._tier = chosenTier;
+placed.push(item);
+
+item.el.style.left = `${item.pct.toFixed(2)}%`;
+const stemEl = item.el.querySelector('.r3-flag-stem');
+if (stemEl) stemEl.style.height = `${stemHeightsVw[chosenTier]}vw`;
+item.el.style.zIndex = String(10 + (3 - chosenTier));
+});
+}
+
+function updateAxisTickLabels(minV, maxV) {
+document.getElementById('r3-axis-min').innerText = formatPlNum(minV);
+document.getElementById('r3-axis-mid').innerText = formatPlNum((minV + maxV) / 2);
+document.getElementById('r3-axis-max').innerText = formatPlNum(maxV);
+}
+
+function runR3ClosestRevealSequence(data) {
+clearR3AnimTimers();
+r3AnimatingReveal = true;
+
+const stage = document.getElementById('stage-box');
+const flagsLayer = document.getElementById('r3-flags-layer');
+const goldenEl = document.getElementById('r3-golden-drop');
+const goldenBadge = document.getElementById('r3-golden-badge');
+const winnerEl = document.getElementById('tv-winner');
+const wheelWinnersEl = document.getElementById('tv-wheel-winners');
+
+flagsLayer.innerHTML = "";
+goldenEl.classList.remove('slammed');
+goldenEl.style.display = "none";
+wheelWinnersEl.style.display = "none";
+wheelWinnersEl.innerHTML = "";
+
+const targetVal = Number(data.correctNumber);
+const unitStr = data.correctUnit ? ` ${data.correctUnit}` : "";
+const results = data.r3ResultsData || [];
+
+// Brak odpowiedzi od kogokolwiek
+if (results.length === 0) {
+const pad = Math.max(5, Math.round(Math.abs(targetVal) * 0.15));
+const minV = targetVal >= 0 ? Math.max(0, targetVal - pad) : targetVal - pad;
+const maxV = targetVal + pad;
+updateAxisTickLabels(minV, maxV);
+goldenBadge.innerText = `🎯 ${formatPlNum(targetVal)}${unitStr}`;
+goldenEl.style.left = `${mapValToAxisPct(targetVal, minV, maxV).toFixed(2)}%`;
+goldenEl.classList.add('slammed');
+playGoldenSlamSound();
+stage.classList.add('error-glow');
+winnerEl.style.display = "block";
+winnerEl.style.color = "#ff4757";
+winnerEl.innerText = `NIKT NIE WPISAŁ LICZBY! PRAWIDŁOWA ODPOWIEDŹ: ${formatPlNum(targetVal)}${unitStr}`;
+r3AnimatingReveal = false;
+for (let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if (el) el.innerText = pendingScores[id]; }
+return;
+}
+
+// 1. Zakres osi z samych typów graczy (min - 5 do max + 5 dla małych rozpiętości)
+const guessVals = results.map(r => r.val);
+const minG = Math.min(...guessVals);
+const maxG = Math.max(...guessVals);
+const spanG = maxG - minG;
+
+let pad1 = 5;
+if (spanG === 0) pad1 = Math.max(5, Math.round(Math.abs(minG) * 0.1));
+else if (spanG > 50) pad1 = Math.max(5, Math.ceil(spanG * 0.14));
+
+const axisMin1 = (minG >= 0 && targetVal >= 0) ? Math.max(0, minG - pad1) : (minG - pad1);
+const axisMax1 = maxG + pad1;
+updateAxisTickLabels(axisMin1, axisMax1);
+
+// Kolejność odkrywania chorągiewek: kolejność slotów (żeby nie zdradzać od razu zwycięzcy!)
+const slotOrderMap = { Lila: 0, Kaja: 1, Darek: 2, Jas: 3 };
+const revealList = [...results].sort((a, b) => (slotOrderMap[a.player] ?? 9) - (slotOrderMap[b.player] ?? 9));
+
+const markerItems = revealList.map((rec, idx) => {
+const div = document.createElement('div');
+div.className = "r3-flag-marker";
+const dn = getDisplayName(rec.player);
+const avSrc = playerAvatarsMap[rec.player];
+const avHtml = avSrc
+? `<img class="r3-flag-avatar" src="${avSrc}" alt="">`
+: `<div class="r3-flag-initials">${dn.slice(0, 2).toUpperCase()}</div>`;
+
+div.innerHTML = `
+<div class="r3-flag-pill">
+${avHtml}
+<div class="r3-flag-text">
+<div class="r3-flag-nick">${dn}</div>
+<div class="r3-flag-val">${formatPlNum(rec.val)}${unitStr}</div>
+</div>
+</div>
+<div class="r3-flag-stem"></div>
+<div class="r3-flag-dot"></div>
+`;
+flagsLayer.appendChild(div);
+return { rec, val: rec.val, slotOrder: idx, el: div };
+});
+
+applyNonOverlappingLayout(markerItems, axisMin1, axisMax1);
+
+winnerEl.style.display = "block";
+winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = "🎯 ODSŁANIAMY TYPY GRACZY NA OSI LICZBOWEJ...";
+
+// 2. Odsłanianie chorągiewek PO KOLEI (co 1.1s)
+markerItems.forEach((item, idx) => {
+const t = setTimeout(() => {
+item.el.classList.add('visible');
+playFlagPopSound(idx);
+const dn = getDisplayName(item.rec.player).toUpperCase();
+winnerEl.innerText = `📍 ${dn} OBSTAWIŁ(A): ${formatPlNum(item.rec.val)}${unitStr}`;
+}, 350 + idx * 1100);
+r3AnimTimers.push(t);
+});
+
+const afterFlagsMs = 350 + markerItems.length * 1100 + 300;
+
+// 3. Sprawdź, czy złota linia mieści się wygodnie na osi graczy — jeśli nie, płynnie rozszerz oś!
+const innerMargin = (axisMax1 - axisMin1) * 0.04;
+const needsRescale = (targetVal < axisMin1 + innerMargin) || (targetVal > axisMax1 - innerMargin);
+let finalAxisMin = axisMin1;
+let finalAxisMax = axisMax1;
+let dropAtMs = afterFlagsMs + 450;
+
+if (needsRescale) {
+const minAll = Math.min(minG, targetVal);
+const maxAll = Math.max(maxG, targetVal);
+const spanAll = maxAll - minAll;
+const pad2 = spanAll <= 50 ? 5 : Math.max(5, Math.ceil(spanAll * 0.12));
+finalAxisMin = (minAll >= 0) ? Math.max(0, minAll - pad2) : (minAll - pad2);
+finalAxisMax = maxAll + pad2;
+
+const tRescale = setTimeout(() => {
+winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = "🔍 UWAGA! SKALOWANIE OSI DO PRAWDZIWEJ WARTOŚCI...";
+playAxisWhooshSound();
+updateAxisTickLabels(finalAxisMin, finalAxisMax);
+applyNonOverlappingLayout(markerItems, finalAxisMin, finalAxisMax);
+}, afterFlagsMs);
+r3AnimTimers.push(tRescale);
+
+dropAtMs = afterFlagsMs + 1000;
+}
+
+// 4. Z HUKIEM SPADA ZŁOTA LINIA + WYNIKI + PUNKTY!
+const tDrop = setTimeout(() => {
+const targetPct = mapValToAxisPct(targetVal, finalAxisMin, finalAxisMax);
+goldenBadge.innerText = `🎯 ${formatPlNum(targetVal)}${unitStr}`;
+goldenEl.style.left = `${targetPct.toFixed(2)}%`;
+goldenEl.classList.add('slammed');
+
+playGoldenSlamSound();
+winSound.currentTime = 0;
+winSound.play().catch(()=>{});
+document.body.classList.add('shake-screen');
+stage.classList.add('success-glow');
+
+// Podświetlenie zwycięzcy (najmniejsza odległość, rank === 1)
+markerItems.forEach(item => {
+if (item.rec.rank === 1) item.el.classList.add('is-winner');
+});
+
+// Odblokowanie i odświeżenie punktów w narożnikach dokładnie w momencie uderzenia linii!
+r3AnimatingReveal = false;
+for (let id in pendingScores) {
+let el = document.getElementById(`pts-${id}`);
+if (el) el.innerText = pendingScores[id];
+}
+
+const topWinners = results.filter(r => r.rank === 1);
+const anyExact = topWinners.some(r => r.exact);
+const topNames = topWinners.map(r => getDisplayName(r.player).toUpperCase()).join(" & ");
+
+winnerEl.style.color = "#ffd700";
+winnerEl.innerText = anyExact
+? `🎯 IDEALNY STRZAŁ! ${topNames} TRAFIA W DZIESIĄTKĘ (+${topWinners[0].totalPts} PKT)!`
+: `🏆 NAJBLIŻEJ ZŁOTEJ LINII: ${topNames} (+${topWinners[0].totalPts} PKT)!`;
+
+const medals = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
+wheelWinnersEl.style.display = "flex";
+wheelWinnersEl.innerHTML = results.map(r => {
+const diffLabel = r.exact ? "IDEAŁ +10 BONUS!" : `błąd: ${formatPlNum(r.diff)}`;
+const badgeCls = r.rank === 1 ? "wheel-badge gold-badge" : "wheel-badge";
+return `<div class="${badgeCls}">${medals[r.rank] || "🏅"} ${getDisplayName(r.player).toUpperCase()}: ${formatPlNum(r.val)} (${diffLabel}) → +${r.totalPts} PKT</div>`;
+}).join("");
+
+const speechWinnerNames = topWinners.map(r => getDisplayName(r.player)).join(" oraz ");
+const speechTxt = anyExact
+? `Prawidłowa odpowiedź to ${targetVal}. Niesamowite! Idealny strzał zalicza ${speechWinnerNames}!`
+: `Prawidłowa odpowiedź to ${targetVal}. Najbliżej był gracz ${speechWinnerNames}!`;
+speakPolishText(speechTxt);
+}, dropAtMs);
+r3AnimTimers.push(tDrop);
+}
+
+// ============================================================================
+// BOMBA 3D + LEKTOR + DŹWIĘKI + PODIUM (BEZ ZMIAN LOGIKI)
+// ============================================================================
 function updateBomb3DVisuals(progress = 0) {
 const p = Math.min(0.98, Math.max(0, progress));
 const wrap = document.getElementById('r2-bomb-3d-wrap');
 if (!wrap) return;
-
-const scaleVal = (0.88 + p * 0.67).toFixed(3);
-const wobbleDeg = (2 + p * 8).toFixed(1);
-const animDur = Math.max(0.14, 0.78 - p * 0.62).toFixed(2);
-
-wrap.style.setProperty('--b-scale', scaleVal);
-wrap.style.setProperty('--b-wobble', `${wobbleDeg}deg`);
-wrap.style.animationDuration = `${animDur}s`;
-
-const glowSize = (1.2 + p * 3.4).toFixed(2);
-const rCol = 255;
-const gCol = Math.round(180 * (1 - p));
-wrap.style.setProperty('--b-glow', `${glowSize}vw`);
-wrap.style.setProperty('--b-glow-color', `rgba(${rCol}, ${gCol}, 20, ${(0.55 + p * 0.45).toFixed(2)})`);
-
+wrap.style.setProperty('--b-scale', (0.88 + p * 0.67).toFixed(3));
+wrap.style.setProperty('--b-wobble', `${(2 + p * 8).toFixed(1)}deg`);
+wrap.style.animationDuration = `${Math.max(0.14, 0.78 - p * 0.62).toFixed(2)}s`;
+wrap.style.setProperty('--b-glow', `${(1.2 + p * 3.4).toFixed(2)}vw`);
+wrap.style.setProperty('--b-glow-color', `rgba(255, ${Math.round(180 * (1 - p))}, 20, ${(0.55 + p * 0.45).toFixed(2)})`);
 const heatEl = document.getElementById('bomb-heat-overlay');
 if (heatEl) heatEl.setAttribute('opacity', (p * 0.88).toFixed(2));
-
 const smokeGroup = document.getElementById('bomb-smoke-group');
 if (smokeGroup) smokeGroup.setAttribute('opacity', (0.28 + p * 0.72).toFixed(2));
-
 const fuseCord = document.getElementById('bomb-fuse-cord');
 const fuseBg = document.getElementById('bomb-fuse-bg');
 const sparkGroup = document.getElementById('bomb-spark-group');
-
 if (fuseCord && fuseBg && sparkGroup && fuseCord.getTotalLength) {
 const totalLen = fuseCord.getTotalLength();
 const remLen = Math.max(1, totalLen * (1 - p));
 fuseCord.style.strokeDasharray = `${remLen} ${totalLen}`;
 fuseBg.style.strokeDasharray = `${remLen} ${totalLen}`;
-
 const pt = fuseCord.getPointAtLength(remLen);
-const sparkScale = (0.9 + p * 0.65).toFixed(2);
-sparkGroup.setAttribute('transform', `translate(${pt.x.toFixed(1)}, ${pt.y.toFixed(1)}) scale(${sparkScale})`);
+sparkGroup.setAttribute('transform', `translate(${pt.x.toFixed(1)}, ${pt.y.toFixed(1)}) scale(${(0.9 + p * 0.65).toFixed(2)})`);
 }
 }
 
@@ -768,7 +1026,6 @@ if (!('speechSynthesis' in window)) return;
 const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
 const sel = document.getElementById('voiceSelect');
 if (!voices.length) return;
-
 sel.innerHTML = "";
 voices.sort((a, b) => {
 const score = (v) => {
@@ -783,97 +1040,46 @@ return 3;
 };
 return score(b) - score(a);
 });
-
-voices.forEach((v, idx) => {
-const opt = document.createElement('option');
-opt.value = idx;
-opt.innerText = v.name;
-sel.appendChild(opt);
-});
-
+voices.forEach((v, idx) => { const opt = document.createElement('option'); opt.value = idx; opt.innerText = v.name; sel.appendChild(opt); });
 selectedPlVoice = voices[0];
-sel.onchange = () => {
-selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
-speakPolishText("Cześć! Teraz ja będę czytać pytania.");
-};
+sel.onchange = () => { selectedPlVoice = voices[parseInt(sel.value)] || voices[0]; speakPolishText("Cześć! Teraz ja będę czytać pytania."); };
 }
-if ('speechSynthesis' in window) {
-window.speechSynthesis.onvoiceschanged = initPolishVoices;
-setTimeout(initPolishVoices, 300);
-}
+if ('speechSynthesis' in window) { window.speechSynthesis.onvoiceschanged = initPolishVoices; setTimeout(initPolishVoices, 300); }
 
-const numberWordsMap = {
-0: "zero", 1: "jeden", 2: "dwa", 3: "trzy", 4: "cztery", 5: "pięć",
-6: "sześć", 7: "siedem", 8: "osiem", 9: "dziewięć", 10: "dziesięć",
-11: "jedenaście", 12: "dwanaście", 13: "trzynaście", 14: "czternaście",
-15: "piętnaście", 16: "szesnaście", 17: "siedemnaście", 18: "osiemnaście",
-19: "dziewiętnaście", 20: "dwadzieścia", 25: "dwadzieścia pięć",
-30: "trzydzieści", 40: "czterdzieści", 45: "czterdzieści pięć", 50: "pięćdziesiąt",
-60: "sześćdziesiąt", 70: "siedemdziesiąt", 80: "osiemdziesiąt", 90: "dziewięćdziesiąt",
-100: "sto", 200: "dwieście"
-};
-
+const numberWordsMap = { 0: "zero", 1: "jeden", 2: "dwa", 3: "trzy", 4: "cztery", 5: "pięć", 6: "sześć", 7: "siedem", 8: "osiem", 9: "dziewięć", 10: "dziesięć", 11: "jedenaście", 12: "dwanaście", 13: "trzynaście", 14: "czternaście", 15: "piętnaście", 16: "szesnaście", 17: "siedemnaście", 18: "osiemnaście", 19: "dziewiętnaście", 20: "dwadzieścia", 25: "dwadzieścia pięć", 30: "trzydzieści", 40: "czterdzieści", 45: "czterdzieści pięć", 50: "pięćdziesiąt", 60: "sześćdziesiąt", 70: "siedemdziesiąt", 80: "osiemdziesiąt", 90: "dziewięćdziesiąt", 100: "sto", 200: "dwieście" };
 function numToCardinalWord(numStr) {
 const n = parseInt(numStr, 10);
 if (numberWordsMap[n]) return numberWordsMap[n];
 if (n > 20 && n < 100) {
-const tens = Math.floor(n / 10) * 10;
-const units = n % 10;
-if (numberWordsMap[tens] && numberWordsMap[units]) {
-return `${numberWordsMap[tens]} ${numberWordsMap[units]}`;
-}
+const tens = Math.floor(n / 10) * 10; const units = n % 10;
+if (numberWordsMap[tens] && numberWordsMap[units]) return `${numberWordsMap[tens]} ${numberWordsMap[units]}`;
 }
 return numStr;
 }
 
 function speakPolishText(textToRead, onDoneCallback) {
 clearTimeout(speechSafetyTimer);
-if (!('speechSynthesis' in window)) {
-if (onDoneCallback) setTimeout(onDoneCallback, 2500);
-return;
-}
+if (!('speechSynthesis' in window)) { if (onDoneCallback) setTimeout(onDoneCallback, 2500); return; }
 window.speechSynthesis.cancel();
-
 let cleanText = (textToRead || "")
 .replace(/(\d+)\s*\+\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} dodać ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*\-\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} odjąć ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*[xX\*]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} razy ${numToCardinalWord(b)}`)
 .replace(/(\d+)\s*[:\/]\s*(\d+)/g, (_, a, b) => `${numToCardinalWord(a)} podzielić przez ${numToCardinalWord(b)}`)
 .replace(/\btura\s+1\b/gi, "tura pierwsza")
-.replace(/\btura\s+2\b/gi, "tura druga")
-.replace(/\btura\s+3\b/gi, "tura trzecia")
-.replace(/:\s*$/, "")
-.replace(/:/g, ", ")
-.replace(/\bpkt\b/gi, "punktów")
-.replace(/\bx\b/gi, " razy ")
-.replace(/\+/g, " dodać ")
-.replace(/ - /g, " odjąć ")
-.replace(/=/g, " równa się ")
-.replace(/\?/g, ".") + " ... ,";
+.replace(/:\s*$/, "").replace(/:/g, ", ").replace(/\bpkt\b/gi, "punktów").replace(/\bx\b/g, " razy ").replace(/\+/g, " dodać ").replace(/ - /g, " odjąć ").replace(/=/g, " równa się ").replace(/\?/g, ".") + " ... ,";
 
 const utter = new SpeechSynthesisUtterance(cleanText);
 utter.lang = "pl-PL";
 if (selectedPlVoice) utter.voice = selectedPlVoice;
-utter.rate = 0.93;
-utter.pitch = 1.04;
-
+utter.rate = 0.93; utter.pitch = 1.04;
 utteranceQueue.push(utter);
 if (utteranceQueue.length > 10) utteranceQueue.shift();
 
 let finished = false;
-const finishOnce = () => {
-if (finished) return;
-finished = true;
-clearTimeout(speechSafetyTimer);
-if (onDoneCallback) setTimeout(onDoneCallback, 500);
-};
-
-utter.onend = finishOnce;
-utter.onerror = finishOnce;
-
-const estMs = Math.max(4000, Math.min(15000, cleanText.length * 110 + 1800));
-speechSafetyTimer = setTimeout(finishOnce, estMs);
-
+const finishOnce = () => { if (finished) return; finished = true; clearTimeout(speechSafetyTimer); if (onDoneCallback) setTimeout(onDoneCallback, 500); };
+utter.onend = finishOnce; utter.onerror = finishOnce;
+speechSafetyTimer = setTimeout(finishOnce, Math.max(4000, Math.min(15000, cleanText.length * 110 + 1800)));
 window.speechSynthesis.speak(utter);
 }
 
@@ -887,47 +1093,21 @@ function drawR6Wheel(catsList = r7Categories) {
 const key = (catsList || []).join("|");
 if (key === lastDrawnTVWheelKey) return;
 lastDrawnTVWheelKey = key;
-
 const canvas = document.getElementById('r6-wheel-canvas');
 if (!canvas) return;
 const ctx = canvas.getContext('2d');
 const cx = 250, cy = 250, r = 240;
 const arc = (Math.PI * 2) / catsList.length;
-
 ctx.clearRect(0, 0, 500, 500);
 catsList.forEach((cat, i) => {
 const startAngle = i * arc - Math.PI / 2 - arc / 2;
 const endAngle = startAngle + arc;
-
-ctx.beginPath();
-ctx.moveTo(cx, cy);
-ctx.arc(cx, cy, r, startAngle, endAngle);
-ctx.closePath();
-ctx.fillStyle = r6Colors[i % r6Colors.length];
-ctx.fill();
-ctx.lineWidth = 4;
-ctx.strokeStyle = "#050b14";
-ctx.stroke();
-
-ctx.save();
-ctx.translate(cx, cy);
-ctx.rotate(startAngle + arc / 2);
-ctx.textAlign = "right";
-ctx.fillStyle = "#fff";
-ctx.font = "900 22px sans-serif";
-ctx.shadowColor = "rgba(0,0,0,0.8)";
-ctx.shadowBlur = 4;
-ctx.fillText(cat, r - 20, 8);
-ctx.restore();
+ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, r, startAngle, endAngle); ctx.closePath();
+ctx.fillStyle = r6Colors[i % r6Colors.length]; ctx.fill(); ctx.lineWidth = 4; ctx.strokeStyle = "#050b14"; ctx.stroke();
+ctx.save(); ctx.translate(cx, cy); ctx.rotate(startAngle + arc / 2); ctx.textAlign = "right"; ctx.fillStyle = "#fff";
+ctx.font = "900 22px sans-serif"; ctx.shadowColor = "rgba(0,0,0,0.8)"; ctx.shadowBlur = 4; ctx.fillText(cat, r - 20, 8); ctx.restore();
 });
-
-ctx.beginPath();
-ctx.arc(cx, cy, 35, 0, Math.PI * 2);
-ctx.fillStyle = "#d4af37";
-ctx.fill();
-ctx.lineWidth = 5;
-ctx.strokeStyle = "#fff";
-ctx.stroke();
+ctx.beginPath(); ctx.arc(cx, cy, 35, 0, Math.PI * 2); ctx.fillStyle = "#d4af37"; ctx.fill(); ctx.lineWidth = 5; ctx.strokeStyle = "#fff"; ctx.stroke();
 }
 drawR6Wheel();
 
@@ -939,17 +1119,10 @@ let delay = (i / ticks) * (i / ticks) * 4.2;
 setTimeout(() => {
 if (!audioCtx) return;
 const now = audioCtx.currentTime;
-const osc = audioCtx.createOscillator();
-const g = audioCtx.createGain();
-osc.type = "triangle";
-osc.frequency.setValueAtTime(650, now);
-osc.frequency.exponentialRampToValueAtTime(180, now + 0.03);
-g.gain.setValueAtTime(0.25, now);
-g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
-osc.connect(g);
-g.connect(audioCtx.destination);
-osc.start(now);
-osc.stop(now + 0.035);
+const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
+osc.type = "triangle"; osc.frequency.setValueAtTime(650, now); osc.frequency.exponentialRampToValueAtTime(180, now + 0.03);
+g.gain.setValueAtTime(0.25, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.035);
 }, delay * 1000);
 }
 }
@@ -964,46 +1137,24 @@ function createUpbeatGameMusic() {
 if (audioCtx) return;
 const AudioContext = window.AudioContext || window.webkitAudioContext;
 audioCtx = new AudioContext();
-
-bgMasterGain = audioCtx.createGain();
-bgMasterGain.gain.value = 0.22;
-bgMasterGain.connect(audioCtx.destination);
-
+bgMasterGain = audioCtx.createGain(); bgMasterGain.gain.value = 0.22; bgMasterGain.connect(audioCtx.destination);
 const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 const bassNotes = [130.81, 146.83, 164.81, 196.00];
-
 let step = 0;
 musicInterval = setInterval(() => {
 if (!audioCtx || !isBgMusicPlaying) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-
 const now = audioCtx.currentTime;
-
-const bassOsc = audioCtx.createOscillator();
-const bassGain = audioCtx.createGain();
-bassOsc.type = "triangle";
-bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
-bassGain.gain.setValueAtTime(0.11, now);
-bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-bassOsc.connect(bassGain);
-bassGain.connect(bgMasterGain);
-bassOsc.start(now);
-bassOsc.stop(now + 0.25);
-
+const bassOsc = audioCtx.createOscillator(); const bassGain = audioCtx.createGain();
+bassOsc.type = "triangle"; bassOsc.frequency.setValueAtTime(bassNotes[Math.floor(step / 4) % bassNotes.length], now);
+bassGain.gain.setValueAtTime(0.11, now); bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
+bassOsc.connect(bassGain); bassGain.connect(bgMasterGain); bassOsc.start(now); bassOsc.stop(now + 0.25);
 if (step % 2 === 0) {
-const leadOsc = audioCtx.createOscillator();
-const leadGain = audioCtx.createGain();
-leadOsc.type = "sine";
-const note = scale[Math.floor(Math.random() * scale.length)];
-leadOsc.frequency.setValueAtTime(note, now);
-leadGain.gain.setValueAtTime(0.07, now);
-leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
-leadOsc.connect(leadGain);
-leadGain.connect(bgMasterGain);
-leadOsc.start(now);
-leadOsc.stop(now + 0.18);
+const leadOsc = audioCtx.createOscillator(); const leadGain = audioCtx.createGain();
+leadOsc.type = "sine"; leadOsc.frequency.setValueAtTime(scale[Math.floor(Math.random() * scale.length)], now);
+leadGain.gain.setValueAtTime(0.07, now); leadGain.gain.exponentialRampToValueAtTime(0.001, now + 0.17);
+leadOsc.connect(leadGain); leadGain.connect(bgMasterGain); leadOsc.start(now); leadOsc.stop(now + 0.18);
 }
-
 step++;
 }, 220);
 }
@@ -1012,266 +1163,113 @@ function playFireworkBoom() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 const now = audioCtx.currentTime;
-
 const bufferSize = audioCtx.sampleRate * 0.45;
 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
 const output = noiseBuffer.getChannelData(0);
-for (let i = 0; i < bufferSize; i++) {
-output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.12));
-}
-const whiteNoise = audioCtx.createBufferSource();
-whiteNoise.buffer = noiseBuffer;
-
-const filter = audioCtx.createBiquadFilter();
-filter.type = "lowpass";
-filter.frequency.setValueAtTime(750, now);
-filter.frequency.exponentialRampToValueAtTime(90, now + 0.45);
-
-const gain = audioCtx.createGain();
-gain.gain.setValueAtTime(0.45, now);
-gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
-
-whiteNoise.connect(filter);
-filter.connect(gain);
-gain.connect(audioCtx.destination);
-whiteNoise.start(now);
+for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.12));
+const whiteNoise = audioCtx.createBufferSource(); whiteNoise.buffer = noiseBuffer;
+const filter = audioCtx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.setValueAtTime(750, now); filter.frequency.exponentialRampToValueAtTime(90, now + 0.45);
+const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.45, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.45);
+whiteNoise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); whiteNoise.start(now);
 }
 
 function playMassiveBombExplosion() {
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 const now = audioCtx.currentTime;
-
-const subOsc = audioCtx.createOscillator();
-const subGain = audioCtx.createGain();
-subOsc.type = "sawtooth";
-subOsc.frequency.setValueAtTime(130, now);
-subOsc.frequency.exponentialRampToValueAtTime(22, now + 1.4);
-subGain.gain.setValueAtTime(0.95, now);
-subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.45);
-subOsc.connect(subGain);
-subGain.connect(audioCtx.destination);
-subOsc.start(now);
-subOsc.stop(now + 1.5);
-
-const dur = 1.6;
-const bufferSize = Math.floor(audioCtx.sampleRate * dur);
+const subOsc = audioCtx.createOscillator(); const subGain = audioCtx.createGain();
+subOsc.type = "sawtooth"; subOsc.frequency.setValueAtTime(130, now); subOsc.frequency.exponentialRampToValueAtTime(22, now + 1.4);
+subGain.gain.setValueAtTime(0.95, now); subGain.gain.exponentialRampToValueAtTime(0.001, now + 1.45);
+subOsc.connect(subGain); subGain.connect(audioCtx.destination); subOsc.start(now); subOsc.stop(now + 1.5);
+const dur = 1.6; const bufferSize = Math.floor(audioCtx.sampleRate * dur);
 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
 const output = noiseBuffer.getChannelData(0);
-for (let i = 0; i < bufferSize; i++) {
-output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.45));
-}
-const whiteNoise = audioCtx.createBufferSource();
-whiteNoise.buffer = noiseBuffer;
-
-const filter = audioCtx.createBiquadFilter();
-filter.type = "lowpass";
-filter.frequency.setValueAtTime(1100, now);
-filter.frequency.exponentialRampToValueAtTime(65, now + dur);
-
-const nGain = audioCtx.createGain();
-nGain.gain.setValueAtTime(0.9, now);
-nGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
-
-whiteNoise.connect(filter);
-filter.connect(nGain);
-nGain.connect(audioCtx.destination);
-whiteNoise.start(now);
+for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.45));
+const whiteNoise = audioCtx.createBufferSource(); whiteNoise.buffer = noiseBuffer;
+const filter = audioCtx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.setValueAtTime(1100, now); filter.frequency.exponentialRampToValueAtTime(65, now + dur);
+const nGain = audioCtx.createGain(); nGain.gain.setValueAtTime(0.9, now); nGain.gain.exponentialRampToValueAtTime(0.01, now + dur);
+whiteNoise.connect(filter); filter.connect(nGain); nGain.connect(audioCtx.destination); whiteNoise.start(now);
 }
 
 function playGrandFanfareSequence() {
-fanfareSound.currentTime = 0;
-fanfareSound.play().catch(()=>{});
-winSound.currentTime = 0;
-winSound.play().catch(()=>{});
-
+fanfareSound.currentTime = 0; fanfareSound.play().catch(()=>{});
+winSound.currentTime = 0; winSound.play().catch(()=>{});
 if (!audioCtx) return;
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-
 const playBrassChord = (freqs, startOffset, duration, vol = 0.22) => {
 const now = audioCtx.currentTime + startOffset;
 freqs.forEach((f, idx) => {
-const osc = audioCtx.createOscillator();
-const filter = audioCtx.createBiquadFilter();
-const g = audioCtx.createGain();
-
-osc.type = "sawtooth";
-osc.frequency.setValueAtTime(f, now);
-osc.detune.setValueAtTime((idx - 1) * 6, now);
-
-filter.type = "lowpass";
-filter.frequency.setValueAtTime(2400, now);
-
-g.gain.setValueAtTime(0.001, now);
-g.gain.linearRampToValueAtTime(vol, now + 0.03);
-g.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
-osc.connect(filter);
-filter.connect(g);
-g.connect(audioCtx.destination);
-
-osc.start(now);
-osc.stop(now + duration + 0.02);
+const osc = audioCtx.createOscillator(); const filter = audioCtx.createBiquadFilter(); const g = audioCtx.createGain();
+osc.type = "sawtooth"; osc.frequency.setValueAtTime(f, now); osc.detune.setValueAtTime((idx - 1) * 6, now);
+filter.type = "lowpass"; filter.frequency.setValueAtTime(2400, now);
+g.gain.setValueAtTime(0.001, now); g.gain.linearRampToValueAtTime(vol, now + 0.03); g.gain.exponentialRampToValueAtTime(0.001, now + duration);
+osc.connect(filter); filter.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.02);
 });
 };
-
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.25);
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.25);
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.25);
 playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
 playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
 playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
-playBrassChord([261.63, 392.00, 523.25, 659.25, 783.99], 2.32, 1.80, 0.35);
+playBrassChord([261.63, 329.63, 392.00, 523.25, 783.99], 2.32, 1.80, 0.35);
 }
-
-function startVictoryFanfareLoop() {
-clearInterval(fanfareLoopInterval);
-playGrandFanfareSequence();
-fanfareLoopInterval = setInterval(() => {
-if (fwActive) playGrandFanfareSequence();
-}, 6500);
-}
-
-function stopVictoryFanfareLoop() {
-clearInterval(fanfareLoopInterval);
-}
-
-function setBgMusicActive(active) {
-isBgMusicPlaying = active;
-if (audioCtx && active && audioCtx.state === 'suspended') {
-audioCtx.resume().catch(()=>{});
-}
-}
+function startVictoryFanfareLoop() { clearInterval(fanfareLoopInterval); playGrandFanfareSequence(); fanfareLoopInterval = setInterval(() => { if (fwActive) playGrandFanfareSequence(); }, 6500); }
+function stopVictoryFanfareLoop() { clearInterval(fanfareLoopInterval); }
+function setBgMusicActive(active) { isBgMusicPlaying = active; if (audioCtx && active && audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{}); }
 
 window.initAudio = function() {
 document.getElementById('audio-overlay').style.display = 'none';
-createUpbeatGameMusic();
-setBgMusicActive(true);
-initPolishVoices();
+createUpbeatGameMusic(); setBgMusicActive(true); initPolishVoices();
 speakPolishText("Witamy w teleturnieju!");
-[tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => {
-s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
-});
+[tickSound, suspenseSound, winSound, loseSound, fanfareSound].forEach(s => { s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{}); });
 };
 
 const fwCanvas = document.getElementById('fireworks-canvas');
 const fwCtx = fwCanvas.getContext('2d');
-let fwParticles = [];
-let fwRockets = [];
-let fwActive = false;
-let fwLoopId = null;
-let fwSpawnTimer = null;
+let fwParticles = [], fwRockets = [], fwActive = false, fwLoopId = null, fwSpawnTimer = null;
 
 function createExplosion(x, y, mainColor) {
 playFireworkBoom();
-const count = 15;
-for (let i = 0; i < count; i++) {
-const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.1;
+for (let i = 0; i < 15; i++) {
+const angle = (Math.PI * 2 * i) / 15 + (Math.random() - 0.5) * 0.1;
 const speed = Math.random() * 5 + 2;
-fwParticles.push({
-x, y,
-vx: Math.cos(angle) * speed,
-vy: Math.sin(angle) * speed,
-alpha: 1,
-size: Math.random() * 3 + 1.5,
-color: i % 2 === 0 ? '#ffffff' : mainColor,
-decay: Math.random() * 0.02 + 0.035
-});
+fwParticles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1, size: Math.random() * 3 + 1.5, color: i % 2 === 0 ? '#ffffff' : mainColor, decay: Math.random() * 0.02 + 0.035 });
 }
 }
-
 function startFireworks() {
 if (fwActive) return;
-fwActive = true;
-fwCanvas.style.display = 'block';
-fwCanvas.width = window.innerWidth;
-fwCanvas.height = window.innerHeight;
-fwParticles = [];
-fwRockets = [];
-
+fwActive = true; fwCanvas.style.display = 'block'; fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight;
+fwParticles = []; fwRockets = [];
 const colors = ['#ffd700', '#00d4ff', '#ff4757', '#2ed573', '#a855f7', '#ff9f43'];
-
 function launchWave() {
 if (!fwActive) return;
-const startX = fwCanvas.width * (0.2 + Math.random() * 0.6);
-const targetY = fwCanvas.height * (0.15 + Math.random() * 0.3);
-const color = colors[Math.floor(Math.random() * colors.length)];
-fwRockets.push({
-x: startX,
-y: fwCanvas.height,
-vx: (Math.random() - 0.5) * 1.5,
-vy: -(Math.random() * 4 + 9),
-targetY,
-color
-});
+fwRockets.push({ x: fwCanvas.width * (0.2 + Math.random() * 0.6), y: fwCanvas.height, vx: (Math.random() - 0.5) * 1.5, vy: -(Math.random() * 4 + 9), targetY: fwCanvas.height * (0.15 + Math.random() * 0.3), color: colors[Math.floor(Math.random() * colors.length)] });
 fwSpawnTimer = setTimeout(launchWave, 1500);
 }
 launchWave();
-
 function animateFw() {
 if (!fwActive) return;
 fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-
-if (fwParticles.length > 35) {
-fwParticles.splice(0, fwParticles.length - 35);
-}
-
+if (fwParticles.length > 35) fwParticles.splice(0, fwParticles.length - 35);
 for (let i = fwRockets.length - 1; i >= 0; i--) {
-const r = fwRockets[i];
-r.x += r.vx;
-r.y += r.vy;
-r.vy += 0.1;
-
-fwCtx.globalAlpha = 1;
-fwCtx.fillStyle = '#ffffff';
-fwCtx.beginPath();
-fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2);
-fwCtx.fill();
-
-if (r.y <= r.targetY || r.vy >= 0) {
-createExplosion(r.x, r.y, r.color);
-fwRockets.splice(i, 1);
+const r = fwRockets[i]; r.x += r.vx; r.y += r.vy; r.vy += 0.1;
+fwCtx.globalAlpha = 1; fwCtx.fillStyle = '#ffffff'; fwCtx.beginPath(); fwCtx.arc(r.x, r.y, 3, 0, Math.PI * 2); fwCtx.fill();
+if (r.y <= r.targetY || r.vy >= 0) { createExplosion(r.x, r.y, r.color); fwRockets.splice(i, 1); }
 }
-}
-
 for (let i = fwParticles.length - 1; i >= 0; i--) {
-const p = fwParticles[i];
-p.x += p.vx;
-p.y += p.vy;
-p.vy += 0.07;
-p.alpha -= p.decay;
-
-if (p.alpha <= 0) {
-fwParticles.splice(i, 1);
-} else {
-fwCtx.globalAlpha = p.alpha;
-fwCtx.fillStyle = p.color;
-fwCtx.beginPath();
-fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-fwCtx.fill();
-}
+const p = fwParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.alpha -= p.decay;
+if (p.alpha <= 0) fwParticles.splice(i, 1);
+else { fwCtx.globalAlpha = p.alpha; fwCtx.fillStyle = p.color; fwCtx.beginPath(); fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fwCtx.fill(); }
 }
 fwLoopId = requestAnimationFrame(animateFw);
 }
 animateFw();
 }
+function stopFireworks() { fwActive = false; clearTimeout(fwSpawnTimer); if (fwLoopId) cancelAnimationFrame(fwLoopId); fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height); fwCanvas.style.display = 'none'; }
 
-function stopFireworks() {
-fwActive = false;
-clearTimeout(fwSpawnTimer);
-if (fwLoopId) cancelAnimationFrame(fwLoopId);
-fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-fwCanvas.style.display = 'none';
-}
-
-let currentTick = null;
-let timerInterval = null;
-let wheelRevealInterval = null;
-let revealedWheelCount = 0;
-let lastWheelWinnersCount = 0;
-let lastPlayedResult = null;
-let isSuspense = false;
-let hideLiveCornerScores = false;
+let currentTick = null, timerInterval = null, wheelRevealInterval = null, revealedWheelCount = 0, lastWheelWinnersCount = 0, lastPlayedResult = null;
+let isSuspense = false, hideLiveCornerScores = false;
 let pendingScores = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
 let currentActivePlayers = ["Lila", "Kaja", "Darek", "Jas"];
 let lastTrapCountSound = 0;
@@ -1287,21 +1285,13 @@ const board = document.getElementById('tv-wheel-board');
 board.innerHTML = "";
 const unlocked = (order || []).slice(0, count);
 let letterIdx = 0;
-
 (phrase || "").split(" ").forEach(word => {
-const wDiv = document.createElement('div');
-wDiv.className = "wheel-word";
+const wDiv = document.createElement('div'); wDiv.className = "wheel-word";
 for (let ch of word) {
 const lDiv = document.createElement('div');
-if (unlocked.includes(letterIdx)) {
-lDiv.className = "wheel-letter revealed";
-lDiv.innerText = ch;
-} else {
-lDiv.className = "wheel-letter";
-lDiv.innerText = "";
-}
-wDiv.appendChild(lDiv);
-letterIdx++;
+if (unlocked.includes(letterIdx)) { lDiv.className = "wheel-letter revealed"; lDiv.innerText = ch; }
+else { lDiv.className = "wheel-letter"; lDiv.innerText = ""; }
+wDiv.appendChild(lDiv); letterIdx++;
 }
 board.appendChild(wDiv);
 });
@@ -1310,16 +1300,11 @@ board.appendChild(wDiv);
 function getSortedStandings(activeList = currentActivePlayers) {
 const allIds = ["Lila", "Kaja", "Darek", "Jas"];
 let sorted = allIds.filter(id => activeList.includes(id)).map(id => ({
-id,
-name: getDisplayName(id),
-pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
+id, name: getDisplayName(id), pts: pendingScores[id] !== undefined ? pendingScores[id] : 0
 })).sort((a, b) => b.pts - a.pts);
-
 let currentRank = 1;
 for (let i = 0; i < sorted.length; i++) {
-if (i > 0 && sorted[i].pts < sorted[i - 1].pts) {
-currentRank = currentRank + 1;
-}
+if (i > 0 && sorted[i].pts < sorted[i - 1].pts) currentRank = currentRank + 1;
 sorted[i].rank = currentRank;
 }
 return sorted;
@@ -1340,9 +1325,10 @@ const medals = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
 
 sorted.forEach(p => {
 const isReady = readyList.includes(p.id);
+const avHtml = playerAvatarsMap[p.id] ? `<img class="summary-av" src="${playerAvatarsMap[p.id]}" alt="">` : "";
 const row = document.createElement('div');
 row.className = "summary-row" + (p.rank === 1 ? " leader" : "");
-row.innerHTML = `<span>${medals[p.rank] || "🏅"} ${p.rank}. ${p.name.toUpperCase()} ${isReady ? "✅" : "⏳"}</span><span style="color:var(--gold);">${p.pts} PKT</span>`;
+row.innerHTML = `<span class="summary-left-flex">${medals[p.rank] || "🏅"} ${p.rank}. ${avHtml} ${p.name.toUpperCase()} ${isReady ? "✅" : "⏳"}</span><span style="color:var(--gold);">${p.pts} PKT</span>`;
 listEl.appendChild(row);
 });
 return sorted;
@@ -1352,22 +1338,21 @@ function renderPodium(activeList = currentActivePlayers) {
 const container = document.getElementById('podium-bars-container');
 container.innerHTML = "";
 const sorted = getSortedStandings(activeList);
-
 const visualArrangement = [];
-sorted.forEach((player, idx) => {
-if (idx % 2 === 0) visualArrangement.push(player);
-else visualArrangement.unshift(player);
-});
-
+sorted.forEach((player, idx) => { if (idx % 2 === 0) visualArrangement.push(player); else visualArrangement.unshift(player); });
 const medalsMap = { 1: "🥇", 2: "🥈", 3: "🥉", 4: "🏅" };
 const pedClassMap = { 1: "ped-1", 2: "ped-2", 3: "ped-3", 4: "ped-4" };
 
 visualArrangement.forEach(p => {
 const r = Math.min(4, p.rank);
+const avSrc = playerAvatarsMap[p.id];
+const avContent = avSrc
+? `<img class="podium-av-img" src="${avSrc}" alt=""><span class="podium-medal-corner">${medalsMap[r]}</span>`
+: medalsMap[r];
 const col = document.createElement('div');
 col.className = "podium-col";
 col.innerHTML = `
-<div class="podium-avatar">${medalsMap[r]}</div>
+<div class="podium-avatar">${avContent}</div>
 <div class="podium-pname">${p.name}</div>
 <div class="podium-pts">${p.pts} PKT</div>
 <div class="podium-pedestal ${pedClassMap[r]}">${r}</div>
@@ -1379,14 +1364,12 @@ container.appendChild(col);
 onSnapshot(collection(db, "quizScores"), (snap) => {
 snap.forEach(d => {
 pendingScores[d.id] = d.data().points;
-if (!isSuspense && !hideLiveCornerScores) {
+if (!isSuspense && !hideLiveCornerScores && !r3AnimatingReveal) {
 let el = document.getElementById(`pts-${d.id}`);
 if (el) el.innerText = d.data().points;
 }
 });
-if (document.getElementById('podium-view').style.display === 'flex') {
-renderPodium(currentActivePlayers);
-}
+if (document.getElementById('podium-view').style.display === 'flex') renderPodium(currentActivePlayers);
 });
 
 onSnapshot(doc(db, "quizGame", "state"), (docSnap) => {
@@ -1399,8 +1382,13 @@ refreshTVPlayerNames();
 }
 
 currentActivePlayers = (data.activePlayers && data.activePlayers.length > 0) ? data.activePlayers : ["Lila", "Kaja", "Darek", "Jas"];
-
 hideLiveCornerScores = ((data.round === 1 || data.round === 3) && (data.status === "speaking" || data.status === "reading"));
+
+if (data.status !== "r3_results") {
+clearR3AnimTimers();
+} else if (lastR3AnimKey === ("r3_axis_" + data.answerTick)) {
+return;
+}
 
 if (data.wheelCategories && data.wheelCategories.length > 0) {
 r7Categories = data.wheelCategories;
@@ -1410,7 +1398,7 @@ drawR6Wheel(r7Categories);
 let roundNames = {
 1: "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
 2: "RUNDA 2: 🔥 GORĄCA BOMBA PRAWDA / FAŁSZ (+10 / -5 PKT | CZAS LECI NON-STOP | WYBUCH -10 PKT)",
-3: "RUNDA 3: ✍️ SZYBKIE PISANIE (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT",
+3: "RUNDA 3: 🎯 KTO NAJBLIŻEJ? (20s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT + BONUS +10 ZA IDEAŁ!",
 4: "RUNDA 4: 🔤 ODSŁANIANIE HASŁA (60s | 15 / 12 / 10 / 8 PKT | BEZ KAR!)",
 5: "RUNDA 5: 💰 POSTAW NA MILION (200 PKT | 45s PO LEKTORZE | NIEROZŁOŻONE PRZEPADAJĄ!)",
 6: "RUNDA 6: ⚡ RYZYKO - WYBIERANIE GRACZA (NA SIEBIE: ±20 PKT | NA KOGOŚ: ±10 PKT)",
@@ -1433,6 +1421,7 @@ const wheelBoard = document.getElementById('tv-wheel-board');
 const wheelCat = document.getElementById('tv-wheel-cat');
 const wheelWinnersEl = document.getElementById('tv-wheel-winners');
 const r2BombBox = document.getElementById('r2-bomb-box');
+const r3AxisBox = document.getElementById('r3-axis-box');
 const r5MillionBox = document.getElementById('r5-million-box');
 const r6WheelWrap = document.getElementById('r6-wheel-wrap');
 const r6AuctionBox = document.getElementById('r6-auction-box');
@@ -1442,7 +1431,7 @@ const podiumView = document.getElementById('podium-view');
 catEl.style.display = "none"; opts.style.display = "none"; winnerEl.style.display = "none";
 statusEl.style.display = "none"; typedAnsEl.style.display = "none"; correctBanner.style.display = "none";
 wheelBoard.style.display = "none"; wheelCat.style.display = "none"; wheelWinnersEl.style.display = "none";
-r2BombBox.style.display = "none"; r5MillionBox.style.display = "none";
+r2BombBox.style.display = "none"; r3AxisBox.style.display = "none"; r5MillionBox.style.display = "none";
 r6WheelWrap.style.display = "none"; r6AuctionBox.style.display = "none";
 roundSummaryView.style.display = "none"; podiumView.style.display = "none";
 qEl.style.display = "block";
@@ -1450,19 +1439,14 @@ qrContainer.style.display = (data.status === "idle") ? "block" : "none";
 stage.classList.remove("success-glow", "error-glow");
 document.body.classList.remove("shake-screen");
 
-if (data.status !== "podium") {
-stopFireworks();
-stopVictoryFanfareLoop();
-}
+if (data.status !== "podium") { stopFireworks(); stopVictoryFanfareLoop(); }
 
 const players = ["Lila", "Kaja", "Darek", "Jas"];
 players.forEach(p => {
 let el = document.getElementById(`score-${p}`);
 el.style.display = currentActivePlayers.includes(p) ? "block" : "none";
-if (data.blocked && data.blocked.includes(p)) el.classList.add('blocked');
-else el.classList.remove('blocked');
-if (data.round === 2 && (data.status === "r2_bomb_active" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_running") && data.nominated === p) el.classList.add('bomb-holder');
-else el.classList.remove('bomb-holder');
+el.classList.toggle('blocked', Boolean(data.blocked && data.blocked.includes(p)));
+el.classList.toggle('bomb-holder', Boolean(data.round === 2 && (data.status === "r2_bomb_active" || data.status === "r2_bomb_speaking" || data.status === "r2_bomb_running") && data.nominated === p));
 });
 
 const letters = ["A", "B", "C", "D"];
@@ -1473,12 +1457,9 @@ timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
 qEl.style.display = "none";
 roundSummaryView.style.display = "flex";
-let readyList = data.readyPlayers || [];
-const sorted = renderRoundSummaryBoard(data.completedRound, data.nextRoundTitle || `Runda ${data.nextRound}`, readyList, currentActivePlayers);
-
+const sorted = renderRoundSummaryBoard(data.completedRound, data.nextRoundTitle || `Runda ${data.nextRound}`, data.readyPlayers || [], currentActivePlayers);
 let sumSpeechKey = "round_sum_" + data.speechTick;
 if (lastSpokenKey !== sumSpeechKey) {
 lastSpokenKey = sumSpeechKey;
@@ -1488,45 +1469,31 @@ const leaders = sorted.filter(p => p.rank === 1).map(p => p.name);
 const leaderSpeech = leaders.length > 1
 ? `Na prowadzeniu remis: ${leaders.join(" oraz ")}, z wynikiem ${sorted[0].pts} punktów.`
 : `Na prowadzeniu ${leaders[0]}, z wynikiem ${sorted[0].pts} punktów.`;
-speakPolishText(`Koniec rundy ${ordWord}! ${leaderSpeech} Kliknijcie gotowość na telefonach, przed nami ${data.nextRoundTitle}!`, () => {
-setBgMusicActive(true);
-});
+speakPolishText(`Koniec rundy ${ordWord}! ${leaderSpeech} Kliknijcie gotowość na telefonach, przed nami ${data.nextRoundTitle}!`, () => { setBgMusicActive(true); });
 }
 return;
 }
 
-// ============================================================================
-// RUNDA 2: GORĄCA BOMBA 3D (1 WIELKA TURA 2:30 - 3:00 MIN, CZAS LECI NON-STOP!)
-// ============================================================================
+// RUNDA 2: GORĄCA BOMBA
 if (data.round === 2) {
-clearInterval(timerInterval);
-timerEl.style.display = 'none';
+clearInterval(timerInterval); timerEl.style.display = 'none';
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-catEl.style.display = "block";
-catEl.innerText = `🔥 GORĄCA BOMBA: WIELKA TURA FINAŁOWA`;
+catEl.style.display = "block"; catEl.innerText = `🔥 GORĄCA BOMBA: WIELKA TURA FINAŁOWA`;
 r2BombBox.style.display = "flex";
-
 const bomb3DWrapEl = document.getElementById('r2-bomb-3d-wrap');
 const boomWrapEl = document.getElementById('comic-boom-wrap');
 const holderTxtEl = document.getElementById('r2-bomb-holder-txt');
 const holderName = getDisplayName(data.nominated || currentActivePlayers[0]);
-
-bomb3DWrapEl.style.display = "block";
-boomWrapEl.style.display = "none";
+bomb3DWrapEl.style.display = "block"; boomWrapEl.style.display = "none";
 
 if (data.status === "r2_bomb_wait_ready") {
-setBgMusicActive(true);
-tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
+setBgMusicActive(true); tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
 updateBomb3DVisuals(0);
 holderTxtEl.innerText = `ZACZYNA GRACZ: ${holderName.toUpperCase()}!`;
 const readyList = data.readyPlayers || [];
-const readyNames = readyList.map(getDisplayName);
 qEl.innerText = `PRZYGOTOWANIE DO GORĄCEJ BOMBY!`;
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.length}): ${readyNames.length > 0 ? readyNames.join(", ").toUpperCase() : "KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!"}`;
-
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = `GOTOWI GRACZE (${readyList.length}/${currentActivePlayers.length}): ${readyList.length > 0 ? readyList.map(getDisplayName).join(", ").toUpperCase() : "KLIKNIJCIE GOTOWOŚĆ NA TELEFONACH!"}`;
 let bWaitKey = "r2_bwait_" + data.speechTick;
 if (lastSpokenKey !== bWaitKey) {
 lastSpokenKey = bWaitKey;
@@ -1536,87 +1503,55 @@ speakPolishText(`Runda druga: Gorąca Bomba! Jako pierwszy bombę dostaje gracz 
 setBgMusicActive(false);
 const progress = data.bombProgress || 0;
 updateBomb3DVisuals(progress);
-
 holderTxtEl.innerText = `🔥 TRZYMA BOMBĘ: ${holderName.toUpperCase()} (-1 PKT CO 2s)!`;
 qEl.innerText = data.question || "";
-
-const rate = 1.0 + (progress * 1.65);
-tickSound.playbackRate = rate;
+tickSound.playbackRate = 1.0 + (progress * 1.65);
 tickSound.play().catch(()=>{});
-
-// Lektor czyta nowe pytanie od razu po przekazaniu bomby, a zegar i tykanie lecą równolegle!
 let bSpKey = "r2_bsp_" + data.speechTick;
-if (lastSpokenKey !== bSpKey && data.question) {
-lastSpokenKey = bSpKey;
-speakPolishText(`${holderName}! ${data.question}`);
-}
+if (lastSpokenKey !== bSpKey && data.question) { lastSpokenKey = bSpKey; speakPolishText(`${holderName}! ${data.question}`); }
 } else if (data.status === "r2_bomb_exploded") {
 window.speechSynthesis && window.speechSynthesis.cancel();
 tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
-stage.classList.add("error-glow");
-document.body.classList.add("shake-screen");
-bomb3DWrapEl.style.display = "none";
-boomWrapEl.style.display = "block";
-
+stage.classList.add("error-glow"); document.body.classList.add("shake-screen");
+bomb3DWrapEl.style.display = "none"; boomWrapEl.style.display = "block";
 const victimName = getDisplayName(data.bombVictim || data.loser || data.nominated);
 holderTxtEl.innerText = `💥 WYBUCH W RĘKACH GRACZA: ${victimName.toUpperCase()} (-10 PKT)!`;
 qEl.innerText = `KONIEC RUNDY Z BOMBĄ!`;
-
 let expKey = "r2_exp_" + data.answerTick;
-if (lastPlayedResult !== expKey) {
-lastPlayedResult = expKey;
-playMassiveBombExplosion();
-speakPolishText(`Bum! Bomba wybuchła w rękach gracza ${victimName}! Minus dziesięć punktów!`);
-}
+if (lastPlayedResult !== expKey) { lastPlayedResult = expKey; playMassiveBombExplosion(); speakPolishText(`Bum! Bomba wybuchła w rękach gracza ${victimName}! Minus dziesięć punktów!`); }
 } else {
-updateBomb3DVisuals(0);
-qEl.innerText = data.question || "Przygotujcie się na Gorącą Bombę!";
+updateBomb3DVisuals(0); qEl.innerText = data.question || "Przygotujcie się na Gorącą Bombę!";
 }
 return;
 }
 
-// ============================================================================
-// RUNDA 5: POSTAW NA MILION (REALISTYCZNE STUDIO 3D Z PÓŁOKRĄGŁYM STOŁEM)
-// ============================================================================
+// RUNDA 5: POSTAW NA MILION
 if (data.round === 5) {
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
 const pName = getDisplayName(data.nominated || currentActivePlayers[0]);
 const curPoolPts = data.milCurrentPts ?? 200;
 catEl.style.display = "block";
 catEl.innerText = `💰 POSTAW NA MILION: ${pName.toUpperCase()} | PYTANIE ${data.milQNum || 1}/5 | W GRZE: ${curPoolPts} PKT`;
 
 if (data.status === "r5_mil_wait_ready") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(true);
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(true);
 qEl.innerText = `TERAZ PRZY ZAPADNIACH GRA: ${pName.toUpperCase()}!`;
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--gold)";
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
 winnerEl.innerText = `📱 ${pName.toUpperCase()}, KLIKNIJ "STARTUJEMY" NA SWOIM TELEFONIE, ABY ROZPOCZĄĆ SERIĘ 5 PYTAŃ!`;
 let mWaitKey = "r5_mwait_" + data.speechTick;
-if (lastSpokenKey !== mWaitKey) {
-lastSpokenKey = mWaitKey;
-speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie i czterdzieści pięć sekund po każdym pytaniu. Kliknij gotowość na telefonie!`);
-}
+if (lastSpokenKey !== mWaitKey) { lastSpokenKey = mWaitKey; speakPolishText(`Teraz przy zapadniach w Postaw na milion gra ${pName}. Masz dwieście punktów na starcie i czterdzieści pięć sekund po każdym pytaniu. Kliknij gotowość na telefonie!`); }
 return;
 }
-
 if (data.status === "r5_mil_player_summary") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false);
 stage.classList.add(data.milSavedTotal > 0 ? "success-glow" : "error-glow");
 qEl.innerText = `KONIEC GRY POSTAW NA MILION DLA GRACZA: ${pName.toUpperCase()}!`;
-winnerEl.style.display = "block";
-winnerEl.style.color = data.milSavedTotal > 0 ? "#00ff00" : "#ff4757";
+winnerEl.style.display = "block"; winnerEl.style.color = data.milSavedTotal > 0 ? "#00ff00" : "#ff4757";
 winnerEl.innerText = `OCALAŁE PUNKTY DOPISANE DO KONTA: +${data.milSavedTotal || 0} PKT!`;
-
 let milSumKey = "r5_mil_sum_" + data.speechTick;
 if (lastSpokenKey !== milSumKey) {
 lastSpokenKey = milSumKey;
-if (data.milSavedTotal > 0) winSound.play().catch(()=>{});
-else loseSound.play().catch(()=>{});
+if (data.milSavedTotal > 0) winSound.play().catch(()=>{}); else loseSound.play().catch(()=>{});
 speakPolishText(`Koniec serii dla gracza ${pName}! Do głównej tabeli trafia ${data.milSavedTotal || 0} punktów.`);
 }
 return;
@@ -1626,10 +1561,8 @@ qEl.innerText = data.question || "Rozdziel punkty na zapadniach!";
 r5MillionBox.style.display = "flex";
 const trapsContainer = document.getElementById('r5-traps-container');
 trapsContainer.innerHTML = "";
-
 const optionsList = data.options || [];
 trapsContainer.className = `mil-traps-grid count-${optionsList.length || 4}`;
-
 const bets = data.milBets || {};
 const openTraps = data.milOpenTraps || [];
 const tiltAngles = [-9, 7, -5, 11, -7, 5, 9, -6, 4, -8, 6, -4];
@@ -1639,190 +1572,97 @@ const isDropped = openTraps.includes(idx);
 const isResultWinner = (data.status === "r5_mil_q_result" && idx === data.correctIndex);
 const betVal = bets[idx] !== undefined ? parseInt(bets[idx], 10) : 0;
 const isBettingPhase = (data.status === "r5_mil_betting" || data.status === "r5_mil_speaking");
-
-let bundlesCount = 0;
-if (isBettingPhase) {
-bundlesCount = 3;
-} else if (betVal > 0) {
-bundlesCount = Math.min(12, Math.max(1, Math.ceil(betVal / 18)));
-}
+let bundlesCount = isBettingPhase ? 3 : (betVal > 0 ? Math.min(12, Math.max(1, Math.ceil(betVal / 18))) : 0);
 let bundlesHtml = "";
-for (let b = 0; b < bundlesCount; b++) {
-const rot = tiltAngles[(idx * 3 + b) % tiltAngles.length];
-bundlesHtml += `<div class="cash-bundle-3d" style="--rot:${rot}deg;"></div>`;
-}
-
+for (let b = 0; b < bundlesCount; b++) bundlesHtml += `<div class="cash-bundle-3d" style="--rot:${tiltAngles[(idx * 3 + b) % tiltAngles.length]}deg;"></div>`;
 const betLabel = isBettingPhase ? "🔒 ? PKT" : `${betVal} PKT`;
-const hasCashClass = (!isBettingPhase && betVal > 0) ? "has-cash" : "";
-const barActiveClass = (!isBettingPhase && betVal > 0) ? "active-bet" : "";
-
 const station = document.createElement('div');
 station.className = "mil-station";
 station.innerHTML = `
 <div class="mil-monitor">
-<div class="mil-monitor-screen">
-<div class="mil-monitor-letter">ZAPADNIA ${letters[idx]}</div>
-<div class="mil-monitor-ans">${optText}</div>
-</div>
-<div class="mil-monitor-amount-bar ${barActiveClass}">${betLabel}</div>
+<div class="mil-monitor-screen"><div class="mil-monitor-letter">ZAPADNIA ${letters[idx]}</div><div class="mil-monitor-ans">${optText}</div></div>
+<div class="mil-monitor-amount-bar ${(!isBettingPhase && betVal > 0) ? "active-bet" : ""}">${betLabel}</div>
 </div>
 <div class="mil-neck"></div>
-<div class="mil-trap-frame ${hasCashClass} ${isDropped ? "dropped" : ""} ${isResultWinner ? "safe-winner" : ""}">
+<div class="mil-trap-frame ${(!isBettingPhase && betVal > 0) ? "has-cash" : ""} ${isDropped ? "dropped" : ""} ${isResultWinner ? "safe-winner" : ""}">
 <div class="mil-trap-pit">💥 PRZEPAŚĆ!</div>
-<div class="mil-trap-doors">
-<div class="mil-door-leaf left-leaf"></div>
-<div class="mil-door-leaf right-leaf"></div>
-</div>
-<div class="mil-cash-stage">
-<div class="mil-cash-bundles">${bundlesHtml}</div>
-${(!isBettingPhase && betVal > 0) ? `<div class="mil-bet-amount">${betVal} PKT</div>` : ""}
-</div>
-</div>
-`;
+<div class="mil-trap-doors"><div class="mil-door-leaf left-leaf"></div><div class="mil-door-leaf right-leaf"></div></div>
+<div class="mil-cash-stage"><div class="mil-cash-bundles">${bundlesHtml}</div>${(!isBettingPhase && betVal > 0) ? `<div class="mil-bet-amount">${betVal} PKT</div>` : ""}</div>
+</div>`;
 trapsContainer.appendChild(station);
 });
 
 if (data.status === "r5_mil_speaking") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-lastTrapCountSound = 0;
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--cyan)";
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false); lastTrapCountSound = 0;
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
 winnerEl.innerText = `🗣️ LEKTOR CZYTA PYTANIE I OPCJE... PO PRZECZYTANIU RUSZY STOPER 45 SEKUND!`;
-
 let milQKey = "r5_mil_q_" + data.speechTick;
 if (lastSpokenKey !== milQKey && data.question) {
 lastSpokenKey = milQKey;
 let optsSpoken = optionsList.map((o, i) => `${letters[i]}: ${o}`).join(". ");
 speakPolishText(`${pName}, pytanie numer ${data.milQNum}. ${data.question}. ${optsSpoken}. Masz czterdzieści pięć sekund!`, async () => {
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "r5_mil_betting",
-tick: Date.now()
-});
+await updateDoc(doc(db, "quizGame", "state"), { status: "r5_mil_betting", tick: Date.now() });
 });
 }
 } else if (data.status === "r5_mil_betting") {
-setBgMusicActive(true);
-lastTrapCountSound = 0;
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--gold)";
+setBgMusicActive(true); lastTrapCountSound = 0;
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
 winnerEl.innerText = `📱 ${pName.toUpperCase()} ROZDZIELA ${curPoolPts} PKT NA ZAPADNIACH (MAX ZAPADNI: ${data.milMaxTraps} | 45s - NIEROZŁOŻONE PRZEPADAJĄ!)...`;
-
 if (data.tick !== currentTick) {
-currentTick = data.tick;
-clearInterval(timerInterval);
-tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
-let timeLeft = data.milTimeoutSec || 45;
-timerEl.style.display = 'flex';
-timerEl.classList.remove('timer-alert');
-timerEl.innerText = timeLeft;
-
+currentTick = data.tick; clearInterval(timerInterval); tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
+let timeLeft = data.milTimeoutSec || 45; timerEl.style.display = 'flex'; timerEl.classList.remove('timer-alert'); timerEl.innerText = timeLeft;
 timerInterval = setInterval(() => {
 timeLeft--;
-if (timeLeft <= 0) {
-clearInterval(timerInterval);
-tickSound.pause(); tickSound.currentTime = 0;
-timerEl.innerText = "0";
-} else {
-timerEl.innerText = timeLeft;
-if (timeLeft <= 5) {
-timerEl.classList.add('timer-alert');
-setBgMusicActive(false);
-tickSound.play().catch(()=>{});
-}
-}
+if (timeLeft <= 0) { clearInterval(timerInterval); tickSound.pause(); tickSound.currentTime = 0; timerEl.innerText = "0"; }
+else { timerEl.innerText = timeLeft; if (timeLeft <= 5) { timerEl.classList.add('timer-alert'); setBgMusicActive(false); tickSound.play().catch(()=>{}); } }
 }, 1000);
 }
 } else if (data.status === "r5_mil_dropping") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-suspenseSound.play().catch(()=>{});
-if (openTraps.length > lastTrapCountSound) {
-lastTrapCountSound = openTraps.length;
-playFireworkBoom();
-}
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--cyan)";
-const lostTxt = data.milLostUnallocated > 0 ? ` (⏰ PRZEPADŁO PRZEZ CZAS: -${data.milLostUnallocated} PKT!)` : "";
-winnerEl.innerText = `⏳ OTWIERAMY KOLEJNE ZAPADNIE CO 3 SEKUNDY...${lostTxt}`;
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false); suspenseSound.play().catch(()=>{});
+if (openTraps.length > lastTrapCountSound) { lastTrapCountSound = openTraps.length; playFireworkBoom(); }
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
+winnerEl.innerText = `⏳ OTWIERAMY KOLEJNE ZAPADNIE CO 3 SEKUNDY...${data.milLostUnallocated > 0 ? ` (⏰ PRZEPADŁO PRZEZ CZAS: -${data.milLostUnallocated} PKT!)` : ""}`;
 } else if (data.status === "r5_mil_q_result") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-suspenseSound.pause(); suspenseSound.currentTime = 0;
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
 const saved = data.milCurrentPts || 0;
-const lostTxt = data.milLostUnallocated > 0 ? ` (PRZEPADŁO PRZEZ CZAS: ${data.milLostUnallocated} PKT)` : "";
 stage.classList.add(saved > 0 ? "success-glow" : "error-glow");
-winnerEl.style.display = "block";
-winnerEl.style.color = saved > 0 ? "#00ff00" : "#ff4757";
-winnerEl.innerText = saved > 0
-? `✅ BRAWO! NA ZAMKNIĘTEJ ZAPADNI OCALAŁO: ${saved} PKT!${lostTxt}`
-: `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!${lostTxt}`;
-
+winnerEl.style.display = "block"; winnerEl.style.color = saved > 0 ? "#00ff00" : "#ff4757";
+winnerEl.innerText = saved > 0 ? `✅ BRAWO! NA ZAMKNIĘTEJ ZAPADNI OCALAŁO: ${saved} PKT!` : `❌ NIESTETY! WSZYSTKIE PUNKTY SPADŁY W PRZEPAŚĆ (0 PKT)!`;
 let milResKey = "r5_mil_res_" + data.answerTick;
-if (lastPlayedResult !== milResKey) {
-lastPlayedResult = milResKey;
-if (saved > 0) winSound.play().catch(()=>{});
-else loseSound.play().catch(()=>{});
-}
+if (lastPlayedResult !== milResKey) { lastPlayedResult = milResKey; if (saved > 0) winSound.play().catch(()=>{}); else loseSound.play().catch(()=>{}); }
 }
 return;
 }
 
 // WIELKI FINAŁ - PODIUM
 if (data.status === "podium") {
-isSuspense = false;
-clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-setBgMusicActive(false);
-
-qEl.style.display = "none";
-stage.classList.add("success-glow");
-podiumView.style.display = "flex";
-renderPodium(currentActivePlayers);
-startFireworks();
-
-if (lastPlayedResult !== "podium_" + data.answerTick) {
-startVictoryFanfareLoop();
-lastPlayedResult = "podium_" + data.answerTick;
-}
+isSuspense = false; clearInterval(timerInterval); clearInterval(wheelRevealInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0; setBgMusicActive(false);
+qEl.style.display = "none"; stage.classList.add("success-glow"); podiumView.style.display = "flex";
+renderPodium(currentActivePlayers); startFireworks();
+if (lastPlayedResult !== "podium_" + data.answerTick) { startVictoryFanfareLoop(); lastPlayedResult = "podium_" + data.answerTick; }
 return;
 }
 
-// ============================================================================
-// RUNDA 7: KOŁO KATEGORII I LICYTACJA W CIEMNO
-// ============================================================================
+// RUNDA 7: KOŁO I LICYTACJA W CIEMNO
 if (data.status === "r6_wait_spin" || data.status === "r6_spinning") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-r6WheelWrap.style.display = "flex";
-qEl.style.fontSize = "1.8vw";
+clearInterval(timerInterval); timerEl.style.display = 'none'; r6WheelWrap.style.display = "flex"; qEl.style.fontSize = "1.8vw";
 const ctrlName = getDisplayName(data.controller);
-
 if (data.status === "r6_wait_spin") {
 setBgMusicActive(true);
-let carryTxt = data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : "";
-qEl.innerText = `🎡 ${ctrlName.toUpperCase()} KRĘCI PALCEM KOŁEM NA SWOIM TELEFONIE!${carryTxt}`;
+qEl.innerText = `🎡 ${ctrlName.toUpperCase()} KRĘCI PALCEM KOŁEM NA SWOIM TELEFONIE!${data.carryOver > 0 ? ` (KUMULACJA W PULI: +${data.carryOver} PKT!)` : ""}`;
 let waitKey = "r6_wait_" + data.speechTick;
-if (data.speechTick && lastSpokenKey !== waitKey) {
-lastSpokenKey = waitKey;
-speakPolishText(`${ctrlName}, zakręć kołem na telefonie.`);
-}
+if (data.speechTick && lastSpokenKey !== waitKey) { lastSpokenKey = waitKey; speakPolishText(`${ctrlName}, zakręć kołem na telefonie.`); }
 } else {
-setBgMusicActive(false);
-qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
+setBgMusicActive(false); qEl.innerText = `🎡 KOŁO SIĘ OBRACA! ZOBACZMY JAKA WYPADNIE KATEGORIA...`;
 if (data.spinTick && data.spinTick !== lastR6SpinHandled) {
-lastR6SpinHandled = data.spinTick;
-playWheelTicks();
+lastR6SpinHandled = data.spinTick; playWheelTicks();
 const wheelCanvasEl = document.getElementById('r6-wheel-canvas');
 const segAngle = 360 / r7Categories.length;
-const extraSpins = (data.spinPower || 7) * 360;
 const targetMod = (360 - (data.wheelSegment * segAngle)) % 360;
 const curMod = ((currentWheelRotation % 360) + 360) % 360;
-let diff = targetMod - curMod;
-if (diff < 0) diff += 360;
-currentWheelRotation += extraSpins + diff;
+let diff = targetMod - curMod; if (diff < 0) diff += 360;
+currentWheelRotation += (data.spinPower || 7) * 360 + diff;
 void wheelCanvasEl.offsetWidth;
 wheelCanvasEl.style.transform = `rotate(${currentWheelRotation}deg)`;
 }
@@ -1831,102 +1671,55 @@ return;
 }
 
 if (data.status === "r6_blind_bidding" || data.status === "r6_sold") {
-qEl.style.display = "none";
-catEl.style.display = "block";
-catEl.innerText = "WYLOSOWANA KATEGORIA: " + (data.category || "");
+qEl.style.display = "none"; catEl.style.display = "block"; catEl.innerText = "WYLOSOWANA KATEGORIA: " + (data.category || "");
 r6AuctionBox.style.display = "flex";
-
-const bids = data.r6Bids || {};
-const lockedList = data.r6LockedBidders || [];
-const callEl = document.getElementById('r6-auction-call');
+const bids = data.r6Bids || {}; const lockedList = data.r6LockedBidders || []; const callEl = document.getElementById('r6-auction-call');
 
 if (data.status === "r6_blind_bidding") {
 setBgMusicActive(true);
-document.getElementById('r6-pot-label').innerText = data.carryOver > 0
-? `TAJNE OBSTAWIANIE (MIN. 5 PKT | KUMULACJA: +${data.carryOver} PKT!)`
-: `TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT | AUTOMAT PO 20s: 5 PKT)`;
+document.getElementById('r6-pot-label').innerText = data.carryOver > 0 ? `TAJNE OBSTAWIANIE (MIN. 5 PKT | KUMULACJA: +${data.carryOver} PKT!)` : `TAJNE OBSTAWIANIE W CIEMNO (MIN. 5 PKT | AUTOMAT PO 20s: 5 PKT)`;
 document.getElementById('r6-pot-val').innerText = `🤫 ? PKT`;
-
 players.forEach(p => {
-const card = document.getElementById(`bid-card-${p}`);
-card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
+const card = document.getElementById(`bid-card-${p}`); card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
 card.classList.remove('highest', 'tied-high');
 const isLocked = lockedList.includes(p);
 document.getElementById(`bid-val-${p}`).innerText = isLocked ? "🔒 GOTOWY!" : "⏳ WPISUJE...";
 if (isLocked) card.classList.add('tied-high');
 });
-
-callEl.style.color = "var(--gold)";
-callEl.innerText = `🤫 WPISZCIE TAJNĄ STAWKĘ NA TELEFONACH (${lockedList.length}/${currentActivePlayers.length})!`;
-
+callEl.style.color = "var(--gold)"; callEl.innerText = `🤫 WPISZCIE TAJNĄ STAWKĘ NA TELEFONACH (${lockedList.length}/${currentActivePlayers.length})!`;
 if (data.speechTick !== currentTick) {
-currentTick = data.speechTick;
-clearInterval(timerInterval);
-let bidSec = data.r6BidTimeoutSec || 20;
-timerEl.style.display = 'flex';
-timerEl.classList.remove('timer-alert');
-timerEl.innerText = bidSec;
-timerInterval = setInterval(() => {
-bidSec--;
-if (bidSec <= 0) {
-clearInterval(timerInterval);
-timerEl.innerText = "0";
-} else {
-timerEl.innerText = bidSec;
-if (bidSec <= 5) timerEl.classList.add('timer-alert');
+currentTick = data.speechTick; clearInterval(timerInterval);
+let bidSec = data.r6BidTimeoutSec || 20; timerEl.style.display = 'flex'; timerEl.classList.remove('timer-alert'); timerEl.innerText = bidSec;
+timerInterval = setInterval(() => { bidSec--; if (bidSec <= 0) { clearInterval(timerInterval); timerEl.innerText = "0"; } else { timerEl.innerText = bidSec; if (bidSec <= 5) timerEl.classList.add('timer-alert'); } }, 1000);
 }
-}, 1000);
-}
-
 let blindStartKey = "r6_blind_start_" + data.speechTick;
-if (data.speechTick && lastSpokenKey !== blindStartKey) {
-lastSpokenKey = blindStartKey;
-speakPolishText(`Kategoria ${data.category}. Macie dwadzieścia sekund, wpiszcie w tajemnicy na telefonach, ile punktów stawiacie! Minimum pięć punktów.`);
-}
+if (data.speechTick && lastSpokenKey !== blindStartKey) { lastSpokenKey = blindStartKey; speakPolishText(`Kategoria ${data.category}. Macie dwadzieścia sekund, wpiszcie w tajemnicy na telefonach, ile punktów stawiacie! Minimum pięć punktów.`); }
 } else {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-setBgMusicActive(false);
+clearInterval(timerInterval); timerEl.style.display = 'none'; setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
 stage.classList.add("success-glow");
 document.getElementById('r6-pot-label').innerText = `ŁĄCZNA PULA DO WYGRANIA W TYM PYTANIU`;
 document.getElementById('r6-pot-val').innerText = `${data.r6Pot || 20} PKT`;
-
-const maxBidVal = data.r6HighestBid || 5;
-const highName = getDisplayName(data.r6HighestBidder);
+const maxBidVal = data.r6HighestBid || 5; const highName = getDisplayName(data.r6HighestBidder);
 players.forEach(p => {
-const card = document.getElementById(`bid-card-${p}`);
-card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
+const card = document.getElementById(`bid-card-${p}`); card.style.display = currentActivePlayers.includes(p) ? "block" : "none";
 const pBid = bids[p] !== undefined ? bids[p] : 5;
 document.getElementById(`bid-val-${p}`).innerText = `${pBid} PKT`;
 card.classList.remove('highest', 'tied-high');
-if (p === data.r6HighestBidder) {
-card.classList.add('highest');
-} else if (pBid === maxBidVal) {
-card.classList.add('tied-high');
-}
+if (p === data.r6HighestBidder) card.classList.add('highest');
+else if (pBid === maxBidVal) card.classList.add('tied-high');
 });
-
 callEl.style.color = "#00ff00";
-if (data.r6RandomDrawn) {
-callEl.innerText = `🎲 REMIS NAJWYŻSZYCH OFERT (${maxBidVal} PKT)! WYLOSOWANO: ${highName.toUpperCase()} (PULA: ${data.r6Pot} PKT)!`;
-} else {
-callEl.innerText = `🔨 NAJWIĘCEJ POSTAWIŁ(A) ${highName.toUpperCase()} (${maxBidVal} PKT)! GRA O PULĘ: ${data.r6Pot} PKT!`;
-}
-
+callEl.innerText = data.r6RandomDrawn
+? `🎲 REMIS NAJWYŻSZYCH OFERT (${maxBidVal} PKT)! WYLOSOWANO: ${highName.toUpperCase()} (PULA: ${data.r6Pot} PKT)!`
+: `🔨 NAJWIĘCEJ POSTAWIŁ(A) ${highName.toUpperCase()} (${maxBidVal} PKT)! GRA O PULĘ: ${data.r6Pot} PKT!`;
 let soldKey = "r6_sold_" + data.speechTick;
 if (lastSpokenKey !== soldKey) {
-lastSpokenKey = soldKey;
-winSound.currentTime = 0; winSound.play().catch(()=>{});
+lastSpokenKey = soldKey; winSound.currentTime = 0; winSound.play().catch(()=>{});
 let spokenMsg = data.r6RandomDrawn
 ? `Mamy remis najwyższych ofert po ${maxBidVal} punktów! W drodze losowania odpowiada ${highName}. Pula wynosi ${data.r6Pot} punktów`
 : `Najwięcej postawił gracz ${highName}, dając ${maxBidVal} punktów! Gra o pulę ${data.r6Pot} punktów`;
-
-speakPolishText(spokenMsg, async () => {
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "speaking",
-speechTick: Date.now()
-});
-});
+speakPolishText(spokenMsg, async () => { await updateDoc(doc(db, "quizGame", "state"), { status: "speaking", speechTick: Date.now() }); });
 }
 }
 return;
@@ -1935,412 +1728,181 @@ return;
 qEl.style.fontSize = "2vw";
 
 if (data.status === "idle" || data.status === "setup_nomination" || data.status === "nominating") {
-isSuspense = false;
-clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-setBgMusicActive(true);
-
+isSuspense = false; clearInterval(timerInterval); clearInterval(wheelRevealInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0; setBgMusicActive(true);
 if (data.status === "setup_nomination" || data.status === "nominating") {
 const ctrlName = getDisplayName(data.controller);
-catEl.style.display = "block";
-catEl.innerText = "KATEGORIA: " + (data.category || "");
-if (data.tieMsg) {
-winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = data.tieMsg;
-}
+catEl.style.display = "block"; catEl.innerText = "KATEGORIA: " + (data.category || "");
+if (data.tieMsg) { winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)"; winnerEl.innerText = data.tieMsg; }
 qEl.innerText = data.status === "nominating" ? `${ctrlName.toUpperCase()} WYBIERA KTO ODPOWIE...` : "PRZYGOTOWANIE KATEGORII...";
-
 let nomSpeechKey = "nom_cat_" + data.speechTick;
-if (data.speechTick && lastSpokenKey !== nomSpeechKey) {
-lastSpokenKey = nomSpeechKey;
-setBgMusicActive(false);
-speakPolishText(`Kategoria ${data.category}. ${ctrlName} wybiera, kto odpowie.`, () => {
-setBgMusicActive(true);
-});
-}
+if (data.speechTick && lastSpokenKey !== nomSpeechKey) { lastSpokenKey = nomSpeechKey; setBgMusicActive(false); speakPolishText(`Kategoria ${data.category}. ${ctrlName} wybiera, kto odpowie.`, () => { setBgMusicActive(true); }); }
 } else {
 qEl.innerText = data.question || "Zaraz zaczynamy! Przygotujcie telefony.";
 }
-
 } else if (data.status === "speaking") {
-isSuspense = false;
-clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-setBgMusicActive(false);
-
-if ((data.round === 6 || data.round === 7) && data.category) {
-catEl.style.display = "block";
-catEl.innerText = "KATEGORIA: " + data.category;
-}
+isSuspense = false; clearInterval(timerInterval); clearInterval(wheelRevealInterval); timerEl.style.display = 'none';
+tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0; setBgMusicActive(false);
+if ((data.round === 6 || data.round === 7) && data.category) { catEl.style.display = "block"; catEl.innerText = "KATEGORIA: " + data.category; }
 qEl.innerText = data.question || "";
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--cyan)";
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
 winnerEl.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
-
 let spKey = "q_speak_" + data.speechTick;
 if (lastSpokenKey !== spKey && data.question) {
 lastSpokenKey = spKey;
-speakPolishText(data.question, async () => {
-await updateDoc(doc(db, "quizGame", "state"), {
-status: "reading", tick: Date.now()
-});
-});
+speakPolishText(data.question, async () => { await updateDoc(doc(db, "quizGame", "state"), { status: "reading", tick: Date.now() }); });
 }
-
-// RUNDA 4: ODSŁANIANIE HASŁA
 } else if (data.status === "wheel_reading") {
-isSuspense = false;
-suspenseSound.pause(); suspenseSound.currentTime = 0;
+isSuspense = false; suspenseSound.pause(); suspenseSound.currentTime = 0;
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-qEl.style.display = "none";
-wheelBoard.style.display = "flex";
-wheelCat.style.display = "block";
-wheelCat.innerText = "KATEGORIA: " + (data.category || "");
-wheelWinnersEl.style.display = "flex";
-
+qEl.style.display = "none"; wheelBoard.style.display = "flex"; wheelCat.style.display = "block"; wheelCat.innerText = "KATEGORIA: " + (data.category || ""); wheelWinnersEl.style.display = "flex";
 let wSpeechKey = "wheel_cat_" + data.speechTick;
-if (data.speechTick && lastSpokenKey !== wSpeechKey) {
-lastSpokenKey = wSpeechKey;
-speakPolishText(`Kategoria ${data.category}`);
-}
-
-const winners = data.wheelWinners || [];
-const ptsMap = [15, 12, 10, 8];
-const medals = ["🥇", "🥈", "🥉", "🏅"];
-wheelWinnersEl.innerHTML = winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
-return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
-}).join("");
-
-if (winners.length > lastWheelWinnersCount) {
-lastWheelWinnersCount = winners.length;
-winSound.currentTime = 0;
-winSound.play().catch(()=>{});
-}
-
+if (data.speechTick && lastSpokenKey !== wSpeechKey) { lastSpokenKey = wSpeechKey; speakPolishText(`Kategoria ${data.category}`); }
+const winners = data.wheelWinners || []; const ptsMap = [15, 12, 10, 8]; const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${(w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`).toUpperCase()}</div>`).join("");
+if (winners.length > lastWheelWinnersCount) { lastWheelWinnersCount = winners.length; winSound.currentTime = 0; winSound.play().catch(()=>{}); }
 if (data.tick !== currentTick) {
-currentTick = data.tick;
-lastWheelWinnersCount = winners.length;
-clearInterval(timerInterval);
-clearInterval(wheelRevealInterval);
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(true);
-
-let totalLetters = (data.wheelOrder || []).length;
-let maxAutoReveal = Math.max(0, totalLetters - 1);
-revealedWheelCount = 0;
-renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
-
-let intervalMs = Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal)));
-wheelRevealInterval = setInterval(() => {
-if (revealedWheelCount < maxAutoReveal) {
-revealedWheelCount++;
-renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
-}
-}, intervalMs);
-
-let timeLeft = 60;
-timerEl.style.display = 'flex';
-timerEl.classList.remove('timer-alert');
-timerEl.innerText = timeLeft;
-
+currentTick = data.tick; lastWheelWinnersCount = winners.length; clearInterval(timerInterval); clearInterval(wheelRevealInterval); tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(true);
+let maxAutoReveal = Math.max(0, (data.wheelOrder || []).length - 1); revealedWheelCount = 0; renderWheelBoard(data.question, data.wheelOrder, 0);
+wheelRevealInterval = setInterval(() => { if (revealedWheelCount < maxAutoReveal) { revealedWheelCount++; renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount); } }, Math.max(1500, Math.floor(54000 / Math.max(1, maxAutoReveal))));
+let timeLeft = 60; timerEl.style.display = 'flex'; timerEl.classList.remove('timer-alert'); timerEl.innerText = timeLeft;
 timerInterval = setInterval(async () => {
 timeLeft--;
-if (timeLeft <= 0) {
-clearInterval(timerInterval);
-clearInterval(wheelRevealInterval);
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-timerEl.innerText = "0";
-await updateDoc(doc(db, "quizGame", "state"), { status: "wheel_results", answerTick: Date.now() });
-} else {
-timerEl.innerText = timeLeft;
-if (timeLeft <= 5) {
-timerEl.classList.add('timer-alert');
-setBgMusicActive(false);
-tickSound.play().catch(()=>{});
-}
-}
+if (timeLeft <= 0) { clearInterval(timerInterval); clearInterval(wheelRevealInterval); tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false); timerEl.innerText = "0"; await updateDoc(doc(db, "quizGame", "state"), { status: "wheel_results", answerTick: Date.now() }); }
+else { timerEl.innerText = timeLeft; if (timeLeft <= 5) { timerEl.classList.add('timer-alert'); setBgMusicActive(false); tickSound.play().catch(()=>{}); } }
 }, 1000);
-} else {
-renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
-}
+} else renderWheelBoard(data.question, data.wheelOrder, revealedWheelCount);
 
 } else if (data.status === "wheel_results") {
-clearInterval(timerInterval); clearInterval(wheelRevealInterval);
-timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-
+clearInterval(timerInterval); clearInterval(wheelRevealInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-qEl.style.display = "none";
-wheelBoard.style.display = "flex";
-wheelCat.style.display = "block";
-wheelCat.innerText = "KATEGORIA: " + (data.category || "");
-wheelWinnersEl.style.display = "flex";
-
+qEl.style.display = "none"; wheelBoard.style.display = "flex"; wheelCat.style.display = "block"; wheelCat.innerText = "KATEGORIA: " + (data.category || ""); wheelWinnersEl.style.display = "flex";
 renderWheelBoard(data.question, data.wheelOrder, (data.wheelOrder || []).length);
-
-const winners = data.wheelWinners || [];
-const ptsMap = [15, 12, 10, 8];
-const medals = ["🥇", "🥈", "🥉", "🏅"];
-wheelWinnersEl.innerHTML = winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
-return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
-}).join("");
-
-stage.classList.add("success-glow");
-winnerEl.style.display = "block";
-winnerEl.style.color = "var(--gold)";
+const winners = data.wheelWinners || []; const ptsMap = [15, 12, 10, 8]; const medals = ["🥇", "🥈", "🥉", "🏅"];
+wheelWinnersEl.innerHTML = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${(w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`).toUpperCase()}</div>`).join("");
+stage.classList.add("success-glow"); winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
 winnerEl.innerText = winners.length >= currentActivePlayers.length ? "WSZYSCY ODGADLI HASŁO!" : "KONIEC CZASU! OTO PEŁNE HASŁO!";
-if (lastPlayedResult !== "wheel_end_" + data.answerTick) {
-winSound.play().catch(()=>{});
-lastPlayedResult = "wheel_end_" + data.answerTick;
-}
+if (lastPlayedResult !== "wheel_end_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "wheel_end_" + data.answerTick; }
 
-// CZYTANIE I ODPOWIADANIE (RUNDY 1, 3, 6, 7)
 } else if (data.status === "reading") {
-isSuspense = false;
-clearInterval(wheelRevealInterval);
-suspenseSound.pause(); suspenseSound.currentTime = 0;
-setBgMusicActive(true);
-
-if (!hideLiveCornerScores) {
-for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-}
-
+isSuspense = false; clearInterval(wheelRevealInterval); suspenseSound.pause(); suspenseSound.currentTime = 0; setBgMusicActive(true);
+if (!hideLiveCornerScores) { for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; } }
 qEl.innerText = data.question || "";
-
 if ((data.round === 1 || data.round === 6 || data.round === 7) && data.options) {
 for(let i=0; i<4; i++) {
-let optEl = document.getElementById(`opt-${i}`);
-optEl.innerText = `${letters[i]}: ${data.options[i]}`;
-optEl.classList.remove('used-wrong');
-if (data.usedOptions && data.usedOptions.includes(i)) {
-optEl.classList.add('used-wrong');
-}
+let optEl = document.getElementById(`opt-${i}`); optEl.innerText = `${letters[i]}: ${data.options[i]}`;
+optEl.classList.toggle('used-wrong', Boolean(data.usedOptions && data.usedOptions.includes(i)));
 }
 opts.style.display = "grid";
 }
-
 if (data.round === 1) {
-let ansCount = Object.keys(data.r1Answers || {}).length;
 winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = `🔒 ZAREJESTROWANO ODPOWIEDZI: ${ansCount} / ${currentActivePlayers.length} (WYNIKI PO CZASIE)`;
+winnerEl.innerText = `🔒 ZAREJESTROWANO ODPOWIEDZI: ${Object.keys(data.r1Answers || {}).length} / ${currentActivePlayers.length} (WYNIKI PO CZASIE)`;
 } else if (data.round === 3) {
-let subsCount = Object.keys(data.r3Submissions || {}).length || (data.r3Winners || []).length;
-winnerEl.style.display = "block"; winnerEl.style.color = "var(--cyan)";
-winnerEl.innerText = `🔒 WPISAŁO ODPOWIEDŹ: ${subsCount} / ${currentActivePlayers.length} (WYNIKI PO CZASIE)`;
+const guessCnt = Object.keys(data.r3Guesses || {}).length;
+winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
+winnerEl.innerText = `🎯 WPISAŁO LICZBĘ: ${guessCnt} / ${currentActivePlayers.length} GRACZY (TYPY NA OSI PO ZAKOŃCZENIU CZASU!)`;
 } else if (data.round === 6) {
 winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-if (data.nominated) {
-let nomName = getDisplayName(data.nominated);
-let stawkTxt = (data.nominated === data.controller) ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)";
-winnerEl.innerText = `ODPOWIADA: ${nomName.toUpperCase()} [${stawkTxt}]`;
-} else {
-winnerEl.innerText = `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
-}
+winnerEl.innerText = data.nominated
+? `ODPOWIADA: ${getDisplayName(data.nominated).toUpperCase()} [${data.nominated === data.controller ? "GRA NA SIEBIE (±20 PKT)" : "WSKAZANY (±10 PKT)"}]`
+: `DOBITKA! KTO PIERWSZY, TEN LEPSZY! (±10 PKT)`;
 } else if (data.round === 7) {
-let nomName = getDisplayName(data.nominated);
 winnerEl.style.display = "block"; winnerEl.style.color = "var(--gold)";
-winnerEl.innerText = `ODPOWIADA: ${nomName.toUpperCase()} | GRA O PULĘ: ${data.r6Pot} PKT!`;
+winnerEl.innerText = `ODPOWIADA: ${getDisplayName(data.nominated).toUpperCase()} | GRA O PULĘ: ${data.r6Pot} PKT!`;
 }
-
 if (data.tick !== currentTick) {
-currentTick = data.tick;
-clearInterval(timerInterval);
-tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
-let timeLeft = data.round === 3 ? 20 : 12;
-timerEl.style.display = 'flex';
-timerEl.classList.remove('timer-alert');
-timerEl.innerText = timeLeft;
-
+currentTick = data.tick; clearInterval(timerInterval); tickSound.pause(); tickSound.currentTime = 0; tickSound.playbackRate = 1.0;
+let timeLeft = data.round === 3 ? 20 : 12; timerEl.style.display = 'flex'; timerEl.classList.remove('timer-alert'); timerEl.innerText = timeLeft;
 timerInterval = setInterval(async () => {
 timeLeft--;
 if (timeLeft <= 0) {
-clearInterval(timerInterval);
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-timerEl.innerText = "0";
-if ((data.round === 6 || data.round === 7) && data.nominated) {
-await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
-} else if (data.round === 6 || data.round === 7) {
-await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
-}
+clearInterval(timerInterval); tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false); timerEl.innerText = "0";
+if ((data.round === 6 || data.round === 7) && data.nominated) await updateDoc(doc(db, "quizGame", "state"), { status: "nominated_timeout", answerTick: Date.now() });
+else if (data.round === 6 || data.round === 7) await updateDoc(doc(db, "quizGame", "state"), { status: "timeout", answerTick: Date.now() });
 } else {
 timerEl.innerText = timeLeft;
-if (timeLeft <= 3) {
-timerEl.classList.add('timer-alert');
-setBgMusicActive(false);
-tickSound.play().catch(()=>{});
-}
+if (timeLeft <= 3) { timerEl.classList.add('timer-alert'); setBgMusicActive(false); tickSound.play().catch(()=>{}); }
 }
 }, 1000);
 }
 
-// WYNIKI RUNDY 1
 } else if (data.status === "r1_results") {
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
+clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-qEl.innerText = data.question || "";
-correctBanner.style.display = "block";
-correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-
+qEl.innerText = data.question || ""; correctBanner.style.display = "block"; correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
 wheelWinnersEl.style.display = "flex";
-const winners = data.r1Winners || [];
-const answers = data.r1Answers || {};
-const ptsMap = [15, 12, 10, 8];
-const medals = ["🥇", "🥈", "🥉", "🏅"];
-
-let badgesHtml = winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
-return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
-}).join("");
-
+const winners = data.r1Winners || []; const answers = data.r1Answers || {}; const ptsMap = [15, 12, 10, 8]; const medals = ["🥇", "🥈", "🥉", "🏅"];
+let badgesHtml = winners.map((w, idx) => `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${(w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`).toUpperCase()}</div>`).join("");
 Object.keys(answers).forEach(p => {
-const ansObj = answers[p];
-const chosenOpt = (ansObj && typeof ansObj === 'object') ? ansObj.opt : ansObj;
-const isOk = (chosenOpt === data.correctIndex);
-if (!isOk) {
-badgesHtml += `<div class="wheel-badge wrong-badge">❌ ${getDisplayName(p).toUpperCase()} (0 PKT)</div>`;
-}
+const chosenOpt = (answers[p] && typeof answers[p] === 'object') ? answers[p].opt : answers[p];
+if (chosenOpt !== data.correctIndex) badgesHtml += `<div class="wheel-badge wrong-badge">❌ ${getDisplayName(p).toUpperCase()} (0 PKT)</div>`;
 });
 wheelWinnersEl.innerHTML = badgesHtml || `<div class="wheel-badge wrong-badge">NIKT NIE ZDOBYŁ PUNKTÓW!</div>`;
-
 stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
-if (lastPlayedResult !== "r1_end_" + data.answerTick) {
-if (winners.length > 0) winSound.play().catch(()=>{});
-else loseSound.play().catch(()=>{});
-lastPlayedResult = "r1_end_" + data.answerTick;
-}
+if (lastPlayedResult !== "r1_end_" + data.answerTick) { if (winners.length > 0) winSound.play().catch(()=>{}); else loseSound.play().catch(()=>{}); lastPlayedResult = "r1_end_" + data.answerTick; }
 
-// WYNIKI RUNDY 3
+// RUNDA 3: 🎯 WYNIKI NA ANIMOWANEJ OSI LICZBOWEJ!
 } else if (data.status === "r3_results") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-setBgMusicActive(false);
-for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
+tickSound.pause(); tickSound.currentTime = 0; setBgMusicActive(false);
+qEl.style.fontSize = "1.7vw";
 qEl.innerText = data.question || "";
-correctBanner.style.display = "block";
-correctVal.innerText = data.correctText || "";
+r3AxisBox.style.display = "flex";
 
-wheelWinnersEl.style.display = "flex";
-const winners = data.r3Winners || [];
-const ptsMap = [15, 12, 10, 8];
-const medals = ["🥇", "🥈", "🥉", "🏅"];
-wheelWinnersEl.innerHTML = winners.length > 0
-? winners.map((w, idx) => {
-const cleanW = w.includes("(") ? w : `${getDisplayName(w)} (+${ptsMap[idx] || 8} PKT)`;
-return `<div class="wheel-badge">${medals[idx] || "🏅"} ${idx+1}. ${cleanW.toUpperCase()}</div>`;
-}).join("")
-: `<div class="wheel-badge wrong-badge">NIKT NIE WPISAŁ POPRAWNEJ ODPOWIEDZI!</div>`;
-
-stage.classList.add(winners.length > 0 ? "success-glow" : "error-glow");
-if (lastPlayedResult !== "r3_end_" + data.answerTick) {
-if (winners.length > 0) winSound.play().catch(()=>{});
-else loseSound.play().catch(()=>{});
-lastPlayedResult = "r3_end_" + data.answerTick;
+const animKey = "r3_axis_" + data.answerTick;
+if (lastR3AnimKey !== animKey) {
+lastR3AnimKey = animKey;
+runR3ClosestRevealSequence(data);
 }
 
 } else if (data.status === "verifying" || (data.status && data.status.startsWith("results_pending_"))) {
-isSuspense = true;
-clearInterval(timerInterval); timerEl.style.display = 'none';
-tickSound.pause(); tickSound.currentTime = 0;
-
-setBgMusicActive(false);
-suspenseSound.play().catch(()=>{});
-
+isSuspense = true; clearInterval(timerInterval); timerEl.style.display = 'none'; tickSound.pause(); tickSound.currentTime = 0;
+setBgMusicActive(false); suspenseSound.play().catch(()=>{});
 qEl.innerText = data.question || "";
 const fastName = getDisplayName(data.fastest);
-
 if (data.selectedIndex !== undefined && data.options) {
 typedAnsEl.style.display = "block";
 typedAnsEl.innerHTML = `${fastName.toUpperCase()} ZAZNACZA: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
 }
-
-winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37";
-winnerEl.style.animation = "pulse 0.5s infinite";
+winnerEl.style.display = "block"; winnerEl.style.color = "#d4af37"; winnerEl.style.animation = "pulse 0.5s infinite";
 winnerEl.innerText = `WERYFIKACJA ODPOWIEDZI: ${fastName.toUpperCase()}...`;
 
 } else if (data.status === "results" || data.status === "results_wrong" || data.status === "timeout") {
 clearInterval(timerInterval); timerEl.style.display = 'none';
 tickSound.pause(); tickSound.currentTime = 0; suspenseSound.pause(); suspenseSound.currentTime = 0;
-winnerEl.style.animation = "none";
-isSuspense = false;
-
-setBgMusicActive(false);
+winnerEl.style.animation = "none"; isSuspense = false; setBgMusicActive(false);
 for(let id in pendingScores) { let el = document.getElementById(`pts-${id}`); if(el) el.innerText = pendingScores[id]; }
-
-qEl.innerText = data.question || "";
-winnerEl.style.display = "block";
+qEl.innerText = data.question || ""; winnerEl.style.display = "block";
 
 if (data.status === "timeout") {
-stage.classList.add("error-glow");
-winnerEl.style.color = "var(--error)";
-if (data.round === 7) {
-winnerEl.innerText = `BRAK ODPOWIEDZI! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
-} else if (data.loser) {
-winnerEl.innerText = `${getDisplayName(data.loser).toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)`;
-} else {
-winnerEl.innerText = "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.";
-}
-
+stage.classList.add("error-glow"); winnerEl.style.color = "var(--error)";
+winnerEl.innerText = data.round === 7
+? `BRAK ODPOWIEDZI! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`
+: (data.loser ? `${getDisplayName(data.loser).toUpperCase()} - BRAK ODPOWIEDZI / BŁĄD! (${data.pointsChange} PKT)` : "CZAS MINĄŁ! NIKT NIE ZDOBYŁ PUNKTÓW.");
 correctBanner.style.display = "block";
-if (data.options) {
-correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-}
+if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
 if (lastPlayedResult !== "timeout_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "timeout_" + data.answerTick; }
-
 } else if (data.winner) {
 const winName = getDisplayName(data.winner);
-stage.classList.add("success-glow");
-statusEl.style.display = "block";
-winnerEl.style.color = "#00ff00";
-winnerEl.innerText = data.round === 7
-? `${winName.toUpperCase()} ZGARNIA CAŁĄ PULĘ!`
-: `${winName.toUpperCase()} ODPOWIADA POPRAWNIE!`;
-statusEl.style.color = "#00ff00";
-statusEl.innerText = `+${data.pointsChange} PKT`;
-
+stage.classList.add("success-glow"); statusEl.style.display = "block"; winnerEl.style.color = "#00ff00";
+winnerEl.innerText = data.round === 7 ? `${winName.toUpperCase()} ZGARNIA CAŁĄ PULĘ!` : `${winName.toUpperCase()} ODPOWIADA POPRAWNIE!`;
+statusEl.style.color = "#00ff00"; statusEl.innerText = `+${data.pointsChange} PKT`;
 correctBanner.style.display = "block";
-if (data.options) {
-correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-}
-
+if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
 if (lastPlayedResult !== "win_" + data.answerTick) { winSound.play().catch(()=>{}); lastPlayedResult = "win_" + data.answerTick; }
-
 } else if (data.loser) {
 const loseName = getDisplayName(data.loser);
-stage.classList.add("error-glow");
-statusEl.style.display = "block";
-
-if (data.timeoutPenalty) {
-typedAnsEl.style.display = "block";
-typedAnsEl.innerHTML = `${loseName.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`;
-} else if (data.selectedIndex !== undefined && data.options) {
-typedAnsEl.style.display = "block";
-typedAnsEl.innerHTML = `${loseName.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`;
-}
-
-winnerEl.style.color = "#ff4757";
-winnerEl.innerText = `${loseName.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
+stage.classList.add("error-glow"); statusEl.style.display = "block";
+if (data.timeoutPenalty) { typedAnsEl.style.display = "block"; typedAnsEl.innerHTML = `${loseName.toUpperCase()} <span>NIE UDZIELIŁ/A ODPOWIEDZI W CZASIE!</span>`; }
+else if (data.selectedIndex !== undefined && data.options) { typedAnsEl.style.display = "block"; typedAnsEl.innerHTML = `${loseName.toUpperCase()} ZAZNACZYŁ/A: <span>${letters[data.selectedIndex]}: ${data.options[data.selectedIndex]}</span>`; }
+winnerEl.style.color = "#ff4757"; winnerEl.innerText = `${loseName.toUpperCase()} - BŁĘDNA ODPOWIEDŹ!`;
 statusEl.style.color = "#ff4757";
 if (data.round === 7) {
 statusEl.innerText = `KUMULACJA! PULA (${data.carryOver} PKT) PRZECHODZI NA NASTĘPNE PYTANIE!`;
 correctBanner.style.display = "block";
 if (data.options) correctVal.innerText = `${letters[data.correctIndex]}: ${data.options[data.correctIndex]}`;
-} else {
-statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
-}
-
+} else statusEl.innerText = `${data.pointsChange} PKT (ZA CHWILĘ KTO PIERWSZY, TEN LEPSZY!)`;
 if (lastPlayedResult !== "lose_" + data.answerTick) { loseSound.play().catch(()=>{}); lastPlayedResult = "lose_" + data.answerTick; }
 }
 }
