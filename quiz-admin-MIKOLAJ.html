@@ -7,6 +7,7 @@
 <style>
 body { font-family: sans-serif; background: #0c1914; color: #fff; padding: 20px; max-width: 900px; margin: 0 auto; }
 .box { background: #142a21; padding: 20px; border-radius: 16px; margin-bottom: 20px; border: 2px solid #d4af37; box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+.box.troll-box { background: #111827; border: 2px solid #00d4ff; box-shadow: 0 0 25px rgba(0,212,255,0.22); }
 h3 { margin-top: 0; color: #ffd700; text-transform: uppercase; font-size: 16px; letter-spacing: 1px; }
 button { background: #00d4ff; border: none; padding: 12px 18px; font-weight: 900; border-radius: 10px; cursor: pointer; font-size: 14px; margin: 5px 5px 5px 0; text-transform: uppercase; transition: 0.2s; color: #000; }
 button:active { transform: scale(0.95); }
@@ -20,6 +21,11 @@ select, input[type="text"], input[type="number"] { padding: 12px; font-size: 15p
 .error-banner { background: #300; border-left: 5px solid #ff4757; padding: 12px; font-size: 14px; font-weight: bold; color: #ff4757; margin-top: 10px; border-radius: 6px; display: none; }
 .player-cb-label { background: #081c15; padding: 10px 16px; border-radius: 8px; border: 2px solid #ffd700; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; }
 .player-cb-label input { width: 18px; height: 18px; cursor: pointer; }
+.troll-cb-label { background: #050b14; padding: 8px 14px; border-radius: 8px; border: 1px solid #00d4ff; cursor: pointer; font-weight: bold; display: inline-flex; align-items: center; gap: 8px; user-select: none; font-size: 13px; color: #e2e8f0; }
+.troll-cb-label input { width: 16px; height: 16px; cursor: pointer; }
+.troll-av-row { display: flex; gap: 10px; flex-wrap: wrap; margin: 10px 0; }
+.troll-av-chip { display: inline-flex; align-items: center; gap: 6px; background: #050b14; border: 1px solid #334155; border-radius: 20px; padding: 4px 10px 4px 5px; font-size: 12px; font-weight: bold; color: #cbd5e1; }
+.troll-av-chip img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; border: 1px solid #00d4ff; display: none; }
 .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-top: 12px; }
 .photo-card { background: #081c15; border: 2px solid #334155; border-radius: 12px; padding: 10px; text-align: center; }
 .photo-card.pending { border-color: #ffd700; box-shadow: 0 0 15px rgba(255,215,0,0.4); }
@@ -35,6 +41,34 @@ select, input[type="text"], input[type="number"] { padding: 12px; font-size: 15p
 </style>
 </head>
 <body>
+
+<!-- NOWY PANEL: TROLL CYBER-QUIZ -> ATAK HAKERÓW -> MIKOŁAJ -->
+<div class="box troll-box">
+<h3 style="color:#00d4ff;">🎭 KROK 0 (OPCJONALNY TROLL): ZMYŁKA CYBER-QUIZ → WIELKI LAG → ATAK HAKERÓW → MIKOŁAJ!</h3>
+<p style="font-size:13px; color:#cbd5e1; margin-top:0; line-height:1.45;">
+1) Kliknij <b>WŁĄCZ ZMYŁKĘ</b> (TV i telefony udają zwykły Cyber-Quiz z awatarami!).<br>
+2) Gdy dzieci się zalogują i wrzucą awatary, kliknij <b>ODPAL FAŁSZYWE PYTANIE 1</b>.<br>
+3) W połowie pytania (automatycznie przy <b>7s</b> albo ręcznie czerwonym przyciskiem) TV i telefony dostają laga, wjeżdża atak hakerów, a potem Mikołaj przejmuje ekran i płynnie przechodzi do prawdziwej Misji bez ponownego logowania!
+</p>
+
+<div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+<label class="troll-cb-label"><input type="checkbox" id="cbAutoLag7" checked> ⚡ Auto-lag przy 7s (bez klikania)</label>
+<label class="troll-cb-label"><input type="checkbox" id="cbAutoStartStage1"> 🚀 Po twiście Mikołaja od razu startuj Etap 1</label>
+</div>
+
+<div class="troll-av-row">
+<span class="troll-av-chip"><img id="troll-av-Lila" alt="">Lila: <b id="troll-av-st-Lila">brak</b></span>
+<span class="troll-av-chip"><img id="troll-av-Kaja" alt="">Kaja: <b id="troll-av-st-Kaja">brak</b></span>
+<span class="troll-av-chip"><img id="troll-av-Darek" alt="">Darek: <b id="troll-av-st-Darek">brak</b></span>
+<span class="troll-av-chip"><img id="troll-av-Jas" alt="">Jaś: <b id="troll-av-st-Jas">brak</b></span>
+</div>
+
+<button type="button" onclick="window.startFakeCyberLobby()">🎭 1. WŁĄCZ ZMYŁKĘ (UDOWANY CYBER-QUIZ + QR)</button>
+<button type="button" class="green" onclick="window.startFakeCyberQuestion1()">▶️ 2. ODPAL FAŁSZYWE PYTANIE 1 (RUNDA 1 ABCD)</button>
+<button type="button" class="red" onclick="window.triggerTrollLagNow()">🦠 3. ODPAL LAG + ATAK HAKERÓW (RĘCZNIE)</button>
+<button type="button" class="gold" onclick="window.clearFakeAvatars()">🖼️ WYCZYŚĆ AWATARY ZMYŁKI</button>
+<button type="button" class="purple" onclick="window.abortTrollToReal()">🎅 POMIŃ ZMYŁKĘ → EKRAN MIKOŁAJKOWY</button>
+</div>
 
 <div class="box">
 <h3>KROK 1: RESET MISJI MIKOŁAJKOWEJ, SKŁAD DRUŻYNY I LOKALIZACJA KLUCZA</h3>
@@ -140,6 +174,123 @@ window.addEventListener('error', (e) => showError(e.message));
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 const stateRef = doc(db, "mikolajGame", "state");
+const fakeAvatarsRef = doc(db, "mikolajGame", "fakeAvatars");
+
+// Podgląd fałszywych awatarów w trybie zmyłki
+onSnapshot(fakeAvatarsRef, (snap) => {
+const avData = snap.exists() ? snap.data() : {};
+["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
+const img = document.getElementById("troll-av-" + k);
+const st = document.getElementById("troll-av-st-" + k);
+if (avData[k]) {
+if (img) { img.src = avData[k]; img.style.display = "inline-block"; }
+if (st) { st.innerText = "✅ foto"; st.style.color = "#2dc653"; }
+} else {
+if (img) { img.removeAttribute("src"); img.style.display = "none"; }
+if (st) { st.innerText = "brak"; st.style.color = "#94a3b8"; }
+}
+});
+});
+
+// ============================================================================
+// STEROWANIE TROLLEM (ZMYŁKA CYBER-QUIZ -> WIELKI LAG -> ATAK HAKERÓW -> MIKOŁAJ)
+// ============================================================================
+const FAKE_CYBER_QUESTIONS = [
+{
+q: "Który kontynent ma największą powierzchnię na Ziemi i zamieszkuje go najwięcej ludzi?",
+o: ["Afryka", "Azja", "Ameryka Północna", "Europa"],
+c: 1
+},
+{
+q: "W którym polskim mieście znajduje się słynny gotycki Zamek Królewski na Wawelu?",
+o: ["W Warszawie", "W Krakowie", "W Gdańsku", "W Poznaniu"],
+c: 1
+},
+{
+q: "Z jakiego głównego surowca wytapia się w hutach tradycyjne szkło okienne?",
+o: ["Z gliny", "Z piasku kwarcowego", "Z wapienia", "Z kredy"],
+c: 1
+}
+];
+
+window.startFakeCyberLobby = async () => {
+const activeList = getSelectedActivePlayers();
+const holder = getKeyHolderValue();
+const autoLag = document.getElementById('cbAutoLag7').checked;
+const autoStart1 = document.getElementById('cbAutoStartStage1').checked;
+await setDoc(stateRef, {
+stage: 0,
+status: "fake_idle",
+activePlayers: activeList,
+keyHolder: holder,
+stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
+photos: {},
+audioTracks: {},
+iceTotalHits: 0,
+iceTarget: activeList.length * 2500,
+simonLevel: 1,
+simonSeq: [],
+simonInput: [],
+tapsCount: 0,
+tapsTarget: activeList.length * 75,
+tapsStartTime: 0,
+holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
+holdRemainingMs: 60000,
+fakeAutoLagAt7: autoLag,
+fakeAutoStartStage1: autoStart1,
+fakeR1Answers: {},
+fakeQuestion: "",
+fakeOptions: [],
+speechTick: Date.now()
+});
+statusEl.innerText = "🎭 TRYB ZMYŁKI WŁĄCZONY! TV i telefony udają zwykły Cyber-Quiz. Czekaj aż dzieci się zalogują i dodadzą awatary, potem kliknij ODPAL FAŁSZYWE PYTANIE 1!";
+};
+
+window.startFakeCyberQuestion1 = async () => {
+const activeList = getSelectedActivePlayers();
+const autoLag = document.getElementById('cbAutoLag7').checked;
+const autoStart1 = document.getElementById('cbAutoStartStage1').checked;
+const pick = FAKE_CYBER_QUESTIONS[Math.floor(Math.random() * FAKE_CYBER_QUESTIONS.length)];
+await updateDoc(stateRef, {
+stage: 0,
+status: "fake_r1_speaking",
+activePlayers: activeList,
+fakeAutoLagAt7: autoLag,
+fakeAutoStartStage1: autoStart1,
+fakeQuestion: pick.q,
+fakeOptions: pick.o,
+fakeCorrectIndex: pick.c,
+fakeR1Answers: {},
+speechTick: Date.now()
+});
+statusEl.innerText = "🎭 Runda 1 (Zmyłka) leci! Lektor czyta pytanie... " + (autoLag ? "Auto-lag odpali się przy 7s (lub po 4/4 odpowiedziach)!" : "Kliknij ODPAL LAG + ATAK HAKERÓW kiedy chcesz!");
+};
+
+window.triggerTrollLagNow = async () => {
+const autoStart1 = document.getElementById('cbAutoStartStage1').checked;
+await updateDoc(stateRef, {
+status: "troll_lag",
+fakeAutoStartStage1: autoStart1,
+trollTick: Date.now(),
+speechTick: Date.now()
+});
+statusEl.innerText = "🦠 ODPALONO WIELKI LAG → ATAK HAKERÓW → PRZEJĘCIE PRZEZ MIKOŁAJA! Udawaj, że padł internet! 😄";
+};
+
+window.clearFakeAvatars = async () => {
+if (!confirm("Wyczyścić awatary ze zmyłki Cyber-Quiz?")) return;
+await setDoc(fakeAvatarsRef, { Lila: "", Kaja: "", Darek: "", Jas: "" });
+statusEl.innerText = "🖼️ Wyczyszczono awatary zmyłki!";
+};
+
+window.abortTrollToReal = async () => {
+await updateDoc(stateRef, {
+stage: 0,
+status: "idle",
+speechTick: Date.now()
+});
+statusEl.innerText = "🎅 Przełączono na prawdziwy ekran startowy Misji Mikołajkowej!";
+};
 
 export const STAGE1_PHOTOS = {
 Lila: [
@@ -244,7 +395,7 @@ holdMap: { Lila: false, Kaja: false, Darek: false, Jas: false },
 holdRemainingMs: 60000,
 speechTick: Date.now()
 });
-statusEl.innerText = "✅ Misja zresetowana! Wybierz Etap 1 i kliknij URUCHOM WYBRANY ETAP.";
+statusEl.innerText = "✅ Misja zresetowana! Wybierz Etap 1 i kliknij URUCHOM WYBRANY ETAP (lub kliknij KROK 0, aby odpalić zmyłkę).";
 };
 
 // GENERATOR SEKWENCJI SIMONA (7 / 8 / 9, KAŻDY AKTYWNY GRACZ MINIMUM RAZ, MAX 2 Z RZĘDU)
@@ -478,7 +629,13 @@ if (el) el.innerText = (prog[p] || 0) + "/3";
 });
 
 const curHolder = (currentState.keyHolder || "W KIESZENI U WUJKA").toUpperCase();
+const isTrollMode = (currentState.status || "").startsWith("fake_") || (currentState.status || "").startsWith("troll_");
+if (isTrollMode) {
+const ansCnt = Object.keys(currentState.fakeR1Answers || {}).length;
+statusEl.innerText = "🎭 TRYB ZMYŁKI: " + currentState.status + " | Odpowiedzi R1: " + ansCnt + "/" + activeList.length + " | Aktywni: " + activeList.join(", ");
+} else {
 statusEl.innerText = "🎄 Etap: " + st + "/8 | Status: " + currentState.status + " | Aktywni: " + activeList.join(", ") + " | 🔑 Klucz: " + curHolder;
+}
 
 // 1. ZDJĘCIA
 const photoBox = document.getElementById('photoReviewBox');
