@@ -55,7 +55,7 @@
             font-weight: bold; margin-bottom: 8px;
         }
         textarea {
-            width: 100%; min-height: 130px; padding: 15px;
+            width: 100%; min-height: 120px; padding: 15px;
             background: rgba(0,0,0,0.5); border: 1px solid var(--border);
             border-radius: 12px; color: #fff; font-family: inherit;
             font-size: 14px; resize: vertical; box-sizing: border-box;
@@ -64,6 +64,36 @@
         textarea:focus {
             border-color: var(--cyan);
             box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        /* ZAŁĄCZNIK ZDJĘCIA */
+        .file-row {
+            margin-top: 12px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        }
+        .file-label {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 16px; background: rgba(255,255,255,0.06);
+            border: 1px dashed var(--cyan); border-radius: 10px;
+            color: var(--cyan); font-size: 12px; font-weight: bold;
+            cursor: pointer; transition: 0.2s; margin: 0; text-transform: uppercase;
+        }
+        .file-label:hover { background: rgba(0, 212, 255, 0.15); }
+        #photoInput { display: none; }
+
+        .preview-box {
+            display: none; position: relative; margin-top: 12px;
+            width: fit-content; border-radius: 10px; overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .preview-box img {
+            display: block; max-height: 140px; max-width: 100%; object-fit: cover;
+        }
+        .preview-remove {
+            position: absolute; top: 5px; right: 5px;
+            background: rgba(0,0,0,0.8); color: var(--error);
+            border: 1px solid var(--error); border-radius: 50%;
+            width: 24px; height: 24px; cursor: pointer; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; font-size: 12px;
         }
 
         .btn-send {
@@ -100,11 +130,27 @@
             font-size: 14px; color: #e2e8f0; line-height: 1.5;
             white-space: pre-wrap; word-break: break-word; margin: 0;
         }
+        .note-img {
+            margin-top: 12px; max-width: 100%; max-height: 260px;
+            border-radius: 10px; border: 1px solid var(--border);
+            cursor: zoom-in; display: block; object-fit: cover;
+        }
         .btn-del {
             background: none; border: none; color: var(--error);
             cursor: pointer; font-size: 13px; padding: 2px 6px; opacity: 0.7;
         }
         .btn-del:hover { opacity: 1; }
+
+        /* LIGHTBOX DO POWIĘKSZANIA ZDJĘĆ */
+        #lightbox {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+            z-index: 9999; display: none; align-items: center; justify-content: center;
+            padding: 20px; cursor: zoom-out; backdrop-filter: blur(5px);
+        }
+        #lightbox img {
+            max-width: 95%; max-height: 92vh; border-radius: 12px;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.25);
+        }
     </style>
 </head>
 <body>
@@ -121,6 +167,16 @@
             <div class="user-badge">Zalogowany jako: <span id="userDisplay">---</span></div>
             <label for="noteInput">Opis uwagi</label>
             <textarea id="noteInput" placeholder="Wpisz treść uwagi dotyczącej S125..."></textarea>
+
+            <div class="file-row">
+                <label for="photoInput" class="file-label">📷 Dodaj zdjęcie (opcjonalnie)</label>
+                <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
+            </div>
+            <div id="previewBox" class="preview-box">
+                <img id="previewImg" src="" alt="Podgląd">
+                <button type="button" class="preview-remove" onclick="clearPhoto()" title="Usuń zdjęcie">✕</button>
+            </div>
+
             <button id="sendBtn" class="btn-send" onclick="sendNote()">Wyślij</button>
             <div id="status-msg"></div>
         </div>
@@ -129,6 +185,10 @@
         <div id="notesList">
             <p style="text-align:center; color:#666; font-size:13px;">Ładowanie...</p>
         </div>
+    </div>
+
+    <div id="lightbox" onclick="this.style.display='none'">
+        <img id="lightboxImg" src="" alt="Powiększenie">
     </div>
 
     <script type="module">
@@ -141,7 +201,7 @@
             window.location.href = 'sg.html';
         }
         document.getElementById('userDisplay').innerText = currentUser;
-        const isAdmin = (currentUser === 'Admin');
+        const canDeleteAll = (currentUser === 'Admin' || currentUser.toLowerCase() === 'krzysiek');
 
         const firebaseConfig = {
             apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
@@ -151,15 +211,62 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        let compressedPhotoBase64 = null;
+
+        // Kompresja zdjęcia po stronie przeglądarki (mieści się w limicie 1MB Firestore)
+        window.handlePhoto = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1000;
+                    let w = img.width;
+                    let h = img.height;
+
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+
+                    const cvs = document.createElement('canvas');
+                    cvs.width = w;
+                    cvs.height = h;
+                    const ctx = cvs.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    compressedPhotoBase64 = cvs.toDataURL('image/jpeg', 0.72);
+                    document.getElementById('previewImg').src = compressedPhotoBase64;
+                    document.getElementById('previewBox').style.display = 'block';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.clearPhoto = () => {
+            compressedPhotoBase64 = null;
+            document.getElementById('photoInput').value = "";
+            document.getElementById('previewImg').src = "";
+            document.getElementById('previewBox').style.display = 'none';
+        };
+
+        window.openLightbox = (src) => {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        };
+
         window.sendNote = async () => {
             const input = document.getElementById('noteInput');
             const btn = document.getElementById('sendBtn');
             const status = document.getElementById('status-msg');
             const text = input.value.trim();
 
-            if (!text) {
+            if (!text && !compressedPhotoBase64) {
                 status.style.color = "var(--error)";
-                status.innerText = "Wpisz treść uwagi przed wysłaniem!";
+                status.innerText = "Wpisz treść uwagi lub dodaj zdjęcie!";
                 return;
             }
 
@@ -171,18 +278,20 @@
                 await addDoc(collection(db, "uwagi_s125"), {
                     author: currentUser,
                     opis: text,
+                    photo: compressedPhotoBase64 || null,
                     date: new Date().toLocaleString("pl-PL"),
                     timestamp: serverTimestamp()
                 });
 
                 input.value = "";
+                window.clearPhoto();
                 status.style.color = "var(--success)";
                 status.innerText = "Uwaga została wysłana!";
                 setTimeout(() => { status.innerText = ""; }, 3000);
             } catch (e) {
                 console.error(e);
                 status.style.color = "var(--error)";
-                status.innerText = "Błąd wysyłania. Spróbuj ponownie.";
+                status.innerText = "Błąd wysyłania. Spróbuj mniejsze zdjęcie.";
             } finally {
                 btn.disabled = false;
             }
@@ -207,7 +316,7 @@
 
             snap.forEach(d => {
                 const n = d.data();
-                const canDelete = (n.author === currentUser || isAdmin);
+                const canDelete = (n.author === currentUser || canDeleteAll);
                 const item = document.createElement('div');
                 item.className = 'note-item';
                 item.innerHTML = `
@@ -218,9 +327,19 @@
                             ${canDelete ? `<button class="btn-del" onclick="deleteNote('${d.id}')" title="Usuń">✕</button>` : ''}
                         </div>
                     </div>
-                    <p class="note-text"></p>
+                    ${n.opis ? `<p class="note-text"></p>` : ''}
                 `;
-                item.querySelector('.note-text').textContent = n.opis;
+                if (n.opis) {
+                    item.querySelector('.note-text').textContent = n.opis;
+                }
+                if (n.photo) {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = n.photo;
+                    imgEl.className = 'note-img';
+                    imgEl.alt = 'Załącznik';
+                    imgEl.onclick = () => openLightbox(n.photo);
+                    item.appendChild(imgEl);
+                }
                 list.appendChild(item);
             });
         });
