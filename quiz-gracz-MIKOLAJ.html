@@ -5,23 +5,48 @@
 <title>Mikołajki | Terminal Agenta</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
 <style>
-:root { --gold: #ffd700; --red: #d62828; --green: #2dc653; --bg: #071710; }
+:root { --gold: #ffd700; --red: #d62828; --green: #2dc653; --bg: #071710; --cyan: #00d4ff; }
 body {
 font-family: sans-serif; background: radial-gradient(circle at top, #1b4332 0%, #071710 85%);
 color: #fff; margin: 0; padding: 15px; min-height: 100vh; display: flex; flex-direction: column;
 align-items: center; justify-content: center; text-align: center; box-sizing: border-box;
 touch-action: manipulation; user-select: none; -webkit-user-select: none;
+transition: background 0.35s ease;
+}
+body.cyber-disguise {
+background: #050b14 !important;
+}
+body.troll-hack-bg {
+background: #090000 !important;
+animation: hackBgFlash 0.35s infinite alternate;
+}
+@keyframes hackBgFlash {
+0% { background: #140000; }
+100% { background: #3b0000; }
 }
 .card {
 background: rgba(15, 38, 28, 0.94); border: 2px solid var(--gold); border-radius: 24px;
 padding: 22px 18px; width: 95%; max-width: 410px; box-shadow: 0 15px 40px rgba(0,0,0,0.7);
-box-sizing: border-box;
+box-sizing: border-box; position: relative; overflow: hidden;
+}
+body.cyber-disguise .card {
+background: #111; border: 1px solid var(--cyan); border-radius: 20px;
+box-shadow: 0 0 25px rgba(0,212,255,0.2);
+}
+body.troll-hack-bg .card {
+background: #0b0000 !important; border: 3px solid #ff1e27 !important;
+box-shadow: 0 0 35px rgba(255, 30, 39, 0.85) !important;
+animation: vibrate 0.16s infinite;
 }
 h2 { color: var(--gold); margin: 0 0 12px 0; text-transform: uppercase; font-size: 20px; letter-spacing: 1.5px; }
+body.cyber-disguise h2 { color: var(--cyan); }
 select, input[type="text"], input[type="number"] {
 width: 100%; padding: 15px; font-size: 20px; border-radius: 14px; border: 2px solid var(--gold);
 background: #040d09; color: #fff; text-align: center; font-weight: 900; box-sizing: border-box;
 margin-bottom: 12px; outline: none;
+}
+body.cyber-disguise select {
+border: 1px solid var(--cyan); background: #000; border-radius: 10px;
 }
 .btn-main {
 width: 100%; padding: 16px; border-radius: 16px; border: 2px solid #fff;
@@ -33,6 +58,7 @@ margin-bottom: 8px;
 .btn-main:active { transform: scale(0.95); }
 .btn-green { background: linear-gradient(135deg, #2dc653, #15803d); color: #000; }
 .btn-blue { background: linear-gradient(135deg, #00d4ff, #0284c7); color: #000; }
+.btn-cyber { background: var(--cyan) !important; color: #000 !important; border: none !important; border-radius: 10px !important; box-shadow: none !important; }
 .btn-disabled { background: #334155 !important; color: #94a3b8 !important; border-color: #64748b !important; pointer-events: none; box-shadow: none !important; opacity: 0.65; }
 .task-box { background: rgba(0,0,0,0.45); border: 1px dashed var(--gold); border-radius: 14px; padding: 15px; margin: 12px 0; font-size: 16px; line-height: 1.4; color: #f1f5f9; font-weight: bold; }
 .bartus-box { background: rgba(255, 215, 0, 0.18); border: 2px solid var(--gold); border-radius: 14px; padding: 15px; margin: 12px 0; font-size: 16px; line-height: 1.4; color: #fff; font-weight: bold; box-shadow: 0 0 20px rgba(255, 215, 0, 0.35); }
@@ -81,21 +107,104 @@ animation: vibrate 0.22s infinite;
 75% { transform: translate(-4px, -3px); }
 }
 .feedback { color: #ff6b6b; font-weight: 900; font-size: 14px; min-height: 20px; margin-top: 6px; }
+
+/* STYLE DLA ZMYŁKI CYBER-QUIZ + AWATARY + LAG + HAKER */
+.avatar-preview-circle {
+width: 135px; height: 135px; border-radius: 50%; margin: 10px auto 14px auto;
+border: 4px solid var(--gold); background: #1e272e; overflow: hidden;
+display: flex; align-items: center; justify-content: center; font-size: 50px;
+box-shadow: 0 0 20px rgba(212,175,55,0.35);
+}
+.avatar-preview-circle img { width: 100%; height: 100%; object-fit: cover; display: none; }
+.avatar-btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+.btn-photo-pick {
+display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;
+background: #1e272e; border: 2px solid var(--cyan); color: #fff; padding: 14px 8px;
+border-radius: 12px; font-weight: 900; font-size: 13px; cursor: pointer; text-transform: uppercase;
+}
+.btn-skip-avatar {
+background: transparent; border: 1px dashed #555; color: #94a3b8; padding: 10px;
+border-radius: 10px; font-size: 13px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 4px;
+}
+.fake-grid-abcd { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; margin-top: 8px; }
+.fake-btn-abcd {
+color: #fff; border-radius: 14px; padding: 16px 8px; cursor: pointer;
+display: flex; flex-direction: column; align-items: center; justify-content: center;
+min-height: 92px; word-break: break-word; text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+}
+.fake-color-0 { background: rgba(241, 196, 15, 0.28); border: 3px solid #f1c40f; }
+.fake-color-1 { background: rgba(0, 212, 255, 0.28); border: 3px solid #00d4ff; }
+.fake-color-2 { background: rgba(46, 213, 115, 0.28); border: 3px solid #2ed573; }
+.fake-color-3 { background: rgba(255, 71, 87, 0.28); border: 3px solid #ff4757; }
+.fake-opt-letter { font-size: 24px; font-weight: 900; margin-bottom: 4px; }
+.fake-opt-label { font-size: 14px; font-weight: bold; line-height: 1.2; }
+.fake-btn-abcd.frozen { opacity: 0.35; pointer-events: none; filter: contrast(1.6) hue-rotate(45deg); }
+.fake-locked-cyan {
+font-size: 16px; color: var(--cyan); font-weight: bold; margin-top: 12px;
+border: 2px dashed var(--cyan); padding: 18px; border-radius: 14px;
+background: rgba(0,212,255,0.1); white-space: pre-line; line-height: 1.4;
+}
+.troll-lag-banner {
+margin-top: 12px; padding: 14px; border-radius: 12px;
+background: rgba(255, 0, 0, 0.22); border: 2px solid #ff4757;
+color: #ff4757; font-family: monospace; font-size: 15px; font-weight: 900;
+animation: lagFlicker 0.18s infinite alternate;
+}
+@keyframes lagFlicker {
+0% { opacity: 1; transform: translate(-2px, 1px); text-shadow: -2px 0 #00d4ff, 2px 0 #ff0040; }
+100% { opacity: 0.65; transform: translate(2px, -1px); text-shadow: 2px 0 #00d4ff, -2px 0 #ff0040; }
+}
+.troll-hack-screen {
+font-family: monospace; padding: 12px 6px;
+}
+.troll-skull { font-size: 62px; margin-bottom: 8px; animation: vibrate 0.14s infinite; }
+.troll-hack-title { color: #ff1e27; font-size: 22px; font-weight: 900; line-height: 1.3; text-shadow: 0 0 12px #ff1e27; margin-bottom: 10px; }
+.troll-hack-code { background: #000; border: 1px solid #ff1e27; color: #22c55e; font-size: 12px; padding: 10px; border-radius: 8px; text-align: left; line-height: 1.5; }
+.troll-santa-box {
+background: linear-gradient(145deg, rgba(20, 83, 45, 0.95), rgba(15, 38, 28, 0.98));
+border: 3px solid var(--gold); border-radius: 18px; padding: 18px 14px;
+box-shadow: 0 0 30px rgba(255, 215, 0, 0.55);
+}
 </style>
 </head>
 <body>
 
 <div class="card" id="loginView">
-<h2>🎅 MIKOŁAJKOWY TERMINAL AGENTA 🎄</h2>
-<p style="font-size:14px; color:#cbd5e1;">Wybierz swoje imię, aby pomóc odblokować Skarbiec Mikołaja:</p>
+<h2 id="loginTitle">🎅 MIKOŁAJKOWY TERMINAL AGENTA 🎄</h2>
+<p id="loginDesc" style="font-size:14px; color:#cbd5e1;">Wybierz swoje imię, aby pomóc odblokować Skarbiec Mikołaja:</p>
 <select id="agentSel">
 <option value="" disabled selected>-- WYBIERZ AGENTA --</option>
-<option value="Lila">🦌 Lila</option>
-<option value="Kaja">⛄ Kaja</option>
-<option value="Darek">🎄 Darek</option>
-<option value="Jas">🎅 Jaś</option>
+<option value="Lila" id="optLila">🦌 Lila</option>
+<option value="Kaja" id="optKaja">⛄ Kaja</option>
+<option value="Darek" id="optDarek">🎄 Darek</option>
+<option value="Jas" id="optJas">🎅 Jaś</option>
 </select>
-<button class="btn-main btn-green" onclick="window.joinMission()">DOŁĄCZ DO MISJI</button>
+<button class="btn-main btn-green" id="btnJoinMission" onclick="window.joinMission()">DOŁĄCZ DO MISJI</button>
+</div>
+
+<!-- EKRAN AWATARA DLA ZMYŁKI CYBER-QUIZ -->
+<div class="card" id="fakeAvatarSetupUI" style="display:none;">
+<h2 style="color:var(--gold); font-size:19px;">📸 DODAJ SWÓJ AWATAR!</h2>
+<p style="font-size:13px; color:#cbd5e1; margin:0 0 8px 0;">Twoje zdjęcie pojawi się na ekranie TV obok imienia oraz w rundach specjalnych!</p>
+<div class="avatar-preview-circle">
+<span id="fakeAvIcon">👤</span>
+<img id="fakeAvPrevImg" alt="">
+</div>
+<div class="avatar-btn-row">
+<label class="btn-photo-pick">
+<span style="font-size:24px;">🤳</span>
+<span>ZRÓB SELFIE</span>
+<input type="file" accept="image/*" capture="user" style="display:none;" onchange="window.handleFakeAvatarSelect(event)">
+</label>
+<label class="btn-photo-pick">
+<span style="font-size:24px;">🖼️</span>
+<span>Z GALERII</span>
+<input type="file" accept="image/*" style="display:none;" onchange="window.handleFakeAvatarSelect(event)">
+</label>
+</div>
+<div class="feedback" id="fakeAvFeedback" style="margin-bottom:8px;"></div>
+<button class="btn-main btn-green" id="btnSaveFakeAv" onclick="window.saveFakeAvatarAndEnter()" disabled>✅ ZAPISZ AWATAR I WEJDŹ</button>
+<button class="btn-skip-avatar" onclick="window.finishEnterGameView()">Pomiń na razie (wejdź bez zdjęcia)</button>
 </div>
 
 <div class="card" id="gameView" style="display:none;">
@@ -106,11 +215,12 @@ animation: vibrate 0.22s infinite;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
 const db = getFirestore(initializeApp(firebaseConfig));
 const stateRef = doc(db, "mikolajGame", "state");
+const fakeAvatarsRef = doc(db, "mikolajGame", "fakeAvatars");
 
 const STAGE1_PHOTOS = {
 Lila: [
@@ -212,7 +322,11 @@ let isHoldingScanner = false;
 let quizPenaltyInterval = null;
 let stage7PadTimer = null;
 
-// Etap 2: Niezawodny rejestrator Web Audio WAV (działa w 100% na iPhone i Androidzie bez bugów MediaRecordera)
+// Zmienne dla Zmyłki Cyber-Quiz + Awatary + Atak Hakerów
+let pendingFakeAvatarB64 = "";
+let lastHackVibrateTick = 0;
+
+// Etap 2: Niezawodny rejestrator Web Audio WAV
 let micStream = null;
 let recAudioCtx = null;
 let recSource = null;
@@ -226,24 +340,160 @@ let recordedAudioBuffer = null;
 let previewSourceNode = null;
 let isSendingAudio = false;
 
-// Etap 3: Akcelerometr (próg 22.0 + max 1 pkt na 150ms, cel 2500 pkt/os.)
+// Etap 3: Akcelerometr
 let motionActive = false;
 let shakeScore = 0;
 let lastShakeCountAt = 0;
 let lastShakeSync = 0;
 
-window.joinMission = () => {
-myName = document.getElementById('agentSel').value;
-if (!myName) return alert("Wybierz swoje imię!");
-document.getElementById('loginView').style.display = 'none';
-document.getElementById('gameView').style.display = 'block';
-document.getElementById('topAgentHeader').innerText = "🎄 AGENT: " + myName.toUpperCase() + " 🎁";
+function isCyberDisguiseStatus(st) {
+return st === "fake_idle" || st === "fake_r1_speaking" || st === "fake_r1_reading" || st === "troll_lag";
+}
 
+function applyDisguiseThemeForLogin(status) {
+const isCyber = isCyberDisguiseStatus(status);
+const isHack = status === "troll_hack";
+
+document.body.classList.toggle('cyber-disguise', isCyber);
+document.body.classList.toggle('troll-hack-bg', isHack);
+
+if (isCyber || isHack) {
+document.title = "Cyber-Pad | Gracz (7 Rund + Awatary)";
+document.getElementById('loginTitle').innerText = "WYBIERZ SLOT GRACZA";
+document.getElementById('loginDesc').innerText = "Wybierz swój slot, aby dołączyć do teleturnieju:";
+document.getElementById('optLila').text = "Slot 1: Lila";
+document.getElementById('optKaja').text = "Slot 2: Kaja";
+document.getElementById('optDarek').text = "Slot 3: Darek";
+document.getElementById('optJas').text = "Slot 4: Jaś";
+const btn = document.getElementById('btnJoinMission');
+btn.innerText = "DOŁĄCZ DO GRY";
+btn.classList.add('btn-cyber');
+btn.classList.remove('btn-green');
+} else {
+document.title = "Mikołajki | Terminal Agenta";
+document.getElementById('loginTitle').innerText = "🎅 MIKOŁAJKOWY TERMINAL AGENTA 🎄";
+document.getElementById('loginDesc').innerText = "Wybierz swoje imię, aby pomóc odblokować Skarbiec Mikołaja:";
+document.getElementById('optLila').text = "🦌 Lila";
+document.getElementById('optKaja').text = "⛄ Kaja";
+document.getElementById('optDarek').text = "🎄 Darek";
+document.getElementById('optJas').text = "🎅 Jaś";
+const btn = document.getElementById('btnJoinMission');
+btn.innerText = "DOŁĄCZ DO MISJI";
+btn.classList.remove('btn-cyber');
+btn.classList.add('btn-green');
+}
+}
+
+// Nasłuchujemy stanu gry od razu przy otwarciu strony (żeby już ekran logowania udawał Cyber-Quiz!)
 onSnapshot(stateRef, (snap) => {
 if (!snap.exists()) return;
 currentState = snap.data();
+applyDisguiseThemeForLogin(currentState.status || "idle");
+if (myName) {
+// Jeśli w trakcie wyboru awatara troll przeszedł już do ataku/prawdziwej gry -> wchodzimy od razu!
+const avUi = document.getElementById('fakeAvatarSetupUI');
+if (avUi && avUi.style.display === 'block' && !isCyberDisguiseStatus(currentState.status)) {
+window.finishEnterGameView();
+}
 renderPad();
+}
 });
+
+// Obsługa awatara w trybie Zmyłki Cyber-Quiz
+window.handleFakeAvatarSelect = (e) => {
+const file = e.target.files && e.target.files[0];
+if (!file) return;
+const fb = document.getElementById('fakeAvFeedback');
+fb.style.color = "#ffd700";
+fb.innerText = "⏳ Przetwarzanie zdjęcia...";
+const reader = new FileReader();
+reader.onload = (ev) => {
+const img = new Image();
+img.onload = () => {
+const size = 220;
+const canvas = document.createElement('canvas');
+canvas.width = size; canvas.height = size;
+const ctx = canvas.getContext('2d');
+const minSide = Math.min(img.width, img.height);
+const sx = Math.floor((img.width - minSide) / 2);
+const sy = Math.floor((img.height - minSide) / 2);
+ctx.drawImage(img, sx, sy, minSide, minSide, 0, 0, size, size);
+pendingFakeAvatarB64 = canvas.toDataURL('image/jpeg', 0.72);
+const prev = document.getElementById('fakeAvPrevImg');
+prev.src = pendingFakeAvatarB64;
+prev.style.display = "block";
+document.getElementById('fakeAvIcon').style.display = "none";
+document.getElementById('btnSaveFakeAv').disabled = false;
+fb.style.color = "#2dc653";
+fb.innerText = "✅ Super! Kliknij poniżej, aby zapisać i wejść do gry.";
+};
+img.src = ev.target.result;
+};
+reader.readAsDataURL(file);
+};
+
+window.saveFakeAvatarAndEnter = async () => {
+if (!myName || !pendingFakeAvatarB64) return;
+const btn = document.getElementById('btnSaveFakeAv');
+btn.disabled = true;
+try {
+await setDoc(fakeAvatarsRef, { [myName]: pendingFakeAvatarB64 }, { merge: true });
+pendingFakeAvatarB64 = "";
+window.finishEnterGameView();
+} catch (err) {
+btn.disabled = false;
+document.getElementById('fakeAvFeedback').innerText = "❌ Błąd zapisu: " + err.message;
+}
+};
+
+window.finishEnterGameView = () => {
+document.getElementById('loginView').style.display = 'none';
+document.getElementById('fakeAvatarSetupUI').style.display = 'none';
+document.getElementById('gameView').style.display = 'block';
+lastRenderKey = "";
+renderPad();
+};
+
+window.joinMission = async () => {
+myName = document.getElementById('agentSel').value;
+if (!myName) return alert("Wybierz swoje imię!");
+
+// W trybie Zmyłki Cyber-Quiz: pytamy o awatar tylko jeśli ten slot jeszcze go nie ma!
+if (currentState && isCyberDisguiseStatus(currentState.status)) {
+let hasAv = false;
+try {
+const avSnap = await getDoc(fakeAvatarsRef);
+if (avSnap.exists() && avSnap.data()[myName]) hasAv = true;
+} catch (e) {}
+
+if (!hasAv) {
+document.getElementById('loginView').style.display = 'none';
+document.getElementById('fakeAvatarSetupUI').style.display = 'block';
+return;
+}
+}
+
+window.finishEnterGameView();
+};
+
+// Auto-logowanie z parametru ?slot=Lila (jeśli podano w URL)
+(() => {
+const params = new URLSearchParams(window.location.search);
+const slotParam = params.get("slot");
+if (slotParam && ["Lila", "Kaja", "Darek", "Jas"].includes(slotParam)) {
+document.getElementById('agentSel').value = slotParam;
+setTimeout(() => { if (!myName) window.joinMission(); }, 400);
+}
+})();
+
+window.sendFakeR1Answer = async (idx) => {
+if (!currentState || currentState.status !== "fake_r1_reading") return;
+if (currentState.fakeR1Answers && currentState.fakeR1Answers[myName] !== undefined) return;
+try {
+await updateDoc(stateRef, {
+["fakeR1Answers." + myName]: { opt: idx, ts: Date.now() }
+});
+} catch (e) {}
 };
 
 function getQuizLockRemainingSec() {
@@ -272,7 +522,6 @@ let totalLen = 0;
 for (let i = 0; i < chunks.length; i++) totalLen += chunks[i].length;
 if (totalLen < Math.floor(inputSampleRate * 0.15)) return null;
 
-// Maksymalnie 3.5 sekundy na frazę (żeby 12 nagrań nigdy nie przekroczyło limitu bazy)
 const maxInputSamples = Math.floor(inputSampleRate * 3.5);
 const useLen = Math.min(totalLen, maxInputSamples);
 
@@ -284,7 +533,6 @@ merged.set(chunks[i].subarray(0, sliceLen), offset);
 offset += sliceLen;
 }
 
-// Downsampling do 8000 Hz mono 16-bit WAV
 const targetRate = 8000;
 const ratio = inputSampleRate / targetRate;
 const newLen = Math.max(1, Math.floor(merged.length / ratio));
@@ -294,32 +542,18 @@ const start = Math.floor(i * ratio);
 const end = Math.min(merged.length, Math.floor((i + 1) * ratio));
 let sum = 0;
 let count = 0;
-for (let j = start; j < end; j++) {
-sum += merged[j];
-count++;
-}
+for (let j = start; j < end; j++) { sum += merged[j]; count++; }
 downsampled[i] = count > 0 ? sum / count : 0;
 }
 
 const buffer = new ArrayBuffer(44 + newLen * 2);
 const view = new DataView(buffer);
-const writeStr = (off, str) => {
-for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i));
-};
+const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
 
-writeStr(0, 'RIFF');
-view.setUint32(4, 36 + newLen * 2, true);
-writeStr(8, 'WAVE');
-writeStr(12, 'fmt ');
-view.setUint32(16, 16, true);
-view.setUint16(20, 1, true);
-view.setUint16(22, 1, true);
-view.setUint32(24, targetRate, true);
-view.setUint32(28, targetRate * 2, true);
-view.setUint16(32, 2, true);
-view.setUint16(34, 16, true);
-writeStr(36, 'data');
-view.setUint32(40, newLen * 2, true);
+writeStr(0, 'RIFF'); view.setUint32(4, 36 + newLen * 2, true); writeStr(8, 'WAVE');
+writeStr(12, 'fmt '); view.setUint32(16, 16, true); view.setUint16(20, 1, true);
+view.setUint16(22, 1, true); view.setUint32(24, targetRate, true); view.setUint32(28, targetRate * 2, true);
+view.setUint16(32, 2, true); view.setUint16(34, 16, true); writeStr(36, 'data'); view.setUint32(40, newLen * 2, true);
 
 let pos = 44;
 for (let i = 0; i < newLen; i++) {
@@ -341,10 +575,7 @@ previewBuf = recAudioCtx.createBuffer(1, merged.length, inputSampleRate);
 previewBuf.getChannelData(0).set(merged);
 }
 
-return {
-base64: 'data:audio/wav;base64,' + btoa(binary),
-previewBuf: previewBuf
-};
+return { base64: 'data:audio/wav;base64,' + btoa(binary), previewBuf: previewBuf };
 }
 
 function isMicAlive() {
@@ -356,16 +587,9 @@ return tracks.length > 0 && tracks.every(t => t.readyState === 'live');
 window.requestMicPermission = async () => {
 try {
 const AudioCtx = window.AudioContext || window.webkitAudioContext;
-if (!recAudioCtx) {
-recAudioCtx = new AudioCtx();
-}
-if (recAudioCtx.state === 'suspended') {
-await recAudioCtx.resume();
-}
-
-if (micStream) {
-micStream.getTracks().forEach(t => t.stop());
-}
+if (!recAudioCtx) recAudioCtx = new AudioCtx();
+if (recAudioCtx.state === 'suspended') await recAudioCtx.resume();
+if (micStream) micStream.getTracks().forEach(t => t.stop());
 micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
 if (recSource) { try { recSource.disconnect(); } catch (e) {} }
@@ -379,8 +603,7 @@ recZeroGain.gain.value = 0;
 
 recProcessor.onaudioprocess = (e) => {
 if (!isRecordingWav) return;
-const input = e.inputBuffer.getChannelData(0);
-pcmChunks.push(new Float32Array(input));
+pcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
 };
 
 recSource.connect(recProcessor);
@@ -400,10 +623,7 @@ isRecordingWav = false;
 clearTimeout(recAutoStopTimer);
 
 const btn = document.getElementById('micRecordBtn');
-if (btn) {
-btn.classList.remove('recording');
-btn.innerHTML = "⏳<br>PRZETWARZAM...";
-}
+if (btn) { btn.classList.remove('recording'); btn.innerHTML = "⏳<br>PRZETWARZAM..."; }
 
 const sr = (recAudioCtx && recAudioCtx.sampleRate) ? recAudioCtx.sampleRate : 44100;
 const result = encodeWavFromChunks(pcmChunks, sr);
@@ -411,10 +631,7 @@ pcmChunks = [];
 
 if (!result) {
 const fb = document.getElementById('feedbackMsg');
-if (fb) {
-fb.style.color = "#ff6b6b";
-fb.innerText = "⚠️ Za krótkie nagranie — przytrzymaj przycisk chwilę dłużej!";
-}
+if (fb) { fb.style.color = "#ff6b6b"; fb.innerText = "⚠️ Za krótkie nagranie — przytrzymaj przycisk chwilę dłużej!"; }
 if (btn) btn.innerHTML = "🎙️<br>TRZYMAJ<br>I NAGRAJ";
 return;
 }
@@ -428,35 +645,19 @@ renderPad();
 function bindMicEvents() {
 const btn = document.getElementById('micRecordBtn');
 if (!btn) return;
-
 const startRec = () => {
 if (isRecordingWav) return;
-if (!isMicAlive() || !recAudioCtx) {
-lastRenderKey = "";
-renderPad();
-return;
-}
-if (previewSourceNode) {
-try { previewSourceNode.stop(); } catch (e) {}
-previewSourceNode = null;
-}
-if (recAudioCtx.state === 'suspended') {
-recAudioCtx.resume().catch(() => {});
-}
-const fb = document.getElementById('feedbackMsg');
-if (fb) fb.innerText = "";
+if (!isMicAlive() || !recAudioCtx) { lastRenderKey = ""; renderPad(); return; }
+if (previewSourceNode) { try { previewSourceNode.stop(); } catch (e) {} previewSourceNode = null; }
+if (recAudioCtx.state === 'suspended') recAudioCtx.resume().catch(() => {});
+const fb = document.getElementById('feedbackMsg'); if (fb) fb.innerText = "";
 
-pcmChunks = [];
-isRecordingWav = true;
+pcmChunks = []; isRecordingWav = true;
 btn.classList.add('recording');
 btn.innerHTML = "🎙️<br>NAGRYWAM!<br>(PUŚĆ ABY STOP)";
-
 clearTimeout(recAutoStopTimer);
-recAutoStopTimer = setTimeout(() => {
-if (isRecordingWav) stopWavRecording();
-}, 3500);
+recAutoStopTimer = setTimeout(() => { if (isRecordingWav) stopWavRecording(); }, 3500);
 };
-
 btn.ontouchstart = (e) => { e.preventDefault(); startRec(); };
 btn.ontouchend = (e) => { e.preventDefault(); stopWavRecording(); };
 btn.ontouchcancel = (e) => { e.preventDefault(); stopWavRecording(); };
@@ -467,12 +668,8 @@ btn.onmouseleave = () => { if (isRecordingWav) stopWavRecording(); };
 
 window.playMyRecording = () => {
 if (!recAudioCtx || !recordedAudioBuffer) return;
-if (recAudioCtx.state === 'suspended') {
-recAudioCtx.resume().catch(() => {});
-}
-if (previewSourceNode) {
-try { previewSourceNode.stop(); } catch (e) {}
-}
+if (recAudioCtx.state === 'suspended') recAudioCtx.resume().catch(() => {});
+if (previewSourceNode) { try { previewSourceNode.stop(); } catch (e) {} }
 const src = recAudioCtx.createBufferSource();
 src.buffer = recordedAudioBuffer;
 src.connect(recAudioCtx.destination);
@@ -481,14 +678,9 @@ previewSourceNode = src;
 };
 
 window.discardMyRecording = () => {
-if (previewSourceNode) {
-try { previewSourceNode.stop(); } catch (e) {}
-previewSourceNode = null;
-}
-recordedBase64 = null;
-recordedAudioBuffer = null;
-lastRenderKey = "";
-renderPad();
+if (previewSourceNode) { try { previewSourceNode.stop(); } catch (e) {} previewSourceNode = null; }
+recordedBase64 = null; recordedAudioBuffer = null;
+lastRenderKey = ""; renderPad();
 };
 
 window.sendMyRecording = async () => {
@@ -497,63 +689,37 @@ isSendingAudio = true;
 const audioToSend = recordedBase64;
 const bufBackup = recordedAudioBuffer;
 const fb = document.getElementById('feedbackMsg');
-fb.style.color = "#ffd700";
-fb.innerText = "⏳ Wysyłanie nagrania na TV...";
-
-if (previewSourceNode) {
-try { previewSourceNode.stop(); } catch (e) {}
-previewSourceNode = null;
-}
-
+fb.style.color = "#ffd700"; fb.innerText = "⏳ Wysyłanie nagrania na TV...";
+if (previewSourceNode) { try { previewSourceNode.stop(); } catch (e) {} previewSourceNode = null; }
 try {
 const snap = await getDoc(stateRef);
 const data = snap.data() || {};
 const tracks = data.audioTracks || {};
 const myTasks = STAGE2_HYMN_TASKS[myName];
 const stepIdx = myTasks.findIndex(t => !tracks[t.slot]);
-
-recordedBase64 = null;
-recordedAudioBuffer = null;
-
+recordedBase64 = null; recordedAudioBuffer = null;
 if (stepIdx !== -1) {
-const slotKey = myTasks[stepIdx].slot;
 const payload = { trackUpdatedTick: Date.now() };
-payload["audioTracks." + slotKey] = audioToSend;
+payload["audioTracks." + myTasks[stepIdx].slot] = audioToSend;
 await updateDoc(stateRef, payload);
 }
-fb.innerText = "";
-lastRenderKey = "";
-renderPad();
+fb.innerText = ""; lastRenderKey = ""; renderPad();
 } catch (err) {
-recordedBase64 = audioToSend;
-recordedAudioBuffer = bufBackup;
-fb.style.color = "#ff4d4d";
-fb.innerText = "❌ Błąd wysyłania: " + err.message;
-lastRenderKey = "";
-renderPad();
-} finally {
-isSendingAudio = false;
-}
+recordedBase64 = audioToSend; recordedAudioBuffer = bufBackup;
+fb.style.color = "#ff4d4d"; fb.innerText = "❌ Błąd wysyłania: " + err.message;
+lastRenderKey = ""; renderPad();
+} finally { isSendingAudio = false; }
 };
 
 // --- ETAP 3: AKCELEROMETR (LÓD) ---
 window.requestMotionPermission = () => {
 if (typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function') {
 DeviceMotionEvent.requestPermission().then(state => {
-if (state === 'granted') {
-window.addEventListener('devicemotion', handleMotion);
-motionActive = true;
-lastRenderKey = "";
-renderPad();
-} else {
-alert("Zezwól na czujniki ruchu lub używaj przycisku uderzenia w lód!");
-}
+if (state === 'granted') { window.addEventListener('devicemotion', handleMotion); motionActive = true; lastRenderKey = ""; renderPad(); }
+else alert("Zezwól na czujniki ruchu lub używaj przycisku uderzenia w lód!");
 }).catch(() => {});
 } else {
-window.addEventListener('devicemotion', handleMotion);
-motionActive = true;
-lastRenderKey = "";
-renderPad();
+window.addEventListener('devicemotion', handleMotion); motionActive = true; lastRenderKey = ""; renderPad();
 }
 };
 
@@ -564,18 +730,13 @@ if (!acc) return;
 const mag = Math.sqrt((acc.x || 0) * (acc.x || 0) + (acc.y || 0) * (acc.y || 0) + (acc.z || 0) * (acc.z || 0));
 const now = Date.now();
 if (mag > 22.0 && now - lastShakeCountAt > 150) {
-lastShakeCountAt = now;
-shakeScore += 1;
+lastShakeCountAt = now; shakeScore += 1;
 if (now - lastShakeSync > 550) {
-lastShakeSync = now;
-const add = shakeScore;
-shakeScore = 0;
+lastShakeSync = now; const add = shakeScore; shakeScore = 0;
 getDoc(stateRef).then(snap => {
 if (!snap.exists()) return;
 const d = snap.data();
-if (d.stage === 3 && d.status === "stage3_ice") {
-updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + add });
-}
+if (d.stage === 3 && d.status === "stage3_ice") updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + add });
 });
 }
 }
@@ -588,31 +749,15 @@ const d = snap.data() || {};
 await updateDoc(stateRef, { iceTotalHits: (d.iceTotalHits || 0) + 1 });
 };
 
-// GENERATOR SEKWENCJI SIMONA: GWARANTOWANY KAŻDY AKTYWNY GRACZ, MAX 2 TAKIE SAME KOLORY Z RZĘDU
 function buildSmartSimonSequence(len, activeList) {
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
-
 for (let attempt = 0; attempt < 50; attempt++) {
 const bag = [];
-for (let i = 0; i < Math.min(len, pool.length); i++) {
-bag.push(pool[i]);
-}
-while (bag.length < len) {
-bag.push(pool[Math.floor(Math.random() * pool.length)]);
-}
-for (let i = bag.length - 1; i > 0; i--) {
-const j = Math.floor(Math.random() * (i + 1));
-const tmp = bag[i];
-bag[i] = bag[j];
-bag[j] = tmp;
-}
+for (let i = 0; i < Math.min(len, pool.length); i++) bag.push(pool[i]);
+while (bag.length < len) bag.push(pool[Math.floor(Math.random() * pool.length)]);
+for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const tmp = bag[i]; bag[i] = bag[j]; bag[j] = tmp; }
 let threeInRow = false;
-for (let i = 2; i < bag.length; i++) {
-if (bag[i] === bag[i - 1] && bag[i] === bag[i - 2]) {
-threeInRow = true;
-break;
-}
-}
+for (let i = 2; i < bag.length; i++) if (bag[i] === bag[i - 1] && bag[i] === bag[i - 2]) { threeInRow = true; break; }
 if (!threeInRow) return bag;
 }
 return pool;
@@ -621,6 +766,7 @@ return pool;
 function renderPad() {
 const container = document.getElementById('stageContent');
 const fb = document.getElementById('feedbackMsg');
+const topHdr = document.getElementById('topAgentHeader');
 if (!currentState) return;
 
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
@@ -631,6 +777,96 @@ return;
 
 const st = currentState.stage || 0;
 const status = currentState.status || "idle";
+
+// ============================================================================
+// TRYB ZMYŁKI CYBER-QUIZ + LAG + ATAK HAKERÓW + TWIST MIKOŁAJA
+// ============================================================================
+if (status.startsWith("fake_") || status.startsWith("troll_")) {
+const myFakeAns = (currentState.fakeR1Answers || {})[myName];
+const fakeKey = "troll_" + status + "_" + (currentState.speechTick || 0) + "_" + (myFakeAns !== undefined ? "answered" : "open");
+if (fakeKey === lastRenderKey) return;
+lastRenderKey = fakeKey;
+fb.innerText = "";
+
+if (status === "fake_idle") {
+topHdr.style.color = "var(--cyan)";
+topHdr.innerText = "GRACZ: " + myName.toUpperCase();
+container.innerHTML = '<div class="fake-locked-cyan">✅ POŁĄCZONO Z GRĄ!\nPATRZ NA EKRAN TELEWIZORA...\nZARAZ STARTUJE RUNDA 1!</div>';
+return;
+}
+
+if (status === "fake_r1_speaking") {
+topHdr.style.color = "var(--cyan)";
+topHdr.innerText = "🗣️ SŁUCHAJ LEKTORA NA TV!";
+container.innerHTML = '<div class="fake-locked-cyan">LEKTOR CZYTA PYTANIE...\nZA CHWILĘ ODBLOKUJĄ SIĘ ODPOWIEDZI!</div>';
+return;
+}
+
+if (status === "fake_r1_reading") {
+topHdr.style.color = "#888";
+if (myFakeAns !== undefined) {
+topHdr.innerText = "🔒 ODPOWIEDŹ ZAREJESTROWANA!";
+container.innerHTML = '<div class="fake-locked-cyan">🔒 TWOJA ODPOWIEDŹ ZOSTAŁA ZAPISANA!\nWYNIKI I PUNKTY POKAŻĄ SIĘ PO ZAKOŃCZENIU CZASU.</div>';
+return;
+}
+topHdr.innerText = "MASZ 12 SEKUND - WYBIERZ ODPOWIEDŹ:";
+const opts = currentState.fakeOptions || ["A", "B", "C", "D"];
+const lets = ["A", "B", "C", "D"];
+let btns = '<div class="fake-grid-abcd">';
+opts.forEach((o, i) => {
+btns += '<button class="fake-btn-abcd fake-color-' + i + '" onclick="window.sendFakeR1Answer(' + i + ')"><span class="fake-opt-letter">' + lets[i] + '</span><span class="fake-opt-label">' + o + '</span></button>';
+});
+btns += '</div>';
+container.innerHTML = btns;
+return;
+}
+
+if (status === "troll_lag") {
+topHdr.style.color = "#ff4757";
+topHdr.innerText = "⚠️ BŁĄD POŁĄCZENIA Z SERWEREM...";
+const opts = currentState.fakeOptions || ["A", "B", "C", "D"];
+const lets = ["A", "B", "C", "D"];
+let btns = '<div class="fake-grid-abcd">';
+opts.forEach((o, i) => {
+btns += '<button class="fake-btn-abcd fake-color-' + i + ' frozen" disabled><span class="fake-opt-letter">' + lets[i] + '</span><span class="fake-opt-label">' + o + '</span></button>';
+});
+btns += '</div>';
+container.innerHTML = btns + '<div class="troll-lag-banner">⚠️ UTRACONO POŁĄCZENIE...<br>BŁĄD KRYTYCZNY 0x004F<br>ZAWIESZENIE SYSTEMU...</div>';
+return;
+}
+
+if (status === "troll_hack") {
+topHdr.style.color = "#ff1e27";
+topHdr.innerText = "☠️ ALARM BEZPIECZEŃSTWA ☠️";
+const tTick = currentState.trollTick || currentState.speechTick || 1;
+if (lastHackVibrateTick !== tTick) {
+lastHackVibrateTick = tTick;
+try { if (navigator.vibrate) navigator.vibrate([300, 100, 300, 100, 500, 100, 300, 100, 450]); } catch (e) {}
+}
+container.innerHTML = '<div class="troll-hack-screen">'
++ '<div class="troll-skull">☠️</div>'
++ '<div class="troll-hack-title">TELEFON ZAINFEKOWANY!<br>HAKER PRZEJĄŁ EKRAN!</div>'
++ '<div class="troll-hack-code">&gt; ACCESS: OVERRIDE_OK<br>&gt; TARGET: ' + myName.toUpperCase() + '_PHONE<br>&gt; DELETING: QUIZ_SZKOLNY.EXE<br>&gt; NEW ROOT: BIEGUN_POLNOCNY_ROOT<br>&gt; STATUS: PRZEJĘTY...</div>'
++ '</div>';
+return;
+}
+
+if (status === "troll_santa") {
+topHdr.style.color = "var(--gold)";
+topHdr.innerText = "🎄 AGENT: " + myName.toUpperCase() + " 🎁";
+container.innerHTML = '<div class="troll-santa-box">'
++ '<div style="font-size:58px; margin-bottom:6px;">🎅🎄</div>'
++ '<h2 style="color:var(--gold); font-size:21px;">HO! HO! HO! TO NIE WIRUS!</h2>'
++ '<div style="font-size:16px; color:#fff; font-weight:bold; line-height:1.45;">Święty Mikołaj przejął Twój telefon i telewizor!<br><br><span style="color:#2dc653;">Za chwilę uruchomi się TAJNA MISJA MIKOŁAJKOWA!</span></div>'
++ '</div>';
+return;
+}
+}
+
+// POWRÓT DO PRAWDZIWEGO NAGŁÓWKA MIKOŁAJKOWEGO
+topHdr.style.color = "var(--gold)";
+topHdr.innerText = "🎄 AGENT: " + myName.toUpperCase() + " 🎁";
+
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const myPhoto = (currentState.photos && currentState.photos[myName]) || {};
 
@@ -703,7 +939,7 @@ container.innerHTML = '<span class="step-badge">FOTO-ZADANIE ' + (myStep + 1) + 
 return;
 }
 
-// ETAP 2: HYMN (1. ZWROTKA + REFREN, 3 FRAZY NA OSOBĘ, BARTUŚ SOLO W "POLSKA!")
+// ETAP 2: HYMN
 if (st === 2) {
 if (hymnDoneCount >= 3) {
 container.innerHTML = '<span class="step-badge">ETAP 2: HYMN (3/3)</span><h2>✅ WSZYSTKIE 3 NAGRANIA GOTOWE!</h2><div class="task-box" style="border-color:#2dc653;">Super! Twoje słowa i nagranie z Bartusiem są już na TV! Czekamy na resztę drużyny!</div>';
@@ -733,7 +969,7 @@ container.innerHTML = '<span class="step-badge">NAGRANIE ' + (hymnDoneCount + 1)
 return;
 }
 
-// ETAP 3: ROZBIJANIE LODU (POTRZĄSANIE TELEFONEM)
+// ETAP 3: ROZBIJANIE LODU
 if (st === 3) {
 const motionHtml = !motionActive
 ? '<button class="btn-main btn-green" onclick="window.requestMotionPermission()">🚀 WŁĄCZ CZUJNIK RUCHU</button>'
@@ -760,7 +996,7 @@ container.innerHTML = '<span class="step-badge">KRYJÓWKA ' + (myStep + 1) + ' /
 return;
 }
 
-// ETAP 5: PO 3 PYTANIA ŚWIĄTECZNO-ZIMOWE Z BLOKADĄ 20 SEKUND ZA BŁĄD!
+// ETAP 5: QUIZ Z BLOKADĄ 20s
 if (st === 5) {
 if (myStep >= 3) {
 container.innerHTML = '<h2>🧠 PYTANIA ROZWIĄZANE (3/3)!</h2><div class="task-box">Świetna robota! Czekamy aż reszta drużyny odpowie na swoje pytania!</div>';
@@ -775,19 +1011,13 @@ quizPenaltyInterval = setInterval(() => {
 const r = getQuizLockRemainingSec();
 const sp = document.getElementById('lockTimerSpan');
 if (sp) sp.innerText = r + "s";
-if (r <= 0) {
-clearInterval(quizPenaltyInterval);
-lastRenderKey = "";
-renderPad();
-}
+if (r <= 0) { clearInterval(quizPenaltyInterval); lastRenderKey = ""; renderPad(); }
 }, 250);
 return;
 }
 const qObj = STAGE5_QUIZ[myName][myStep];
 let optsHtml = "";
-qObj.o.forEach((opt, idx) => {
-optsHtml += '<button class="opt-btn" onclick="window.submitQuizAns(' + idx + ')">' + opt + '</button>';
-});
+qObj.o.forEach((opt, idx) => { optsHtml += '<button class="opt-btn" onclick="window.submitQuizAns(' + idx + ')">' + opt + '</button>'; });
 container.innerHTML = '<span class="step-badge">PYTANIE ' + (myStep + 1) + ' / 3 (BŁĄD = BLOKADA 20s)</span>'
 + '<h2>🎄 ZAGADKA MIKOŁAJA</h2>'
 + '<div class="task-box">' + qObj.q + '</div>'
@@ -795,7 +1025,7 @@ container.innerHTML = '<span class="step-badge">PYTANIE ' + (myStep + 1) + ' / 3
 return;
 }
 
-// ETAP 6: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS 7/8/9)
+// ETAP 6: SIMON SAYS
 if (st === 6) {
 const colorMap = {
 Lila: { name: "ŻÓŁTY 🔔", bg: "#f59e0b" },
@@ -815,7 +1045,7 @@ container.innerHTML = '<span class="step-badge">POZIOM SZYFRU: ' + (currentState
 return;
 }
 
-// ETAP 7: TANKOWANIE SAŃ (ZABLOKOWANE DO KOŃCA LEKTORA!)
+// ETAP 7: TANKOWANIE SAŃ
 if (st === 7) {
 if (status === "stage7_speaking") {
 container.innerHTML = '<span class="step-badge">SŁUCHAJ LEKTORA!</span>'
@@ -854,9 +1084,7 @@ window.handlePhotoUpload = (e) => {
 const file = e.target.files[0];
 if (!file) return;
 const fb = document.getElementById('feedbackMsg');
-fb.style.color = "#ffd700";
-fb.innerText = "⏳ Przesyłanie zdjęcia na telewizor...";
-
+fb.style.color = "#ffd700"; fb.innerText = "⏳ Przesyłanie zdjęcia na telewizor...";
 const reader = new FileReader();
 reader.onload = (ev) => {
 const img = new Image();
@@ -866,10 +1094,8 @@ const maxW = 540;
 const scale = Math.min(1, maxW / img.width);
 canvas.width = Math.round(img.width * scale);
 canvas.height = Math.round(img.height * scale);
-const ctx = canvas.getContext('2d');
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
 const dataUrl = canvas.toDataURL('image/jpeg', 0.68);
-
 const snap = await getDoc(stateRef);
 const data = snap.data() || {};
 let photos = { ...(data.photos || {}) };
@@ -887,10 +1113,8 @@ const val = (document.getElementById('codeInput').value || "").trim();
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const targetCode = STAGE4_RIDDLES[myName][myStep].code;
 const fb = document.getElementById('feedbackMsg');
-
 if (val === targetCode) {
-fb.style.color = "#2dc653";
-fb.innerText = "✅ KOD POPRAWNY!";
+fb.style.color = "#2dc653"; fb.innerText = "✅ KOD POPRAWNY!";
 const snap = await getDoc(stateRef);
 const data = snap.data();
 let prog = { ...(data.stepProgress || {}) };
@@ -898,15 +1122,11 @@ prog[myName] = Math.min(3, (prog[myName] || 0) + 1);
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const allDone = activeList.every(p => (prog[p] || 0) >= 3);
 await updateDoc(stateRef, {
-stepProgress: prog,
-status: allDone ? "stage_complete" : "stage4_active",
-completedStageNum: allDone ? 4 : 0,
-speechTick: allDone ? Date.now() : (data.speechTick || 0),
-solveTick: Date.now()
+stepProgress: prog, status: allDone ? "stage_complete" : "stage4_active",
+completedStageNum: allDone ? 4 : 0, speechTick: allDone ? Date.now() : (data.speechTick || 0), solveTick: Date.now()
 });
 } else {
-fb.style.color = "#ff4d4d";
-fb.innerText = "❌ BŁĘDNY KOD! SZUKAJ DALEJ!";
+fb.style.color = "#ff4d4d"; fb.innerText = "❌ BŁĘDNY KOD! SZUKAJ DALEJ!";
 document.getElementById('codeInput').value = "";
 }
 };
@@ -916,10 +1136,8 @@ if (getQuizLockRemainingSec() > 0) return;
 const myStep = (currentState.stepProgress && currentState.stepProgress[myName]) || 0;
 const qObj = STAGE5_QUIZ[myName][myStep];
 const fb = document.getElementById('feedbackMsg');
-
 if (idx === qObj.c) {
-fb.style.color = "#2dc653";
-fb.innerText = "✅ DOBRZE!";
+fb.style.color = "#2dc653"; fb.innerText = "✅ DOBRZE!";
 const snap = await getDoc(stateRef);
 const data = snap.data();
 let prog = { ...(data.stepProgress || {}) };
@@ -927,16 +1145,12 @@ prog[myName] = Math.min(3, (prog[myName] || 0) + 1);
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const allDone = activeList.every(p => (prog[p] || 0) >= 3);
 await updateDoc(stateRef, {
-stepProgress: prog,
-status: allDone ? "stage_complete" : "stage5_active",
-completedStageNum: allDone ? 5 : 0,
-speechTick: allDone ? Date.now() : (data.speechTick || 0),
-solveTick: Date.now()
+stepProgress: prog, status: allDone ? "stage_complete" : "stage5_active",
+completedStageNum: allDone ? 5 : 0, speechTick: allDone ? Date.now() : (data.speechTick || 0), solveTick: Date.now()
 });
 } else {
 localStorage.setItem('mikolaj_quiz_lock_' + myName, String(Date.now() + 20000));
-lastRenderKey = "";
-renderPad();
+lastRenderKey = ""; renderPad();
 }
 };
 
@@ -945,48 +1159,21 @@ if (!currentState || currentState.stage !== 6 || currentState.status !== "stage6
 const snap = await getDoc(stateRef);
 const data = snap.data();
 if (data.status !== "stage6_input") return;
-
 const seq = data.simonSeq || [];
 let inp = [...(data.simonInput || []), myName];
 const curIdx = inp.length - 1;
-
 if (seq[curIdx] !== myName) {
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-const newSeq = buildSmartSimonSequence(seq.length, activeList);
-await updateDoc(stateRef, {
-status: "stage6_watch",
-simonSeq: newSeq,
-simonInput: [],
-simonMistakeBy: myName,
-seqTick: Date.now()
-});
+await updateDoc(stateRef, { status: "stage6_watch", simonSeq: buildSmartSimonSequence(seq.length, activeList), simonInput: [], simonMistakeBy: myName, seqTick: Date.now() });
 return;
 }
-
 if (inp.length >= seq.length) {
 const nextLvl = (data.simonLevel || 1) + 1;
 if (nextLvl > 3) {
-await updateDoc(stateRef, {
-lastColorPressed: myName,
-colorTick: Date.now(),
-status: "stage_complete",
-completedStageNum: 6,
-speechTick: Date.now()
-});
+await updateDoc(stateRef, { lastColorPressed: myName, colorTick: Date.now(), status: "stage_complete", completedStageNum: 6, speechTick: Date.now() });
 } else {
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-const len = nextLvl === 2 ? 8 : 9;
-const newSeq = buildSmartSimonSequence(len, activeList);
-await updateDoc(stateRef, {
-status: "stage6_watch",
-simonLevel: nextLvl,
-simonSeq: newSeq,
-simonInput: [],
-simonMistakeBy: "",
-lastColorPressed: myName,
-colorTick: Date.now(),
-seqTick: Date.now()
-});
+await updateDoc(stateRef, { status: "stage6_watch", simonLevel: nextLvl, simonSeq: buildSmartSimonSequence(nextLvl === 2 ? 8 : 9, activeList), simonInput: [], simonMistakeBy: "", lastColorPressed: myName, colorTick: Date.now(), seqTick: Date.now() });
 }
 } else {
 await updateDoc(stateRef, { simonInput: inp, lastColorPressed: myName, colorTick: Date.now() });
@@ -1001,12 +1188,7 @@ if (data.status !== "stage7_active") return;
 const nextCount = (data.tapsCount || 0) + 1;
 const target = data.tapsTarget || 300;
 if (nextCount >= target) {
-await updateDoc(stateRef, {
-tapsCount: target,
-status: "stage_complete",
-completedStageNum: 7,
-speechTick: Date.now()
-});
+await updateDoc(stateRef, { tapsCount: target, status: "stage_complete", completedStageNum: 7, speechTick: Date.now() });
 } else {
 await updateDoc(stateRef, { tapsCount: nextCount });
 }
@@ -1014,13 +1196,7 @@ await updateDoc(stateRef, { tapsCount: nextCount });
 
 window.restartStage7 = async () => {
 const activeList = (currentState && currentState.activePlayers) || ["Lila", "Kaja", "Darek", "Jas"];
-await updateDoc(stateRef, {
-status: "stage7_speaking",
-tapsCount: 0,
-tapsTarget: activeList.length * 75,
-tapsStartTime: 0,
-speechTick: Date.now()
-});
+await updateDoc(stateRef, { status: "stage7_speaking", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: 0, speechTick: Date.now() });
 };
 
 window.triggerNextStageFromPad = async () => {
@@ -1028,10 +1204,8 @@ if (!currentState || currentState.status !== "stage_complete") return;
 const nextSt = (currentState.completedStageNum || 1) + 1;
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 const resetProg = { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 };
-
 if (nextSt === 2) {
-recordedBase64 = null;
-recordedAudioBuffer = null;
+recordedBase64 = null; recordedAudioBuffer = null;
 await updateDoc(stateRef, { stage: 2, status: "stage2_active", photos: {}, audioTracks: {}, speechTick: Date.now() });
 } else if (nextSt === 3) {
 await updateDoc(stateRef, { stage: 3, status: "stage3_ice", photos: {}, audioTracks: {}, iceTotalHits: 0, iceTarget: activeList.length * 2500, speechTick: Date.now() });
@@ -1040,8 +1214,7 @@ await updateDoc(stateRef, { stage: 4, status: "stage4_active", stepProgress: res
 } else if (nextSt === 5) {
 await updateDoc(stateRef, { stage: 5, status: "stage5_active", stepProgress: resetProg, speechTick: Date.now() });
 } else if (nextSt === 6) {
-const seq = buildSmartSimonSequence(7, activeList);
-await updateDoc(stateRef, { stage: 6, status: "stage6_watch", simonLevel: 1, simonSeq: seq, simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
+await updateDoc(stateRef, { stage: 6, status: "stage6_watch", simonLevel: 1, simonSeq: buildSmartSimonSequence(7, activeList), simonInput: [], simonMistakeBy: "", seqTick: Date.now(), speechTick: Date.now() });
 } else if (nextSt === 7) {
 await updateDoc(stateRef, { stage: 7, status: "stage7_speaking", tapsCount: 0, tapsTarget: activeList.length * 75, tapsStartTime: 0, speechTick: Date.now() });
 } else if (nextSt === 8) {
