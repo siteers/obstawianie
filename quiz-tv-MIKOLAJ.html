@@ -629,7 +629,7 @@ lfoGain.connect(mainGain.gain);
 osc.connect(mainGain);
 mainGain.connect(audioCtx.destination);
 osc.start(now); lfo.start(now);
-osc.stop(now + 3.2); lfo.stop(now + 3.2);
+osc.stop(now + 5.4); lfo.stop(now + 5.4);
 trollAudioNodes.push(osc, lfo);
 }, 660);
 trollTimers.push(tBuzz);
@@ -873,7 +873,7 @@ trollTick: Date.now(),
 speechTick: Date.now()
 });
 }
-}, 3800);
+}, 6000);
 trollTimers.push(tNext);
 }
 return true;
