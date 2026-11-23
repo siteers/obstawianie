@@ -38,7 +38,7 @@
         }
         .btn-back:hover { border-color: var(--cyan); color: var(--cyan); }
 
-        /* CRINGOWY ŚWIECĄCY LINK DO PLIKU */
+        /* CRINGOWY ŚWIECĄCY PRZYCISK DO PLIKU */
         @keyframes cringeGlow {
             0%   { background-position: 0% 50%;   box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff; transform: scale(1); }
             25%  { background-position: 50% 50%;  box-shadow: 0 0 25px #00ffff, 0 0 45px #00ffff; transform: scale(1.02); }
@@ -47,12 +47,12 @@
             100% { background-position: 0% 50%;   box-shadow: 0 0 15px #ff00ff, 0 0 30px #ff00ff; transform: scale(1); }
         }
         .cringe-doc-link {
-            display: block; text-decoration: none; text-align: center;
+            display: block; width: 100%; text-decoration: none; text-align: center;
             padding: 16px 20px; margin-bottom: 25px; border-radius: 18px;
             background: linear-gradient(90deg, #ff00cc, #00ffcc, #ffff00, #00ff00, #ff00cc);
             background-size: 300% 300%;
-            color: #000; font-weight: 900; font-size: 14px;
-            border: 3px solid #fff; cursor: pointer;
+            color: #000; font-weight: 900; font-size: 14px; font-family: inherit;
+            border: 3px solid #fff; cursor: pointer; box-sizing: border-box;
             text-shadow: 0 0 6px rgba(255,255,255,0.9);
             animation: cringeGlow 2s linear infinite;
             word-break: break-all;
@@ -231,11 +231,11 @@
             <a href="sg.html" class="btn-back">← Wróć</a>
         </header>
 
-        <!-- CRINGOWY LINK DO DOKUMENTU -->
-        <a href="file:///Z:/Wspolny/Krzysiek/s125.docx" class="cringe-doc-link" onclick="copyDocPath()">
+        <!-- CRINGOWY PRZYCISK DO DOKUMENTU -->
+        <button type="button" class="cringe-doc-link" onclick="copyDocPath()">
             🔥📄 Z:\Wspolny\Krzysiek\s125.docx 📄🔥
-            <span id="cringeDocSub" class="cringe-doc-sub">✨ KLIKNIJ, ABY OTWORZYĆ / SKOPIOWAĆ ŚCIEŻKĘ ✨</span>
-        </a>
+            <span id="cringeDocSub" class="cringe-doc-sub">✨ KLIKNIJ, ABY SKOPIOWAĆ ŚCIEŻKĘ ✨</span>
+        </button>
 
         <!-- ANKIETA -->
         <div class="card poll-card">
@@ -312,16 +312,38 @@
         // --- KOPIOWANIE ŚCIEŻKI DO PLIKU ---
         window.copyDocPath = () => {
             const path = "Z:\\Wspolny\\Krzysiek\\s125.docx";
-            if (navigator.clipboard) {
-                navigator.clipboard.writeText(path).then(() => {
-                    const sub = document.getElementById('cringeDocSub');
-                    sub.innerText = "✅ SKOPIOWANO DO SCHOWKA! WKLEJ W EKSPLORATORZE ✅";
-                    setTimeout(() => {
-                        sub.innerText = "✨ KLIKNIJ, ABY OTWORZYĆ / SKOPIOWAĆ ŚCIEŻKĘ ✨";
-                    }, 3000);
-                }).catch(() => {});
+            const sub = document.getElementById('cringeDocSub');
+
+            const showSuccess = () => {
+                sub.innerText = "✅ SKOPIOWANO! WKLEJ W EKSPLORATORZE LUB WIN+R ✅";
+                setTimeout(() => {
+                    sub.innerText = "✨ KLIKNIJ, ABY SKOPIOWAĆ ŚCIEŻKĘ ✨";
+                }, 3000);
+            };
+
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(path).then(showSuccess).catch(() => fallbackCopy(path, showSuccess));
+            } else {
+                fallbackCopy(path, showSuccess);
             }
         };
+
+        function fallbackCopy(text, onSuccess) {
+            const ta = document.createElement("textarea");
+            ta.value = text;
+            ta.style.position = "fixed";
+            ta.style.opacity = "0";
+            document.body.appendChild(ta);
+            ta.focus();
+            ta.select();
+            try {
+                document.execCommand("copy");
+                onSuccess();
+            } catch (err) {
+                prompt("Skopiuj ręcznie (Ctrl+C):", text);
+            }
+            document.body.removeChild(ta);
+        }
 
         // --- LOGIKA ANKIETY S125 ---
         const pollRef = doc(db, "appState", "s125_poll");
@@ -362,4 +384,164 @@
             }
         });
 
-        // --- ZAŁĄCZN
+        // --- ZAŁĄCZNIK ZDJĘCIA ---
+        let compressedPhotoBase64 = null;
+
+        window.handlePhoto = (input) => {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 1000;
+                    let w = img.width;
+                    let h = img.height;
+
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+                        else { w = Math.round((w * maxDim) / h); h = maxDim; }
+                    }
+
+                    const cvs = document.createElement('canvas');
+                    cvs.width = w;
+                    cvs.height = h;
+                    const ctx = cvs.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+
+                    compressedPhotoBase64 = cvs.toDataURL('image/jpeg', 0.72);
+                    document.getElementById('previewImg').src = compressedPhotoBase64;
+                    document.getElementById('previewBox').style.display = 'block';
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        };
+
+        window.clearPhoto = () => {
+            compressedPhotoBase64 = null;
+            document.getElementById('photoInput').value = "";
+            document.getElementById('previewImg').src = "";
+            document.getElementById('previewBox').style.display = 'none';
+        };
+
+        window.openLightbox = (src) => {
+            document.getElementById('lightboxImg').src = src;
+            document.getElementById('lightbox').style.display = 'flex';
+        };
+
+        // --- WYSYŁANIE I USUWANIE UWAG ---
+        window.sendNote = async () => {
+            const input = document.getElementById('noteInput');
+            const btn = document.getElementById('sendBtn');
+            const status = document.getElementById('status-msg');
+            const text = input.value.trim();
+
+            if (!text && !compressedPhotoBase64) {
+                status.style.color = "var(--error)";
+                status.innerText = "Wpisz treść uwagi lub dodaj zdjęcie!";
+                return;
+            }
+
+            btn.disabled = true;
+            status.style.color = "var(--cyan)";
+            status.innerText = "Wysyłanie...";
+
+            try {
+                await addDoc(collection(db, "uwagi_s125"), {
+                    author: currentUser,
+                    opis: text,
+                    photo: compressedPhotoBase64 || null,
+                    date: new Date().toLocaleString("pl-PL"),
+                    timestamp: serverTimestamp()
+                });
+
+                input.value = "";
+                window.clearPhoto();
+                status.style.color = "var(--success)";
+                status.innerText = "Uwaga została wysłana!";
+                setTimeout(() => { status.innerText = ""; }, 3000);
+            } catch (e) {
+                console.error(e);
+                status.style.color = "var(--error)";
+                status.innerText = "Błąd wysyłania. Spróbuj mniejsze zdjęcie.";
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        window.deleteNote = async (id) => {
+            if (confirm("Usunąć tę uwagę?")) {
+                await deleteDoc(doc(db, "uwagi_s125", id));
+            }
+        };
+
+        // Nasłuchiwanie listy uwag na żywo
+        const q = query(collection(db, "uwagi_s125"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snap) => {
+            const list = document.getElementById('notesList');
+            list.innerHTML = "";
+
+            if (snap.empty) {
+                list.innerHTML = `<p style="text-align:center; color:#666; font-size:13px;">Brak zgłoszonych uwag.</p>`;
+                return;
+            }
+
+            snap.forEach(d => {
+                const n = d.data();
+                const canDelete = (n.author === currentUser || canDeleteAll);
+                const item = document.createElement('div');
+                item.className = 'note-item';
+                item.innerHTML = `
+                    <div class="note-meta">
+                        <span class="note-author">${n.author}</span>
+                        <div>
+                            <span>${n.date || ''}</span>
+                            ${canDelete ? `<button class="btn-del" onclick="deleteNote('${d.id}')" title="Usuń">✕</button>` : ''}
+                        </div>
+                    </div>
+                    ${n.opis ? `<p class="note-text"></p>` : ''}
+                `;
+                if (n.opis) {
+                    item.querySelector('.note-text').textContent = n.opis;
+                }
+                if (n.photo) {
+                    const imgEl = document.createElement('img');
+                    imgEl.src = n.photo;
+                    imgEl.className = 'note-img';
+                    imgEl.alt = 'Załącznik';
+                    imgEl.onclick = () => openLightbox(n.photo);
+                    item.appendChild(imgEl);
+                }
+                list.appendChild(item);
+            });
+        });
+
+        // Tło canvas
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+        function initBg() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            pts = Array(50).fill().map(() => ({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
+            }));
+        }
+        function drawBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pts.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.fillStyle = 'rgba(0, 212, 255, 0.35)';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+                for (let j = i + 1; j < pts.length; j++) {
+                    const p2 = pts[j];
+                    if (Math.hypot(p.x - p2.x, p.y - p2.y) < 120) {
+                        ctx.strokeStyle = 'rgba(0, 212, 255, 0.12)';
+                        ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                }
+            });
