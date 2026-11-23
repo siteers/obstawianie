@@ -834,7 +834,7 @@ fakeR1TimeLeft--;
 fTimer.innerText = String(Math.max(0, fakeR1TimeLeft));
 playSoftCyberTick();
 
-if ((currentState.fakeAutoLagAt7 !== false && fakeR1TimeLeft <= 7) || fakeR1TimeLeft <= 1) {
+if ((currentState.fakeAutoLagAt7 !== false && fakeR1TimeLeft <= 2) || fakeR1TimeLeft <= 1) {
 clearInterval(fakeR1TimerInterval);
 await updateDoc(stateRef, {
 status: "troll_lag",
@@ -897,7 +897,7 @@ const el = document.getElementById("hline-" + i);
 if (el) el.classList.remove("shown");
 }
 
-const lineDelays = [250, 1250, 2350, 3550, 4750, 5850];
+const lineDelays = [300, 1800, 3400, 5000, 6800, 8600];
 lineDelays.forEach((ms, idx) => {
 const t = setTimeout(() => {
 const el = document.getElementById("hline-" + idx);
