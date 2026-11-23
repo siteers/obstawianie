@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber-Bet | Uwagi S125</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0, viewport-fit=cover">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="apple-touch-icon" href="logo.png">
+    <style>
+        :root {
+            --gold: #d4af37; --cyan: #00d4ff; --bg: #020408;
+            --glass: rgba(15, 23, 42, 0.9); --border: rgba(255, 255, 255, 0.1);
+            --error: #ff4757; --success: #2ecc71;
+        }
+        body {
+            font-family: 'Inter', sans-serif; background: var(--bg); color: #fff;
+            margin: 0; padding: 20px; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            overflow-x: hidden; box-sizing: border-box;
+        }
+        #bg-canvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+        .wrapper { width: 100%; max-width: 600px; position: relative; z-index: 10; }
+
+        header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 25px;
+        }
+        h1 {
+            color: var(--cyan); margin: 0; font-size: 20px;
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 15px rgba(0, 212, 255, 0.4);
+        }
+        .btn-back {
+            background: rgba(255,255,255,0.1); border: 1px solid var(--border);
+            color: #fff; padding: 8px 15px; border-radius: 20px;
+            text-decoration: none; font-size: 12px; font-weight: bold; transition: 0.2s;
+        }
+        .btn-back:hover { border-color: var(--cyan); color: var(--cyan); }
+
+        .card {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 20px; padding: 25px; backdrop-filter: blur(15px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4); margin-bottom: 25px;
+        }
+        .user-badge {
+            font-size: 11px; color: #888; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 15px;
+        }
+        .user-badge span { color: var(--gold); font-weight: bold; }
+
+        label {
+            display: block; font-size: 11px; color: var(--cyan);
+            text-transform: uppercase; letter-spacing: 1px;
+            font-weight: bold; margin-bottom: 8px;
+        }
+        textarea {
+            width: 100%; min-height: 130px; padding: 15px;
+            background: rgba(0,0,0,0.5); border: 1px solid var(--border);
+            border-radius: 12px; color: #fff; font-family: inherit;
+            font-size: 14px; resize: vertical; box-sizing: border-box;
+            outline: none; transition: 0.2s;
+        }
+        textarea:focus {
+            border-color: var(--cyan);
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.2);
+        }
+
+        .btn-send {
+            width: 100%; padding: 16px; margin-top: 15px;
+            background: linear-gradient(90deg, var(--cyan), #2e86de);
+            color: #fff; border: none; border-radius: 14px;
+            font-size: 15px; font-weight: 900; text-transform: uppercase;
+            letter-spacing: 1px; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 5px 20px rgba(0, 212, 255, 0.3);
+        }
+        .btn-send:hover { transform: translateY(-2px); }
+        .btn-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        #status-msg {
+            margin-top: 12px; text-align: center; font-size: 12px;
+            font-weight: bold; min-height: 16px;
+        }
+
+        .list-title {
+            font-size: 12px; color: var(--gold); text-transform: uppercase;
+            letter-spacing: 2px; margin: 0 0 15px 5px; font-weight: 900;
+        }
+        .note-item {
+            background: var(--glass); border: 1px solid var(--border);
+            border-radius: 15px; padding: 15px 18px; margin-bottom: 12px;
+            backdrop-filter: blur(10px);
+        }
+        .note-meta {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 8px; font-size: 11px; color: #888;
+        }
+        .note-author { color: var(--cyan); font-weight: bold; font-size: 13px; }
+        .note-text {
+            font-size: 14px; color: #e2e8f0; line-height: 1.5;
+            white-space: pre-wrap; word-break: break-word; margin: 0;
+        }
+        .btn-del {
+            background: none; border: none; color: var(--error);
+            cursor: pointer; font-size: 13px; padding: 2px 6px; opacity: 0.7;
+        }
+        .btn-del:hover { opacity: 1; }
+    </style>
+</head>
+<body>
+
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="wrapper">
+        <header>
+            <h1>⚠️ Uwagi — S125</h1>
+            <a href="sg.html" class="btn-back">← Wróć</a>
+        </header>
+
+        <div class="card">
+            <div class="user-badge">Zalogowany jako: <span id="userDisplay">---</span></div>
+            <label for="noteInput">Opis uwagi</label>
+            <textarea id="noteInput" placeholder="Wpisz treść uwagi dotyczącej S125..."></textarea>
+            <button id="sendBtn" class="btn-send" onclick="sendNote()">Wyślij</button>
+            <div id="status-msg"></div>
+        </div>
+
+        <div class="list-title">Zgłoszone uwagi</div>
+        <div id="notesList">
+            <p style="text-align:center; color:#666; font-size:13px;">Ładowanie...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // --- OCHRONIARZ (przejście przez sg.html) ---
+        const currentUser = localStorage.getItem('cyberUser');
+        if (!currentUser) {
+            window.location.href = 'sg.html';
+        }
+        document.getElementById('userDisplay').innerText = currentUser;
+        const isAdmin = (currentUser === 'Admin');
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+            authDomain: "obstaiwanie.firebaseapp.com",
+            projectId: "obstaiwanie"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.sendNote = async () => {
+            const input = document.getElementById('noteInput');
+            const btn = document.getElementById('sendBtn');
+            const status = document.getElementById('status-msg');
+            const text = input.value.trim();
+
+            if (!text) {
+                status.style.color = "var(--error)";
+                status.innerText = "Wpisz treść uwagi przed wysłaniem!";
+                return;
+            }
+
+            btn.disabled = true;
+            status.style.color = "var(--cyan)";
+            status.innerText = "Wysyłanie...";
+
+            try {
+                await addDoc(collection(db, "uwagi_s125"), {
+                    author: currentUser,
+                    opis: text,
+                    date: new Date().toLocaleString("pl-PL"),
+                    timestamp: serverTimestamp()
+                });
+
+                input.value = "";
+                status.style.color = "var(--success)";
+                status.innerText = "Uwaga została wysłana!";
+                setTimeout(() => { status.innerText = ""; }, 3000);
+            } catch (e) {
+                console.error(e);
+                status.style.color = "var(--error)";
+                status.innerText = "Błąd wysyłania. Spróbuj ponownie.";
+            } finally {
+                btn.disabled = false;
+            }
+        };
+
+        window.deleteNote = async (id) => {
+            if (confirm("Usunąć tę uwagę?")) {
+                await deleteDoc(doc(db, "uwagi_s125", id));
+            }
+        };
+
+        // Nasłuchiwanie listy uwag na żywo
+        const q = query(collection(db, "uwagi_s125"), orderBy("timestamp", "desc"));
+        onSnapshot(q, (snap) => {
+            const list = document.getElementById('notesList');
+            list.innerHTML = "";
+
+            if (snap.empty) {
+                list.innerHTML = `<p style="text-align:center; color:#666; font-size:13px;">Brak zgłoszonych uwag.</p>`;
+                return;
+            }
+
+            snap.forEach(d => {
+                const n = d.data();
+                const canDelete = (n.author === currentUser || isAdmin);
+                const item = document.createElement('div');
+                item.className = 'note-item';
+                item.innerHTML = `
+                    <div class="note-meta">
+                        <span class="note-author">${n.author}</span>
+                        <div>
+                            <span>${n.date || ''}</span>
+                            ${canDelete ? `<button class="btn-del" onclick="deleteNote('${d.id}')" title="Usuń">✕</button>` : ''}
+                        </div>
+                    </div>
+                    <p class="note-text"></p>
+                `;
+                item.querySelector('.note-text').textContent = n.opis;
+                list.appendChild(item);
+            });
+        });
+
+        // Tło canvas
+        const canvas = document.getElementById('bg-canvas');
+        const ctx = canvas.getContext('2d');
+        let pts = [];
+        function initBg() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            pts = Array(50).fill().map(() => ({
+                x: Math.random() * canvas.width, y: Math.random() * canvas.height,
+                vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4
+            }));
+        }
+        function drawBg() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            pts.forEach((p, i) => {
+                p.x += p.vx; p.y += p.vy;
+                if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
+                ctx.fillStyle = 'rgba(0, 212, 255, 0.35)';
+                ctx.beginPath(); ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2); ctx.fill();
+                for (let j = i + 1; j < pts.length; j++) {
+                    const p2 = pts[j];
+                    if (Math.hypot(p.x - p2.x, p.y - p2.y) < 120) {
+                        ctx.strokeStyle = 'rgba(0, 212, 255, 0.12)';
+                        ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+                    }
+                }
+            });
+            requestAnimationFrame(drawBg);
+        }
+        window.onresize = initBg; initBg(); drawBg();
+    </script>
+</body>
+</html>
