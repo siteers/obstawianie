@@ -116,7 +116,7 @@ display: none; flex-direction: column; align-items: center; width: 100%;
 margin-top: 0.3vw; box-sizing: border-box;
 }
 #r3-axis-stage {
-position: relative; width: 100%; height: 19.6vw;
+position: relative; width: 100%; height: 20.5vw;
 background: radial-gradient(ellipse at 50% 90%, rgba(0, 212, 255, 0.14) 0%, rgba(5, 11, 20, 0.65) 75%);
 border: 0.15vw solid rgba(0, 212, 255, 0.35);
 border-radius: 1.2vw; overflow: hidden; box-sizing: border-box;
@@ -201,14 +201,17 @@ transform: scale(1.1);
 .r3-flag-marker.is-winner .r3-flag-dot { border-color: #ffd700; box-shadow: 0 0 1vw #ffd700; }
 
 .r3-golden-drop {
-position: absolute; top: 0.5vw; bottom: 2.3vw; left: 50%;
+position: absolute; top: 0.4vw; bottom: 2.3vw; left: 50%;
 transform: translateX(-50%);
-display: none; flex-direction: column; align-items: center;
-z-index: 35; pointer-events: none;
+display: flex; flex-direction: column; align-items: center;
+z-index: 45; pointer-events: none;
+opacity: 0; visibility: hidden;
 }
 .r3-golden-drop.slammed {
-display: flex;
-animation: goldenSlamDown 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+display: flex !important;
+opacity: 1 !important;
+visibility: visible !important;
+animation: goldenSlamDown 0.48s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 .r3-golden-badge {
 display: flex; align-items: center; gap: 0.48vw;
@@ -721,6 +724,12 @@ function clearR3AnimTimers() {
 r3AnimTimers.forEach(t => clearTimeout(t));
 r3AnimTimers = [];
 r3AnimatingReveal = false;
+const gEl = document.getElementById('r3-golden-drop');
+if (gEl) {
+gEl.classList.remove('slammed');
+gEl.style.opacity = "0";
+gEl.style.visibility = "hidden";
+}
 }
 
 function playFlagPopSound(stepIdx = 0) {
@@ -850,7 +859,9 @@ const wheelWinnersEl = document.getElementById('tv-wheel-winners');
 
 flagsLayer.innerHTML = "";
 goldenEl.classList.remove('slammed');
-goldenEl.style.display = "";
+goldenEl.style.display = "flex";
+goldenEl.style.opacity = "0";
+goldenEl.style.visibility = "hidden";
 goldenBadge.style.transform = "";
 wheelWinnersEl.style.display = "none";
 wheelWinnersEl.innerHTML = "";
@@ -866,9 +877,14 @@ const minV = targetVal >= 0 ? Math.max(0, targetVal - pad) : targetVal - pad;
 const maxV = targetVal + pad;
 updateAxisTickLabels(minV, maxV);
 const targetPctEmpty = mapValToAxisPct(targetVal, minV, maxV);
-document.getElementById('r3-golden-val').innerText = `${formatPlNum(targetVal)}${unitStr}`;
+const gValEmpty = document.getElementById('r3-golden-val');
+if (gValEmpty) gValEmpty.innerText = `${formatPlNum(targetVal)}${unitStr}`;
+else goldenBadge.innerText = `🎯 ${formatPlNum(targetVal)}${unitStr}`;
 goldenEl.style.left = `${targetPctEmpty.toFixed(2)}%`;
-goldenBadge.style.transform = targetPctEmpty < 16 ? "translateX(26%)" : (targetPctEmpty > 84 ? "translateX(-26%)" : "");
+goldenEl.style.display = "flex";
+goldenEl.style.visibility = "visible";
+goldenEl.style.opacity = "1";
+goldenBadge.style.transform = targetPctEmpty < 18 ? "translateX(28%)" : (targetPctEmpty > 82 ? "translateX(-28%)" : "");
 void goldenEl.offsetWidth;
 goldenEl.classList.add('slammed');
 playGoldenSlamSound();
@@ -972,9 +988,14 @@ dropAtMs = afterFlagsMs + 1000;
 // 4. Z HUKIEM SPADA ZŁOTA LINIA + WYNIKI + PUNKTY!
 const tDrop = setTimeout(() => {
 const targetPct = mapValToAxisPct(targetVal, finalAxisMin, finalAxisMax);
-document.getElementById('r3-golden-val').innerText = `${formatPlNum(targetVal)}${unitStr}`;
+const gValEl = document.getElementById('r3-golden-val');
+if (gValEl) gValEl.innerText = `${formatPlNum(targetVal)}${unitStr}`;
+else goldenBadge.innerText = `🎯 ${formatPlNum(targetVal)}${unitStr}`;
 goldenEl.style.left = `${targetPct.toFixed(2)}%`;
-goldenBadge.style.transform = targetPct < 16 ? "translateX(26%)" : (targetPct > 84 ? "translateX(-26%)" : "");
+goldenEl.style.display = "flex";
+goldenEl.style.visibility = "visible";
+goldenEl.style.opacity = "1";
+goldenBadge.style.transform = targetPct < 18 ? "translateX(28%)" : (targetPct > 82 ? "translateX(-28%)" : "");
 void goldenEl.offsetWidth;
 goldenEl.classList.add('slammed');
 
