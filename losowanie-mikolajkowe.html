@@ -401,16 +401,78 @@ select option {
   position: relative;
   width: min(86vw, 390px);
   height: min(86vw, 390px);
-  margin: 0 auto 18px;
+  margin: 0 auto 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75));
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
 }
 #wheelCanvas {
   width: 100%;
   height: 100%;
   display: block;
+  touch-action: none;
+  cursor: grab;
+  border-radius: 50%;
+}
+#wheelCanvas.is-grabbing { cursor: grabbing; }
+#wheelCanvas.is-locked { cursor: default; }
+
+/* ANIMOWANA PODPOWIEDŹ RUCHU PALCA NA KOLE */
+.swipe-guide-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.3s ease;
+}
+.swipe-guide-overlay.hidden { opacity: 0; }
+.swipe-hand-track {
+  position: relative;
+  width: 68%;
+  height: 68%;
+  border-radius: 50%;
+  border: 3px dashed rgba(255, 215, 0, 0.55);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.2);
+}
+.swipe-hand-icon {
+  position: absolute;
+  top: -18px;
+  left: 50%;
+  font-size: 34px;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.9));
+  transform-origin: 0 calc(min(86vw, 390px) * 0.34 + 18px);
+  animation: fingerArcSwipe 2.2s ease-in-out infinite;
+}
+@keyframes fingerArcSwipe {
+  0%   { opacity: 0; transform: translateX(-50%) rotate(-42deg) scale(1.05); }
+  18%  { opacity: 1; transform: translateX(-50%) rotate(-38deg) scale(0.95); }
+  72%  { opacity: 1; transform: translateX(-50%) rotate(44deg) scale(0.95); }
+  90%  { opacity: 0; transform: translateX(-50%) rotate(54deg) scale(1.08); }
+  100% { opacity: 0; transform: translateX(-50%) rotate(-42deg) scale(1.05); }
+}
+
+.swipe-status-banner {
+  background: linear-gradient(135deg, rgba(253, 224, 71, 0.16), rgba(245, 158, 11, 0.24));
+  border: 2px solid var(--gold);
+  border-radius: 16px;
+  padding: 13px 16px;
+  font-size: 16px;
+  font-weight: 900;
+  color: var(--gold-soft);
+  letter-spacing: 0.4px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.35);
+  transition: all 0.25s ease;
+}
+.swipe-status-banner.spinning {
+  background: linear-gradient(135deg, rgba(214, 40, 40, 0.35), rgba(140, 18, 25, 0.55));
+  color: #fff;
+  border-color: #fde047;
 }
 
 .spin-hint {
@@ -648,18 +710,23 @@ select option {
     </div>
 
     <h1 class="festive-title" style="font-size: clamp(28px, 6.8vw, 38px);">Koło Fortuny Mikołaja</h1>
-    <p class="subtitle" id="wheelSubtitle" style="margin-bottom:10px;">Zakręć kołem i przekonaj się, komu sprawisz świąteczną niespodziankę!</p>
+    <p class="subtitle" id="wheelSubtitle" style="margin-bottom:10px;">Przeciągnij palcem po kole fortuny i przekonaj się, komu sprawisz niespodziankę!</p>
 
     <div class="ticker-pill" id="wheelTicker">✨ Gotowy do zakręcenia! ✨</div>
 
-    <div class="wheel-stage">
+    <div class="wheel-stage" id="wheelStage">
       <canvas id="wheelCanvas"></canvas>
+      <div class="swipe-guide-overlay" id="swipeGuideOverlay" aria-hidden="true">
+        <div class="swipe-hand-track">
+          <div class="swipe-hand-icon">👆</div>
+        </div>
+      </div>
     </div>
 
     <div class="error-msg" id="wheelError"></div>
 
-    <button type="button" class="btn-xmas btn-gold" id="spinBtn" onclick="window.startWheelSpin()">🎡 ZAKRĘĆ KOŁEM!</button>
-    <p class="spin-hint">🎁 Nie możesz wylosować siebie • Nikt nie zostanie bez prezentu</p>
+    <div class="swipe-status-banner" id="swipeStatusBanner">👆 Złap koło palcem i zakręć nim mocno!</div>
+    <p class="spin-hint">🎁 Możesz kręcić w lewo lub w prawo • Nikt nie wylosuje siebie</p>
   </section>
 
   <!-- ==================== EKRAN 3: WYNIK LOSOWANIA ==================== -->
@@ -1379,16 +1446,21 @@ function openWheelScreen() {
   showScreen("wheelScreen");
   document.getElementById("wheelUserLabel").innerText = currentUser.icon + " " + currentUser.name;
   document.getElementById("wheelSubtitle").innerText =
-    "Cześć " + currentUser.name + "! Zakręć kołem i zobacz, komu kupisz mikołajkowy prezent!";
+    "Cześć " + currentUser.name + "! Złap koło palcem i zakręć, aby wylosować prezent!";
   document.getElementById("wheelError").style.display = "none";
 
   const ticker = document.getElementById("wheelTicker");
   ticker.classList.remove("winner-glow");
-  ticker.innerText = "✨ Gotowy do zakręcenia! ✨";
+  ticker.innerText = "👆 Przeciągnij palcem po kole!";
 
-  const btn = document.getElementById("spinBtn");
-  btn.disabled = false;
-  btn.innerText = "🎡 ZAKRĘĆ KOŁEM!";
+  const banner = document.getElementById("swipeStatusBanner");
+  banner.classList.remove("spinning");
+  banner.innerText = "👆 Złap koło palcem i zakręć nim mocno!";
+
+  const guide = document.getElementById("swipeGuideOverlay");
+  if (guide) guide.classList.remove("hidden");
+
+  wheelCanvas.classList.remove("is-grabbing", "is-locked");
   document.getElementById("wheelLogoutBtn").disabled = false;
 
   setTimeout(() => {
@@ -1434,26 +1506,270 @@ window.logoutUser = () => {
   showScreen("loginScreen");
 };
 
-window.startWheelSpin = async () => {
+// ============================================================================
+// 9B. KRĘCENIE KOŁEM PALCEM (TOUCH / POINTER DRAG + FIZYKA + FIREBASE)
+// ============================================================================
+let isDraggingWheel = false;
+let activePointerId = null;
+let dragLastAngle = 0;
+let dragLastX = 0;
+let dragLastY = 0;
+let dragTotalAngle = 0;
+let dragSamples = [];
+let dragLastSliceIdx = 0;
+
+function getPointerInfoOnWheel(e) {
+  const rect = wheelCanvas.getBoundingClientRect();
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const dx = e.clientX - cx;
+  const dy = e.clientY - cy;
+  const radius = Math.hypot(dx, dy);
+  const angle = Math.atan2(dy, dx);
+  return { x: e.clientX, y: e.clientY, dx, dy, radius, angle, wheelRadius: rect.width * 0.45 };
+}
+
+function onWheelPointerDown(e) {
+  if (!currentUser || isSpinning || isDraggingWheel) return;
+  if (document.getElementById("wheelScreen").style.display === "none") return;
+  if (e.button !== undefined && e.button !== 0 && e.pointerType === "mouse") return;
+
+  e.preventDefault();
+  ensureAudio();
+
+  const info = getPointerInfoOnWheel(e);
+  isDraggingWheel = true;
+  activePointerId = e.pointerId;
+  dragLastAngle = info.angle;
+  dragLastX = info.x;
+  dragLastY = info.y;
+  dragTotalAngle = 0;
+  dragSamples = [];
+  dragLastSliceIdx = getSliceIndexUnderPointer(wheelRotation);
+
+  wheelCanvas.classList.add("is-grabbing");
+  const guide = document.getElementById("swipeGuideOverlay");
+  if (guide) guide.classList.add("hidden");
+  document.getElementById("wheelError").style.display = "none";
+
+  const banner = document.getElementById("swipeStatusBanner");
+  banner.innerText = "✊ Trzymasz koło — puść z zamachem!";
+
+  try { wheelCanvas.setPointerCapture(e.pointerId); } catch (_) {}
+}
+
+function onWheelPointerMove(e) {
+  if (!isDraggingWheel || e.pointerId !== activePointerId || isSpinning) return;
+  e.preventDefault();
+
+  const info = getPointerInfoOnWheel(e);
+  const now = performance.now();
+
+  let deltaAngle = 0;
+  if (info.radius > 22) {
+    deltaAngle = Math.atan2(Math.sin(info.angle - dragLastAngle), Math.cos(info.angle - dragLastAngle));
+  } else {
+    // Gdy palec przechodzi przez sam środek koła, unikamy przeskoku atan2
+    const moveX = info.x - dragLastX;
+    deltaAngle = moveX / Math.max(80, info.wheelRadius * 0.7);
+  }
+
+  dragLastAngle = info.angle;
+  dragLastX = info.x;
+  dragLastY = info.y;
+
+  // Ograniczenie pojedynczej próbki na wypadek przeskoku dotyku
+  deltaAngle = Math.max(-0.8, Math.min(0.8, deltaAngle));
+  wheelRotation += deltaAngle;
+  dragTotalAngle += deltaAngle;
+
+  dragSamples.push({ t: now, da: deltaAngle });
+  while (dragSamples.length > 0 && now - dragSamples[0].t > 130) {
+    dragSamples.shift();
+  }
+
+  // Live klikanie i sprężynowanie wskazówki podczas kręcenia palcem
+  const curSliceIdx = getSliceIndexUnderPointer(wheelRotation);
+  if (curSliceIdx !== dragLastSliceIdx) {
+    dragLastSliceIdx = curSliceIdx;
+    const dir = deltaAngle >= 0 ? 1 : -1;
+    pointerKick = -0.28 * dir;
+    playWheelTick(0.45);
+    document.getElementById("wheelTicker").innerText = "🎯 " + NAMES[curSliceIdx];
+  } else {
+    pointerKick *= 0.85;
+  }
+
+  rimLightPhase += Math.abs(deltaAngle) * 1.4;
+  drawWheel();
+}
+
+function onWheelPointerUp(e) {
+  if (!isDraggingWheel || e.pointerId !== activePointerId) return;
+  e.preventDefault();
+  isDraggingWheel = false;
+  activePointerId = null;
+  wheelCanvas.classList.remove("is-grabbing");
+  try { wheelCanvas.releasePointerCapture(e.pointerId); } catch (_) {}
+
+  const now = performance.now();
+  while (dragSamples.length > 0 && now - dragSamples[0].t > 140) {
+    dragSamples.shift();
+  }
+
+  // Wyliczamy prędkość kątową zamachu (rad/s)
+  let velocity = 0;
+  if (dragSamples.length >= 2) {
+    const dtSec = Math.max(0.025, (dragSamples[dragSamples.length - 1].t - dragSamples[0].t) / 1000);
+    const sumDa = dragSamples.reduce((acc, s) => acc + s.da, 0);
+    velocity = sumDa / dtSec;
+  } else if (dragSamples.length === 1) {
+    velocity = dragSamples[0].da / 0.04;
+  }
+
+  // Sprawdzenie, czy ruch był wystarczający (żeby przypadkowe dotknięcie nie odpaliło losowania)
+  const absVel = Math.abs(velocity);
+  const absTotal = Math.abs(dragTotalAngle);
+  if (absVel < 1.3 && absTotal < 0.22) {
+    const banner = document.getElementById("swipeStatusBanner");
+    banner.innerText = "👆 Zrób mocniejszy zamach palcem po kole!";
+    banner.classList.remove("shake-anim");
+    void banner.offsetWidth;
+    banner.classList.add("shake-anim");
+    const guide = document.getElementById("swipeGuideOverlay");
+    if (guide) guide.classList.remove("hidden");
+    return;
+  }
+
+  const direction = (Math.abs(velocity) > 0.3 ? velocity : dragTotalAngle) >= 0 ? 1 : -1;
+  // Prędkość startowa dopasowana do siły zamachu palca (min 15, max 27 rad/s)
+  const clampedSpeed = Math.max(15, Math.min(27, absVel * 1.25 + 11));
+  launchFingerDrivenSpin(direction, clampedSpeed);
+}
+
+wheelCanvas.addEventListener("pointerdown", onWheelPointerDown, { passive: false });
+wheelCanvas.addEventListener("pointermove", onWheelPointerMove, { passive: false });
+wheelCanvas.addEventListener("pointerup", onWheelPointerUp, { passive: false });
+wheelCanvas.addEventListener("pointercancel", onWheelPointerUp, { passive: false });
+wheelCanvas.addEventListener("touchstart", (e) => e.preventDefault(), { passive: false });
+wheelCanvas.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+
+async function launchFingerDrivenSpin(direction, initialSpeedRadPerSec) {
   if (!currentUser || isSpinning) return;
   isSpinning = true;
   ensureAudio();
 
-  const spinBtn = document.getElementById("spinBtn");
   const logoutBtn = document.getElementById("wheelLogoutBtn");
   const errEl = document.getElementById("wheelError");
   const ticker = document.getElementById("wheelTicker");
+  const banner = document.getElementById("swipeStatusBanner");
+  const guide = document.getElementById("swipeGuideOverlay");
 
   errEl.style.display = "none";
-  spinBtn.disabled = true;
   logoutBtn.disabled = true;
-  spinBtn.innerText = "🎄 Łączenie z bazą Mikołaja...";
+  wheelCanvas.classList.add("is-locked");
+  if (guide) guide.classList.add("hidden");
+  ticker.classList.remove("winner-glow");
+  banner.classList.add("spinning");
+  banner.innerText = "✨ Koło pędzi... trzymaj kciuki! ✨";
 
-  let assignedTarget = null;
-  let alreadyRevealed = false;
+  // FAZA A: Koło natychmiast leci siłą zamachu palca, podczas gdy Firebase zwraca parę!
+  let phase = "coasting"; // "coasting" -> "decelerating" -> "done"
+  let coastSpeed = initialSpeedRadPerSec * direction;
+  let lastFrameTime = performance.now();
+  let lastSliceIdx = getSliceIndexUnderPointer(wheelRotation);
 
+  let decelStartRot = 0;
+  let decelTotalDelta = 0;
+  let decelStartTime = 0;
+  let decelDurationMs = 9500;
+  const EASE_POWER = 4.2;
+  let resolvedTarget = null;
+  let abortSpin = false;
+
+  function stepAnimation(now) {
+    if (abortSpin) return;
+    const dtSec = Math.min(0.05, Math.max(0.001, (now - lastFrameTime) / 1000));
+    lastFrameTime = now;
+
+    if (phase === "coasting") {
+      wheelRotation += coastSpeed * dtSec;
+      const speedNorm = Math.min(1, Math.abs(coastSpeed) / 24);
+      rimLightPhase += 0.12 + speedNorm * 0.65;
+      pointerKick *= 0.80;
+
+      const curSliceIdx = getSliceIndexUnderPointer(wheelRotation);
+      if (curSliceIdx !== lastSliceIdx) {
+        lastSliceIdx = curSliceIdx;
+        pointerKick = -0.34 * direction;
+        playWheelTick(speedNorm);
+        ticker.innerText = "🎯 " + NAMES[curSliceIdx];
+      }
+
+      drawWheel();
+      requestAnimationFrame(stepAnimation);
+      return;
+    }
+
+    if (phase === "decelerating") {
+      const elapsed = now - decelStartTime;
+      const t = Math.min(1, elapsed / decelDurationMs);
+      const eased = 1 - Math.pow(1 - t, EASE_POWER);
+      wheelRotation = decelStartRot + decelTotalDelta * eased;
+
+      const speedFactor = Math.pow(1 - t, EASE_POWER - 1);
+      rimLightPhase += 0.08 + speedFactor * 0.65;
+      pointerKick *= 0.80;
+
+      const curSliceIdx = getSliceIndexUnderPointer(wheelRotation);
+      if (curSliceIdx !== lastSliceIdx) {
+        lastSliceIdx = curSliceIdx;
+        pointerKick = -0.34 * direction;
+        playWheelTick(speedFactor);
+        ticker.innerText = "🎯 " + NAMES[curSliceIdx];
+      }
+
+      drawWheel();
+
+      if (t < 1) {
+        requestAnimationFrame(stepAnimation);
+      } else {
+        phase = "done";
+        wheelRotation = decelStartRot + decelTotalDelta;
+        pointerKick = 0;
+        drawWheel();
+
+        const landedName = NAMES[getSliceIndexUnderPointer(wheelRotation)];
+        ticker.innerText = "🎉 " + landedName + "! 🎉";
+        ticker.classList.add("winner-glow");
+        banner.innerText = "🎁 Wylosowano: " + landedName + "!";
+
+        playWinFanfare();
+        launchFestiveConfetti();
+
+        // Zapisujemy w Firebase, że ten użytkownik już wylosował!
+        updateDoc(drawDocRef, {
+          ["revealed." + currentUser.name]: {
+            at: Date.now(),
+            target: resolvedTarget
+          }
+        }).catch((e) => console.error("Save revealed error:", e));
+
+        setTimeout(() => {
+          isSpinning = false;
+          wheelCanvas.classList.remove("is-locked");
+          if (currentUser) {
+            openResultScreen(resolvedTarget, false);
+          }
+        }, 1500);
+      }
+    }
+  }
+
+  requestAnimationFrame(stepAnimation);
+
+  // Równoległy odczyt / transakcja w Firebase
   try {
-    // Transakcja atomowa gwarantuje, że pary tworzą się raz i nikt nie trafi siebie ani duplikatu
     const result = await runTransaction(db, async (tx) => {
       const snap = await tx.get(drawDocRef);
       let data = snap.exists() ? snap.data() : null;
@@ -1475,105 +1791,53 @@ window.startWheelSpin = async () => {
       return { target: data.pairs[currentUser.name], already: false };
     });
 
-    assignedTarget = result.target;
-    alreadyRevealed = result.already;
-  } catch (err) {
-    isSpinning = false;
-    spinBtn.disabled = false;
-    logoutBtn.disabled = false;
-    spinBtn.innerText = "🎡 ZAKRĘĆ KOŁEM!";
-    showError("wheelError", "⚠️ Nie udało się połączyć z bazą Firebase: " + (err.message || err));
-    return;
-  }
-
-  if (alreadyRevealed) {
-    isSpinning = false;
-    openResultScreen(assignedTarget, false);
-    return;
-  }
-
-  const targetIdx = NAMES.indexOf(assignedTarget);
-  if (targetIdx === -1) {
-    isSpinning = false;
-    spinBtn.disabled = false;
-    logoutBtn.disabled = false;
-    showError("wheelError", "⚠️ Błąd danych losowania — poproś organizatora o reset.");
-    return;
-  }
-
-  spinBtn.innerText = "✨ Koło się kręci... trzymaj kciuki! ✨";
-  ticker.classList.remove("winner-glow");
-
-  // Precyzyjne wyliczenie kąta końcowego, żeby wskazówka wylądowała dokładnie na wylosowanym imieniu
-  const jitter = (Math.random() - 0.5) * SLICE_ANGLE * 0.52;
-  const targetMod = ((1.5 * Math.PI - (targetIdx + 0.5) * SLICE_ANGLE + jitter) % TWO_PI + TWO_PI) % TWO_PI;
-  const startRotation = wheelRotation;
-  const startMod = ((startRotation % TWO_PI) + TWO_PI) % TWO_PI;
-  const deltaToTarget = ((targetMod - startMod) % TWO_PI + TWO_PI) % TWO_PI;
-  const extraFullSpins = 11 + Math.floor(Math.random() * 3); // 11–13 pełnych obrotów
-  const totalDelta = extraFullSpins * TWO_PI + deltaToTarget;
-
-  // Dłuższy, pełen emocji obrót (~9.2 sekundy!)
-  const durationMs = 9200;
-  const startTime = performance.now();
-  let lastSliceIdx = getSliceIndexUnderPointer(startRotation);
-
-  function animateSpinFrame(now) {
-    const elapsed = now - startTime;
-    const t = Math.min(1, elapsed / durationMs);
-    // Płynne, dramatyczne zwalnianie pod sam koniec
-    const eased = 1 - Math.pow(1 - t, 4.35);
-    wheelRotation = startRotation + totalDelta * eased;
-
-    // Prędkość kątowa do modulacji dźwięku i tempa migania lampek
-    const speedFactor = Math.pow(1 - t, 3.35);
-    rimLightPhase += 0.08 + speedFactor * 0.65;
-    pointerKick *= 0.80;
-
-    const curSliceIdx = getSliceIndexUnderPointer(wheelRotation);
-    if (curSliceIdx !== lastSliceIdx) {
-      lastSliceIdx = curSliceIdx;
-      pointerKick = -0.34;
-      playWheelTick(speedFactor);
-      ticker.innerText = "🎯 " + NAMES[curSliceIdx];
+    if (result.already) {
+      abortSpin = true;
+      isSpinning = false;
+      wheelCanvas.classList.remove("is-locked");
+      openResultScreen(result.target, false);
+      return;
     }
 
-    drawWheel();
+    resolvedTarget = result.target;
+    const targetIdx = NAMES.indexOf(resolvedTarget);
+    if (targetIdx === -1) throw new Error("Niepoprawny zapis w bazie — poproś organizatora o reset.");
 
-    if (t < 1) {
-      requestAnimationFrame(animateSpinFrame);
+    // FAZA B: Bezszwowe przejście z lotu swobodnego do precyzyjnego hamowania (ciągłość prędkości!)
+    decelStartRot = wheelRotation;
+    const jitter = (Math.random() - 0.5) * SLICE_ANGLE * 0.52;
+    const targetMod = ((1.5 * Math.PI - (targetIdx + 0.5) * SLICE_ANGLE + jitter) % TWO_PI + TWO_PI) % TWO_PI;
+    const startMod = ((decelStartRot % TWO_PI) + TWO_PI) % TWO_PI;
+
+    // Dobór liczby pełnych obrotów proporcjonalnie do siły zamachu (8 do 12 obrotów)
+    const powerRatio = Math.max(0, Math.min(1, (Math.abs(coastSpeed) - 15) / 12));
+    const desiredDurationSec = 8.6 + powerRatio * 2.2; // 8.6s – 10.8s (dłużej niż runda 7!)
+    // Aby pochodna w t=0 była równa coastSpeed: |totalDelta| ≈ |coastSpeed| * T / EASE_POWER
+    const approxFullSpins = Math.max(7, Math.round((Math.abs(coastSpeed) * desiredDurationSec / EASE_POWER) / TWO_PI));
+
+    if (direction >= 0) {
+      const deltaToTarget = ((targetMod - startMod) % TWO_PI + TWO_PI) % TWO_PI;
+      decelTotalDelta = approxFullSpins * TWO_PI + deltaToTarget;
     } else {
-      wheelRotation = startRotation + totalDelta;
-      pointerKick = 0;
-      drawWheel();
-
-      const landedName = NAMES[getSliceIndexUnderPointer(wheelRotation)];
-      ticker.innerText = "🎉 " + landedName + "! 🎉";
-      ticker.classList.add("winner-glow");
-
-      playWinFanfare();
-      launchFestiveConfetti();
-
-      // Zapisujemy w Firebase, że ten użytkownik już wylosował!
-      updateDoc(drawDocRef, {
-        ["revealed." + currentUser.name]: {
-          at: Date.now(),
-          target: assignedTarget
-        }
-      }).catch((e) => console.error("Save revealed error:", e));
-
-      // Krótka pauza na zobaczenie zatrzymanego koła, potem wielkie odsłonięcie karty!
-      setTimeout(() => {
-        isSpinning = false;
-        if (currentUser) {
-          openResultScreen(assignedTarget, false);
-        }
-      }, 1500);
+      const deltaToTarget = ((startMod - targetMod) % TWO_PI + TWO_PI) % TWO_PI;
+      decelTotalDelta = -(approxFullSpins * TWO_PI + deltaToTarget);
     }
-  }
 
-  requestAnimationFrame(animateSpinFrame);
-};
+    // Dokładny czas dopasowany tak, by w chwili przejęcia koło NIE szarpnęło prędkością!
+    decelDurationMs = Math.max(8200, Math.min(12500, (Math.abs(decelTotalDelta) * EASE_POWER / Math.abs(coastSpeed)) * 1000));
+    decelStartTime = performance.now();
+    phase = "decelerating";
+  } catch (err) {
+    abortSpin = true;
+    isSpinning = false;
+    logoutBtn.disabled = false;
+    wheelCanvas.classList.remove("is-locked");
+    banner.classList.remove("spinning");
+    banner.innerText = "👆 Złap koło palcem i zakręć nim mocno!";
+    if (guide) guide.classList.remove("hidden");
+    showError("wheelError", "⚠️ Nie udało się połączyć z bazą Firebase: " + (err.message || err));
+  }
+}
 
 // ============================================================================
 // 10. PANEL ORGANIZATORA (MONITORING BEZ SPOILERÓW + RESET + KOPIOWANIE HASEŁ)
