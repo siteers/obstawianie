@@ -1,960 +1,480 @@
 <!DOCTYPE html>
 
-
-
 <html lang="pl">
-
-
 
 <head>
 
-
-
 <meta charset="UTF-8">
-
-
 
 <title>Mikołajki | Ekran Główny TV</title>
 
-
-
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-
 
 <style>
 
-
-
 :root {
-
-
 
 --gold: #ffd700;
 
-
-
 --warm-gold: #f59e0b;
-
-
 
 --xmas-red: #d62828;
 
-
-
 --xmas-bright-red: #ff4d4d;
-
-
 
 --xmas-green: #1b4332;
 
-
-
 --xmas-light-green: #2dc653;
-
-
 
 --snow: #ffffff;
 
-
-
 --cyan: #00d4ff;
 
-
-
 }
-
-
 
 body {
 
-
-
 font-family: sans-serif;
-
-
 
 background: radial-gradient(circle at center, #1b4332 0%, #081c15 65%, #040d0a 100%);
 
-
-
 color: var(--snow);
-
-
 
 margin: 0; padding: 0; overflow: hidden; height: 100vh;
 
-
-
 display: flex; align-items: center; justify-content: center;
 
-
-
 }
-
-
-
-
 
 
 
 #audio-overlay {
 
-
-
 position: fixed; inset: 0; background: rgba(8, 28, 21, 0.96); z-index: 9999;
-
-
 
 display: flex; flex-direction: column; gap: 1.5vw; align-items: center; justify-content: center;
 
-
-
 }
-
-
 
 #audio-overlay.cyber-overlay { background: rgba(0, 0, 0, 0.94); }
 
-
-
 #audio-btn {
-
-
 
 background: linear-gradient(135deg, var(--xmas-red), #9b111e);
 
-
-
 color: #fff; border: 0.25vw solid var(--gold); padding: 2vw 4vw; font-size: 2vw; font-weight: 900;
-
-
 
 border-radius: 1.5vw; cursor: pointer; text-transform: uppercase;
 
-
-
 box-shadow: 0 0 3.5vw rgba(255, 215, 0, 0.6); animation: pulse 1.2s infinite;
 
-
-
 }
-
-
 
 #audio-btn.cyber-audio-btn {
 
-
-
 background: var(--cyan); color: #000; border: none; border-radius: 1vw;
-
-
 
 box-shadow: 0 0 3vw rgba(0, 212, 255, 0.55);
 
-
-
 }
-
-
-
-
 
 
 
 /* SZNUR ŚWIĄTECZNYCH LAMPEK */
 
-
-
 .christmas-lights {
-
-
 
 position: fixed; top: 0; left: 0; width: 100%; height: 2vw;
 
-
-
 display: flex; justify-content: space-around; align-items: flex-start;
-
-
 
 z-index: 920; pointer-events: none;
 
-
-
 }
-
-
 
 .light-bulb {
 
-
-
 width: 0.9vw; height: 1.4vw; border-radius: 50% 50% 50% 50% / 30% 30% 70% 70%;
-
-
 
 margin-top: -0.2vw; animation: twinkle 1.6s infinite alternate;
 
-
-
 }
-
-
 
 .light-bulb:nth-child(4n+1) { background: #ff3b30; box-shadow: 0 0 1.2vw #ff3b30; animation-delay: 0s; }
 
-
-
 .light-bulb:nth-child(4n+2) { background: #ffd700; box-shadow: 0 0 1.2vw #ffd700; animation-delay: 0.4s; }
 
-
-
 .light-bulb:nth-child(4n+3) { background: #2dc653; box-shadow: 0 0 1.2vw #2dc653; animation-delay: 0.8s; }
-
-
 
 .light-bulb:nth-child(4n+4) { background: #00d4ff; box-shadow: 0 0 1.2vw #00d4ff; animation-delay: 1.2s; }
 
 
 
-
-
-
-
 @keyframes twinkle {
-
-
 
 0% { opacity: 0.45; transform: scale(0.9); }
 
-
-
 100% { opacity: 1; transform: scale(1.1); }
 
-
-
 }
-
-
-
-
 
 
 
 #voice-bar {
 
-
-
 position: fixed; bottom: 0.6vw; left: 50%; transform: translateX(-50%); z-index: 9700;
-
-
 
 opacity: 0.45; transition: 0.3s; font-size: 0.85vw; background: rgba(8, 28, 21, 0.9);
 
-
-
 padding: 0.35vw 1vw; border-radius: 0.6vw; display: flex; align-items: center; gap: 0.8vw;
-
-
 
 border: 1px solid var(--gold);
 
-
-
 }
-
-
 
 #voice-bar:hover { opacity: 1; }
 
-
-
 #voiceSelect { background: #081c15; color: var(--gold); border: 1px solid var(--gold); border-radius: 4px; font-size: 0.8vw; padding: 2px 6px; }
-
-
 
 #muteMusicBtn { background: var(--xmas-red); color: #fff; border: 1px solid var(--gold); border-radius: 4px; padding: 2px 8px; cursor: pointer; font-size: 0.8vw; font-weight: bold; }
 
 
 
-
-
-
-
 #snow-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 5; }
-
-
 
 #fireworks-canvas { position: fixed; inset: 0; pointer-events: none; z-index: 800; display: none; background: transparent; }
 
 
 
-
-
-
-
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.04); } 100% { transform: scale(1); } }
-
-
 
 @keyframes vaultShake {
 
-
-
 0%, 100% { transform: translate(0, 0); }
-
-
 
 20% { transform: translate(-7px, 4px); }
 
-
-
 40% { transform: translate(7px, -4px); }
-
-
 
 60% { transform: translate(-7px, -4px); }
 
-
-
 80% { transform: translate(7px, 4px); }
 
-
-
 }
-
-
 
 @keyframes dramaticPop {
 
-
-
 0% { transform: scale(0.3); opacity: 0; }
-
-
 
 70% { transform: scale(1.12); opacity: 1; }
 
-
-
 100% { transform: scale(1); opacity: 1; }
 
-
-
 }
-
-
 
 @keyframes wavePulse {
 
-
-
 0% { height: 1.5vw; }
-
-
 
 100% { height: 5.5vw; background: #00d4ff; }
 
-
-
 }
-
-
-
-
 
 
 
 /* ============================================================================
 
-
-
 NAKŁADKA ZMYŁKI: CYBER-QUIZ + WIELKI LAG + ATAK HAKERÓW + TWIST MIKOŁAJA
-
-
 
 ============================================================================ */
 
-
-
 #fake-cyber-tv {
-
-
 
 position: fixed; inset: 0; background: #050b14; z-index: 9500;
 
-
-
 display: none; flex-direction: column; align-items: center; justify-content: center;
-
-
 
 overflow: hidden;
 
-
-
 }
-
-
 
 #fake-cyber-tv.glitch-lag {
 
-
-
 animation: rgbGlitchShake 0.14s infinite;
 
-
-
 }
-
-
 
 #fake-cyber-tv.glitch-lag::after {
 
-
-
 content: ""; position: fixed; inset: 0; z-index: 9590; pointer-events: none;
-
-
 
 background: repeating-linear-gradient(
 
-
-
 0deg,
-
-
 
 rgba(255, 0, 64, 0.14) 0px, rgba(255, 0, 64, 0.14) 3px,
 
-
-
 rgba(0, 212, 255, 0.12) 3px, rgba(0, 212, 255, 0.12) 6px,
-
-
 
 transparent 6px, transparent 14px
 
-
-
 );
-
-
 
 mix-blend-mode: screen;
 
-
-
 animation: scanlineJump 0.12s steps(3) infinite;
 
-
-
 }
-
-
 
 @keyframes rgbGlitchShake {
 
-
-
 0% { transform: translate(0, 0) skewX(0deg); filter: hue-rotate(0deg) contrast(1.2); }
-
-
 
 20% { transform: translate(-0.8vw, 0.4vw) skewX(-2deg); filter: hue-rotate(35deg) contrast(1.8); }
 
-
-
 40% { transform: translate(1vw, -0.5vw) skewX(3deg); filter: hue-rotate(-40deg) saturate(2.5); }
-
-
 
 60% { transform: translate(-0.6vw, -0.3vw) skewX(-1deg); filter: contrast(2.2) invert(0.08); }
 
-
-
 80% { transform: translate(0.7vw, 0.5vw) skewX(2deg); filter: hue-rotate(60deg) contrast(1.6); }
-
-
 
 100% { transform: translate(0, 0) skewX(0deg); filter: contrast(1.4); }
 
-
-
 }
-
-
 
 @keyframes scanlineJump {
 
-
-
 0% { transform: translateY(0); opacity: 0.9; }
-
-
 
 50% { transform: translateY(1.2vw); opacity: 0.4; }
 
-
-
 100% { transform: translateY(-0.8vw); opacity: 0.85; }
 
-
-
 }
-
-
-
-
 
 
 
 .fake-timer-box {
 
-
-
 position: absolute; top: 1.5vw; left: 50%; transform: translateX(-50%);
-
-
 
 background: rgba(0,0,0,0.9); border: 0.3vw solid var(--cyan); border-radius: 50%;
 
-
-
 width: 7.2vw; height: 7.2vw; display: none; align-items: center; justify-content: center;
-
-
 
 font-size: 2.7vw; font-weight: 900; color: #fff; box-shadow: 0 0 1.5vw rgba(0,212,255,0.4); z-index: 100;
 
-
-
 }
-
-
 
 .fake-timer-box.frozen-err {
 
-
-
 border-color: #ff4757 !important; color: #ff4757 !important;
-
-
 
 box-shadow: 0 0 2.5vw #ff4757 !important;
 
-
-
 text-shadow: -3px 0 #00d4ff, 3px 0 #ff0040;
 
-
-
 }
-
-
 
 .fake-score-corner {
 
-
-
 position: absolute; width: 15vw; background: rgba(0,0,0,0.85);
-
-
 
 border: 0.2vw solid var(--cyan); border-radius: 1vw; padding: 0.9vw 1vw;
 
-
-
 text-align: center; box-shadow: 0 0 1.5vw rgba(0,212,255,0.2); z-index: 20; box-sizing: border-box;
-
-
 
 }
 
-
-
 .fake-tl { top: 1.5vw; left: 1.5vw; } .fake-tr { top: 1.5vw; right: 1.5vw; }
-
-
 
 .fake-bl { bottom: 1.5vw; left: 1.5vw; } .fake-br { bottom: 1.5vw; right: 1.5vw; }
 
-
-
 .fake-ph-row { display: flex; align-items: center; justify-content: center; gap: 0.65vw; }
-
-
 
 .fake-av-img { width: 3vw; height: 3vw; border-radius: 50%; object-fit: cover; border: 0.18vw solid #d4af37; display: none; flex-shrink: 0; background: #111; }
 
-
-
 .fake-pname { font-size: 1.65vw; color: #d4af37; font-weight: 900; text-transform: uppercase; letter-spacing: 0.12vw; }
-
-
 
 .fake-pscore { font-size: 2.9vw; font-weight: bold; color: #fff; text-shadow: 0 0 1vw var(--cyan); margin-top: 0.25vw; }
 
 
 
-
-
-
-
 .fake-center-stage {
-
-
 
 width: 64vw; max-width: 64vw; text-align: center; background: rgba(10, 18, 36, 0.94);
 
-
-
 border: 0.25vw solid #d4af37; border-radius: 1.8vw; padding: 1.8vw 2.2vw;
-
-
 
 box-shadow: 0 0 3.5vw rgba(212, 175, 55, 0.25); z-index: 10; margin-top: 2vw; box-sizing: border-box;
 
-
-
 }
-
-
 
 .fake-round-title { font-size: 1.05vw; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.16vw; margin-bottom: 0.6vw; font-weight: bold; }
 
-
-
 .fake-q-text { font-size: 2vw; font-weight: bold; line-height: 1.3; margin-bottom: 1.2vw; color: #fff; }
-
-
 
 .fake-opts-grid { display: none; grid-template-columns: 1fr 1fr; gap: 1.2vw; }
 
-
-
 .fake-opt { padding: 1.2vw; font-size: 1.55vw; border-radius: 0.9vw; font-weight: 900; text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
-
-
 
 .fake-oc-0 { background: rgba(241, 196, 15, 0.22); border: 0.25vw solid #f1c40f; }
 
-
-
 .fake-oc-1 { background: rgba(0, 212, 255, 0.22); border: 0.25vw solid #00d4ff; }
-
-
 
 .fake-oc-2 { background: rgba(46, 213, 115, 0.22); border: 0.25vw solid #2ed573; }
 
-
-
 .fake-oc-3 { background: rgba(255, 71, 87, 0.22); border: 0.25vw solid #ff4757; }
-
-
 
 .fake-qr-wrap { display: none; margin-top: 1.2vw; }
 
-
-
 .fake-qr-wrap p { font-size: 1.1vw; color: var(--cyan); font-weight: bold; text-transform: uppercase; letter-spacing: 0.15vw; margin-bottom: 0.8vw; }
-
-
 
 .fake-qr-wrap img { width: 10.5vw; height: 10.5vw; border: 0.25vw solid var(--cyan); border-radius: 0.8vw; padding: 0.4vw; background: #fff; }
 
-
-
 .fake-status-line { font-size: 1.6vw; color: var(--cyan); font-weight: 900; margin-top: 1vw; text-transform: uppercase; display: none; }
-
-
 
 .fake-lag-err {
 
-
-
 display: none; margin-top: 1.2vw; padding: 0.9vw 1.5vw; border-radius: 0.8vw;
-
-
 
 background: rgba(255, 0, 40, 0.25); border: 0.2vw solid #ff1e27;
 
-
-
 color: #ff4757; font-family: monospace; font-size: 1.55vw; font-weight: 900;
-
-
 
 text-shadow: -2px 0 #00d4ff, 2px 0 #ff0040;
 
-
-
 }
-
-
-
-
 
 
 
 /* FAZA 3: ATAK HAKERÓW / WIRUS */
 
-
-
 #troll-hack-overlay {
-
-
 
 position: fixed; inset: 0; background: #030000; z-index: 9600;
 
-
-
 display: none; flex-direction: column; align-items: center; justify-content: center;
-
-
 
 font-family: monospace; overflow: hidden;
 
-
-
 animation: hackScreenShake 0.22s infinite;
 
-
-
 }
-
-
 
 @keyframes hackScreenShake {
 
-
-
 0%, 100% { transform: translate(0, 0); }
-
-
 
 25% { transform: translate(-0.7vw, 0.5vw); }
 
-
-
 50% { transform: translate(0.7vw, -0.5vw); }
-
-
 
 75% { transform: translate(-0.5vw, -0.4vw); }
 
-
-
 }
-
-
 
 .hack-siren-bg {
 
-
-
 position: absolute; inset: 0; pointer-events: none;
-
-
 
 background: radial-gradient(circle, rgba(255, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.95) 75%);
 
-
-
 animation: sirenPulse 0.45s infinite alternate;
 
-
-
 }
-
-
 
 @keyframes sirenPulse {
 
-
-
 0% { opacity: 0.45; }
-
-
 
 100% { opacity: 1; }
 
-
-
 }
-
-
 
 .hack-alert-popup {
 
-
-
 position: absolute; background: #1a0000; border: 0.25vw solid #ff1e27;
-
-
 
 color: #ff1e27; padding: 0.8vw 1.4vw; border-radius: 0.6vw;
 
-
-
 font-size: 1.35vw; font-weight: 900; box-shadow: 0 0 2.5vw rgba(255, 30, 39, 0.85);
-
-
 
 z-index: 5; animation: dramaticPop 0.35s ease-out forwards;
 
-
-
 }
-
-
 
 .hack-terminal {
 
-
-
 position: relative; z-index: 10; width: 68vw; background: rgba(0, 8, 2, 0.94);
-
-
 
 border: 0.3vw solid #ff1e27; border-radius: 1vw; overflow: hidden;
 
-
-
 box-shadow: 0 0 4.5vw rgba(255, 30, 39, 0.8);
 
-
-
 }
-
-
 
 .hack-term-hdr {
 
-
-
 background: #d62828; color: #fff; font-size: 1.55vw; font-weight: 900;
-
-
 
 padding: 0.8vw 1.4vw; display: flex; justify-content: space-between; align-items: center;
 
-
-
 letter-spacing: 0.12vw;
 
-
-
 }
-
-
 
 .hack-term-body {
 
-
-
 padding: 1.6vw 2vw; text-align: left; font-size: 1.55vw; line-height: 1.75;
-
-
 
 color: #22c55e; min-height: 17vw; font-weight: bold;
 
-
-
 }
-
-
 
 .hack-line { opacity: 0; transform: translateX(-1vw); transition: all 0.25s ease; }
 
-
-
 .hack-line.shown { opacity: 1; transform: translateX(0); }
 
-
-
 .hack-line.red-line { color: #ff4757; font-size: 1.7vw; }
-
-
 
 .hack-line.gold-line { color: #ffd700; font-size: 1.85vw; text-shadow: 0 0 1vw #ffd700; }
 
 
 
-
-
-
-
 /* FAZA 4: TWIST MIKOŁAJA */
-
-
 
 #troll-santa-overlay {
 
-
-
 position: fixed; inset: 0;
-
-
 
 background: radial-gradient(circle at center, rgba(27, 67, 50, 0.86) 0%, rgba(8, 28, 21, 0.92) 70%);
 
-
-
 z-index: 9650; display: none; flex-direction: column; align-items: center; justify-content: center;
-
-
 
 text-align: center; padding: 3vw; box-sizing: border-box;
 
-
-
 }
-
-
 
 .santa-twist-card {
 
-
-
 width: 68vw; background: linear-gradient(155deg, rgba(155, 17, 30, 0.94), rgba(20, 54, 38, 0.96));
-
-
 
 border: 0.4vw solid var(--gold); border-radius: 2.2vw; padding: 2.5vw 3vw;
 
-
-
 box-shadow: 0 0 6vw rgba(255, 215, 0, 0.9), inset 0 0 3vw rgba(255, 215, 0, 0.25);
-
-
 
 animation: dramaticPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 
-
-
 }
-
-
 
 .santa-twist-emoji { font-size: 6.5vw; margin-bottom: 0.6vw; filter: drop-shadow(0 0 1.5vw rgba(255,215,0,0.8)); }
 
-
-
 .santa-twist-h1 { font-size: 3.4vw; font-weight: 900; color: var(--gold); text-shadow: 0 0 2vw var(--gold), 0 4px 10px #000; margin: 0 0 0.8vw 0; }
-
-
 
 .santa-twist-h2 { font-size: 2.2vw; font-weight: 900; color: #fff; text-shadow: 0 2px 8px #000; margin: 0 0 1vw 0; line-height: 1.3; }
 
-
-
 .santa-twist-sub { font-size: 1.4vw; font-weight: bold; color: #a7f3d0; }
-
-
-
-
 
 
 
@@ -962,131 +482,65 @@ animation: dramaticPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 
 
 
-
-
-
-
 /* CENTRALNA ŚWIĄTECZNA SCENA - SKARBIEC Z 8 RYGLAMI */
-
-
 
 .center-stage {
 
-
-
 width: 58vw; max-width: 58vw; text-align: center;
-
-
 
 background: linear-gradient(160deg, rgba(20, 54, 38, 0.95), rgba(10, 30, 22, 0.97));
 
-
-
 border: 0.3vw solid var(--gold); border-radius: 2vw; padding: 1.8vw 2.2vw;
-
-
 
 box-shadow: 0 0 4vw rgba(255, 215, 0, 0.3), inset 0 0 2vw rgba(214, 40, 40, 0.2);
 
-
-
 transition: 0.5s; z-index: 10; box-sizing: border-box;
-
-
 
 display: flex; flex-direction: column; align-items: center;
 
-
-
 }
-
-
 
 .center-stage.victory-glow {
 
-
-
 border-color: #fff;
-
-
 
 box-shadow: 0 0 6vw rgba(255, 215, 0, 0.95), inset 0 0 3vw rgba(45, 198, 83, 0.5);
 
-
-
 }
-
-
 
 .center-stage.suspense-shake {
 
-
-
 animation: vaultShake 0.28s infinite;
-
-
 
 border-color: var(--xmas-bright-red);
 
-
-
 box-shadow: 0 0 5vw rgba(255, 77, 77, 0.8), inset 0 0 3vw rgba(255, 215, 0, 0.4);
 
-
-
 }
-
-
-
-
 
 
 
 .mission-header {
 
-
-
 font-size: 1.35vw; color: var(--gold); text-transform: uppercase; letter-spacing: 0.2vw;
-
-
 
 font-weight: 900; margin-bottom: 0.8vw; text-shadow: 0 2px 6px rgba(0,0,0,0.8);
 
-
-
 }
-
-
-
-
 
 
 
 .bolts-bar { display: flex; gap: 0.45vw; margin-bottom: 1vw; flex-wrap: wrap; justify-content: center; }
 
-
-
 .vault-bolt {
-
-
 
 background: #0b1a13; border: 2px solid var(--gold); color: #888; font-size: 0.72vw; font-weight: 900;
 
-
-
 padding: 5px 9px; border-radius: 6px; text-transform: uppercase; transition: 0.3s;
-
-
 
 }
 
-
-
 .vault-bolt.unlocked { background: var(--xmas-light-green); color: #000; border-color: #fff; box-shadow: 0 0 12px #2dc653; }
-
-
-
-
 
 
 
@@ -1094,307 +548,153 @@ padding: 5px 9px; border-radius: 6px; text-transform: uppercase; transition: 0.3
 
 
 
-
-
-
-
 .start-qr-box {
-
-
 
 display: flex; flex-direction: column; align-items: center; justify-content: center;
 
-
-
 background: rgba(5, 20, 14, 0.85); border: 0.22vw dashed var(--gold); border-radius: 1.4vw;
-
-
 
 padding: 1.2vw 2vw; margin-top: 0.5vw; box-shadow: 0 0 2vw rgba(0,0,0,0.5);
 
-
-
 }
-
-
 
 .start-qr-box img {
 
-
-
 width: 11.5vw; height: 11.5vw; background: #fff; padding: 0.45vw; border-radius: 0.9vw;
-
-
 
 border: 0.25vw solid var(--gold); box-shadow: 0 0 1.8vw rgba(255, 215, 0, 0.45);
 
-
-
 margin: 0.6vw 0;
 
-
-
 }
-
-
-
-
 
 
 
 .audio-waves { display: flex; gap: 0.5vw; height: 5vw; align-items: center; justify-content: center; margin-top: 0.8vw; }
 
-
-
 .wave-bar { width: 1.2vw; height: 1.5vw; background: var(--gold); border-radius: 0.5vw; transition: 0.2s; }
-
-
 
 .wave-bar.active { animation: wavePulse 0.38s infinite alternate; box-shadow: 0 0 15px #00d4ff; }
 
-
-
 .hymn-karaoke-box {
-
-
 
 font-size: 2.1vw; font-weight: 900; color: #fff; background: rgba(0,0,0,0.55);
 
-
-
 border: 2px solid var(--gold); border-radius: 1vw; padding: 0.8vw 1.8vw; margin-top: 0.8vw;
-
-
 
 text-shadow: 0 0 12px var(--gold); min-height: 3.2vw; display: flex; align-items: center; justify-content: center;
 
-
-
 }
-
-
-
-
 
 
 
 .ice-block {
 
-
-
 position: relative; width: 24vw; height: 13vw; background: rgba(0, 212, 255, 0.18);
-
-
 
 border: 0.25vw solid #00d4ff; border-radius: 1.8vw;
 
-
-
 box-shadow: inset 0 0 4vw rgba(255,255,255,0.55), 0 0 2.5vw rgba(0,212,255,0.65);
-
-
 
 display: flex; align-items: center; justify-content: center; font-size: 6vw; overflow: hidden;
 
-
-
 }
-
-
-
-
 
 
 
 .simon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2vw; width: 23vw; height: 19vw; margin: 0.8vw auto; }
 
-
-
 .simon-pad {
-
-
 
 border-radius: 1.2vw; border: 0.25vw solid rgba(255,255,255,0.6); opacity: 0.28; transition: 0.15s;
 
-
-
 display: flex; flex-direction: column; align-items: center; justify-content: center;
-
-
 
 font-size: 1.3vw; font-weight: 900; color: #000; text-shadow: 0 1px 2px rgba(255,255,255,0.7);
 
-
-
 }
-
-
 
 .simon-pad.lit {
 
-
-
 opacity: 1 !important; transform: scale(1.08); border-color: #fff;
-
-
 
 box-shadow: 0 0 3vw #fff, 0 0 1.5vw var(--gold); z-index: 20;
 
-
-
 }
-
-
-
-
 
 
 
 #victory-banner {
 
-
-
 display: none; font-size: 1.8vw; font-weight: 900; color: var(--gold);
-
-
 
 text-transform: uppercase; letter-spacing: 0.15vw; margin-top: 0.8vw;
 
-
-
 text-shadow: 0 0 1.5vw var(--gold), 0 2px 5px #000; animation: pulse 1s infinite;
 
-
-
 }
-
-
-
-
 
 
 
 .reveal-step-line {
 
-
-
 animation: dramaticPop 0.55s ease-out forwards;
-
-
 
 margin: 0.35vw 0;
 
-
-
 }
-
-
-
-
 
 
 
 .tv-corner {
 
-
-
 position: absolute; width: 19vw;
-
-
 
 background: linear-gradient(145deg, rgba(110, 14, 22, 0.92), rgba(55, 8, 14, 0.95));
 
-
-
 border: 0.22vw solid var(--gold);
-
-
 
 border-radius: 1.3vw; padding: 0.85vw 1vw; display: flex; flex-direction: column; gap: 0.45vw;
 
-
-
 box-shadow: 0 0 2vw rgba(0, 0, 0, 0.6), 0 0 1.2vw rgba(255, 215, 0, 0.25);
-
-
 
 transition: all 0.35s; z-index: 900; box-sizing: border-box;
 
-
-
 }
-
-
 
 .tv-corner.flash-success {
 
-
-
 border-color: #fff; background: linear-gradient(145deg, rgba(25, 135, 84, 0.95), rgba(15, 81, 50, 0.95));
-
-
 
 box-shadow: 0 0 3.5vw rgba(45, 198, 83, 0.9); transform: scale(1.04);
 
-
-
 }
-
-
 
 .tv-corner.done-all {
 
-
-
 border-color: var(--xmas-light-green);
-
-
 
 background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.95));
 
-
-
 }
-
-
-
-
 
 
 
 .tv-top-left { top: 2vw; left: 1.2vw; }
 
-
-
 .tv-top-right { top: 2vw; right: 1.2vw; }
 
-
-
 .tv-bottom-left { bottom: 1.5vw; left: 1.2vw; }
-
-
 
 .tv-bottom-right { bottom: 1.5vw; right: 1.2vw; }
 
 
 
-
-
-
-
 .tv-agent-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 0.1vw solid rgba(255, 215, 0, 0.35); padding-bottom: 0.3vw; }
-
-
 
 .tv-agent-name { font-size: 1.35vw; color: var(--gold); font-weight: 900; letter-spacing: 0.1vw; text-transform: uppercase; }
 
-
-
 .tv-task-num { font-size: 0.75vw; color: #fff; letter-spacing: 0.05vw; font-weight: 900; background: rgba(0, 0, 0, 0.45); border: 1px solid var(--gold); padding: 0.15vw 0.4vw; border-radius: 0.35vw; }
-
-
-
-
 
 
 
@@ -1402,1431 +702,715 @@ background: linear-gradient(145deg, rgba(20, 83, 45, 0.92), rgba(10, 45, 25, 0.9
 
 
 
-
-
-
-
 .tv-photo-view {
-
-
 
 width: 100%; height: 11.5vw; object-fit: contain; border-radius: 0.6vw;
 
-
-
 border: 2px solid var(--gold); background: #030a07; margin-top: 4px; display: none;
-
-
 
 box-shadow: inset 0 0 1vw rgba(0,0,0,0.9);
 
-
-
 }
-
-
-
-
 
 
 
 .center-photo-thumb {
 
-
-
 width: 100%; height: 9.5vw; object-fit: contain; background: #000;
-
-
 
 border-radius: 8px; border: 1px solid var(--gold); margin: 6px 0;
 
-
-
 }
-
-
 
 </style>
 
-
-
 </head>
-
-
 
 <body>
 
 
 
-
-
-
-
 <div id="audio-overlay">
-
-
 
 <button id="audio-btn" onclick="initAudio()">🎅 KLIKNIJ, ABY URUCHOMIĆ ŚWIĄTECZNY TELEWIZOR 🎄</button>
 
-
-
 </div>
-
-
-
-
 
 
 
 <!-- =========================================================================
 
-
-
 NAKŁADKA ZMYŁKI: UDAWANY CYBER-QUIZ + WIELKI LAG + HAKERZY + TWIST MIKOŁAJA
-
-
 
 ========================================================================= -->
 
-
-
 <div id="fake-cyber-tv">
-
-
 
 <div class="fake-timer-box" id="fakeTimerBox">12</div>
 
 
 
-
-
-
-
 <div class="fake-score-corner fake-tl" id="fake-corner-Lila">
-
-
 
 <div class="fake-ph-row"><img class="fake-av-img" id="fake-av-Lila" alt=""><div class="fake-pname">LILA</div></div>
 
-
-
 <div class="fake-pscore">0</div>
 
-
-
 </div>
-
-
 
 <div class="fake-score-corner fake-tr" id="fake-corner-Kaja">
 
-
-
 <div class="fake-ph-row"><img class="fake-av-img" id="fake-av-Kaja" alt=""><div class="fake-pname">KAJA</div></div>
-
-
 
 <div class="fake-pscore">0</div>
 
-
-
 </div>
-
-
 
 <div class="fake-score-corner fake-bl" id="fake-corner-Darek">
 
-
-
 <div class="fake-ph-row"><img class="fake-av-img" id="fake-av-Darek" alt=""><div class="fake-pname">DAREK</div></div>
-
-
 
 <div class="fake-pscore">0</div>
 
-
-
 </div>
-
-
 
 <div class="fake-score-corner fake-br" id="fake-corner-Jas">
 
-
-
 <div class="fake-ph-row"><img class="fake-av-img" id="fake-av-Jas" alt=""><div class="fake-pname">JAŚ</div></div>
-
-
 
 <div class="fake-pscore">0</div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="fake-center-stage">
 
-
-
 <div class="fake-round-title" id="fakeRoundTitle">CZEKANIE NA START</div>
-
-
 
 <div class="fake-q-text" id="fakeQuestionText">Załadowano PULĘ 1! Czekamy na przycisk START.</div>
 
 
 
-
-
-
-
 <div class="fake-qr-wrap" id="fakeQrWrap">
-
-
 
 <p>Zeskanuj, aby wejść do gry</p>
 
-
-
 <img id="fakeQrImg" src="" alt="QR">
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="fake-opts-grid" id="fakeOptsGrid">
 
-
-
 <div class="fake-opt fake-oc-0" id="fake-opt-0">A: ...</div>
-
-
 
 <div class="fake-opt fake-oc-1" id="fake-opt-1">B: ...</div>
 
-
-
 <div class="fake-opt fake-oc-2" id="fake-opt-2">C: ...</div>
-
-
 
 <div class="fake-opt fake-oc-3" id="fake-opt-3">D: ...</div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="fake-status-line" id="fakeStatusLine"></div>
 
-
-
 <div class="fake-lag-err" id="fakeLagErr">⚠️ UTRACONO POŁĄCZENIE... BŁĄD KRYTYCZNY 0x004F [SYSTEM ZAWIESZONY]</div>
 
-
-
 </div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <!-- FAZA 3: ATAK HAKERÓW / WIRUS -->
 
-
-
 <div id="troll-hack-overlay">
-
-
 
 <div class="hack-siren-bg"></div>
 
-
-
 <div class="hack-alert-popup" style="top: 4vw; left: 4vw;">☠️ WYKRYTO ATAK HAKERSKI!</div>
-
-
 
 <div class="hack-alert-popup" style="top: 5vw; right: 4vw;">⚠️ WIRUS PRZEJĄŁ TELEWIZOR!</div>
 
-
-
 <div class="hack-alert-popup" style="bottom: 5vw; left: 5vw;">🔥 BŁĄD KRYTYCZNY 0x004F</div>
-
-
 
 <div class="hack-alert-popup" style="bottom: 4.5vw; right: 5vw;">☠️ TELEFONY ZABLOKOWANE!</div>
 
 
 
-
-
-
-
 <div class="hack-terminal">
-
-
 
 <div class="hack-term-hdr">
 
-
-
 <span>☠️ WYKRYTO ATAK HAKERSKI — ROOT TERMINAL</span>
-
-
 
 <span>[ZAGROŻENIE: KRYTYCZNE]</span>
 
-
-
 </div>
-
-
 
 <div class="hack-term-body" id="hackTerminalBody">
 
-
-
 <div class="hack-line red-line" id="hline-0">[!] ALARM! WYKRYTO WŁAMANIE DO SYSTEMU CYBER-QUIZ...</div>
-
-
 
 <div class="hack-line" id="hline-1">&gt; PRZEJMOWANIE TELEWIZORA... 100% [ZAKOŃCZONO]</div>
 
-
-
 <div class="hack-line" id="hline-2">&gt; PRZEJMOWANIE TELEFONÓW GRACZY... 4/4 [ZAINFEKOWANO]</div>
-
-
 
 <div class="hack-line" id="hline-3">&gt; KASOWANIE NUDNYCH PYTAŃ SZKOLNYCH... [USUNIĘTO]</div>
 
-
-
 <div class="hack-line" id="hline-4">&gt; SKANOWANIE GRZECZNOŚCI GRACZY... [WYNIK: BARDZO GRZECZNI!]</div>
-
-
 
 <div class="hack-line gold-line" id="hline-5">&gt; NOWY ADMINISTRATOR: BIEGUN_POLNOCNY_ROOT 🎅</div>
 
-
+</div>
 
 </div>
 
-
-
 </div>
-
-
-
-</div>
-
-
-
-
 
 
 
 <!-- FAZA 4: TWIST MIKOŁAJA -->
 
-
-
 <div id="troll-santa-overlay">
-
-
 
 <div class="santa-twist-card">
 
-
-
 <div class="santa-twist-emoji">🎅❄️🎄</div>
-
-
 
 <div class="santa-twist-h1">HOHOHO! TO NIE WIRUS!</div>
 
-
-
 <div class="santa-twist-h2">ŚWIĘTY MIKOŁAJ PRZEJĄŁ WASZ TELEWIZOR I TELEFONY!</div>
-
-
 
 <div class="santa-twist-sub">Zamiast zwykłego quizu czeka na Was TAJNA MISJA MIKOŁAJKOWA... Uruchamianie Skarbca!</div>
 
-
-
 </div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="christmas-lights">
 
-
+<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 
-
+<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 
-
-
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 
-
-
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
-
-
-
-<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
-
-
-
-<div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
-
-
 
 </div>
-
-
-
-
 
 
 
 <div id="voice-bar">
 
-
-
 <span>🎅 Głos lektora:</span>
-
-
 
 <select id="voiceSelect"></select>
 
-
-
 <button id="muteMusicBtn" onclick="toggleBgMusic()">🔔 Dzwoneczki: WŁ</button>
 
-
-
 </div>
-
-
-
-
 
 
 
 <canvas id="snow-canvas"></canvas>
 
-
-
 <canvas id="fireworks-canvas"></canvas>
-
-
-
-
 
 
 
 <div id="fullscreenBoard">
 
-
-
 <!-- NAROŻNE PANELE AGENTÓW -->
-
-
 
 <div class="tv-corner tv-top-left" id="tv-Lila">
 
-
-
 <div class="tv-agent-header">
-
-
 
 <div class="tv-agent-name">🦌 LILA</div>
 
-
-
 <div class="tv-task-num" id="tv-num-Lila">...</div>
 
-
-
 </div>
-
-
 
 <div class="tv-task-q" id="tv-q-Lila">Oczekiwanie...</div>
 
-
-
 <img class="tv-photo-view" id="tv-img-Lila" src="" alt="Foto">
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="tv-corner tv-top-right" id="tv-Kaja">
 
-
-
 <div class="tv-agent-header">
-
-
 
 <div class="tv-agent-name">⛄ KAJA</div>
 
-
-
 <div class="tv-task-num" id="tv-num-Kaja">...</div>
 
-
-
 </div>
-
-
 
 <div class="tv-task-q" id="tv-q-Kaja">Oczekiwanie...</div>
 
-
-
 <img class="tv-photo-view" id="tv-img-Kaja" src="" alt="Foto">
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="tv-corner tv-bottom-left" id="tv-Darek">
 
-
-
 <div class="tv-agent-header">
-
-
 
 <div class="tv-agent-name">🎄 DAREK</div>
 
-
-
 <div class="tv-task-num" id="tv-num-Darek">...</div>
 
-
-
 </div>
-
-
 
 <div class="tv-task-q" id="tv-q-Darek">Oczekiwanie...</div>
 
-
-
 <img class="tv-photo-view" id="tv-img-Darek" src="" alt="Foto">
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="tv-corner tv-bottom-right" id="tv-Jaś">
 
-
-
 <div class="tv-agent-header">
-
-
 
 <div class="tv-agent-name">🎅 JAŚ</div>
 
-
-
 <div class="tv-task-num" id="tv-num-Jaś">...</div>
 
-
-
 </div>
-
-
 
 <div class="tv-task-q" id="tv-q-Jaś">Oczekiwanie...</div>
 
-
-
 <img class="tv-photo-view" id="tv-img-Jaś" src="" alt="Foto">
 
-
-
 </div>
-
-
-
-
 
 
 
 <!-- CENTRALNA SCENA - SKARBIEC Z 8 RYGLAMI -->
 
-
-
 <div class="center-stage" id="mainStage">
-
-
 
 <div class="mission-header" id="missionHeader">🔐 PANCERNY SKARBIEC MIKOŁAJA 🎁</div>
 
 
 
-
-
-
-
 <div class="bolts-bar" id="boltsBar">
-
-
 
 <div class="vault-bolt" id="bolt-1">RYGIEL 1</div>
 
-
-
 <div class="vault-bolt" id="bolt-2">RYGIEL 2</div>
-
-
 
 <div class="vault-bolt" id="bolt-3">RYGIEL 3</div>
 
-
-
 <div class="vault-bolt" id="bolt-4">RYGIEL 4</div>
-
-
 
 <div class="vault-bolt" id="bolt-5">RYGIEL 5</div>
 
-
-
 <div class="vault-bolt" id="bolt-6">RYGIEL 6</div>
-
-
 
 <div class="vault-bolt" id="bolt-7">RYGIEL 7</div>
 
-
-
 <div class="vault-bolt" id="bolt-8">RYGIEL 8</div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <div class="stage-arena" id="stageArena">
 
-
-
 <div id="loading-msg" style="font-size:1.4vw; color:var(--gold); font-weight:bold;">ŁĄCZENIE Z BIEGUNEM PÓŁNOCNYM...</div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <div id="victory-banner">🏆 SKARBIEC OTWARTY! KLUCZ ODNALEZIONY! 🎅🔑</div>
 
-
-
 </div>
 
-
-
 </div>
-
-
-
-
 
 
 
 <script type="module">
 
-
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-
-
 
 import { getFirestore, doc, onSnapshot, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 
 
-
-
-
-
 const firebaseConfig = { apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI", authDomain: "obstaiwanie.firebaseapp.com", projectId: "obstaiwanie" };
-
-
 
 const app = initializeApp(firebaseConfig);
 
-
-
 const db = getFirestore(app);
 
-
-
 const stateRef = doc(db, "mikolajGame", "state");
-
-
 
 const fakeAvatarsRef = doc(db, "mikolajGame", "fakeAvatars");
 
 
 
-
-
-
-
 const winSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3");
-
-
 
 winSound.volume = 0.95;
 
-
-
 const loseSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2955/2955-preview.mp3");
-
-
 
 loseSound.volume = 0.9;
 
-
-
 const fanfareSound = new Audio("https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3");
-
-
 
 fanfareSound.volume = 1.0;
 
 
 
-
-
-
-
 function getGraczQrUrl() {
-
-
 
 const baseHref = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1);
 
-
-
 const targetUrl = encodeURIComponent(baseHref + 'quiz-gracz-MIKOLAJ.html');
 
-
-
 return "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + targetUrl + "&color=000000&bgcolor=ffffff";
-
-
 
 }
 
 
 
-
-
-
-
 // ============================================================================
-
-
 
 // ZMIENNE I EFEKTY AUDIO/WIZUALNE DLA TROLLA CYBER-QUIZ -> HAKER -> MIKOŁAJ
 
-
-
 // ============================================================================
-
-
 
 let fakeR1TimerInterval = null;
 
-
-
 let fakeR1TimeLeft = 12;
-
-
 
 let lastFakeSpeakTick = 0;
 
-
-
 let lastFakeReadTick = 0;
-
-
 
 let lastTrollLagTick = 0;
 
-
-
 let lastTrollHackTick = 0;
-
-
 
 let lastTrollSantaTick = 0;
 
-
-
 let trollTimers = [];
 
-
-
 let trollAudioNodes = [];
-
-
 
 let trollAudioIntervals = [];
 
 
 
-
-
-
-
 function clearTrollFX() {
-
-
 
 clearInterval(fakeR1TimerInterval); fakeR1TimerInterval = null;
 
-
-
 trollTimers.forEach(t => clearTimeout(t)); trollTimers = [];
-
-
 
 trollAudioIntervals.forEach(iv => clearInterval(iv)); trollAudioIntervals = [];
 
-
-
 trollAudioNodes.forEach(n => { try { n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} });
-
-
 
 trollAudioNodes = [];
 
-
-
 }
-
-
-
-
 
 
 
 function playSoftCyberTick() {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator();
 
-
-
 const g = audioCtx.createGain();
-
-
 
 osc.type = "triangle";
 
-
-
 osc.frequency.setValueAtTime(880, now);
-
-
 
 osc.frequency.exponentialRampToValueAtTime(300, now + 0.045);
 
-
-
 g.gain.setValueAtTime(0.22, now);
-
-
 
 g.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination);
-
-
 
 osc.start(now); osc.stop(now + 0.06);
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 2 AUDIO: ZACIĘTY DŹWIĘK "tyk-tyk-tyk-TRRRRRRRRRR"
 
-
-
 function playLagStutterSound() {
-
-
 
 ensureAudioCtx();
 
-
-
 if (!audioCtx) return;
-
-
 
 // 1. Szybkie zacinające się tyk-tyk-tyk-tyk
 
-
-
 const delays = [0, 140, 260, 350, 420, 480, 530, 575, 615];
-
-
 
 delays.forEach(ms => {
 
-
-
 const t = setTimeout(() => {
-
-
 
 if (!audioCtx) return;
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator();
 
-
-
 const g = audioCtx.createGain();
-
-
 
 osc.type = "square";
 
-
-
 osc.frequency.setValueAtTime(760, now);
-
-
 
 osc.frequency.exponentialRampToValueAtTime(190, now + 0.05);
 
-
-
 g.gain.setValueAtTime(0.35, now);
-
-
 
 g.gain.exponentialRampToValueAtTime(0.001, now + 0.055);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination);
-
-
 
 osc.start(now); osc.stop(now + 0.06);
 
-
-
 }, ms);
-
-
 
 trollTimers.push(t);
 
-
-
 });
-
-
-
-
 
 
 
 // 2. Zamrożony cyfrowy zgrzyt "TRRRRRRRRRR" trwający do końca laga
 
-
-
 const tBuzz = setTimeout(() => {
-
-
 
 if (!audioCtx) return;
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator();
 
-
-
 const lfo = audioCtx.createOscillator();
 
-
-
 const lfoGain = audioCtx.createGain();
-
-
 
 const mainGain = audioCtx.createGain();
 
 
 
-
-
-
-
 osc.type = "sawtooth";
-
-
 
 osc.frequency.setValueAtTime(92, now);
 
-
-
 lfo.type = "square";
-
-
 
 lfo.frequency.setValueAtTime(28, now);
 
-
-
 lfoGain.gain.setValueAtTime(0.22, now);
-
-
 
 mainGain.gain.setValueAtTime(0.26, now);
 
 
 
-
-
-
-
 lfo.connect(lfoGain);
-
-
 
 lfoGain.connect(mainGain.gain);
 
-
-
 osc.connect(mainGain);
-
-
 
 mainGain.connect(audioCtx.destination);
 
-
-
 osc.start(now); lfo.start(now);
-
-
 
 osc.stop(now + 5.4); lfo.stop(now + 5.4);
 
-
-
 trollAudioNodes.push(osc, lfo);
-
-
 
 }, 660);
 
-
-
 trollTimers.push(tBuzz);
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 3 AUDIO: SYRENA ALARMOWA HAKERA + PIKANIE TERMINALA
 
-
-
 function playHackerAlarmSiren() {
-
-
 
 ensureAudioCtx();
 
-
-
 if (!audioCtx) return;
-
-
 
 const now = audioCtx.currentTime;
 
-
-
 const osc = audioCtx.createOscillator();
-
-
 
 const g = audioCtx.createGain();
 
-
-
 osc.type = "sawtooth";
-
-
 
 osc.frequency.setValueAtTime(620, now);
 
-
-
 g.gain.setValueAtTime(0.18, now);
-
-
 
 osc.connect(g); g.connect(audioCtx.destination);
 
-
-
 osc.start(now);
-
-
 
 trollAudioNodes.push(osc, g);
 
 
 
-
-
-
-
 let high = true;
-
-
 
 const iv = setInterval(() => {
 
-
-
 if (!audioCtx) return;
-
-
 
 const t = audioCtx.currentTime;
 
-
-
 osc.frequency.cancelScheduledValues(t);
-
-
 
 osc.frequency.linearRampToValueAtTime(high ? 1020 : 540, t + 0.42);
 
-
-
 high = !high;
-
-
 
 }, 460);
 
-
-
 trollAudioIntervals.push(iv);
 
-
-
 }
-
-
-
-
 
 
 
 function playTerminalBeep(pitch = 950) {
 
-
-
 if (!audioCtx) return;
-
-
 
 const now = audioCtx.currentTime;
 
-
-
 const osc = audioCtx.createOscillator();
-
-
 
 const g = audioCtx.createGain();
 
-
-
 osc.type = "square";
-
-
 
 osc.frequency.setValueAtTime(pitch, now);
 
-
-
 g.gain.setValueAtTime(0.16, now);
-
-
 
 g.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination);
-
-
 
 osc.start(now); osc.stop(now + 0.09);
 
-
-
 }
-
-
-
-
 
 
 
 // Nasłuchiwanie awatarów zmyłki Cyber-Quiz
 
-
-
 onSnapshot(fakeAvatarsRef, (snap) => {
-
-
 
 const avData = snap.exists() ? snap.data() : {};
 
-
-
 ["Lila", "Kaja", "Darek", "Jas"].forEach(k => {
-
-
 
 const img = document.getElementById("fake-av-" + k);
 
-
-
 if (!img) return;
-
-
 
 if (avData[k]) { img.src = avData[k]; img.style.display = "block"; }
 
-
-
 else { img.removeAttribute("src"); img.style.display = "none"; }
 
-
-
 });
 
-
-
 });
-
-
-
-
 
 
 
 function updateAudioOverlayDisguise(status) {
 
-
-
 const ov = document.getElementById('audio-overlay');
-
-
 
 const btn = document.getElementById('audio-btn');
 
-
-
 const isFake = (status || "").startsWith("fake_") || status === "troll_lag" || status === "troll_hack";
-
-
 
 if (ov) ov.classList.toggle('cyber-overlay', isFake);
 
-
-
 if (btn) {
-
-
 
 btn.classList.toggle('cyber-audio-btn', isFake);
 
-
-
 btn.innerText = isFake
-
-
 
 ? "🔊 KLIKNIJ, ABY AKTYWOWAĆ EKRAN, DŹWIĘK I LEKTORA TV"
 
-
-
 : "🎅 KLIKNIJ, ABY URUCHOMIĆ ŚWIĄTECZNY TELEWIZOR 🎄";
 
-
-
 }
-
-
 
 document.title = isFake ? "Cyber-Quiz | TV (7 Rund + 16 Puli + Awatary)" : "Mikołajki | Ekran Główny TV";
 
-
-
 }
-
-
-
-
 
 
 
 function renderTrollLayer(data) {
 
-
-
 const status = data.status || "idle";
-
-
 
 const fakeTv = document.getElementById('fake-cyber-tv');
 
-
-
 const hackOv = document.getElementById('troll-hack-overlay');
-
-
 
 const santaOv = document.getElementById('troll-santa-overlay');
 
-
-
 const snowCv = document.getElementById('snow-canvas');
 
-
-
 const activeList = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-
-
-
-
 
 
 
@@ -2834,4379 +1418,2189 @@ updateAudioOverlayDisguise(status);
 
 
 
-
-
-
-
 const isTrollStatus = status.startsWith("fake_") || status.startsWith("troll_");
-
-
 
 if (!isTrollStatus) {
 
-
-
 clearTrollFX();
-
-
 
 fakeTv.style.display = "none";
 
-
-
 fakeTv.classList.remove("glitch-lag");
-
-
 
 hackOv.style.display = "none";
 
-
-
 santaOv.style.display = "none";
-
-
 
 snowCv.style.zIndex = "5";
 
-
-
 return false;
-
-
 
 }
 
 
 
-
-
-
-
 isBgMusicPlaying = false;
-
-
-
-
 
 
 
 // Widoczność narożników w fałszywym Cyber-Quiz
 
-
-
 ["Lila", "Kaja", "Darek", "Jas"].forEach(p => {
-
-
 
 const el = document.getElementById("fake-corner-" + p);
 
-
-
 if (el) el.style.display = activeList.includes(p) ? "block" : "none";
 
-
-
 });
-
-
-
-
 
 
 
 const fTimer = document.getElementById('fakeTimerBox');
 
-
-
 const fRound = document.getElementById('fakeRoundTitle');
-
-
 
 const fQ = document.getElementById('fakeQuestionText');
 
-
-
 const fQr = document.getElementById('fakeQrWrap');
-
-
 
 const fQrImg = document.getElementById('fakeQrImg');
 
-
-
 const fOpts = document.getElementById('fakeOptsGrid');
 
-
-
 const fStat = document.getElementById('fakeStatusLine');
-
-
 
 const fLagErr = document.getElementById('fakeLagErr');
 
 
 
-
-
-
-
 // FAZA 1A: FAKE LOBBY (UDOWANY CYBER-QUIZ + QR)
-
-
 
 if (status === "fake_idle") {
 
-
-
 clearTrollFX();
-
-
 
 fakeTv.style.display = "flex";
 
-
-
 fakeTv.classList.remove("glitch-lag");
-
-
 
 hackOv.style.display = "none";
 
-
-
 santaOv.style.display = "none";
-
-
 
 fTimer.style.display = "none";
 
-
-
 fTimer.classList.remove("frozen-err");
-
-
 
 fOpts.style.display = "none";
 
-
-
 fStat.style.display = "none";
-
-
 
 fLagErr.style.display = "none";
 
-
-
 fRound.innerText = "CZEKANIE NA START";
-
-
 
 fQ.innerText = "Załadowano PULĘ 1! Czekamy na przycisk START.";
 
-
-
 fQr.style.display = "block";
-
-
 
 if (!fQrImg.getAttribute("src")) fQrImg.src = getGraczQrUrl();
 
-
-
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 1B: FAKE R1 SPEAKING (LEKTOR CZYTA 1. PYTANIE)
 
-
-
 if (status === "fake_r1_speaking") {
-
-
 
 clearTrollFX();
 
-
-
 fakeTv.style.display = "flex";
-
-
 
 fakeTv.classList.remove("glitch-lag");
 
-
-
 hackOv.style.display = "none";
-
-
 
 santaOv.style.display = "none";
 
-
-
 fTimer.style.display = "none";
-
-
 
 fTimer.classList.remove("frozen-err");
 
-
-
 fQr.style.display = "none";
-
-
 
 fOpts.style.display = "none";
 
-
-
 fLagErr.style.display = "none";
-
-
 
 fRound.innerText = "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT";
 
-
-
 fQ.innerText = data.fakeQuestion || "";
-
-
 
 fStat.style.display = "block";
 
-
-
 fStat.style.color = "var(--cyan)";
-
-
 
 fStat.innerText = "🗣️ SŁUCHAJCIE UWAŻNIE! LEKTOR CZYTA PYTANIE...";
 
 
 
-
-
-
-
 const sTick = data.speechTick || 1;
-
-
 
 if (lastFakeSpeakTick !== sTick && data.fakeQuestion) {
 
-
-
 lastFakeSpeakTick = sTick;
-
-
 
 speakPolishText(data.fakeQuestion, async () => {
 
-
-
 if (currentState && currentState.status === "fake_r1_speaking") {
-
-
 
 await updateDoc(stateRef, { status: "fake_r1_reading", fakeReadTick: Date.now() });
 
-
-
 }
-
-
 
 });
 
-
-
 }
-
-
 
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 1C: FAKE R1 READING (STOPER 12s -> AUTO-LAG PRZY 7s LUB PO 4/4 ODPOWIEDZIACH!)
 
-
-
 if (status === "fake_r1_reading") {
-
-
 
 fakeTv.style.display = "flex";
 
-
-
 fakeTv.classList.remove("glitch-lag");
-
-
 
 hackOv.style.display = "none";
 
-
-
 santaOv.style.display = "none";
-
-
 
 fQr.style.display = "none";
 
-
-
 fLagErr.style.display = "none";
 
-
-
 fRound.innerText = "RUNDA 1: WYŚCIG ABCD (12s PO LEKTORZE) | 15 / 12 / 10 / 8 PKT";
-
-
 
 fQ.innerText = data.fakeQuestion || "";
 
 
 
-
-
-
-
 const lets = ["A", "B", "C", "D"];
-
-
 
 (data.fakeOptions || []).forEach((txt, i) => {
 
-
-
 const el = document.getElementById("fake-opt-" + i);
-
-
 
 if (el) el.innerText = lets[i] + ": " + txt;
 
-
-
 });
-
-
 
 fOpts.style.display = "grid";
 
 
 
-
-
-
-
 const ansMap = data.fakeR1Answers || {};
-
-
 
 const ansCount = activeList.filter(p => ansMap[p] !== undefined).length;
 
-
-
 fStat.style.display = "block";
 
-
-
 fStat.style.color = "var(--cyan)";
-
-
 
 fStat.innerText = "🔒 ZAREJESTROWANO ODPOWIEDZI: " + ansCount + " / " + activeList.length + " (WYNIKI PO CZASIE)";
 
 
 
-
-
-
-
 // Jeśli wszyscy odpowiedzieli super szybko przed 7s -> od razu odpalamy lag, żeby nie skończyło się pytanie!
-
-
 
 if (activeList.length > 0 && ansCount >= activeList.length) {
 
-
-
 clearInterval(fakeR1TimerInterval);
-
-
 
 updateDoc(stateRef, { status: "troll_lag", trollTick: Date.now(), speechTick: Date.now() });
 
-
-
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 const rTick = data.fakeReadTick || data.speechTick || 1;
 
-
-
 if (lastFakeReadTick !== rTick) {
-
-
 
 lastFakeReadTick = rTick;
 
-
-
 clearInterval(fakeR1TimerInterval);
-
-
 
 fakeR1TimeLeft = 12;
 
-
-
 fTimer.style.display = "flex";
 
-
-
 fTimer.classList.remove("frozen-err");
-
-
 
 fTimer.innerText = String(fakeR1TimeLeft);
 
 
 
-
-
-
-
 fakeR1TimerInterval = setInterval(async () => {
-
-
 
 if (!currentState || currentState.status !== "fake_r1_reading") {
 
-
-
 clearInterval(fakeR1TimerInterval);
-
-
 
 return;
 
-
-
 }
-
-
 
 fakeR1TimeLeft--;
 
-
-
 fTimer.innerText = String(Math.max(0, fakeR1TimeLeft));
-
-
 
 playSoftCyberTick();
 
 
 
-
-
-
-
 if ((currentState.fakeAutoLagAt7 !== false && fakeR1TimeLeft <= 2) || fakeR1TimeLeft <= 1) {
-
-
 
 clearInterval(fakeR1TimerInterval);
 
-
-
 await updateDoc(stateRef, {
-
-
 
 status: "troll_lag",
 
-
-
 trollTick: Date.now(),
-
-
 
 speechTick: Date.now()
 
-
-
 });
 
-
-
 }
-
-
 
 }, 1000);
 
-
-
 }
-
-
 
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 2: WIELKI LAG (3.8s -> POTEM ATAK HAKERÓW)
 
-
-
 if (status === "troll_lag") {
-
-
 
 fakeTv.style.display = "flex";
 
-
-
 fakeTv.classList.add("glitch-lag");
-
-
 
 hackOv.style.display = "none";
 
-
-
 santaOv.style.display = "none";
-
-
 
 fTimer.style.display = "flex";
 
-
-
 fTimer.classList.add("frozen-err");
 
-
-
 fLagErr.style.display = "block";
-
-
 
 fStat.style.display = "none";
 
 
 
-
-
-
-
 const lTick = data.trollTick || data.speechTick || 1;
-
-
 
 if (lastTrollLagTick !== lTick) {
 
-
-
 lastTrollLagTick = lTick;
-
-
 
 clearTrollFX();
 
-
-
 window.speechSynthesis && window.speechSynthesis.cancel();
-
-
 
 playLagStutterSound();
 
 
 
-
-
-
-
 const tNext = setTimeout(async () => {
-
-
 
 if (currentState && currentState.status === "troll_lag") {
 
-
-
 await updateDoc(stateRef, {
-
-
 
 status: "troll_hack",
 
-
-
 trollTick: Date.now(),
-
-
 
 speechTick: Date.now()
 
-
-
 });
 
-
-
 }
-
-
 
 }, 6000);
 
-
-
 trollTimers.push(tNext);
 
-
-
 }
-
-
 
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 3: ATAK HAKERÓW / WIRUS (6.8s -> POTEM TWIST MIKOŁAJA)
 
-
-
 if (status === "troll_hack") {
-
-
 
 fakeTv.style.display = "none";
 
-
-
 fakeTv.classList.remove("glitch-lag");
 
-
-
 hackOv.style.display = "flex";
-
-
 
 santaOv.style.display = "none";
 
 
 
-
-
-
-
 const hTick = data.trollTick || data.speechTick || 1;
-
-
 
 if (lastTrollHackTick !== hTick) {
 
-
-
 lastTrollHackTick = hTick;
 
-
-
 clearTrollFX();
-
-
 
 playHackerAlarmSiren();
 
 
 
-
-
-
-
 for (let i = 0; i <= 5; i++) {
-
-
 
 const el = document.getElementById("hline-" + i);
 
-
-
 if (el) el.classList.remove("shown");
 
-
-
 }
-
-
-
-
 
 
 
 const lineDelays = [300, 1800, 3400, 5000, 6800, 8600];
 
-
-
 lineDelays.forEach((ms, idx) => {
-
-
 
 const t = setTimeout(() => {
 
-
-
 const el = document.getElementById("hline-" + idx);
-
-
 
 if (el) el.classList.add("shown");
 
-
-
 playTerminalBeep(idx === 5 ? 1280 : (780 + idx * 70));
-
-
 
 }, ms);
 
-
-
 trollTimers.push(t);
 
-
-
 });
-
-
-
-
 
 
 
 const tSanta = setTimeout(async () => {
 
-
-
 if (currentState && currentState.status === "troll_hack") {
-
-
 
 await updateDoc(stateRef, {
 
-
-
 status: "troll_santa",
-
-
 
 trollTick: Date.now(),
 
-
-
 speechTick: Date.now()
-
-
 
 });
 
-
-
 }
-
-
 
 }, 13000);
 
-
-
 trollTimers.push(tSanta);
 
-
-
 }
-
-
 
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 // FAZA 4: TWIST MIKOŁAJA -> PRZEJŚCIE DO PRAWDZIWYCH MIKOŁAJEK!
 
-
-
 if (status === "troll_santa") {
-
-
 
 fakeTv.style.display = "none";
 
-
-
 fakeTv.classList.remove("glitch-lag");
-
-
 
 hackOv.style.display = "none";
 
-
-
 santaOv.style.display = "flex";
-
-
 
 snowCv.style.zIndex = "9660"; // Śnieg pada na wierzchu ekranu Mikołaja!
 
 
 
-
-
-
-
 const sTick = data.trollTick || data.speechTick || 1;
-
-
 
 if (lastTrollSantaTick !== sTick) {
 
-
-
 lastTrollSantaTick = sTick;
-
-
 
 clearTrollFX();
 
-
-
 playGrandFanfareSequence();
-
-
-
-
 
 
 
 speakPolishText("Ho! Ho! Ho! To nie wirus! Święty Mikołaj przejął wasz telewizor i telefony! Zamiast zwykłego quizu czeka na was tajna Misja Mikołajkowa!", () => {
 
-
-
 const tDone = setTimeout(async () => {
-
-
 
 if (!currentState || currentState.status !== "troll_santa") return;
 
-
-
 isBgMusicPlaying = true;
-
-
 
 if (currentState.fakeAutoStartStage1) {
 
-
-
 await updateDoc(stateRef, {
-
-
 
 stage: 1,
 
-
-
 status: "stage1_active",
-
-
 
 stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
 
-
-
 photos: {},
-
-
 
 audioTracks: {},
 
-
-
 speechTick: Date.now()
 
-
-
 });
-
-
 
 } else {
 
-
-
 await updateDoc(stateRef, {
-
-
 
 stage: 0,
 
-
-
 status: "idle",
-
-
 
 speechTick: Date.now()
 
-
-
 });
 
-
-
 }
-
-
 
 }, 1400);
 
-
-
 trollTimers.push(tDone);
-
-
 
 });
 
-
-
 }
-
-
 
 return true;
 
-
-
 }
-
-
-
-
 
 
 
 return false;
 
-
-
 }
-
-
-
-
 
 
 
 const STAGE1_PHOTOS = {
 
-
-
 Lila: [
-
-
 
 "Zrób zdjęcie uśmiechniętego Bartusia!",
 
-
-
 "Zrób zbliżenie na swoją własną skarpetkę (świąteczny skarpetkowy potwór)!",
-
-
 
 "Zrób wspólne zdjęcie pozostałym Agentom, jak robią najśmieszniejsze miny!"
 
-
-
 ],
-
-
 
 Kaja: [
 
-
-
 "Załóż okulary przeciwsłoneczne lub zimową czapkę i zrób sobie wesołe selfie!",
-
-
 
 "Znajdź w domu coś zielonego jak choinka lub roślina i zrób temu zdjęcie!",
 
-
-
 "Zrób zdjęcie swoim ulubionym butom gotowym na daleką wyprawę!"
 
-
-
 ],
-
-
 
 Darek: [
 
-
-
 "Zrób zdjęcie rzeczy, w którą można spakować ekwipunek na wyjazd (plecak, walizka lub torba)!",
-
-
 
 "Znajdź w domu przedmiot pokazujący godzinę i zrób mu zdjęcie!",
 
-
-
 "Zrób z ukrycia zdjęcie (jak tajny detektyw!) któremuś z dorosłych w pokoju!"
-
-
 
 ],
 
-
-
 Jas: [
-
-
 
 "Znajdź w domu coś czerwonego jak czapka Świętego Mikołaja i zrób temu zdjęcie!",
 
-
-
 "Zrób zdjęcie swojej ulubionej zabawce lub pluszakowi!",
-
-
 
 "Zrób zdjęcie kubkowi lub szklance, z której pije się ciepłą zimową herbatę!"
 
-
-
 ]
 
-
-
 };
-
-
-
-
 
 
 
 // DOKŁADNA SYNCHRONIZACJA 12 FRAZ Z PODKŁADEM MAZURKA DĄBROWSKIEGO (beatMs = 520, start 300ms)
 
-
-
 const HYMN_SEQUENCE = [
-
-
 
 { slot: "Lila_1", player: "Lila", label: "🦌 LILA: JESZCZE", delayMs: 300 },
 
-
-
 { slot: "Lila_2", player: "Lila", label: "⭐ BARTUŚ SOLO: POLSKA!", delayMs: 820 },
-
-
 
 { slot: "Kaja_1", player: "Kaja", label: "⛄ KAJA + BARTUŚ: NIE ZGINĘŁA,", delayMs: 1860 },
 
-
-
 { slot: "Kaja_2", player: "Kaja", label: "⛄ KAJA: KIEDY MY ŻYJEMY.", delayMs: 3420 },
-
-
 
 { slot: "Darek_1", player: "Darek", label: "🎄 DAREK: CO NAM OBCA", delayMs: 6540 },
 
-
-
 { slot: "Darek_2", player: "Darek", label: "🎄 DAREK + BARTUŚ: PRZEMOC WZIĘŁA,", delayMs: 8100 },
-
-
 
 { slot: "Jas_1", player: "Jas", label: "🎅 JAŚ + BARTUŚ: SZABLĄ ODBIERZEMY!", delayMs: 9660 },
 
-
-
 { slot: "Jas_2", player: "Jas", label: "⭐ BARTUŚ SOLO: MARSZ, MARSZ DĄBROWSKI!", delayMs: 12780 },
-
-
 
 { slot: "Lila_3", player: "Lila", label: "🦌 LILA: Z ZIEMI WŁOSKIEJ", delayMs: 15900 },
 
-
-
 { slot: "Kaja_3", player: "Kaja", label: "⭐ BARTUŚ SOLO: DO POLSKI!", delayMs: 17460 },
-
-
 
 { slot: "Darek_3", player: "Darek", label: "🎄 DAREK: ZA TWOIM PRZEWODEM", delayMs: 19020 },
 
-
-
 { slot: "Jas_3", player: "Jas", label: "🎅 JAŚ: ZŁĄCZYM SIĘ Z NARODEM!", delayMs: 22140 }
 
-
-
 ];
-
-
-
-
 
 
 
 const STAGE4_RIDDLES = {
 
-
-
 Lila: [
-
-
 
 "Połykam brudne ubrania, wiruję jak szalona i puszczam gęstą pianę, choć nigdzie z łazienki nie wychodzę. Gdzie ukryto pierwszy kod?",
 
-
-
 "Drugi szyfr nie leży na żadnym meblu! Trzyma go przy sobie seniorka rodu, której wypieki i obiady nie mają sobie równych – mama Waszej mamy lub wujka.",
-
-
 
 "Ostatni Twój szyfr spoczywa w Twoim własnym królestwie na czterech nogach – dokładnie tam, gdzie odrabiasz lekcje, rysujesz i odkładasz zeszyty!"
 
-
-
 ],
-
-
 
 Kaja: [
 
-
-
 "Zwykle zieję gorącem jak wulkan i rumienię świąteczne ciasta za szklaną szybą, ale dziś jestem chłodny i czekam, aż zajrzysz do mojego wnętrza!",
-
-
 
 "Milczę na ścianie tam, gdzie myjesz ręce i zęby, ale potrafię bezbłędnie przedrzeźniać każdą minę, którą przede mną zrobisz!",
 
-
-
 "Ostatni kod ma przy sobie osoba, która zna Twoją mamę od kołyski, bo jest jej starszą siostrą! Podbiegnij do tej cioci po tajny szyfr!"
 
-
-
 ],
-
-
 
 Darek: [
 
-
-
 "Prywatna piaszczysta wyspa w domu, którą odwiedza tylko czworonożny mruczący domownik! Nie musisz kopać w żwirku – obejrzyj jej obudowę z boku!",
-
-
 
 "Świecę prosto w Twoje oczy w tej właśnie sekundzie i wyświetlam całą tę grę! Sprawdź ostrożnie przy mojej ramce lub pod podstawką!",
 
-
-
 "Trzeciego kodu pilnuje młodsza siostra Twojej mamy Ani! Odszukaj tę ciocię i szepnij jej hasło: 'Mikołaj pakuje walizki'!"
-
-
 
 ],
 
-
-
 Jas: [
-
-
 
 "Nawet w środku lata w moim brzuchu panuje arktyczny mróz, a gdy otwierasz moje drzwi, zapala się jasne światełko. Zajrzyj do środka!",
 
-
-
 "Odpoczywamy parami na podłodze blisko drzwi wyjściowych i cierpliwie czekamy, aż włożysz w nas stopy przed wyjściem na dwór!",
-
-
 
 "Ostatni tajny szyfr nie jest schowany w żadnej szafce! Pilnuje go najważniejszy superbohater w Twojej rodzinie – Twój własny tata! Podbiegnij do niego, przybij mu piątkę i zapytaj o tajny kod!"
 
-
-
 ]
 
-
-
 };
-
-
-
-
 
 
 
 const STAGE5_QUESTIONS_TEXT = {
 
-
-
 Lila: [
-
-
 
 "W jakiej mroźnej krainie na północy Finlandii znajduje się oficjalna wioska Świętego Mikołaja?",
 
-
-
 "Ile geometrycznych ramion ma zawsze prawdziwy płatek śniegu oglądany pod lupą?",
-
-
 
 "Jak nazywa się najsłynniejszy renifer Mikołaja z błyszczącym czerwonym nosem?"
 
-
-
 ],
-
-
 
 Kaja: [
 
-
-
 "Co według tradycji trzeba wypatrzeć na wigilijnym niebie, zanim zasiądziemy do kolacji?",
-
-
 
 "Które drzewo iglaste jako jedyne w Polsce gubi swoje wszystkie igły na zimę?",
 
-
-
 "Co zostawia się pod choinką lub na talerzyku jako przysmak dla Świętego Mikołaja?"
 
-
-
 ],
-
-
 
 Darek: [
 
-
-
 "Które z tych zwierząt zapada w głęboki sen zimowy aż do nadejścia wiosny?",
-
-
 
 "W jakiej temperaturze zwykła woda zaczyna zamarzać i zamieniać się w lód?",
 
-
-
 "Jak nazywa się tradycyjny puszysty wypiek z rodzynkami lub lukrem pieczony w Święta?"
-
-
 
 ],
 
-
-
 Jas: [
-
-
 
 "Jakiego koloru jest płaszcz i czapka Świętego Mikołaja?",
 
-
-
 "Jakie zwierzęta z rogami ciągną sanie Mikołaja po zimowym niebie?",
-
-
 
 "Z czego lepi się bałwana na podwórku, gdy spadnie biały puch?"
 
-
-
 ]
 
-
-
 };
-
-
-
-
 
 
 
 // --- ŚNIEG W TLE ---
 
-
-
 const snowCanvas = document.getElementById('snow-canvas');
-
-
 
 const snowCtx = snowCanvas.getContext('2d');
 
-
-
 let snowflakes = [];
-
-
 
 function initSnow() {
 
-
-
 snowCanvas.width = window.innerWidth;
-
-
 
 snowCanvas.height = window.innerHeight;
 
-
-
 snowflakes = [];
-
-
 
 for (let i = 0; i < 35; i++) {
 
-
-
 snowflakes.push({ x: Math.random() * snowCanvas.width, y: Math.random() * snowCanvas.height, r: Math.random() * 3 + 1.5, vy: Math.random() * 0.9 + 0.4, vx: (Math.random() - 0.5) * 0.5, alpha: Math.random() * 0.5 + 0.3 });
 
-
-
 }
 
-
-
 }
-
-
 
 initSnow();
 
-
-
 window.addEventListener('resize', initSnow);
-
-
 
 function animateSnow() {
 
-
-
 snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
-
-
 
 for (let i = 0; i < snowflakes.length; i++) {
 
-
-
 const f = snowflakes[i];
-
-
 
 f.y += f.vy; f.x += f.vx;
 
-
-
 if (f.y > snowCanvas.height) { f.y = -5; f.x = Math.random() * snowCanvas.width; }
-
-
 
 snowCtx.globalAlpha = f.alpha; snowCtx.fillStyle = "#ffffff";
 
-
-
 snowCtx.beginPath(); snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2); snowCtx.fill();
 
-
-
 }
-
-
 
 requestAnimationFrame(animateSnow);
 
-
-
 }
-
-
 
 animateSnow();
 
 
 
-
-
-
-
 // --- LEKTOR PL-PL ---
-
-
 
 let selectedPlVoice = null;
 
-
-
 let speechSafetyTimer = null;
-
-
 
 let utteranceQueue = [];
 
 
 
-
-
-
-
 function initPolishVoices() {
-
-
 
 if (!('speechSynthesis' in window)) return;
 
-
-
 const voices = window.speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('pl'));
-
-
 
 const sel = document.getElementById('voiceSelect');
 
-
-
 if (!voices.length) return;
-
-
 
 sel.innerHTML = "";
 
-
-
 voices.sort((a, b) => {
-
-
 
 const score = (v) => {
 
-
-
 const n = v.name.toLowerCase();
-
-
 
 if ((n.includes('zofia') || n.includes('maja') || n.includes('agnieszka')) && (n.includes('natural') || n.includes('online'))) return 20;
 
-
-
 if (n.includes('zofia') || n.includes('maja') || n.includes('agnieszka') || n.includes('ewa')) return 15;
-
-
 
 if (n.includes('google')) return 12;
 
-
-
 return 3;
 
-
-
 };
-
-
 
 return score(b) - score(a);
 
-
-
 });
-
-
 
 voices.forEach((v, idx) => {
 
-
-
 const opt = document.createElement('option');
-
-
 
 opt.value = idx; opt.innerText = v.name; sel.appendChild(opt);
 
-
-
 });
-
-
 
 selectedPlVoice = voices[0];
 
-
-
 sel.onchange = () => {
-
-
 
 selectedPlVoice = voices[parseInt(sel.value)] || voices[0];
 
-
-
 speakPolishText("Głos lektora został zmieniony.");
-
-
 
 };
 
-
-
 }
-
-
 
 if ('speechSynthesis' in window) {
 
-
-
 window.speechSynthesis.onvoiceschanged = initPolishVoices;
-
-
 
 setTimeout(initPolishVoices, 300);
 
-
-
 }
-
-
-
-
 
 
 
 function speakPolishText(textToRead, onDoneCallback) {
 
-
-
 clearTimeout(speechSafetyTimer);
-
-
 
 if (!('speechSynthesis' in window)) { if (onDoneCallback) setTimeout(onDoneCallback, 1500); return; }
 
-
-
 window.speechSynthesis.cancel();
-
-
 
 let cleanText = textToRead.replace(/:\s*$/, "").replace(/:/g, ", ") + " ... ,";
 
-
-
 const utter = new SpeechSynthesisUtterance(cleanText);
-
-
 
 utter.lang = "pl-PL";
 
-
-
 if (selectedPlVoice) utter.voice = selectedPlVoice;
-
-
 
 utter.rate = 0.93; utter.pitch = 1.05;
 
-
-
 utteranceQueue.push(utter);
-
-
 
 if (utteranceQueue.length > 10) utteranceQueue.shift();
 
-
-
 let finished = false;
-
-
 
 const finishOnce = () => {
 
-
-
 if (finished) return;
-
-
 
 finished = true;
 
-
-
 clearTimeout(speechSafetyTimer);
-
-
 
 if (onDoneCallback) setTimeout(onDoneCallback, 550);
 
-
-
 };
-
-
 
 utter.onend = finishOnce;
 
-
-
 utter.onerror = finishOnce;
-
-
 
 const estMs = Math.max(4500, Math.min(18000, cleanText.length * 115 + 2200));
 
-
-
 speechSafetyTimer = setTimeout(finishOnce, estMs);
-
-
 
 window.speechSynthesis.speak(utter);
 
-
-
 }
-
-
-
-
 
 
 
 // --- AUDIO SYNTEZATOR ---
 
-
-
 let audioCtx = null;
-
-
 
 let bgMasterGain = null;
 
-
-
 let musicInterval = null;
-
-
 
 let fanfareLoopInterval = null;
 
-
-
 let isBgMusicPlaying = false;
-
-
 
 let musicMutedByUser = false;
 
-
-
 let anthemPlaybackTimers = [];
-
-
 
 let hymnVoiceTimers = [];
 
-
-
 let activeHymnNodes = [];
-
-
 
 let activeHymnFallbackAudios = [];
 
 
 
-
-
-
-
 function ensureAudioCtx() {
-
-
 
 if (!audioCtx) {
 
-
-
 const AudioContext = window.AudioContext || window.webkitAudioContext;
-
-
 
 audioCtx = new AudioContext();
 
-
-
 bgMasterGain = audioCtx.createGain();
-
-
 
 bgMasterGain.gain.value = 0.20;
 
-
-
 bgMasterGain.connect(audioCtx.destination);
 
-
-
 }
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
 
-
-
 return audioCtx;
 
-
-
 }
-
-
-
-
 
 
 
 function createFestiveChimesMusic() {
 
-
-
 ensureAudioCtx();
-
-
 
 if (musicInterval) return;
 
-
-
 const jingleMelody = [
 
-
-
 659.25, 659.25, 659.25, 0,
 
-
-
 659.25, 659.25, 659.25, 0,
-
-
 
 659.25, 783.99, 523.25, 587.33,
 
-
-
 659.25, 0, 0, 0,
-
-
 
 698.46, 698.46, 698.46, 698.46,
 
-
-
 698.46, 659.25, 659.25, 659.25,
-
-
 
 659.25, 587.33, 587.33, 659.25,
 
-
-
 587.33, 0, 783.99, 0
-
-
 
 ];
 
-
-
 let step = 0;
-
-
 
 musicInterval = setInterval(() => {
 
-
-
 if (!audioCtx || !isBgMusicPlaying || musicMutedByUser) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const freq = jingleMelody[step % jingleMelody.length];
 
-
-
 if (freq > 0) {
-
-
 
 const bellOsc = audioCtx.createOscillator();
 
-
-
 const bellGain = audioCtx.createGain();
-
-
 
 bellOsc.type = "sine"; bellOsc.frequency.setValueAtTime(freq, now);
 
-
-
 bellGain.gain.setValueAtTime(0.08, now); bellGain.gain.exponentialRampToValueAtTime(0.001, now + 0.24);
-
-
 
 bellOsc.connect(bellGain); bellGain.connect(bgMasterGain);
 
-
-
 bellOsc.start(now); bellOsc.stop(now + 0.25);
 
-
-
 }
-
-
 
 step++;
 
-
-
 }, 260);
 
-
-
 }
-
-
-
-
 
 
 
 function startBuiltInAnthemBacking() {
 
-
-
 stopBuiltInAnthemBacking();
-
-
 
 ensureAudioCtx();
 
-
-
 const notes = [
-
-
 
 [440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
 
-
-
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
-
-
 
 [392.00, 0.75], [392.00, 0.25], [523.25, 1.5], [466.16, 0.5],
 
-
-
 [440.00, 1.0], [440.00, 1.0], [0, 1.0],
 
-
-
 [440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
-
-
 
 [523.25, 0.75], [440.00, 0.25], [587.33, 0.5], [523.25, 0.5], [466.16, 0.5], [440.00, 0.5],
 
-
-
 [392.00, 0.75], [392.00, 0.25], [523.25, 1.0], [466.16, 0.75], [392.00, 0.25],
-
-
 
 [349.23, 2.0], [0, 1.0],
 
-
-
 [392.00, 1.0], [392.00, 1.0], [466.16, 1.0],
-
-
 
 [440.00, 1.0], [392.00, 1.0], [0, 1.0],
 
-
-
 [440.00, 0.75], [466.16, 0.25], [523.25, 1.0], [523.25, 1.0],
-
-
 
 [587.33, 1.0], [523.25, 1.0], [523.25, 1.0],
 
-
-
 [587.33, 0.75], [587.33, 0.25], [587.33, 1.0], [523.25, 1.0],
-
-
 
 [466.16, 1.0], [440.00, 1.0], [0, 1.0],
 
-
-
 [392.00, 0.75], [523.25, 0.25], [466.16, 1.0], [392.00, 1.0],
-
-
 
 [349.23, 2.0], [0, 1.0]
 
-
-
 ];
-
-
 
 const beatMs = 520;
 
-
-
 let cursorMs = 300;
-
-
 
 notes.forEach(([freq, beats]) => {
 
-
-
 const durMs = beats * beatMs;
-
-
 
 if (freq > 0) {
 
-
-
 const t = setTimeout(() => {
-
-
 
 if (!audioCtx) return;
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator();
 
-
-
 const g = audioCtx.createGain();
-
-
 
 osc.type = "triangle"; osc.frequency.setValueAtTime(freq, now);
 
-
-
 g.gain.setValueAtTime(0.001, now); g.gain.linearRampToValueAtTime(0.085, now + 0.03);
-
-
 
 g.gain.exponentialRampToValueAtTime(0.001, now + (durMs / 1000) * 0.92);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination);
-
-
 
 osc.start(now); osc.stop(now + (durMs / 1000));
 
-
-
 }, cursorMs);
-
-
 
 anthemPlaybackTimers.push(t);
 
-
-
 }
-
-
 
 cursorMs += durMs;
 
-
-
 });
 
-
-
 }
-
-
-
-
 
 
 
 function stopBuiltInAnthemBacking() { anthemPlaybackTimers.forEach(t => clearTimeout(t)); anthemPlaybackTimers = []; }
 
-
-
 function stopAllHymnPlayback() {
-
-
 
 stopBuiltInAnthemBacking();
 
-
-
 hymnVoiceTimers.forEach(t => clearTimeout(t)); hymnVoiceTimers = [];
-
-
 
 activeHymnNodes.forEach(n => { try { n.stop(); } catch (e) {} }); activeHymnNodes = [];
 
-
-
 activeHymnFallbackAudios.forEach(a => { try { a.pause(); } catch (e) {} }); activeHymnFallbackAudios = [];
 
-
-
 }
-
-
-
-
 
 
 
 function dataUrlToArrayBuffer(dataUrl) {
 
-
-
 const idx = dataUrl.indexOf(',');
-
-
 
 if (idx === -1) return null;
 
-
-
 const binStr = atob(dataUrl.slice(idx + 1));
-
-
 
 const bytes = new Uint8Array(binStr.length);
 
-
-
 for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
-
-
 
 return bytes.buffer;
 
-
-
 }
-
-
-
-
 
 
 
 function decodeAudioPromise(ctx, arrayBuffer) {
 
-
-
 return new Promise((resolve, reject) => {
-
-
 
 try {
 
-
-
 const p = ctx.decodeAudioData(arrayBuffer.slice(0), resolve, reject);
-
-
 
 if (p && typeof p.then === 'function') p.then(resolve).catch(reject);
 
-
-
 } catch (err) { reject(err); }
-
-
 
 });
 
-
-
 }
-
-
-
-
 
 
 
 function findVoiceStartAndPeak(audioBuffer) {
 
-
-
 const data = audioBuffer.getChannelData(0);
-
-
 
 const sr = audioBuffer.sampleRate;
 
-
-
 let peak = 0;
-
-
 
 for (let i = 0; i < data.length; i++) { const a = Math.abs(data[i]); if (a > peak) peak = a; }
 
-
-
 const threshold = Math.min(0.035, peak * 0.18);
-
-
 
 let offsetSec = 0;
 
-
-
 for (let i = 0; i < data.length; i++) {
-
-
 
 if (Math.abs(data[i]) > threshold) { offsetSec = Math.max(0, (i / sr) - 0.03); break; }
 
-
-
 }
-
-
 
 return { offsetSec: offsetSec, peak: peak };
 
-
-
 }
-
-
-
-
 
 
 
 window.toggleBgMusic = function() {
 
-
-
 musicMutedByUser = !musicMutedByUser;
-
-
 
 document.getElementById('muteMusicBtn').innerText = musicMutedByUser ? "🔇 Dzwoneczki: WYŁ" : "🔔 Dzwoneczki: WŁ";
 
-
-
 };
-
-
-
-
 
 
 
 function playIceCrackSound() {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
 
-
-
 osc.type = "sawtooth"; osc.frequency.setValueAtTime(620 + Math.random() * 400, now);
-
-
 
 osc.frequency.exponentialRampToValueAtTime(110, now + 0.14);
 
-
-
 g.gain.setValueAtTime(0.28, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
-
-
 
 osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.16);
 
-
-
 }
-
-
-
-
 
 
 
 let lastTensionBeatAt = 0;
 
-
-
 function playStage8TensionPulse(remainingMs) {
-
-
 
 if (!audioCtx) return;
 
-
-
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
-
-
 
 const progress = Math.max(0, Math.min(1, (60000 - remainingMs) / 60000));
 
-
-
 const intervalMs = Math.round(650 - progress * 535);
-
-
 
 const nowMs = Date.now();
 
-
-
 if (nowMs - lastTensionBeatAt < intervalMs) return;
-
-
 
 lastTensionBeatAt = nowMs;
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const bassOsc = audioCtx.createOscillator(); const bassGain = audioCtx.createGain();
 
-
-
 bassOsc.type = "triangle";
-
-
 
 const baseFreq = 75 + Math.pow(progress, 1.5) * 320;
 
-
-
 bassOsc.frequency.setValueAtTime(baseFreq, now);
-
-
 
 bassOsc.frequency.exponentialRampToValueAtTime(baseFreq * 0.65, now + 0.14);
 
-
-
 bassGain.gain.setValueAtTime(0.16 + progress * 0.26, now);
-
-
 
 bassGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
 
-
-
 bassOsc.connect(bassGain); bassGain.connect(audioCtx.destination); bassOsc.start(now); bassOsc.stop(now + 0.16);
-
-
 
 if (progress > 0.4) {
 
-
-
 const hiOsc = audioCtx.createOscillator(); const hiGain = audioCtx.createGain();
-
-
 
 hiOsc.type = "sawtooth"; hiOsc.frequency.setValueAtTime(440 + Math.pow(progress, 2) * 880, now);
 
-
-
 hiGain.gain.setValueAtTime((progress - 0.35) * 0.22, now); hiGain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
-
-
 
 hiOsc.connect(hiGain); hiGain.connect(audioCtx.destination); hiOsc.start(now); hiOsc.stop(now + 0.08);
 
-
-
 }
 
-
-
 }
-
-
-
-
 
 
 
 function playDramaticDrumHit(freq = 110) {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
 
-
-
 osc.type = "triangle"; osc.frequency.setValueAtTime(freq, now); osc.frequency.exponentialRampToValueAtTime(38, now + 0.55);
-
-
 
 g.gain.setValueAtTime(0.45, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.62);
 
-
-
 }
-
-
-
-
 
 
 
 function playSimonTone(player) {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const tones = { Lila: 523.25, Kaja: 659.25, Darek: 783.99, Jas: 987.77 };
-
-
 
 const now = audioCtx.currentTime;
 
-
-
 const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
-
-
 
 osc.type = "triangle"; osc.frequency.setValueAtTime(tones[player] || 523.25, now);
 
-
-
 g.gain.setValueAtTime(0.32, now); g.gain.exponentialRampToValueAtTime(0.001, now + 0.48);
-
-
 
 osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + 0.50);
 
-
-
 }
-
-
-
-
 
 
 
 function playVaultRumbleEffect() {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const osc = audioCtx.createOscillator(); const g = audioCtx.createGain();
 
-
-
 osc.type = "sawtooth"; osc.frequency.setValueAtTime(95, now); osc.frequency.linearRampToValueAtTime(55, now + 1.8);
-
-
 
 g.gain.setValueAtTime(0.25, now); g.gain.exponentialRampToValueAtTime(0.001, now + 1.9);
 
-
-
 osc.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + 2.0);
 
-
-
 }
-
-
-
-
 
 
 
 function playFireworkBoom() {
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const now = audioCtx.currentTime;
-
-
 
 const bufferSize = audioCtx.sampleRate * 0.45;
 
-
-
 const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
-
-
 
 const output = noiseBuffer.getChannelData(0);
 
-
-
 for (let i = 0; i < bufferSize; i++) output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.14));
-
-
 
 const whiteNoise = audioCtx.createBufferSource(); whiteNoise.buffer = noiseBuffer;
 
-
-
 const filter = audioCtx.createBiquadFilter(); filter.type = "lowpass"; filter.frequency.setValueAtTime(850, now); filter.frequency.exponentialRampToValueAtTime(90, now + 0.42);
-
-
 
 const gain = audioCtx.createGain(); gain.gain.setValueAtTime(0.55, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.42);
 
-
-
 whiteNoise.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination); whiteNoise.start(now);
 
-
-
 }
-
-
-
-
 
 
 
 function playGrandFanfareSequence() {
 
-
-
 fanfareSound.currentTime = 0; fanfareSound.play().catch(()=>{});
-
-
 
 winSound.currentTime = 0; winSound.play().catch(()=>{});
 
-
-
 if (!audioCtx) return;
-
-
 
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(()=>{});
 
-
-
 const playBrassChord = (freqs, startOffset, duration, vol = 0.24) => {
-
-
 
 const now = audioCtx.currentTime + startOffset;
 
-
-
 freqs.forEach((f, idx) => {
-
-
 
 const osc = audioCtx.createOscillator(); const filter = audioCtx.createBiquadFilter(); const g = audioCtx.createGain();
 
-
-
 osc.type = "sawtooth"; osc.frequency.setValueAtTime(f, now); osc.detune.setValueAtTime((idx - 1) * 6, now);
-
-
 
 filter.type = "lowpass"; filter.frequency.setValueAtTime(2400, now);
 
-
-
 g.gain.setValueAtTime(0.001, now); g.gain.linearRampToValueAtTime(vol, now + 0.03); g.gain.exponentialRampToValueAtTime(0.001, now + duration);
-
-
 
 osc.connect(filter); filter.connect(g); g.connect(audioCtx.destination); osc.start(now); osc.stop(now + duration + 0.02);
 
-
-
 });
-
-
 
 };
 
-
-
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.00, 0.22, 0.26);
-
-
 
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.24, 0.22, 0.26);
 
-
-
 playBrassChord([261.63, 329.63, 392.00, 523.25], 0.48, 0.22, 0.26);
-
-
 
 playBrassChord([329.63, 392.00, 523.25, 659.25], 0.72, 0.55, 0.30);
 
-
-
 playBrassChord([293.66, 349.23, 440.00, 587.33], 1.32, 0.45, 0.28);
-
-
 
 playBrassChord([329.63, 392.00, 523.25, 659.25], 1.82, 0.45, 0.28);
 
-
-
 playBrassChord([261.63, 329.63, 392.00, 523.25, 783.99], 2.32, 1.80, 0.36);
 
-
-
 }
-
-
-
-
 
 
 
 function startVictoryFanfareLoop() {
 
-
-
 clearInterval(fanfareLoopInterval);
-
-
 
 playGrandFanfareSequence();
 
-
-
 fanfareLoopInterval = setInterval(() => { if (fwActive) playGrandFanfareSequence(); }, 6800);
 
-
-
 }
-
-
 
 function stopVictoryFanfareLoop() { clearInterval(fanfareLoopInterval); }
 
 
 
-
-
-
-
 window.initAudio = function() {
-
-
 
 document.getElementById('audio-overlay').style.display = 'none';
 
-
-
 createFestiveChimesMusic();
-
-
 
 initPolishVoices();
 
-
-
 const st = (currentState && currentState.status) ? currentState.status : "idle";
-
-
 
 const isFake = st.startsWith("fake_") || st.startsWith("troll_");
 
-
-
 if (isFake) {
-
-
 
 isBgMusicPlaying = false;
 
-
-
 speakPolishText("Witamy w teleturnieju!");
-
-
 
 } else {
 
-
-
 isBgMusicPlaying = true;
-
-
 
 speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na osiem rygli. Zeskanujcie kod na ekranie i do dzieła!");
 
-
-
 }
-
-
 
 [winSound, loseSound, fanfareSound].forEach(s => {
 
-
-
 s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
 
-
-
 });
-
-
 
 };
 
 
 
-
-
-
-
 // --- FAJERWERKI ---
-
-
 
 const fwCanvas = document.getElementById('fireworks-canvas');
 
-
-
 const fwCtx = fwCanvas.getContext('2d');
-
-
 
 let fwParticles = [], fwRockets = [], fwActive = false, fwLoopId = null, fwSpawnTimer = null;
 
 
 
-
-
-
-
 function createExplosion(x, y, mainColor) {
-
-
 
 playFireworkBoom();
 
-
-
 for (let i = 0; i < 18; i++) {
-
-
 
 const angle = (Math.PI * 2 * i) / 18 + (Math.random() - 0.5) * 0.12;
 
-
-
 const speed = Math.random() * 5.5 + 2.2;
-
-
 
 fwParticles.push({ x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, alpha: 1, size: Math.random() * 3.5 + 1.8, color: i % 2 === 0 ? '#ffffff' : mainColor, decay: Math.random() * 0.02 + 0.032 });
 
-
-
 }
 
-
-
 }
-
-
 
 function startFireworks() {
 
-
-
 if (fwActive) return;
-
-
 
 fwActive = true; fwCanvas.style.display = 'block'; fwCanvas.width = window.innerWidth; fwCanvas.height = window.innerHeight;
 
-
-
 fwParticles = []; fwRockets = [];
-
-
 
 const colors = ['#ffd700', '#ff4757', '#2ed573', '#00d4ff', '#ff9f43'];
 
-
-
 function launchWave() {
 
-
-
 if (!fwActive) return;
-
-
 
 fwRockets.push({ x: fwCanvas.width * (0.18 + Math.random() * 0.64), y: fwCanvas.height, vx: (Math.random() - 0.5) * 1.5, vy: -(Math.random() * 4 + 9.5), targetY: fwCanvas.height * (0.14 + Math.random() * 0.32), color: colors[Math.floor(Math.random() * colors.length)] });
 
-
-
 fwSpawnTimer = setTimeout(launchWave, 1300);
 
-
-
 }
-
-
 
 launchWave();
 
-
-
 function animateFw() {
-
-
 
 if (!fwActive) return;
 
-
-
 fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height);
-
-
 
 if (fwParticles.length > 45) fwParticles.splice(0, fwParticles.length - 45);
 
-
-
 for (let i = fwRockets.length - 1; i >= 0; i--) {
-
-
 
 const r = fwRockets[i]; r.x += r.vx; r.y += r.vy; r.vy += 0.1;
 
-
-
 fwCtx.globalAlpha = 1; fwCtx.fillStyle = '#ffffff'; fwCtx.beginPath(); fwCtx.arc(r.x, r.y, 3.2, 0, Math.PI * 2); fwCtx.fill();
-
-
 
 if (r.y <= r.targetY || r.vy >= 0) { createExplosion(r.x, r.y, r.color); fwRockets.splice(i, 1); }
 
-
-
 }
-
-
 
 for (let i = fwParticles.length - 1; i >= 0; i--) {
 
-
-
 const p = fwParticles[i]; p.x += p.vx; p.y += p.vy; p.vy += 0.07; p.alpha -= p.decay;
-
-
 
 if (p.alpha <= 0) fwParticles.splice(i, 1);
 
-
-
 else { fwCtx.globalAlpha = p.alpha; fwCtx.fillStyle = p.color; fwCtx.beginPath(); fwCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2); fwCtx.fill(); }
 
-
-
 }
-
-
 
 fwLoopId = requestAnimationFrame(animateFw);
 
-
-
 }
-
-
 
 animateFw();
 
-
-
 }
-
-
 
 function stopFireworks() { fwActive = false; clearTimeout(fwSpawnTimer); if (fwLoopId) cancelAnimationFrame(fwLoopId); fwCtx.clearRect(0, 0, fwCanvas.width, fwCanvas.height); fwCanvas.style.display = 'none'; }
 
 
 
-
-
-
-
 // --- ZARZĄDZANIE STANEM TELEWIZORA ---
-
-
 
 let currentState = null;
 
-
-
 const agentsList = ["Lila", "Kaja", "Darek", "Jaś"];
-
-
 
 const dbKeyMap = { "Lila": "Lila", "Kaja": "Kaja", "Darek": "Darek", "Jaś": "Jas" };
 
 
 
-
-
-
-
 let lastSeqTickPlayed = 0;
-
-
 
 let lastColorTickPlayed = 0;
 
-
-
 let lastFinaleSuspenseTick = 0;
-
-
 
 let lastFinaleUnlockedStarted = false;
 
-
-
 let lastAnnouncedStage = -1;
-
-
 
 let tvStage7TimerInterval = null;
 
-
-
 let stage7ReadyAfterSpeech = false;
-
-
 
 let lastStage7StartSeen = 0;
 
-
-
 let suspenseRunId = 0;
-
-
 
 let finaleSlideRunId = 0;
 
-
-
 let wasHoldingAllInStage8 = false;
 
-
-
 let lastHymnPlayTick = 0;
-
-
 
 let lastIceHits = 0;
 
 
 
-
-
-
-
 // GŁÓWNY ZEGAR ETAPU 8 (60s)
-
-
 
 setInterval(async () => {
 
-
-
 if (!currentState) return;
-
-
 
 if (currentState.stage === 8 && currentState.status === "stage8_active") {
 
-
-
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
-
-
 
 const hm = currentState.holdMap || {};
 
-
-
 const allHold = activeList.length > 0 && activeList.every(p => hm[p] === true);
-
-
 
 const curRem = currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000;
 
 
 
-
-
-
-
 if (allHold) {
-
-
 
 wasHoldingAllInStage8 = true;
 
-
-
 isBgMusicPlaying = false;
-
-
 
 const nextRem = Math.max(0, curRem - 200);
 
-
-
 playStage8TensionPulse(nextRem);
-
-
 
 if (nextRem <= 0) {
 
-
-
 wasHoldingAllInStage8 = false;
-
-
 
 await updateDoc(stateRef, { holdRemainingMs: 0, stage: 9, status: "finale_suspense", finaleStartTick: Date.now(), speechTick: Date.now() });
 
-
-
 } else {
-
-
 
 await updateDoc(stateRef, { holdRemainingMs: nextRem });
 
-
-
 }
 
-
-
 } else {
-
-
 
 if (wasHoldingAllInStage8 || curRem < 60000) {
 
-
-
 wasHoldingAllInStage8 = false; isBgMusicPlaying = true;
-
-
 
 loseSound.currentTime = 0; loseSound.play().catch(()=>{});
 
-
-
 speakPolishText("O nie! Ktoś puścił skaner! Zegar wraca na sześćdziesiąt sekund!");
-
-
 
 await updateDoc(stateRef, { holdRemainingMs: 60000 });
 
-
-
 }
 
-
-
 }
-
-
 
 } else {
 
-
-
 wasHoldingAllInStage8 = false;
 
-
-
 }
-
-
 
 }, 200);
 
 
 
-
-
-
-
 onSnapshot(stateRef, (docSnap) => {
-
-
 
 if (!docSnap.exists()) return;
 
-
-
 currentState = docSnap.data();
-
-
 
 renderTVStage();
 
-
-
 });
-
-
-
-
 
 
 
 function highlightSimonPad(player, durationMs = 650) {
 
-
-
 const padEl = document.getElementById("sp-" + player);
-
-
 
 if (!padEl) return;
 
-
-
 padEl.classList.add('lit'); playSimonTone(player);
-
-
 
 setTimeout(() => { padEl.classList.remove('lit'); }, durationMs);
 
-
-
 }
-
-
-
-
 
 
 
 function buildSmartSimonSequence(levelNum, activeList) {
 
-
-
 const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
-
-
 
 const pool = (activeList && activeList.length > 0) ? activeList : ["Lila", "Kaja", "Darek", "Jas"];
 
-
-
 for (let attempt = 0; attempt < 50; attempt++) {
-
-
 
 const bag = [];
 
-
-
 for (let i = 0; i < Math.min(targetLen, pool.length); i++) bag.push(pool[i]);
-
-
 
 while (bag.length < targetLen) bag.push(pool[Math.floor(Math.random() * pool.length)]);
 
-
-
 for (let i = bag.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); const tmp = bag[i]; bag[i] = bag[j]; bag[j] = tmp; }
-
-
 
 if (!hasThreeInARow(bag)) return bag;
 
-
-
 }
-
-
 
 return pool;
 
-
-
 }
-
-
 
 function hasThreeInARow(seq) {
 
-
-
 for (let i = 2; i < seq.length; i++) if (seq[i] === seq[i - 1] && seq[i] === seq[i - 2]) return true;
-
-
 
 return false;
 
-
-
 }
-
-
 
 function isMissingActivePlayer(seq, activeList) {
 
-
-
 if (!activeList || activeList.length === 0 || seq.length < activeList.length) return false;
-
-
 
 return activeList.some(p => !seq.includes(p));
 
-
-
 }
-
-
-
-
 
 
 
 async function playSimonSequenceOnTV(seq, mistakeBy, levelNum, activeList) {
 
-
-
 const targetLen = levelNum === 1 ? 7 : (levelNum === 2 ? 8 : 9);
-
-
 
 if ((activeList || []).length > 1 && (seq.length !== targetLen || hasThreeInARow(seq) || isMissingActivePlayer(seq, activeList))) {
 
-
-
 await updateDoc(stateRef, { simonSeq: buildSmartSimonSequence(levelNum, activeList), seqTick: Date.now() });
-
-
 
 return;
 
-
-
 }
-
-
 
 isBgMusicPlaying = false;
 
-
-
 const msgEl = document.getElementById('simonStatusText');
-
-
 
 const introSpeech = mistakeBy
 
-
-
 ? "Pomyłka! Nowa sekwencja poziomu " + levelNum + ". Patrzcie uważnie!"
-
-
 
 : "Poziom " + levelNum + ", " + seq.length + " kolorów! Patrzcie uważnie na kolejność!";
 
-
-
 if (msgEl) msgEl.innerText = "👀 OBSERWUJCIE KOLEJNOŚĆ KOLORÓW NA EKRANIE...";
-
-
 
 const stepInterval = levelNum === 1 ? 950 : (levelNum === 2 ? 1150 : 1050);
 
-
-
 const litDuration = Math.round(stepInterval * 0.72);
-
-
 
 speakPolishText(introSpeech, () => {
 
-
-
 let delay = 450;
-
-
 
 seq.forEach((player) => { setTimeout(() => { highlightSimonPad(player, litDuration); }, delay); delay += stepInterval; });
 
-
-
 setTimeout(async () => {
-
-
 
 if (msgEl) msgEl.innerText = "👉 WASZA KOLEJ! ODTWÓRZCIE SZYFR NA TELEFONACH!";
 
-
-
 isBgMusicPlaying = true;
-
-
 
 await updateDoc(stateRef, { status: "stage6_input" });
 
-
-
 }, delay + 400);
-
-
 
 });
 
-
-
 }
-
-
-
-
 
 
 
 function startTVStage7Countdown(freshStartMs) {
 
-
-
 if (tvStage7TimerInterval) clearInterval(tvStage7TimerInterval);
-
-
 
 const localStart = freshStartMs || Date.now();
 
-
-
 tvStage7TimerInterval = setInterval(async () => {
-
-
 
 if (!currentState || currentState.stage !== 7 || currentState.status !== "stage7_active") { clearInterval(tvStage7TimerInterval); return; }
 
-
-
 if (!stage7ReadyAfterSpeech) return;
-
-
 
 const timerEl = document.getElementById('tvStage7Sec');
 
-
-
 const rem = Math.max(0, (20000 - (Date.now() - localStart)) / 1000);
-
-
 
 if (timerEl) timerEl.innerText = "⏱️ POZOSTAŁO CZASU: " + rem.toFixed(1) + "s";
 
-
-
 if (rem <= 0) {
-
-
 
 clearInterval(tvStage7TimerInterval);
 
-
-
 if ((currentState.tapsCount || 0) < (currentState.tapsTarget || 300)) await updateDoc(stateRef, { status: "stage7_failed", speechTick: Date.now() });
 
-
-
 }
-
-
 
 }, 80);
 
-
-
 }
-
-
-
-
 
 
 
 function runFinaleSuspenseSequence() {
 
-
-
 const myRun = ++suspenseRunId;
-
-
 
 isBgMusicPlaying = false;
 
-
-
 const stageBox = document.getElementById('mainStage');
-
-
 
 const head = document.getElementById('missionHeader');
 
-
-
 const arena = document.getElementById('stageArena');
-
-
 
 stageBox.classList.add('suspense-shake');
 
-
-
 playVaultRumbleEffect();
-
-
 
 head.innerText = "⚠️ UWAGA! WSZYSTKIE 8 RYGLI ZOSTAŁO ZWOLNIONYCH! ⚠️";
 
-
-
 arena.innerHTML = '<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">⚙️ TRWA OTWIERANIE PANCERNYCH DRZWI SKARBCA...<br><span style="font-size:1.3vw; color:#fff;">Stalowe zasuwy cofają się z głośnym zgrzytem...</span></div>';
-
-
 
 speakPolishText("Uwaga Agenci! Ostatni ósmy rygiel puścił! Pancerne drzwi skarbca powoli się uchylają...", () => {
 
-
-
 if (myRun !== suspenseRunId) return;
-
-
 
 setTimeout(() => {
 
-
-
 if (myRun !== suspenseRunId) return;
 
-
-
 playVaultRumbleEffect();
-
-
 
 head.innerText = "📦 WEWNĄTRZ SKARBCA JEST TAJNA SKRZYNIA... 📦";
 
-
-
 arena.innerHTML = '<div style="font-size:2vw; color:var(--gold); font-weight:900; line-height:1.4;">😱 CHWILECZKĘ! SKRZYNIA Z PREZENTEM JEST ZAMKNIĘTA NA KLUCZ!<br><span style="font-size:1.35vw; color:#cbd5e1;">Ktoś ukrył fizyczny klucz poza skarbcem!</span></div>';
-
-
 
 speakPolishText("Ale chwileczkę... W środku skarbca stoi tajna skrzynia, a klucza do niej nie ma na miejscu! Uruchamiam skaner detektywistyczny, aby namierzyć położenie klucza!", () => {
 
-
-
 if (myRun !== suspenseRunId) return;
-
-
 
 setTimeout(() => {
 
-
-
 if (myRun !== suspenseRunId) return;
-
-
 
 playVaultRumbleEffect();
 
-
-
 head.innerText = "📡 NAMIERZANIE SYGNAŁU KLUCZA W POBLIŻU... 📡";
-
-
 
 arena.innerHTML = '<div style="font-size:2.1vw; color:#2dc653; font-weight:900; line-height:1.4;">🎯 SYGNAŁ NAMIERZONY W ODLEGŁOŚCI KILKU METRÓW!<br><span style="font-size:1.4vw; color:#fff;">Trwa dokładny odczyt kryjówki klucza...</span></div>';
 
-
-
 speakPolishText("Sygnał namierzony! Klucz znajduje się całkiem blisko...", () => {
 
-
-
 if (myRun !== suspenseRunId) return;
-
-
 
 setTimeout(async () => {
 
-
-
 if (myRun !== suspenseRunId) return;
-
-
 
 stageBox.classList.remove('suspense-shake');
 
-
-
 await updateDoc(stateRef, { status: "finale_unlocked", speechTick: Date.now() });
-
-
 
 }, 1000);
 
-
-
 });
-
-
 
 }, 900);
 
-
-
 });
-
-
 
 }, 900);
 
-
-
 });
-
-
 
 }
-
-
-
-
 
 
 
 function runDramaticFinalSlideReveal() {
 
-
-
 const mySlideRun = ++finaleSlideRunId;
-
-
 
 const head = document.getElementById('missionHeader');
 
-
-
 const arena = document.getElementById('stageArena');
-
-
 
 const vicBanner = document.getElementById('victory-banner');
 
-
-
 const stageBox = document.getElementById('mainStage');
-
-
 
 const holderRaw = (currentState && currentState.keyHolder && currentState.keyHolder.trim()) ? currentState.keyHolder.trim() : "W KIESZENI U WUJKA";
 
-
-
 const holderUpper = holderRaw.toUpperCase();
-
-
 
 vicBanner.style.display = 'none'; stageBox.classList.remove('victory-glow');
 
-
-
 head.innerText = "🔍 WYNIK SKANOWANIA DETEKTYWISTYCZNEGO... 🔍";
-
-
 
 playDramaticDrumHit(90);
 
-
-
 arena.innerHTML = '<div id="finalRevealBox" style="font-size:2.2vw; font-weight:900; line-height:1.45; text-shadow:0 2px 8px #000;"><div class="reveal-step-line" style="color:#cbd5e1;">TAJNY KLUCZ DO SKRZYNI Z PREZENTEM...</div></div>';
-
-
 
 speakPolishText("Uwaga, odczytuję wynik skanera... Tajny klucz do skrzyni z prezentem...", () => {
 
-
-
 if (mySlideRun !== finaleSlideRunId) return;
-
-
 
 playDramaticDrumHit(120);
 
-
-
 const box = document.getElementById('finalRevealBox');
-
-
 
 if (box) box.innerHTML += '<div class="reveal-step-line" style="color:var(--gold); font-size:2.4vw;">...ZNAJDUJE SIĘ...</div>';
 
-
-
 speakPolishText("znajduje się...", () => {
 
-
-
 if (mySlideRun !== finaleSlideRunId) return;
-
-
 
 playVaultRumbleEffect();
 
-
-
 if (box) box.innerHTML += '<div class="reveal-step-line" id="dotsSuspense" style="color:#ff4d4d; font-size:2.8vw; letter-spacing:0.5vw;">. . .</div>';
-
-
 
 setTimeout(() => {
 
-
-
 if (mySlideRun !== finaleSlideRunId) return;
-
-
 
 stageBox.classList.add('victory-glow');
 
-
-
 head.innerText = "🏆 TAJEMNICA SKARBCA ROZWIĄZANA! 🏆";
-
-
 
 const dots = document.getElementById('dotsSuspense'); if (dots) dots.remove();
 
-
-
 if (box) box.innerHTML += '<div class="reveal-step-line" style="color:#2dc653; font-size:3.1vw; margin-top:0.6vw; text-shadow:0 0 1.5vw #2dc653;">🎅🔑 ' + holderUpper + '! 🔑🎅</div>';
-
-
 
 vicBanner.innerText = "🏆 SKARBIEC OTWARTY! KLUCZ: " + holderUpper + "! 🎅🔑";
 
-
-
 vicBanner.style.display = 'block';
-
-
 
 startFireworks(); startVictoryFanfareLoop();
 
-
-
 speakPolishText(holderRaw + "! Odbierzcie klucz i otwórzcie prezent!");
-
-
 
 }, 2400);
 
-
-
 });
 
-
-
 });
-
-
 
 }
-
-
-
-
 
 
 
 async function playSynchronizedHymn(tracks, activeList) {
 
-
-
 stopAllHymnPlayback();
-
-
 
 isBgMusicPlaying = false;
 
-
-
 const ctx = ensureAudioCtx();
-
-
 
 const activeSeq = HYMN_SEQUENCE.filter(item => activeList.includes(item.player));
 
-
-
 const decodedMap = {}, fallbackMap = {};
-
-
 
 const decodePromises = activeSeq.map(async (item) => {
 
-
-
 const dataUrl = tracks[item.slot];
-
-
 
 if (!dataUrl || typeof dataUrl !== "string") return;
 
-
-
 const fbAudio = new Audio(dataUrl); fbAudio.preload = "auto"; fbAudio.volume = 1.0;
-
-
 
 fallbackMap[item.slot] = fbAudio; activeHymnFallbackAudios.push(fbAudio);
 
-
-
 try {
-
-
 
 const ab = dataUrlToArrayBuffer(dataUrl);
 
-
-
 if (ab && ab.byteLength > 0) {
-
-
 
 const buf = await decodeAudioPromise(ctx, ab);
 
-
-
 const info = findVoiceStartAndPeak(buf);
-
-
 
 decodedMap[item.slot] = { buffer: buf, offsetSec: info.offsetSec, peak: info.peak };
 
-
-
 }
-
-
 
 } catch (err) { console.warn("WebAudio decode fallback dla " + item.slot + ":", err); }
 
-
-
 });
-
-
 
 speakPolishText("Wszystkie nagrania gotowe! Uwaga, odpalamy hymn z Bartusiem! Posłuchajcie!", async () => {
 
-
-
 await Promise.allSettled(decodePromises);
-
-
 
 ensureAudioCtx();
 
-
-
 let maxDelay = 0;
-
-
 
 startBuiltInAnthemBacking();
 
-
-
 document.querySelectorAll('.wave-bar').forEach(w => w.classList.add('active'));
-
-
 
 activeSeq.forEach((item, idx) => {
 
-
-
 const playAt = activeSeq.length === HYMN_SEQUENCE.length ? item.delayMs : (300 + idx * 1900);
-
-
 
 if (playAt > maxDelay) maxDelay = playAt;
 
-
-
 const timerId = setTimeout(() => {
-
-
 
 const karaokeEl = document.getElementById('hymnKaraokeText');
 
-
-
 if (karaokeEl) karaokeEl.innerText = item.label;
-
-
 
 const decoded = decodedMap[item.slot];
 
-
-
 if (decoded && decoded.buffer && audioCtx) {
-
-
 
 try {
 
-
-
 if (audioCtx.state === 'suspended') audioCtx.resume().catch(() => {});
-
-
 
 const src = audioCtx.createBufferSource(); src.buffer = decoded.buffer;
 
-
-
 const gainNode = audioCtx.createGain();
-
-
 
 gainNode.gain.value = decoded.peak > 0.01 ? Math.min(2.4, Math.max(1.0, 0.85 / decoded.peak)) : 1.5;
 
-
-
 src.connect(gainNode); gainNode.connect(audioCtx.destination);
-
-
 
 src.start(0, decoded.offsetSec); activeHymnNodes.push(src);
 
-
-
 return;
-
-
 
 } catch (e) {}
 
-
-
 }
-
-
 
 const fbAudio = fallbackMap[item.slot];
 
-
-
 if (fbAudio) { fbAudio.currentTime = 0; fbAudio.play().catch(() => {}); }
-
-
 
 }, playAt);
 
-
-
 hymnVoiceTimers.push(timerId);
 
-
-
 });
-
-
 
 hymnVoiceTimers.push(setTimeout(async () => {
 
-
-
 stopAllHymnPlayback(); isBgMusicPlaying = true;
-
-
 
 await updateDoc(stateRef, { status: "stage_complete", completedStageNum: 2, speechTick: Date.now() });
 
-
-
 }, maxDelay + 2800));
-
-
 
 });
 
-
-
 }
-
-
-
-
 
 
 
 function renderTVStage() {
 
-
-
 if (!currentState) return;
-
-
-
-
 
 
 
 // NAJPIERW SPRAWDZAMY WARSTWĘ ZMYŁKI / TROLLA (CAŁKOWICIE NIEZALEŻNA OD ETAPÓW 1-8!)
 
-
-
 if (renderTrollLayer(currentState)) return;
-
-
-
-
 
 
 
 const st = currentState.stage || 0;
 
-
-
 const status = currentState.status || "idle";
-
-
 
 const activeList = currentState.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
 
-
-
 const prog = currentState.stepProgress || {};
-
-
 
 const photos = currentState.photos || {};
 
 
 
-
-
-
-
 const stageBox = document.getElementById('mainStage');
-
-
 
 const arena = document.getElementById('stageArena');
 
-
-
 const vicBanner = document.getElementById('victory-banner');
-
-
 
 const head = document.getElementById('missionHeader');
 
 
 
-
-
-
-
 if (st !== 2 || status !== "stage2_play") stopAllHymnPlayback();
-
-
 
 if (status !== "finale_unlocked" && st !== 9) {
 
-
-
 lastFinaleUnlockedStarted = false; stopFireworks(); stopVictoryFanfareLoop();
-
-
 
 stageBox.classList.remove('victory-glow');
 
-
-
 }
-
-
 
 if (status !== "finale_suspense") stageBox.classList.remove('suspense-shake');
 
 
 
-
-
-
-
 for (let i = 1; i <= 8; i++) {
-
-
 
 const bolt = document.getElementById("bolt-" + i);
 
-
-
 if (bolt) {
-
-
 
 if (i < st || status === "finale_unlocked" || status === "finale_suspense") {
 
-
-
 bolt.className = "vault-bolt unlocked"; bolt.innerText = "RYGIEL " + i + " 🔓";
-
-
 
 } else if (i === st) {
 
-
-
 bolt.className = "vault-bolt unlocked"; bolt.innerText = "RYGIEL " + i + " ⏳";
-
-
 
 } else {
 
-
-
 bolt.className = "vault-bolt"; bolt.innerText = "RYGIEL " + i + " 🔒";
 
-
+}
 
 }
 
-
-
 }
-
-
-
-}
-
-
-
-
 
 
 
 agentsList.forEach(a => {
 
-
-
 const corner = document.getElementById("tv-" + a);
-
-
 
 const numEl = document.getElementById("tv-num-" + a);
 
-
-
 const qEl = document.getElementById("tv-q-" + a);
-
-
 
 const imgEl = document.getElementById("tv-img-" + a);
 
-
-
 const dbK = dbKeyMap[a];
-
-
 
 if (!activeList.includes(dbK)) { corner.style.display = 'none'; return; }
 
-
-
 corner.style.display = 'flex';
 
-
-
 const pStep = prog[dbK] || 0;
-
-
 
 const pPhoto = photos[dbK] || {};
 
 
 
-
-
-
-
 if (st === 1) {
-
-
 
 numEl.innerText = "ZDJĘCIE " + Math.min(3, pStep + 1) + "/3";
 
-
-
 qEl.innerText = pStep < 3 ? STAGE1_PHOTOS[dbK][pStep] : "Wszystkie 3 zdjęcia zaliczone!";
-
-
 
 if (pPhoto.img) { imgEl.style.display = 'block'; imgEl.src = pPhoto.img; } else imgEl.style.display = 'none';
 
-
-
 } else if (st === 2) {
-
-
 
 const tr = currentState.audioTracks || {};
 
-
-
 const cnt = (tr[dbK + "_1"] ? 1 : 0) + (tr[dbK + "_2"] ? 1 : 0) + (tr[dbK + "_3"] ? 1 : 0);
-
-
 
 numEl.innerText = "HYMN " + cnt + "/3";
 
-
-
 qEl.innerText = cnt >= 3 ? "✅ Wszystkie 3 frazy nagrane!" : "🎤 Nagraj 3 frazy na telefonie (w tym z Bartusiem)!";
 
-
-
 imgEl.style.display = 'none';
-
-
 
 } else if (st === 3) {
 
-
-
 numEl.innerText = "LÓD";
-
-
 
 qEl.innerText = "🧊 Trzęś mocno telefonem, aby skruszyć bryłę lodu!";
 
-
-
 imgEl.style.display = 'none';
-
-
 
 } else if (st === 4) {
 
-
-
 numEl.innerText = "KRYJÓWKA " + Math.min(3, pStep + 1) + "/3";
-
-
 
 qEl.innerText = pStep < 3 ? STAGE4_RIDDLES[dbK][pStep] : "Wszystkie 3 kody znalezione!";
 
-
-
 imgEl.style.display = 'none';
-
-
 
 } else if (st === 5) {
 
-
-
 numEl.innerText = "ZAGADKA " + Math.min(3, pStep + 1) + "/3";
-
-
 
 qEl.innerText = pStep < 3 ? STAGE5_QUESTIONS_TEXT[dbK][pStep] : "Wszystkie 3 zagadki rozwiązane!";
 
-
-
 imgEl.style.display = 'none';
-
-
 
 } else {
 
-
-
 numEl.innerText = "ETAP " + Math.min(8, st) + "/8";
-
-
 
 qEl.innerText = st === 0 ? "Zeskanuj kod QR ze środka ekranu!" : "Wspólne zadanie drużynowe na głównym ekranie!";
 
-
-
 imgEl.style.display = 'none';
-
-
 
 }
 
-
-
 });
-
-
-
-
 
 
 
 if (status === "finale_suspense") {
 
-
-
 vicBanner.style.display = 'none';
-
-
 
 const fTick = currentState.finaleStartTick || 1;
 
-
-
 if (lastFinaleSuspenseTick !== fTick) { lastFinaleSuspenseTick = fTick; runFinaleSuspenseSequence(); }
-
-
 
 return;
 
-
-
 }
-
-
-
-
 
 
 
 if (status === "finale_unlocked" || (st === 9 && status !== "finale_suspense")) {
 
-
-
 if (!lastFinaleUnlockedStarted) { lastFinaleUnlockedStarted = true; runDramaticFinalSlideReveal(); }
-
-
 
 return;
 
-
-
 }
-
-
-
-
 
 
 
@@ -7214,668 +3608,334 @@ vicBanner.style.display = 'none';
 
 
 
-
-
-
-
 if (status === "stage_complete") {
-
-
 
 const cNum = currentState.completedStageNum || st;
 
-
-
 head.innerText = "✅ RYGIEL " + cNum + " ODBLOKOWANY!";
-
-
 
 arena.innerHTML = '<div style="font-size:1.9vw; color:#2dc653; font-weight:900; line-height:1.4;">🎉 BRAWO DRUŻYNO! ETAP ' + cNum + ' UKOŃCZONY! 🎉<br><span style="font-size:1.3vw; color:#fff;">Kliknijcie przycisk na telefonie, aby uruchomić kolejny etap!</span></div>';
 
-
-
 if (lastAnnouncedStage !== 100 + cNum) {
-
-
 
 lastAnnouncedStage = 100 + cNum;
 
-
-
 winSound.currentTime = 0; winSound.play().catch(()=>{});
-
-
 
 speakPolishText("Brawo drużyno! Rygiel numer " + cNum + " został odblokowany!");
 
-
-
 }
-
-
 
 return;
 
-
-
 }
-
-
-
-
 
 
 
 if (st === 1) {
 
-
-
 head.innerText = "📸 ETAP 1: FOTO-ZWIAD - CZEKAMY NA ZDJĘCIA!";
-
-
 
 let html = '<div style="font-size:1.15vw; color:#cbd5e1; margin-bottom:10px;">Zróbcie po 3 zdjęcia na telefonach. Wujek zatwierdza je na żywo!</div><div style="display:flex; gap:1vw; justify-content:center; width:100%;">';
 
-
-
 activeList.forEach(p => {
-
-
 
 const pData = photos[p] || {};
 
-
-
 const sNum = prog[p] || 0;
-
-
 
 const imgPart = pData.img
 
-
-
 ? '<img class="center-photo-thumb" src="' + pData.img + '">'
-
-
 
 : '<div style="height:9.5vw; display:flex; align-items:center; justify-content:center; background:#000; border-radius:8px; margin:6px 0; font-size:0.85vw; color:#666;">Czeka na zdjęcie...</div>';
 
-
-
 const stColor = pData.status === 'approved' ? '#2dc653' : (pData.status === 'rejected' ? '#ff4d4d' : '#ffd700');
-
-
 
 const stLabel = pData.status === 'approved' ? '✔️ ZATWIERDZONE' : (pData.status === 'pending' ? '⏳ CZEKA NA WUJKA' : (pData.status === 'rejected' ? '❌ POPRAW ZDJĘCIE' : 'Ruszaj z aparatem!'));
 
-
-
 html += '<div style="background:#081c15; border:2px solid ' + (pData.status === 'pending' ? '#ffd700' : '#334155') + '; border-radius:12px; padding:8px; width:12.5vw; text-align:center;">'
-
-
 
 + '<b style="color:var(--gold); font-size:1.1vw;">' + p.toUpperCase() + ' (' + sNum + '/3)</b><br>' + imgPart
 
-
-
 + '<span style="font-size:0.85vw; font-weight:bold; color:' + stColor + '">' + stLabel + '</span></div>';
 
-
-
 });
-
-
 
 html += '</div>';
 
-
-
 arena.innerHTML = html;
-
-
 
 if (lastAnnouncedStage !== 1) { lastAnnouncedStage = 1; speakPolishText("Etap pierwszy: Foto-Zwiad! Każdy Agent ma do wykonania trzy świąteczne zdjęcia w domu."); }
 
-
-
 } else if (st === 2) {
-
-
 
 head.innerText = "🎤 ETAP 2: WOKALNY NAPĘD SAŃ (HYMN Z BARTUSIEM!)";
 
-
-
 const tracks = currentState.audioTracks || {};
-
-
 
 const order = ["Lila", "Kaja", "Darek", "Jas"].filter(p => activeList.includes(p));
 
-
-
 let totalDone = 0;
-
-
 
 const totalNeeded = order.length * 3;
 
-
-
 let cardsHtml = '<div style="display:flex; gap:1.2vw; justify-content:center; width:100%;">';
-
-
 
 order.forEach(p => {
 
-
-
 const cnt = (tracks[p + "_1"] ? 1 : 0) + (tracks[p + "_2"] ? 1 : 0) + (tracks[p + "_3"] ? 1 : 0);
-
-
 
 totalDone += cnt;
 
-
-
 const ok = cnt >= 3;
-
-
 
 cardsHtml += '<div style="background:#081c15; border:2px solid ' + (ok ? '#2dc653' : '#ff4d4d') + '; padding:1vw; border-radius:1vw; width:12vw;">'
 
-
-
 + '<b style="color:var(--gold); font-size:1.2vw;">' + p.toUpperCase() + '</b><br>'
-
-
 
 + '<span style="font-size:1.1vw; font-weight:bold; color:' + (ok ? '#2dc653' : '#ffd700') + ';">' + (ok ? '✅ 3/3 GOTOWE' : '🎙️ ' + cnt + ' / 3') + '</span></div>';
 
-
-
 });
-
-
 
 cardsHtml += '</div>';
 
-
-
 if (!(status === "stage2_play" && document.getElementById('hymnKaraokeText'))) {
-
-
 
 const allRecorded = totalNeeded > 0 && totalDone >= totalNeeded;
 
-
-
 const bottomHtml = status === "stage2_play"
-
-
 
 ? '<div class="hymn-karaoke-box" id="hymnKaraokeText">🎶 START HYMNU...</div><div class="audio-waves"><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div></div>'
 
-
-
 : (allRecorded ? '<div style="margin-top:1.2vw; font-size:1.3vw; color:#2dc653; font-weight:bold;">Wszystkie nagrania gotowe! Wujek zaraz odpali nasz chór!</div>'
-
-
 
 : '<div style="margin-top:1.2vw; font-size:1.15vw; color:#cbd5e1;">Każdy nagrywa 3 fragmenty (1. zwrotka i refren) – na zmianę z Bartusiem!</div>');
 
-
-
 arena.innerHTML = '<div style="font-size:1.4vw; font-weight:bold; margin-bottom:1vw; color:var(--gold);">POSTĘP NAGRANIA HYMNU: ' + totalDone + ' / ' + totalNeeded + '</div>' + cardsHtml + bottomHtml;
 
-
-
 }
-
-
 
 if (lastAnnouncedStage !== 2) { lastAnnouncedStage = 2; speakPolishText("Etap drugi! Nagrywamy pierwszą zwrotkę i refren hymnu! Każdy ma trzy fragmenty na zmianę z Bartusiem. Odsłuchajcie przed wysłaniem!"); }
 
-
-
 if (status === "stage2_play" && currentState.playTick && currentState.playTick !== lastHymnPlayTick) {
-
-
 
 lastHymnPlayTick = currentState.playTick; playSynchronizedHymn(tracks, activeList);
 
-
-
 }
-
-
 
 } else if (st === 3) {
 
-
-
 head.innerText = "🧊 ETAP 3: ZAMARZNIĘTE SANIE (TRZĘŚCIE TELEFONAMI!)";
-
-
 
 const hits = currentState.iceTotalHits || 0;
 
-
-
 const target = currentState.iceTarget || (activeList.length * 2500);
-
-
 
 const pct = Math.min(100, Math.round((hits / target) * 100));
 
-
-
 const isShaking = (hits > lastIceHits);
-
-
 
 lastIceHits = hits;
 
-
-
 const iceOpacity = Math.max(0, (100 - pct) / 100).toFixed(2);
-
-
 
 arena.innerHTML = '<div style="font-size:1.35vw; font-weight:bold; margin-bottom:1vw; color:#cbd5e1;">Lód jest pancerny! Włączcie czujniki ruchu i trzęście telefonami z całej siły!</div>'
 
-
-
 + '<div class="ice-block ' + (isShaking ? 'suspense-shake' : '') + '">🛷<div style="position:absolute; inset:0; background:rgba(180,240,255,' + iceOpacity + '); pointer-events:none;"></div></div>'
-
-
 
 + '<div style="margin-top:1vw; font-size:2.2vw; font-weight:900; color:#00d4ff;">SKRUSZONY LÓD: ' + pct + '% (' + hits + '/' + target + ')</div>';
 
-
-
 if (isShaking) playIceCrackSound();
-
-
 
 if (hits >= target && lastAnnouncedStage !== 399) {
 
-
-
 lastAnnouncedStage = 399; winSound.currentTime = 0; winSound.play().catch(()=>{});
-
-
 
 updateDoc(stateRef, { status: "stage_complete", completedStageNum: 3, speechTick: Date.now() });
 
-
-
 }
-
-
 
 if (lastAnnouncedStage !== 3) { lastAnnouncedStage = 3; speakPolishText("Etap trzeci! Sanie zamarzły w bardzo grubej bryle lodu! Aktywujcie czujniki ruchu w telefonach i trzęście nimi mocno przez dłuższą chwilę!"); }
 
-
-
 } else if (st === 4) {
-
-
 
 head.innerText = "🔎 ETAP 4: POSZUKIWACZE TAJNYCH KODÓW W DOMU";
 
-
-
 let solvedTotal = activeList.reduce((acc, p) => acc + (prog[p] || 0), 0);
-
-
 
 arena.innerHTML = '<div style="font-size:1.55vw; font-weight:900; color:var(--gold); line-height:1.45;">Rozszyfrujcie trudne zagadki w narożnikach ekranu i na telefonach!<br>Odszukajcie kryjówki w domu i wpiszcie 3-cyfrowe kody.<br><br><span style="font-size:2.2vw; color:#2dc653;">ODNALEZIONE KODY: ' + solvedTotal + ' / ' + (activeList.length * 3) + '</span></div>';
 
-
-
 if (lastAnnouncedStage !== 4) { lastAnnouncedStage = 4; speakPolishText("Etap czwarty! Rozszyfrujcie zagadki i odszukajcie ukryte w domu tajne kody!"); }
-
-
 
 } else if (st === 5) {
 
-
-
 head.innerText = "🧠 ETAP 5: ŚWIĄTECZNA ROZGRZEWKA UMYSŁÓW";
-
-
 
 let solvedTotal = activeList.reduce((acc, p) => acc + (prog[p] || 0), 0);
 
-
-
 arena.innerHTML = '<div style="font-size:1.55vw; font-weight:900; color:var(--gold); line-height:1.45;">Każdy Agent odpowiada na 3 świąteczno-zimowe pytania na swoim telefonie!<br><span style="color:#ff4d4d; font-size:1.25vw;">⚠️ UWAGA: Za błędną odpowiedź terminal blokuje się na karne 20 sekund!</span><br><br><span style="font-size:2.2vw; color:#2dc653;">ROZWIĄZANE ZAGADKI: ' + solvedTotal + ' / ' + (activeList.length * 3) + '</span></div>';
-
-
 
 if (lastAnnouncedStage !== 5) { lastAnnouncedStage = 5; speakPolishText("Etap piąty! Odpowiedzcie na trzy świąteczne pytania. Uważajcie, bo za błąd jest dwadzieścia sekund blokady!"); }
 
-
-
 } else if (st === 6) {
-
-
 
 head.innerText = "🎶 ETAP 6: TAJNY SZYFR KOLORÓW ELFÓW (SIMON SAYS)";
 
-
-
 const simonLvl = currentState.simonLevel || 1;
-
-
 
 const inpLen = (currentState.simonInput || []).length;
 
-
-
 const seqLen = (currentState.simonSeq || []).length;
-
-
 
 if (!document.getElementById('sp-Lila')) {
 
-
-
 arena.innerHTML = '<div style="font-size:1.2vw; font-weight:bold; color:var(--gold);" id="simonLvlText">POZIOM PAMIĘCI: ' + simonLvl + ' / 3 (' + inpLen + '/' + seqLen + ')</div>'
-
-
 
 + '<div style="font-size:1.1vw; color:#cbd5e1; margin:4px 0;" id="simonStatusText">Przygotowanie sekwencji...</div>'
 
-
-
 + '<div class="simon-grid">'
-
-
 
 + '<div class="simon-pad" style="background:#f59e0b;" id="sp-Lila">🦌 LILA<br>(ŻÓŁTY)</div>'
 
-
-
 + '<div class="simon-pad" style="background:#00d4ff;" id="sp-Kaja">⛄ KAJA<br>(NIEBIESKI)</div>'
-
-
 
 + '<div class="simon-pad" style="background:#2dc653;" id="sp-Darek">🎄 DAREK<br>(ZIELONY)</div>'
 
-
-
 + '<div class="simon-pad" style="background:#d62828; color:#fff;" id="sp-Jas">🎅 JAŚ<br>(CZERWONY)</div>'
-
-
 
 + '</div>';
 
-
-
 } else {
-
-
 
 const lvlEl = document.getElementById('simonLvlText');
 
-
-
 if (lvlEl) lvlEl.innerText = "POZIOM PAMIĘCI: " + simonLvl + " / 3 (Wprowadzono: " + inpLen + "/" + seqLen + ")";
 
-
-
 }
-
-
 
 if (currentState.colorTick && currentState.colorTick !== lastColorTickPlayed) {
 
-
-
 lastColorTickPlayed = currentState.colorTick;
-
-
 
 if (currentState.lastColorPressed) highlightSimonPad(currentState.lastColorPressed, 480);
 
-
-
 }
-
-
 
 if (status === "stage6_watch" && currentState.seqTick && currentState.seqTick !== lastSeqTickPlayed) {
 
-
-
 lastSeqTickPlayed = currentState.seqTick;
-
-
 
 playSimonSequenceOnTV(currentState.simonSeq || [], currentState.simonMistakeBy, simonLvl, activeList);
 
-
-
 }
-
-
 
 } else if (st === 7) {
 
-
-
 head.innerText = "🔥 ETAP 7: TANKOWANIE SAŃ MIKOŁAJA (WYZWANIE 20 SEKUND!)";
-
-
 
 if (status === "stage7_failed") {
 
-
-
 clearInterval(tvStage7TimerInterval); stage7ReadyAfterSpeech = false;
-
-
 
 arena.innerHTML = '<div style="font-size:2vw; color:#ff4d4d; font-weight:900; line-height:1.4;">❄️ CZAS 20 SEKUND MINĄŁ! SILNIK ZAMARZŁ! ❄️<br><span style="font-size:1.3vw; color:#fff;">Kliknijcie "SPRÓBUJCIE PONOWNIE" na telefonie, aby zresetować stoper!</span></div>';
 
-
-
 if (lastAnnouncedStage !== 799) { lastAnnouncedStage = 799; loseSound.currentTime = 0; loseSound.play().catch(()=>{}); speakPolishText("Czas minął! Zabrakło mocy w silniku! Kliknijcie ponowną próbę na telefonie i stukajcie jeszcze szybciej!"); }
-
-
 
 return;
 
-
-
 }
-
-
 
 const remCount = currentState.tapsCount || 0;
 
-
-
 const tgtCount = currentState.tapsTarget || 300;
-
-
 
 const pct = Math.min(100, Math.round((remCount / tgtCount) * 100));
 
-
-
 if (!document.getElementById('tvStage7Sec')) {
-
-
 
 arena.innerHTML = '<div id="tvStage7Sec" style="font-size:2.2vw; font-weight:900; color:#ff4d4d; margin-bottom:6px;">🗣️ SŁUCHAJCIE LEKTORA - PRZYCISKI ZABLOKOWANE... (20.0s)</div>'
 
-
-
 + '<div style="font-size:1.2vw; font-weight:bold; margin-bottom:8px;">Stukajcie wspólnie w telefony, aby nabić <span id="tvStage7Tgt">' + tgtCount + '</span> jednostek mocy po komendzie START!</div>'
-
-
 
 + '<div id="tvStage7Clicks" style="font-size:2.7vw; font-weight:900; color:var(--gold); margin-bottom:8px;">' + remCount + ' / ' + tgtCount + ' KLIKÓW (' + pct + '%)</div>'
 
-
-
 + '<div style="width:78%; background:#071912; border:2px solid var(--gold); border-radius:15px; height:2.1vw; overflow:hidden;">'
-
-
 
 + '<div id="tvStage7Bar" style="height:100%; width:' + pct + '%; background:linear-gradient(90deg, #d62828, #ffd700, #2dc653); transition:0.1s;"></div>'
 
-
-
 + '</div>';
 
-
-
 } else {
-
-
 
 document.getElementById('tvStage7Clicks').innerText = remCount + " / " + tgtCount + " KLIKÓW (" + pct + "%)";
 
-
-
 document.getElementById('tvStage7Bar').style.width = pct + "%";
 
-
-
 }
-
-
 
 if (status === "stage7_speaking") {
 
-
-
 const sTick = currentState.speechTick || 1;
-
-
 
 if (lastAnnouncedStage !== sTick) {
 
-
-
 lastAnnouncedStage = sTick; stage7ReadyAfterSpeech = false;
-
-
 
 speakPolishText("Etap siódmy! Przygotujcie palce! Przyciski odblokują się dopiero, gdy skończę mówić. Macie dwadzieścia sekund, aby rozgrzać silniki sań! Trzy, dwa, jeden, start!", async () => {
 
-
-
 const freshNow = Date.now(); lastStage7StartSeen = freshNow; stage7ReadyAfterSpeech = true;
-
-
 
 await updateDoc(stateRef, { status: "stage7_active", tapsStartTime: freshNow });
 
-
-
 startTVStage7Countdown(freshNow);
-
-
 
 });
 
-
-
 }
-
-
 
 } else if (status === "stage7_active" && currentState.tapsStartTime && currentState.tapsStartTime !== lastStage7StartSeen) {
 
-
-
 lastStage7StartSeen = currentState.tapsStartTime; stage7ReadyAfterSpeech = true; startTVStage7Countdown(Date.now());
 
-
-
 }
-
-
 
 } else if (st === 8) {
 
-
-
 const msRem = currentState.holdRemainingMs !== undefined ? currentState.holdRemainingMs : 60000;
-
-
 
 const secStr = (msRem / 1000).toFixed(1);
 
-
-
 head.innerText = "⚡ ETAP 8: OSTATNI RYGIEL - SKANER WYTRWAŁOŚCI (60 SEKUND BEZ PUSZCZANIA!)";
-
-
 
 const hm = currentState.holdMap || {};
 
-
-
 let allHold = activeList.every(p => hm[p] === true);
-
-
 
 const statusStr = activeList.map(p => p.toUpperCase() + ": " + (hm[p] ? "✅ TRZYMA" : "❌ BRAK")).join(" &nbsp;|&nbsp; ");
 
-
-
 arena.innerHTML = '<div style="font-size:1.2vw; font-weight:bold; margin-bottom:6px; color:#ffd700;">⚠️ UWAGA: JEŚLI KTOKOLWIEK PUŚCI PALEC, ZEGAR WRACA NA 60.0 SEKUND! ⚠️</div>'
-
-
 
 + '<div style="font-size:4vw; font-weight:900; color:' + (allHold ? '#2dc653' : '#ff4757') + '; text-shadow:0 0 1.5vw ' + (allHold ? '#2dc653' : '#ff4757') + ';">' + secStr + 's</div>'
 
-
-
 + '<div style="font-size:1.2vw; color:#fff; font-weight:bold; margin-top:6px;">' + (allHold ? "⚡ SKANOWANIE W TOKU - NIE PUSZCZAJCIE! ⚡" : "⏸️ POŁÓŻCIE WSZYSCY PALCE NA SKANERACH!") + '</div>'
-
-
 
 + '<div style="font-size:1.15vw; color:var(--gold); margin-top:10px;">Status skanerów: ' + statusStr + '</div>';
 
-
-
 if (lastAnnouncedStage !== 8) { lastAnnouncedStage = 8; speakPolishText("Etap ósmy, ostatni rygiel! Przyłóżcie wszyscy jednocześnie palce do skanerów i trzymajcie przez sześćdziesiąt sekund! Uwaga: jeśli ktokolwiek puści palec, zegar zresetuje się z powrotem do sześćdziesięciu sekund!"); }
-
-
 
 } else {
 
-
-
 head.innerText = "🎅 OCZEKIWANIE NA START MISJI MIKOŁAJKOWEJ 🎄";
-
-
 
 arena.innerHTML = '<div class="start-qr-box"><div style="font-size:1.25vw; color:var(--gold); font-weight:900; letter-spacing:0.1vw; text-transform:uppercase;">📱 ZESKANUJ KOD TELEFONEM, ABY DOŁĄCZYĆ DO MISJI:</div><img src="' + getGraczQrUrl() + '" alt="QR Terminal Agenta"><div style="font-size:1vw; color:#cbd5e1; font-weight:bold;">Po zalogowaniu wszystkich Agentów Wujek uruchomi Etap 1!</div></div>';
 
-
-
 }
 
-
-
 }
-
-
 
 </script>
 
-
-
 </body>
 
-
-
-</html> 
+</html>
