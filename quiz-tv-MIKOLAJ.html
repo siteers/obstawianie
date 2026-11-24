@@ -238,6 +238,31 @@ animation: dramaticPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 .santa-twist-h2 { font-size: 2.2vw; font-weight: 900; color: #fff; text-shadow: 0 2px 8px #000; margin: 0 0 1vw 0; line-height: 1.3; }
 .santa-twist-sub { font-size: 1.4vw; font-weight: bold; color: #a7f3d0; }
 
+/* FAZA 4 (WIDEO MP4): PEŁNOEKRANOWE WEJŚCIE MIKOŁAJA + ZŁOTO-ŚNIEŻNE PRZEJŚCIE */
+#troll-video-overlay {
+position: fixed; inset: 0; background: #000; z-index: 9655;
+display: none; align-items: center; justify-content: center; overflow: hidden;
+opacity: 1; transform: scale(1); filter: brightness(1);
+transition: opacity 1.1s ease, transform 1.1s ease, filter 1.1s ease;
+}
+#troll-video-overlay.fade-out-gold {
+opacity: 0;
+transform: scale(1.06);
+filter: brightness(1.75) saturate(1.25);
+pointer-events: none;
+}
+#santaVideo {
+width: 100vw; height: 100vh; object-fit: cover; display: block; background: #000;
+}
+#santaGoldenFlash {
+position: fixed; inset: 0; z-index: 9658; pointer-events: none;
+background: radial-gradient(circle at center, rgba(255, 250, 220, 0.92) 0%, rgba(255, 215, 0, 0.65) 45%, rgba(255, 255, 255, 0.25) 100%);
+opacity: 0; transition: opacity 0.55s ease;
+}
+#santaGoldenFlash.active {
+opacity: 0.85;
+}
+
 #fullscreenBoard { display: flex; width: 100vw; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: relative; z-index: 10; }
 
 /* CENTRALNA ŚWIĄTECZNA SCENA - SKARBIEC Z 8 RYGLAMI */
@@ -446,6 +471,12 @@ border-radius: 8px; border: 1px solid var(--gold); margin: 6px 0;
 </div>
 </div>
 
+<!-- FAZA 4 (WIDEO): PEŁNOEKRANOWY FILMIK mikolaj_wejscie.mp4 + ZŁOTA POŚWIATA -->
+<div id="troll-video-overlay">
+<video id="santaVideo" src="mikolaj_wejscie.mp4" preload="auto" playsinline></video>
+</div>
+<div id="santaGoldenFlash"></div>
+
 <div class="christmas-lights">
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
 <div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div><div class="light-bulb"></div>
@@ -561,6 +592,40 @@ let lastTrollSantaTick = 0;
 let trollTimers = [];
 let trollAudioNodes = [];
 let trollAudioIntervals = [];
+let santaVideoFadeStarted = false;
+let santaVideoLoadFailed = false;
+let santaVideoActiveRun = 0;
+
+function stopAndResetSantaVideo() {
+santaVideoFadeStarted = false;
+const vidOv = document.getElementById('troll-video-overlay');
+const flashEl = document.getElementById('santaGoldenFlash');
+const vid = document.getElementById('santaVideo');
+if (vid) {
+vid.ontimeupdate = null;
+vid.onended = null;
+vid.onerror = null;
+try { vid.pause(); } catch (e) {}
+try { vid.currentTime = 0; } catch (e) {}
+}
+if (vidOv) {
+vidOv.classList.remove('fade-out-gold');
+vidOv.style.display = 'none';
+}
+if (flashEl) {
+flashEl.classList.remove('active');
+}
+}
+
+function preloadSantaVideoQuietly() {
+const vid = document.getElementById('santaVideo');
+if (!vid) return;
+santaVideoLoadFailed = false;
+vid.onerror = () => { santaVideoLoadFailed = true; };
+try {
+if (vid.readyState < 2) vid.load();
+} catch (e) {}
+}
 
 function clearTrollFX() {
 clearInterval(fakeR1TimerInterval); fakeR1TimerInterval = null;
@@ -568,6 +633,7 @@ trollTimers.forEach(t => clearTimeout(t)); trollTimers = [];
 trollAudioIntervals.forEach(iv => clearInterval(iv)); trollAudioIntervals = [];
 trollAudioNodes.forEach(n => { try { n.stop(); } catch (e) {} try { n.disconnect(); } catch (e) {} });
 trollAudioNodes = [];
+stopAndResetSantaVideo();
 }
 
 function playSoftCyberTick() {
@@ -879,7 +945,93 @@ trollTimers.push(tNext);
 return true;
 }
 
-// FAZA 3: ATAK HAKERÓW / WIRUS (6.8s -> POTEM TWIST MIKOŁAJA)
+// Przygotowanie gotowego pulpitu Skarbca pod spodem podczas odtwarzania filmiku (bez głosu lektora!)
+function prepareRealDashboardUnderneath(data) {
+const activeListLocal = data.activePlayers || ["Lila", "Kaja", "Darek", "Jas"];
+for (let i = 1; i <= 8; i++) {
+const bolt = document.getElementById("bolt-" + i);
+if (bolt) { bolt.className = "vault-bolt"; bolt.innerText = "RYGIEL " + i + " 🔒"; }
+}
+agentsList.forEach(a => {
+const corner = document.getElementById("tv-" + a);
+const numEl = document.getElementById("tv-num-" + a);
+const qEl = document.getElementById("tv-q-" + a);
+const imgEl = document.getElementById("tv-img-" + a);
+const dbK = dbKeyMap[a];
+if (!corner) return;
+if (!activeListLocal.includes(dbK)) { corner.style.display = 'none'; return; }
+corner.style.display = 'flex';
+if (numEl) numEl.innerText = "ETAP 0/8";
+if (qEl) qEl.innerText = "Gotowy do tajnej Misji Mikołajkowej!";
+if (imgEl) imgEl.style.display = 'none';
+});
+const head = document.getElementById('missionHeader');
+const arena = document.getElementById('stageArena');
+const vicBanner = document.getElementById('victory-banner');
+if (vicBanner) vicBanner.style.display = 'none';
+if (head) head.innerText = "🎅 OCZEKIWANIE NA START MISJI MIKOŁAJKOWEJ 🎄";
+if (arena) {
+arena.innerHTML = '<div class="start-qr-box"><div style="font-size:1.25vw; color:var(--gold); font-weight:900; letter-spacing:0.1vw; text-transform:uppercase;">📱 ZESKANUJ KOD TELEFONEM, ABY DOŁĄCZYĆ DO MISJI:</div><img src="' + getGraczQrUrl() + '" alt="QR Terminal Agenta"><div style="font-size:1vw; color:#cbd5e1; font-weight:bold;">Po zalogowaniu wszystkich Agentów Wujek uruchomi Etap 1!</div></div>';
+}
+}
+
+function fadeInFestiveBells() {
+ensureAudioCtx();
+isBgMusicPlaying = true;
+if (audioCtx && bgMasterGain) {
+try {
+const now = audioCtx.currentTime;
+bgMasterGain.gain.cancelScheduledValues(now);
+bgMasterGain.gain.setValueAtTime(0.001, now);
+bgMasterGain.gain.linearRampToValueAtTime(0.20, now + 1.2);
+} catch (e) {}
+}
+}
+
+async function finalizeTransitionToRealMiko(announceIdleMission) {
+if (!currentState || currentState.status !== "troll_santa") return;
+if (currentState.fakeAutoStartStage1) {
+await updateDoc(stateRef, {
+stage: 1,
+status: "stage1_active",
+stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
+photos: {},
+audioTracks: {},
+speechTick: Date.now()
+});
+} else {
+await updateDoc(stateRef, {
+stage: 0,
+status: "idle",
+speechTick: Date.now()
+});
+if (announceIdleMission) {
+speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na osiem rygli! Przygotujcie telefony, zaraz zaczynamy tajną misję o prezent!");
+}
+}
+}
+
+function runSantaTextFallback(runId) {
+if (runId !== santaVideoActiveRun) return;
+stopAndResetSantaVideo();
+const santaOverlay = document.getElementById('troll-santa-overlay');
+const snowCvLocal = document.getElementById('snow-canvas');
+if (santaOverlay) santaOverlay.style.display = "flex";
+if (snowCvLocal) snowCvLocal.style.zIndex = "9660";
+playGrandFanfareSequence();
+
+speakPolishText("Ho! Ho! Ho! To nie wirus! Zapraszam do mikołajkowej gry o prezent!", () => {
+if (runId !== santaVideoActiveRun) return;
+const tDone = setTimeout(() => {
+if (runId !== santaVideoActiveRun) return;
+fadeInFestiveBells();
+finalizeTransitionToRealMiko(false);
+}, 1400);
+trollTimers.push(tDone);
+});
+}
+
+// FAZA 3: ATAK HAKERÓW / WIRUS (+ CICHY PRELOAD mikolaj_wejscie.mp4 W TLE)
 if (status === "troll_hack") {
 fakeTv.style.display = "none";
 fakeTv.classList.remove("glitch-lag");
@@ -890,6 +1042,7 @@ const hTick = data.trollTick || data.speechTick || 1;
 if (lastTrollHackTick !== hTick) {
 lastTrollHackTick = hTick;
 clearTrollFX();
+preloadSantaVideoQuietly();
 playHackerAlarmSiren();
 
 for (let i = 0; i <= 5; i++) {
@@ -921,43 +1074,109 @@ trollTimers.push(tSanta);
 return true;
 }
 
-// FAZA 4: TWIST MIKOŁAJA -> PRZEJŚCIE DO PRAWDZIWYCH MIKOŁAJEK!
+// FAZA 4: KINOWE WEJŚCIE MIKOŁAJA (mikolaj_wejscie.mp4 -> ZŁOTO-ŚNIEŻNE PRZEJŚCIE -> PULPIT TV)
 if (status === "troll_santa") {
 fakeTv.style.display = "none";
 fakeTv.classList.remove("glitch-lag");
 hackOv.style.display = "none";
-santaOv.style.display = "flex";
-snowCv.style.zIndex = "9660"; // Śnieg pada na wierzchu ekranu Mikołaja!
+snowCv.style.zIndex = "9660"; // Śnieg pada płynnie podczas przejścia!
 
 const sTick = data.trollTick || data.speechTick || 1;
 if (lastTrollSantaTick !== sTick) {
 lastTrollSantaTick = sTick;
 clearTrollFX();
-playGrandFanfareSequence();
+window.speechSynthesis && window.speechSynthesis.cancel();
 
-speakPolishText("Ho! Ho! Ho! To nie wirus! Święty Mikołaj przejął wasz telewizor i telefony! Zamiast zwykłego quizu czeka na was tajna Misja Mikołajkowa!", () => {
-const tDone = setTimeout(async () => {
-if (!currentState || currentState.status !== "troll_santa") return;
-isBgMusicPlaying = true;
-if (currentState.fakeAutoStartStage1) {
-await updateDoc(stateRef, {
-stage: 1,
-status: "stage1_active",
-stepProgress: { Lila: 0, Kaja: 0, Darek: 0, Jas: 0 },
-photos: {},
-audioTracks: {},
-speechTick: Date.now()
-});
-} else {
-await updateDoc(stateRef, {
-stage: 0,
-status: "idle",
-speechTick: Date.now()
+// Pod spodem od razu przygotowujemy prawdziwy świąteczny pulpit Skarbca (lampki + 8 rygli + narożniki)!
+prepareRealDashboardUnderneath(data);
+
+const myVidRun = ++santaVideoActiveRun;
+const vidOv = document.getElementById('troll-video-overlay');
+const flashEl = document.getElementById('santaGoldenFlash');
+const vid = document.getElementById('santaVideo');
+
+if (!vid || santaVideoLoadFailed || vid.error) {
+runSantaTextFallback(myVidRun);
+return true;
+}
+
+santaOv.style.display = "none";
+vidOv.classList.remove('fade-out-gold');
+vidOv.style.display = "flex";
+vid.muted = false;
+vid.volume = 1.0;
+try { vid.currentTime = 0; } catch (e) {}
+
+let playbackStarted = false;
+
+const triggerGoldenExit = () => {
+if (santaVideoFadeStarted || myVidRun !== santaVideoActiveRun) return;
+santaVideoFadeStarted = true;
+
+// Złoto-śnieżna poświata + płynne rozjaśnienie i znikanie wideo (1.1s) + wejście dzwoneczków
+if (flashEl) flashEl.classList.add('active');
+vidOv.classList.add('fade-out-gold');
+fadeInFestiveBells();
+
+const tFlashOff = setTimeout(() => {
+if (flashEl) flashEl.classList.remove('active');
+}, 520);
+trollTimers.push(tFlashOff);
+
+// Po pełnym odsłonięciu pulpitu (1.1s) czyścimy warstwę wideo, czekamy 800ms i oddajemy głos lektorowi
+const tRevealDone = setTimeout(() => {
+if (myVidRun !== santaVideoActiveRun) return;
+stopAndResetSantaVideo();
+snowCv.style.zIndex = "5";
+
+const tAfterBreath = setTimeout(() => {
+if (myVidRun !== santaVideoActiveRun) return;
+finalizeTransitionToRealMiko(true);
+}, 800);
+trollTimers.push(tAfterBreath);
+}, 1150);
+trollTimers.push(tRevealDone);
+};
+
+vid.onerror = () => {
+if (myVidRun !== santaVideoActiveRun || santaVideoFadeStarted) return;
+santaVideoLoadFailed = true;
+runSantaTextFallback(myVidRun);
+};
+
+vid.ontimeupdate = () => {
+if (myVidRun !== santaVideoActiveRun) return;
+if (vid.currentTime > 0.05) playbackStarted = true;
+if (!santaVideoFadeStarted && Number.isFinite(vid.duration) && vid.duration > 1.2) {
+if ((vid.duration - vid.currentTime) <= 0.9) {
+triggerGoldenExit();
+}
+}
+};
+
+vid.onended = () => {
+if (myVidRun !== santaVideoActiveRun) return;
+triggerGoldenExit();
+};
+
+const playPromise = vid.play();
+if (playPromise && typeof playPromise.then === 'function') {
+playPromise.then(() => {
+playbackStarted = true;
+}).catch(() => {
+if (myVidRun === santaVideoActiveRun && !santaVideoFadeStarted) {
+runSantaTextFallback(myVidRun);
+}
 });
 }
-}, 1400);
-trollTimers.push(tDone);
-});
+
+// Bezpiecznik: gdyby plik nie wystartował w ciągu 2.5s (np. brak pliku bez błędu sieci), odpala się fallback tekstowy
+const tStartGuard = setTimeout(() => {
+if (myVidRun === santaVideoActiveRun && !playbackStarted && !santaVideoFadeStarted) {
+runSantaTextFallback(myVidRun);
+}
+}, 2500);
+trollTimers.push(tStartGuard);
 }
 return true;
 }
@@ -1409,6 +1628,24 @@ speakPolishText("Pancerny Skarbiec Mikołaja został zamknięty na osiem rygli. 
 [winSound, loseSound, fanfareSound].forEach(s => {
 s.play().then(() => { s.pause(); s.currentTime = 0; }).catch(()=>{});
 });
+const santaVidEl = document.getElementById('santaVideo');
+if (santaVidEl) {
+try {
+santaVidEl.muted = true;
+const vp = santaVidEl.play();
+if (vp && typeof vp.then === 'function') {
+vp.then(() => {
+santaVidEl.pause();
+santaVidEl.currentTime = 0;
+santaVidEl.muted = false;
+}).catch(() => { santaVidEl.muted = false; });
+} else {
+santaVidEl.pause();
+santaVidEl.currentTime = 0;
+santaVidEl.muted = false;
+}
+} catch (e) { santaVidEl.muted = false; }
+}
 };
 
 // --- FAJERWERKI ---
