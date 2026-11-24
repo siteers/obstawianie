@@ -1,0 +1,1665 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>🎅 Wielkie Losowanie Mikołajkowe 🎄</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@700&family=Nunito:wght@600;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --gold: #ffd700;
+  --gold-soft: #fde68a;
+  --red: #d62828;
+  --red-dark: #8c1219;
+  --green: #1b4332;
+  --green-bright: #2dc653;
+  --bg-dark: #06140e;
+  --card-bg: rgba(12, 34, 24, 0.88);
+  --snow: #ffffff;
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  color: var(--snow);
+  background:
+    radial-gradient(circle at 20% 15%, rgba(214, 40, 40, 0.22) 0%, transparent 45%),
+    radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.14) 0%, transparent 42%),
+    radial-gradient(circle at 50% 0%, #1a4731 0%, #091d14 55%, #040d09 100%);
+  background-attachment: fixed;
+  overflow-x: hidden;
+}
+
+/* CANVASY TŁA: ŚNIEG I KONFETTI */
+#snowCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+#confettiCanvas {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 90;
+}
+
+/* SZNUR ŚWIĄTECZNYCH LAMPEK NA GÓRZE */
+.lights-wire {
+  position: fixed;
+  top: -4px;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  z-index: 25;
+  pointer-events: none;
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-start;
+  padding: 0 6px;
+}
+.lights-wire::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: -10px;
+  right: -10px;
+  height: 12px;
+  border-bottom: 2px solid rgba(20, 50, 35, 0.9);
+  border-radius: 50%;
+}
+.bulb {
+  position: relative;
+  width: 13px;
+  height: 20px;
+  margin-top: 10px;
+  border-radius: 50% 50% 50% 50% / 35% 35% 65% 65%;
+  animation: twinkle 1.8s infinite alternate ease-in-out;
+}
+.bulb::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  left: 3px;
+  width: 7px;
+  height: 6px;
+  background: #233b2e;
+  border-radius: 2px;
+}
+.bulb:nth-child(4n+1) { background: #ff3b30; box-shadow: 0 0 14px #ff3b30, 0 0 28px rgba(255,59,48,0.55); animation-delay: 0s; }
+.bulb:nth-child(4n+2) { background: #ffd700; box-shadow: 0 0 14px #ffd700, 0 0 28px rgba(255,215,0,0.55); animation-delay: 0.45s; }
+.bulb:nth-child(4n+3) { background: #2dc653; box-shadow: 0 0 14px #2dc653, 0 0 28px rgba(45,198,83,0.55); animation-delay: 0.9s; }
+.bulb:nth-child(4n+4) { background: #38bdf8; box-shadow: 0 0 14px #38bdf8, 0 0 28px rgba(56,189,248,0.55); animation-delay: 1.35s; }
+
+@keyframes twinkle {
+  0% { opacity: 0.45; transform: scale(0.92); filter: brightness(0.85); }
+  100% { opacity: 1; transform: scale(1.08); filter: brightness(1.25); }
+}
+
+/* PRZYCISKI PŁYWAJĄCE (DŹWIĘK + ADMIN) */
+.top-tools {
+  position: fixed;
+  top: 40px;
+  right: 12px;
+  z-index: 40;
+  display: flex;
+  gap: 8px;
+}
+.tool-pill {
+  background: rgba(8, 28, 20, 0.85);
+  border: 1.5px solid rgba(255, 215, 0, 0.55);
+  color: var(--gold);
+  border-radius: 999px;
+  padding: 7px 12px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: transform 0.15s, background 0.2s;
+}
+.tool-pill:hover { background: rgba(255, 215, 0, 0.18); }
+.tool-pill:active { transform: scale(0.94); }
+
+/* GŁÓWNY KONTENER */
+.app-wrap {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 68px 14px 36px;
+}
+
+/* GŁÓWNA KARTA ŚWIĄTECZNA */
+.festive-card {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  background: var(--card-bg);
+  border: 2.5px solid var(--gold);
+  border-radius: 28px;
+  padding: 28px 22px 24px;
+  box-shadow:
+    0 20px 55px rgba(0, 0, 0, 0.72),
+    0 0 38px rgba(255, 215, 0, 0.18),
+    inset 0 0 30px rgba(214, 40, 40, 0.12);
+  backdrop-filter: blur(12px);
+  text-align: center;
+  animation: cardFloatIn 0.55s cubic-bezier(0.2, 0.9, 0.25, 1) both;
+}
+
+@keyframes cardFloatIn {
+  from { opacity: 0; transform: translateY(18px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.corner-holly {
+  position: absolute;
+  font-size: 24px;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+}
+.ch-tl { top: 10px; left: 14px; }
+.ch-tr { top: 10px; right: 14px; transform: scaleX(-1); }
+
+.crest-emoji {
+  font-size: 54px;
+  line-height: 1;
+  margin-bottom: 6px;
+  display: inline-block;
+  filter: drop-shadow(0 0 18px rgba(255, 215, 0, 0.55));
+  animation: santaBob 3s ease-in-out infinite;
+}
+@keyframes santaBob {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50% { transform: translateY(-6px) rotate(2deg); }
+}
+
+h1.festive-title {
+  font-family: 'Mountains of Christmas', cursive;
+  font-size: clamp(32px, 7.5vw, 44px);
+  margin: 0 0 6px;
+  color: var(--gold);
+  letter-spacing: 1px;
+  line-height: 1.08;
+  text-shadow: 0 3px 12px rgba(0, 0, 0, 0.75), 0 0 22px rgba(255, 215, 0, 0.35);
+}
+
+.subtitle {
+  margin: 0 0 16px;
+  font-size: 14px;
+  color: #d1fae5;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+/* LICZNIK POSTĘPU RODZINY */
+.progress-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(5, 18, 12, 0.78);
+  border: 1.5px solid rgba(255, 215, 0, 0.5);
+  border-radius: 999px;
+  padding: 6px 15px;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold-soft);
+  margin-bottom: 18px;
+}
+.progress-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--green-bright);
+  box-shadow: 0 0 10px var(--green-bright);
+}
+
+/* FORMULARZ LOGOWANIA */
+.field-label {
+  display: block;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--gold);
+  margin: 0 0 6px 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+.input-wrap {
+  position: relative;
+  margin-bottom: 14px;
+}
+
+select, input[type="password"], input[type="text"] {
+  width: 100%;
+  padding: 14px 16px;
+  font-family: inherit;
+  font-size: 17px;
+  font-weight: 800;
+  color: #fff;
+  background: rgba(4, 15, 10, 0.9);
+  border: 2px solid rgba(255, 215, 0, 0.55);
+  border-radius: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+select:focus, input:focus {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(255, 215, 0, 0.35);
+}
+select option {
+  background: #0b2418;
+  color: #fff;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 1;
+}
+
+/* PRZYCISKI ŚWIĄTECZNE */
+.btn-xmas {
+  width: 100%;
+  padding: 16px 20px;
+  border-radius: 16px;
+  border: 2px solid var(--gold);
+  background: linear-gradient(135deg, #e11d48 0%, #b91c1c 55%, #8c1219 100%);
+  color: #fff;
+  font-family: inherit;
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 26px rgba(214, 40, 40, 0.5), inset 0 1px 0 rgba(255,255,255,0.3);
+  transition: transform 0.14s, filter 0.2s, box-shadow 0.2s;
+}
+.btn-xmas:hover:not(:disabled) {
+  filter: brightness(1.08);
+  box-shadow: 0 12px 30px rgba(255, 215, 0, 0.35);
+}
+.btn-xmas:active:not(:disabled) { transform: scale(0.96); }
+.btn-xmas:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: grayscale(0.35);
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #fde047 0%, #f59e0b 100%);
+  color: #1c1002;
+  border-color: #fff7ed;
+  box-shadow: 0 10px 26px rgba(245, 158, 11, 0.45);
+}
+.btn-ghost {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 215, 0, 0.45);
+  color: var(--gold-soft);
+  font-size: 14px;
+  padding: 11px 16px;
+  margin-top: 10px;
+  box-shadow: none;
+}
+
+.error-msg {
+  color: #fda4af;
+  background: rgba(153, 27, 27, 0.45);
+  border: 1px solid #f43f5e;
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 13.5px;
+  font-weight: 800;
+  margin-bottom: 12px;
+  display: none;
+}
+.shake-anim { animation: errShake 0.38s ease; }
+@keyframes errShake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-6px); }
+  80% { transform: translateX(6px); }
+}
+
+/* EKRAN KOŁA FORTUNY */
+.user-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: rgba(4, 15, 10, 0.72);
+  border: 1px solid rgba(255, 215, 0, 0.38);
+  border-radius: 14px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+}
+.user-bar-name {
+  font-size: 15px;
+  font-weight: 900;
+  color: var(--gold);
+}
+.btn-mini-out {
+  background: rgba(214, 40, 40, 0.28);
+  border: 1px solid rgba(255, 107, 107, 0.6);
+  color: #fecdd3;
+  border-radius: 10px;
+  padding: 5px 11px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ticker-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 210px;
+  padding: 8px 18px;
+  margin-bottom: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.16), rgba(214, 40, 40, 0.25));
+  border: 2px solid var(--gold);
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: 0.6px;
+  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.25);
+  transition: transform 0.12s;
+}
+.ticker-pill.winner-glow {
+  background: linear-gradient(135deg, #2dc653, #15803d);
+  border-color: #fff;
+  color: #fff;
+  transform: scale(1.08);
+  box-shadow: 0 0 28px rgba(45, 198, 83, 0.85);
+}
+
+.wheel-stage {
+  position: relative;
+  width: min(86vw, 390px);
+  height: min(86vw, 390px);
+  margin: 0 auto 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.75));
+}
+#wheelCanvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.spin-hint {
+  font-size: 12.5px;
+  color: #a7f3d0;
+  margin: 10px 0 0;
+  font-weight: 700;
+}
+
+/* EKRAN WYNIKU (TAJNY PREZENT) */
+.gift-stage {
+  margin: 12px 0 16px;
+  padding: 22px 16px;
+  border-radius: 22px;
+  background: radial-gradient(circle at top, rgba(214, 40, 40, 0.34), rgba(6, 22, 15, 0.92));
+  border: 2.5px solid var(--gold);
+  box-shadow: 0 0 36px rgba(255, 215, 0, 0.28), inset 0 0 24px rgba(255, 215, 0, 0.12);
+}
+
+.gift-emoji-big {
+  font-size: 62px;
+  display: inline-block;
+  margin-bottom: 6px;
+  animation: giftPop 0.7s cubic-bezier(0.2, 1.35, 0.4, 1) both;
+}
+@keyframes giftPop {
+  0% { transform: scale(0.2) rotate(-18deg); opacity: 0; }
+  65% { transform: scale(1.16) rotate(6deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.result-caption {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--gold-soft);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.secret-name-box {
+  position: relative;
+  padding: 18px 14px;
+  border-radius: 16px;
+  background: rgba(0, 0, 0, 0.52);
+  border: 2px dashed var(--gold);
+  margin: 8px 0 12px;
+  cursor: pointer;
+  transition: transform 0.18s;
+}
+.secret-name-box:active { transform: scale(0.98); }
+
+.secret-name-text {
+  font-family: 'Mountains of Christmas', cursive;
+  font-size: clamp(42px, 11vw, 56px);
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 24px rgba(255, 215, 0, 0.75), 0 4px 10px rgba(0, 0, 0, 0.9);
+  transition: filter 0.3s, opacity 0.3s;
+}
+.secret-name-box.is-hidden .secret-name-text {
+  filter: blur(18px);
+  opacity: 0.25;
+  user-select: none;
+}
+.secret-curtain-label {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  font-size: 15px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 2px 8px #000;
+  padding: 10px;
+}
+.secret-name-box.is-hidden .secret-curtain-label {
+  display: flex;
+}
+
+.secret-note {
+  font-size: 13px;
+  color: #d1fae5;
+  line-height: 1.45;
+  margin: 6px 0 0;
+}
+
+/* MODAL ADMINA (BEZ SPOILERÓW!) */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 10, 7, 0.88);
+  backdrop-filter: blur(6px);
+  z-index: 100;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.modal-card {
+  width: 100%;
+  max-width: 460px;
+  max-height: 88vh;
+  overflow-y: auto;
+  background: #0d261b;
+  border: 2px solid var(--gold);
+  border-radius: 22px;
+  padding: 20px;
+  box-shadow: 0 20px 55px rgba(0,0,0,0.85);
+  text-align: center;
+}
+.modal-card h2 {
+  font-family: 'Mountains of Christmas', cursive;
+  font-size: 30px;
+  color: var(--gold);
+  margin: 0 0 10px;
+}
+.status-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 16px;
+  text-align: left;
+}
+.status-chip {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 10px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.status-chip.done {
+  border-color: rgba(45, 198, 83, 0.65);
+  background: rgba(45, 198, 83, 0.12);
+  color: #bbf7d0;
+}
+.admin-btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.spoiler-box {
+  margin-top: 12px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.5);
+  border: 1px dashed #f43f5e;
+  font-size: 13px;
+  text-align: left;
+  display: none;
+  line-height: 1.65;
+}
+
+.footer-credit {
+  margin-top: 14px;
+  font-size: 12px;
+  color: rgba(209, 250, 229, 0.55);
+  font-weight: 700;
+}
+
+@media (max-width: 400px) {
+  .festive-card { padding: 24px 15px 20px; border-radius: 22px; }
+  .status-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<canvas id="snowCanvas"></canvas>
+<canvas id="confettiCanvas"></canvas>
+
+<!-- ŚWIĄTECZNE LAMPKI -->
+<div class="lights-wire" aria-hidden="true">
+  <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+  <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+  <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+  <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+  <div class="bulb"></div><div class="bulb"></div><div class="bulb"></div><div class="bulb"></div>
+</div>
+
+<!-- GÓRNE PRZYCISKI POMOCNICZE -->
+<div class="top-tools">
+  <button type="button" class="tool-pill" id="soundToggleBtn" onclick="window.toggleSound()">🔊 Dźwięk</button>
+  <button type="button" class="tool-pill" onclick="window.openAdminModal()" title="Panel organizatora">⚙️</button>
+</div>
+
+<div class="app-wrap">
+
+  <!-- ==================== EKRAN 1: LOGOWANIE ==================== -->
+  <section class="festive-card" id="loginScreen">
+    <span class="corner-holly ch-tl">🌿</span>
+    <span class="corner-holly ch-tr">🌿</span>
+    <div class="crest-emoji">🎅</div>
+    <h1 class="festive-title">Losowanie Mikołajkowe</h1>
+    <p class="subtitle">Wybierz swoje imię i wpisz tajne hasło, aby zakręcić świątecznym kołem fortuny!</p>
+
+    <div class="progress-pill">
+      <span class="progress-dot"></span>
+      <span id="globalProgressText">Łączenie ze świąteczną bazą...</span>
+    </div>
+
+    <div class="error-msg" id="loginError"></div>
+
+    <label class="field-label" for="playerSelect">🎄 Kim jesteś?</label>
+    <div class="input-wrap">
+      <select id="playerSelect">
+        <option value="" disabled selected>-- Wybierz swoje imię --</option>
+      </select>
+    </div>
+
+    <label class="field-label" for="passwordInput">🔐 Twoje tajne hasło</label>
+    <div class="input-wrap">
+      <input type="password" id="passwordInput" placeholder="Wpisz 4-cyfrowe hasło..." inputmode="numeric" autocomplete="off">
+      <button type="button" class="pw-toggle" id="pwToggleBtn" onclick="window.togglePasswordVisibility()" aria-label="Pokaż hasło">👁️</button>
+    </div>
+
+    <button type="button" class="btn-xmas" id="loginBtn" onclick="window.handleLogin()">🎁 Wejdź do losowania</button>
+    <p class="footer-credit">🤫 Każdy wynik jest widoczny wyłącznie po wpisaniu własnego hasła</p>
+  </section>
+
+  <!-- ==================== EKRAN 2: KOŁO FORTUNY ==================== -->
+  <section class="festive-card" id="wheelScreen" style="display:none;">
+    <span class="corner-holly ch-tl">✨</span>
+    <span class="corner-holly ch-tr">✨</span>
+
+    <div class="user-bar">
+      <span class="user-bar-name" id="wheelUserLabel">🎅 Gracz</span>
+      <button type="button" class="btn-mini-out" id="wheelLogoutBtn" onclick="window.logoutUser()">Wyloguj</button>
+    </div>
+
+    <h1 class="festive-title" style="font-size: clamp(28px, 6.8vw, 38px);">Koło Fortuny Mikołaja</h1>
+    <p class="subtitle" id="wheelSubtitle" style="margin-bottom:10px;">Zakręć kołem i przekonaj się, komu sprawisz świąteczną niespodziankę!</p>
+
+    <div class="ticker-pill" id="wheelTicker">✨ Gotowy do zakręcenia! ✨</div>
+
+    <div class="wheel-stage">
+      <canvas id="wheelCanvas"></canvas>
+    </div>
+
+    <div class="error-msg" id="wheelError"></div>
+
+    <button type="button" class="btn-xmas btn-gold" id="spinBtn" onclick="window.startWheelSpin()">🎡 ZAKRĘĆ KOŁEM!</button>
+    <p class="spin-hint">🎁 Nie możesz wylosować siebie • Nikt nie zostanie bez prezentu</p>
+  </section>
+
+  <!-- ==================== EKRAN 3: WYNIK LOSOWANIA ==================== -->
+  <section class="festive-card" id="resultScreen" style="display:none;">
+    <span class="corner-holly ch-tl">🎄</span>
+    <span class="corner-holly ch-tr">🎄</span>
+
+    <div class="user-bar">
+      <span class="user-bar-name" id="resultUserLabel">🎅 Gracz</span>
+      <button type="button" class="btn-mini-out" onclick="window.logoutUser()">Wyloguj</button>
+    </div>
+
+    <h1 class="festive-title" style="font-size: clamp(30px, 7vw, 40px);">Tajny Los Zapisany!</h1>
+
+    <div class="gift-stage">
+      <div class="gift-emoji-big" id="resultGiftEmoji">🎁</div>
+      <div class="result-caption" id="resultCaption">Kupujesz prezent mikołajkowy dla:</div>
+
+      <div class="secret-name-box" id="secretNameBox" onclick="window.toggleSecretReveal()">
+        <div class="secret-name-text" id="secretNameText">---</div>
+        <div class="secret-curtain-label">🔒 Kliknij tutaj, aby podejrzeć imię</div>
+      </div>
+
+      <p class="secret-note" id="resultNote">
+        🤫 <b>Ćśśś! Zachowaj to w pełnej tajemnicy!</b><br>
+        Twój wynik jest bezpiecznie zapisany — jeśli zapomnisz, zawsze możesz zalogować się ponownie swoim hasłem.
+      </p>
+    </div>
+
+    <button type="button" class="btn-xmas btn-ghost" id="toggleRevealBtn" onclick="window.toggleSecretReveal()">🙈 Ukryj imię na ekranie</button>
+    <button type="button" class="btn-xmas" style="margin-top:10px;" onclick="window.logoutUser()">🚪 Wyloguj się bezpiecznie</button>
+  </section>
+
+</div>
+
+<!-- ==================== MODAL PANELU ORGANIZATORA (ZERO SPOILERÓW) ==================== -->
+<div class="modal-backdrop" id="adminModal">
+  <div class="modal-card">
+    <h2>⚙️ Panel Organizatora</h2>
+
+    <div id="adminAuthBox">
+      <p class="subtitle" style="margin-bottom:12px;">Wpisz PIN organizatora (podgląd postępu <b>bez zdradzania par</b>):</p>
+      <div class="error-msg" id="adminError"></div>
+      <div class="input-wrap">
+        <input type="password" id="adminPinInput" placeholder="PIN organizatora..." inputmode="numeric" autocomplete="off">
+      </div>
+      <button type="button" class="btn-xmas btn-gold" onclick="window.unlockAdmin()">🔓 Odblokuj panel</button>
+      <button type="button" class="btn-xmas btn-ghost" onclick="window.closeAdminModal()">Zamknij</button>
+    </div>
+
+    <div id="adminBodyBox" style="display:none;">
+      <p class="subtitle" style="margin-bottom:6px;">Postęp losowania (bez spoilerów — widzisz tylko kto już zakręcił):</p>
+      <div class="progress-pill" style="margin-bottom:8px;">
+        <span class="progress-dot"></span>
+        <span id="adminCountText">0 / 13 osób</span>
+      </div>
+      <div class="status-grid" id="adminStatusGrid"></div>
+
+      <div class="admin-btn-stack">
+        <button type="button" class="btn-xmas btn-gold" style="font-size:14px; padding:12px;" onclick="window.copyPasswordsList()">📋 Kopiuj listę haseł do wysłania</button>
+        <button type="button" class="btn-xmas" style="font-size:14px; padding:12px;" onclick="window.resetEntireDraw()">🔄 Zresetuj i wylosuj pary od nowa</button>
+        <button type="button" class="btn-xmas btn-ghost" style="font-size:13px; border-color:#f43f5e; color:#fda4af;" onclick="window.toggleEmergencySpoilers()">⚠️ Awaryjny podgląd par (UWAGA: SPOILERY!)</button>
+        <button type="button" class="btn-xmas btn-ghost" onclick="window.closeAdminModal()">Zamknij panel</button>
+      </div>
+
+      <div class="spoiler-box" id="adminSpoilerBox"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, onSnapshot, runTransaction, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+// ============================================================================
+// 1. KONFIGURACJA FIREBASE (PROJEKT obstaiwanie — osobna kolekcja losowania!)
+// ============================================================================
+const firebaseConfig = {
+  apiKey: "AIzaSyCEEVCSx2uOOggu_4y_gUo4WMyKqf-HlKI",
+  authDomain: "obstaiwanie.firebaseapp.com",
+  projectId: "obstaiwanie"
+};
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const drawDocRef = doc(db, "mikolajkiLosowanie", "losowanie2026");
+
+// ============================================================================
+// 2. UCZESTNICY I TAJNE HASŁA (możesz dowolnie zmienić hasła poniżej!)
+// ============================================================================
+const ADMIN_PIN = "2412";
+
+const PARTICIPANTS = [
+  { name: "Ola",     pin: "4819", icon: "🎀" },
+  { name: "Rafał",   pin: "7294", icon: "🛷" },
+  { name: "Lila",    pin: "3562", icon: "🦌" },
+  { name: "Kaja",    pin: "8147", icon: "⛄" },
+  { name: "Janek",   pin: "6038", icon: "🎅" },
+  { name: "Ela",     pin: "2951", icon: "🍪" },
+  { name: "Janusz",  pin: "5473", icon: "🕯️" },
+  { name: "Gosia",   pin: "9316", icon: "🌟" },
+  { name: "Ania",    pin: "1685", icon: "❄️" },
+  { name: "Daruś",   pin: "7429", icon: "🎄" },
+  { name: "Bartuś",  pin: "3894", icon: "🧸" },
+  { name: "Darek",   pin: "6152", icon: "🔔" },
+  { name: "Krzysiu", pin: "8703", icon: "🎁" }
+];
+
+const NAMES = PARTICIPANTS.map(p => p.name);
+
+// Paleta świątecznych kolorów na 13 wycinków koła (wysoki kontrast, elegancki wygląd)
+const SLICE_PALETTE = [
+  ["#c81e2b", "#8a1019"], // Królewska czerwień
+  ["#196844", "#0f422b"], // Świąteczna zieleń
+  ["#d49b1a", "#9c6b08"], // Złoto
+  ["#1c4e80", "#102f52"], // Zimowy granat
+  ["#9b1b42", "#630d27"], // Bordowy
+  ["#217a53", "#124d33"], // Sosnowy
+  ["#b83b24", "#7d2212"], // Cynamonowy
+  ["#285d7c", "#16394f"], // Mroźny błękit
+  ["#c81e2b", "#8a1019"], // Królewska czerwień
+  ["#196844", "#0f422b"], // Świąteczna zieleń
+  ["#c48c14", "#8a5c05"], // Bursztynowe złoto
+  ["#7c225c", "#4d1138"], // Śliwkowy
+  ["#1d5e59", "#0e3a37"]  // Świerkowy turkus
+];
+
+// ============================================================================
+// 3. STAN APLIKACJI
+// ============================================================================
+let drawState = null;
+let currentUser = null;
+let isSpinning = false;
+let soundEnabled = true;
+let audioCtx = null;
+
+// ============================================================================
+// 4. GENERATOR MATEMATYCZNIE UCZCIWEGO LOSOWANIA (DERANGEMENT: NIKT SIEBIE!)
+// ============================================================================
+function generateFairDerangement(namesList) {
+  const n = namesList.length;
+  for (let attempt = 0; attempt < 5000; attempt++) {
+    const arr = [...namesList];
+    for (let i = n - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      const tmp = arr[i];
+      arr[i] = arr[j];
+      arr[j] = tmp;
+    }
+    let valid = true;
+    for (let i = 0; i < n; i++) {
+      if (arr[i] === namesList[i]) {
+        valid = false;
+        break;
+      }
+    }
+    if (valid) {
+      const pairs = {};
+      for (let i = 0; i < n; i++) pairs[namesList[i]] = arr[i];
+      return pairs;
+    }
+  }
+  // Awaryjne przesunięcie cykliczne o 1 (też zawsze poprawne)
+  const fallback = {};
+  for (let i = 0; i < n; i++) fallback[namesList[i]] = namesList[(i + 1) % n];
+  return fallback;
+}
+
+function isPairsValid(pairs) {
+  if (!pairs || typeof pairs !== "object") return false;
+  const vals = new Set();
+  for (const name of NAMES) {
+    const target = pairs[name];
+    if (!target || !NAMES.includes(target) || target === name || vals.has(target)) {
+      return false;
+    }
+    vals.add(target);
+  }
+  return vals.size === NAMES.length;
+}
+
+// ============================================================================
+// 5. EFEKTY DŹWIĘKOWE WEB AUDIO API (KLIKANIE KOŁA + DZWONECZKI + FANFARY)
+// ============================================================================
+function ensureAudio() {
+  if (!soundEnabled) return null;
+  if (!audioCtx) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (AC) audioCtx = new AC();
+  }
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+
+function playWheelTick(speedFactor = 1) {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+
+  // Drewniany / kołkowy klik
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = "triangle";
+  const baseFreq = 680 + Math.min(420, speedFactor * 260);
+  osc.frequency.setValueAtTime(baseFreq, now);
+  osc.frequency.exponentialRampToValueAtTime(160, now + 0.042);
+
+  gain.gain.setValueAtTime(0.24, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 0.048);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(now);
+  osc.stop(now + 0.052);
+
+  // Delikatny świąteczny błysk dzwoneczka przy wolniejszym obrocie
+  if (speedFactor < 0.45) {
+    const bell = ctx.createOscillator();
+    const bg = ctx.createGain();
+    bell.type = "sine";
+    bell.frequency.setValueAtTime(2200 + Math.random() * 400, now);
+    bg.gain.setValueAtTime(0.045, now);
+    bg.gain.exponentialRampToValueAtTime(0.001, now + 0.14);
+    bell.connect(bg);
+    bg.connect(ctx.destination);
+    bell.start(now);
+    bell.stop(now + 0.15);
+  }
+}
+
+function playWinFanfare() {
+  const ctx = ensureAudio();
+  if (!ctx) return;
+  const now = ctx.currentTime;
+  const melody = [
+    { f: 523.25, t: 0.00, d: 0.18 }, // C5
+    { f: 659.25, t: 0.14, d: 0.18 }, // E5
+    { f: 783.99, t: 0.28, d: 0.20 }, // G5
+    { f: 1046.50, t: 0.46, d: 0.65 }, // C6
+    { f: 783.99, t: 0.46, d: 0.65 }, // G5 akord
+    { f: 659.25, t: 0.46, d: 0.65 }  // E5 akord
+  ];
+  melody.forEach(note => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "triangle";
+    osc.frequency.setValueAtTime(note.f, now + note.t);
+    g.gain.setValueAtTime(0.001, now + note.t);
+    g.gain.linearRampToValueAtTime(0.18, now + note.t + 0.025);
+    g.gain.exponentialRampToValueAtTime(0.001, now + note.t + note.d);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(now + note.t);
+    osc.stop(now + note.t + note.d + 0.03);
+  });
+
+  // Świąteczne dzwoneczki w tle
+  [1760, 2093, 2637, 3136].forEach((freq, i) => {
+    const osc = ctx.createOscillator();
+    const g = ctx.createGain();
+    osc.type = "sine";
+    osc.frequency.setValueAtTime(freq, now + 0.45 + i * 0.07);
+    g.gain.setValueAtTime(0.06, now + 0.45 + i * 0.07);
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.95 + i * 0.07);
+    osc.connect(g);
+    g.connect(ctx.destination);
+    osc.start(now + 0.45 + i * 0.07);
+    osc.stop(now + 1.0 + i * 0.07);
+  });
+}
+
+window.toggleSound = () => {
+  soundEnabled = !soundEnabled;
+  const btn = document.getElementById("soundToggleBtn");
+  btn.innerText = soundEnabled ? "🔊 Dźwięk" : "🔇 Cisza";
+};
+
+// ============================================================================
+// 6. ANIMACJA ŚNIEGU W TLE + KONFETTI PO WYLOSOWANIU
+// ============================================================================
+const snowCanvas = document.getElementById("snowCanvas");
+const snowCtx = snowCanvas.getContext("2d");
+let snowflakes = [];
+
+function resizeSnow() {
+  snowCanvas.width = window.innerWidth;
+  snowCanvas.height = window.innerHeight;
+  const count = Math.min(85, Math.max(40, Math.floor(window.innerWidth / 14)));
+  snowflakes = Array.from({ length: count }, () => ({
+    x: Math.random() * snowCanvas.width,
+    y: Math.random() * snowCanvas.height,
+    r: Math.random() * 2.8 + 1.1,
+    vy: Math.random() * 0.95 + 0.35,
+    vx: (Math.random() - 0.5) * 0.45,
+    phase: Math.random() * Math.PI * 2,
+    alpha: Math.random() * 0.55 + 0.25
+  }));
+}
+resizeSnow();
+window.addEventListener("resize", () => {
+  resizeSnow();
+  resizeConfetti();
+  if (document.getElementById("wheelScreen").style.display !== "none") {
+    setupWheelCanvas();
+    drawWheel();
+  }
+});
+
+function animateSnow() {
+  snowCtx.clearRect(0, 0, snowCanvas.width, snowCanvas.height);
+  for (const f of snowflakes) {
+    f.phase += 0.015;
+    f.y += f.vy;
+    f.x += f.vx + Math.sin(f.phase) * 0.35;
+    if (f.y > snowCanvas.height + 6) {
+      f.y = -6;
+      f.x = Math.random() * snowCanvas.width;
+    }
+    if (f.x < -6) f.x = snowCanvas.width + 6;
+    if (f.x > snowCanvas.width + 6) f.x = -6;
+    snowCtx.globalAlpha = f.alpha;
+    snowCtx.fillStyle = "#ffffff";
+    snowCtx.beginPath();
+    snowCtx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+    snowCtx.fill();
+  }
+  requestAnimationFrame(animateSnow);
+}
+animateSnow();
+
+// Konfetti
+const confCanvas = document.getElementById("confettiCanvas");
+const confCtx = confCanvas.getContext("2d");
+let confettiPieces = [];
+let confettiRunning = false;
+
+function resizeConfetti() {
+  confCanvas.width = window.innerWidth;
+  confCanvas.height = window.innerHeight;
+}
+resizeConfetti();
+
+function launchFestiveConfetti() {
+  const colors = ["#ffd700", "#ff3b30", "#2dc653", "#ffffff", "#fde047", "#38bdf8"];
+  const cx = confCanvas.width / 2;
+  const cy = confCanvas.height * 0.38;
+  for (let i = 0; i < 120; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = Math.random() * 10 + 3.5;
+    confettiPieces.push({
+      x: cx,
+      y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 4.5,
+      w: Math.random() * 9 + 5,
+      h: Math.random() * 6 + 3,
+      rot: Math.random() * Math.PI * 2,
+      vrot: (Math.random() - 0.5) * 0.28,
+      color: colors[i % colors.length],
+      alpha: 1
+    });
+  }
+  if (!confettiRunning) {
+    confettiRunning = true;
+    animateConfetti();
+  }
+}
+
+function animateConfetti() {
+  confCtx.clearRect(0, 0, confCanvas.width, confCanvas.height);
+  for (let i = confettiPieces.length - 1; i >= 0; i--) {
+    const p = confettiPieces[i];
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.22;
+    p.vx *= 0.99;
+    p.rot += p.vrot;
+    p.alpha -= 0.0085;
+    if (p.alpha <= 0 || p.y > confCanvas.height + 30) {
+      confettiPieces.splice(i, 1);
+      continue;
+    }
+    confCtx.save();
+    confCtx.globalAlpha = Math.max(0, p.alpha);
+    confCtx.translate(p.x, p.y);
+    confCtx.rotate(p.rot);
+    confCtx.fillStyle = p.color;
+    confCtx.fillRect(-p.w / 2, -p.h / 2, p.w, p.h);
+    confCtx.restore();
+  }
+  if (confettiPieces.length > 0) {
+    requestAnimationFrame(animateConfetti);
+  } else {
+    confettiRunning = false;
+  }
+}
+
+// ============================================================================
+// 7. KOŁO FORTUNY (CANVAS HI-DPI + LAMPKI NA OBRĘCZY + SPRĘŻYNUJĄCA WSKAZÓWKA)
+// ============================================================================
+const wheelCanvas = document.getElementById("wheelCanvas");
+const wCtx = wheelCanvas.getContext("2d");
+const TWO_PI = Math.PI * 2;
+const SLICE_ANGLE = TWO_PI / NAMES.length;
+
+let wheelRotation = 0;
+let pointerKick = 0;
+let rimLightPhase = 0;
+let wheelIdleLoopId = null;
+
+function setupWheelCanvas() {
+  const rect = wheelCanvas.getBoundingClientRect();
+  const size = Math.max(260, Math.round(rect.width || 360));
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  wheelCanvas.width = size * dpr;
+  wheelCanvas.height = size * dpr;
+  wCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function getSliceIndexUnderPointer(rot) {
+  const ptrLocal = ((1.5 * Math.PI - rot) % TWO_PI + TWO_PI) % TWO_PI;
+  return Math.floor(ptrLocal / SLICE_ANGLE) % NAMES.length;
+}
+
+function drawWheel() {
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  const size = wheelCanvas.width / dpr;
+  if (!size) return;
+  const cx = size / 2;
+  const cy = size / 2;
+  const outerR = size * 0.455;
+  const wheelR = outerR - size * 0.042;
+
+  wCtx.clearRect(0, 0, size, size);
+
+  // Zewnętrzna złoto-brązowa obręcz
+  const rimGrad = wCtx.createRadialGradient(cx, cy, wheelR, cx, cy, outerR);
+  rimGrad.addColorStop(0, "#7a4b06");
+  rimGrad.addColorStop(0.5, "#f5c542");
+  rimGrad.addColorStop(0.85, "#b7791f");
+  rimGrad.addColorStop(1, "#5c3603");
+  wCtx.beginPath();
+  wCtx.arc(cx, cy, outerR, 0, TWO_PI);
+  wCtx.fillStyle = rimGrad;
+  wCtx.fill();
+
+  // 26 świątecznych żaróweczek na obręczy
+  const bulbCount = 26;
+  const bulbRingR = (outerR + wheelR) / 2;
+  for (let i = 0; i < bulbCount; i++) {
+    const a = (i / bulbCount) * TWO_PI;
+    const bx = cx + Math.cos(a) * bulbRingR;
+    const by = cy + Math.sin(a) * bulbRingR;
+    const lit = (i + Math.floor(rimLightPhase)) % 2 === 0;
+    wCtx.beginPath();
+    wCtx.arc(bx, by, size * 0.0115, 0, TWO_PI);
+    wCtx.fillStyle = lit ? "#fff9c4" : "#991b1b";
+    wCtx.shadowColor = lit ? "#ffd700" : "transparent";
+    wCtx.shadowBlur = lit ? 9 : 0;
+    wCtx.fill();
+  }
+  wCtx.shadowBlur = 0;
+
+  // Obracane wnętrze koła (13 wycinków)
+  wCtx.save();
+  wCtx.translate(cx, cy);
+  wCtx.rotate(wheelRotation);
+
+  for (let i = 0; i < NAMES.length; i++) {
+    const startA = i * SLICE_ANGLE;
+    const endA = startA + SLICE_ANGLE;
+    const [cLight, cDark] = SLICE_PALETTE[i % SLICE_PALETTE.length];
+
+    const grad = wCtx.createRadialGradient(0, 0, wheelR * 0.14, 0, 0, wheelR);
+    grad.addColorStop(0, cLight);
+    grad.addColorStop(1, cDark);
+
+    wCtx.beginPath();
+    wCtx.moveTo(0, 0);
+    wCtx.arc(0, 0, wheelR, startA, endA);
+    wCtx.closePath();
+    wCtx.fillStyle = grad;
+    wCtx.fill();
+
+    // Złote krawędzie wycinków
+    wCtx.strokeStyle = "rgba(255, 215, 0, 0.72)";
+    wCtx.lineWidth = 1.6;
+    wCtx.stroke();
+
+    // Imię na wycinku
+    wCtx.save();
+    wCtx.rotate(startA + SLICE_ANGLE / 2);
+    wCtx.textAlign = "right";
+    wCtx.textBaseline = "middle";
+    const fontSize = Math.max(12, Math.round(size * 0.043));
+    wCtx.font = "900 " + fontSize + "px 'Nunito', sans-serif";
+    wCtx.fillStyle = "#ffffff";
+    wCtx.shadowColor = "rgba(0,0,0,0.85)";
+    wCtx.shadowBlur = 4;
+    wCtx.fillText(NAMES[i], wheelR - size * 0.048, 0);
+    wCtx.restore();
+  }
+
+  // Złote kołeczki na granicy każdego pola
+  for (let i = 0; i < NAMES.length; i++) {
+    const a = i * SLICE_ANGLE;
+    const px = Math.cos(a) * (wheelR - size * 0.015);
+    const py = Math.sin(a) * (wheelR - size * 0.015);
+    wCtx.beginPath();
+    wCtx.arc(px, py, size * 0.011, 0, TWO_PI);
+    wCtx.fillStyle = "#fff7c2";
+    wCtx.strokeStyle = "#8a5a00";
+    wCtx.lineWidth = 1.2;
+    wCtx.fill();
+    wCtx.stroke();
+  }
+
+  wCtx.restore();
+
+  // Złoty medalion pośrodku
+  const hubR = size * 0.115;
+  const hubGrad = wCtx.createRadialGradient(cx - hubR * 0.25, cy - hubR * 0.25, 2, cx, cy, hubR);
+  hubGrad.addColorStop(0, "#fff5b8");
+  hubGrad.addColorStop(0.55, "#ffd700");
+  hubGrad.addColorStop(1, "#a16207");
+  wCtx.beginPath();
+  wCtx.arc(cx, cy, hubR, 0, TWO_PI);
+  wCtx.fillStyle = hubGrad;
+  wCtx.fill();
+  wCtx.lineWidth = 3;
+  wCtx.strokeStyle = "#fff";
+  wCtx.stroke();
+
+  wCtx.textAlign = "center";
+  wCtx.textBaseline = "middle";
+  wCtx.font = Math.round(size * 0.082) + "px sans-serif";
+  wCtx.fillText("🎅", cx, cy + 2);
+
+  // Wskazówka u góry (sprężynuje na kołeczkach!)
+  wCtx.save();
+  wCtx.translate(cx, cy - outerR + size * 0.012);
+  wCtx.rotate(pointerKick);
+  const pW = size * 0.056;
+  const pH = size * 0.115;
+
+  wCtx.beginPath();
+  wCtx.moveTo(0, pH);
+  wCtx.lineTo(-pW, -size * 0.015);
+  wCtx.quadraticCurveTo(0, -size * 0.045, pW, -size * 0.015);
+  wCtx.closePath();
+
+  const ptrGrad = wCtx.createLinearGradient(0, -size * 0.03, 0, pH);
+  ptrGrad.addColorStop(0, "#fff5b8");
+  ptrGrad.addColorStop(0.45, "#ffd700");
+  ptrGrad.addColorStop(1, "#d62828");
+  wCtx.fillStyle = ptrGrad;
+  wCtx.shadowColor = "rgba(0,0,0,0.65)";
+  wCtx.shadowBlur = 8;
+  wCtx.fill();
+  wCtx.lineWidth = 2.2;
+  wCtx.strokeStyle = "#ffffff";
+  wCtx.stroke();
+
+  // Złoty nit wskazówki
+  wCtx.beginPath();
+  wCtx.arc(0, 2, size * 0.016, 0, TWO_PI);
+  wCtx.fillStyle = "#ffffff";
+  wCtx.fill();
+  wCtx.restore();
+}
+
+function startWheelIdleAnimation() {
+  if (wheelIdleLoopId) cancelAnimationFrame(wheelIdleLoopId);
+  function tickIdle() {
+    if (document.getElementById("wheelScreen").style.display === "none") {
+      wheelIdleLoopId = null;
+      return;
+    }
+    if (!isSpinning) {
+      rimLightPhase += 0.04;
+      pointerKick *= 0.85;
+      drawWheel();
+    }
+    wheelIdleLoopId = requestAnimationFrame(tickIdle);
+  }
+  wheelIdleLoopId = requestAnimationFrame(tickIdle);
+}
+
+// ============================================================================
+// 8. SYNCHRONIZACJA Z FIREBASE FIRESTORE
+// ============================================================================
+function populateLoginDropdown() {
+  const sel = document.getElementById("playerSelect");
+  const prevVal = sel.value;
+  sel.innerHTML = '<option value="" disabled selected>-- Wybierz swoje imię --</option>';
+  const revealed = (drawState && drawState.revealed) ? drawState.revealed : {};
+
+  PARTICIPANTS.forEach(p => {
+    const opt = document.createElement("option");
+    opt.value = p.name;
+    const doneMark = revealed[p.name] ? " ✅" : "";
+    opt.textContent = p.icon + " " + p.name + doneMark;
+    sel.appendChild(opt);
+  });
+  if (prevVal && NAMES.includes(prevVal)) sel.value = prevVal;
+}
+
+function updateProgressUI() {
+  const revealed = (drawState && drawState.revealed) ? drawState.revealed : {};
+  const count = NAMES.filter(n => Boolean(revealed[n])).length;
+  const txt = document.getElementById("globalProgressText");
+  if (txt) {
+    txt.innerText = count === NAMES.length
+      ? "🎉 Wszyscy już wylosowali (" + count + " / " + NAMES.length + ")!"
+      : "Wylosowało już: " + count + " / " + NAMES.length + " osób";
+  }
+
+  // Aktualizacja panelu organizatora (bez spoilerów)
+  const adminCount = document.getElementById("adminCountText");
+  if (adminCount) adminCount.innerText = count + " / " + NAMES.length + " osób wylosowało";
+
+  const grid = document.getElementById("adminStatusGrid");
+  if (grid) {
+    grid.innerHTML = "";
+    PARTICIPANTS.forEach(p => {
+      const done = Boolean(revealed[p.name]);
+      const chip = document.createElement("div");
+      chip.className = "status-chip" + (done ? " done" : "");
+      chip.innerHTML = "<span>" + p.icon + " " + p.name + "</span><span>" + (done ? "✅ Gotowe" : "⏳ Czeka") + "</span>";
+      grid.appendChild(chip);
+    });
+  }
+}
+
+populateLoginDropdown();
+
+onSnapshot(drawDocRef, (snap) => {
+  drawState = snap.exists() ? snap.data() : { pairs: null, revealed: {} };
+  populateLoginDropdown();
+  updateProgressUI();
+}, (err) => {
+  const txt = document.getElementById("globalProgressText");
+  if (txt) txt.innerText = "⚠️ Błąd połączenia z Firebase";
+  console.error("Firestore error:", err);
+});
+
+// ============================================================================
+// 9. LOGOWANIE, KRĘCENIE KOŁEM I ZAPIS DO FIREBASE
+// ============================================================================
+function showScreen(id) {
+  ["loginScreen", "wheelScreen", "resultScreen"].forEach(s => {
+    document.getElementById(s).style.display = (s === id) ? "block" : "none";
+  });
+}
+
+function showError(elId, msg) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.innerText = msg;
+  el.style.display = "block";
+  el.classList.remove("shake-anim");
+  void el.offsetWidth;
+  el.classList.add("shake-anim");
+}
+
+window.togglePasswordVisibility = () => {
+  const inp = document.getElementById("passwordInput");
+  const btn = document.getElementById("pwToggleBtn");
+  if (inp.type === "password") {
+    inp.type = "text";
+    btn.innerText = "🙈";
+  } else {
+    inp.type = "password";
+    btn.innerText = "👁️";
+  }
+};
+
+document.getElementById("passwordInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") window.handleLogin();
+});
+
+window.handleLogin = () => {
+  const name = document.getElementById("playerSelect").value;
+  const enteredPin = (document.getElementById("passwordInput").value || "").trim().toLowerCase();
+  const errEl = document.getElementById("loginError");
+  errEl.style.display = "none";
+
+  if (!name) {
+    showError("loginError", "🎄 Najpierw wybierz swoje imię z listy!");
+    return;
+  }
+  const userObj = PARTICIPANTS.find(p => p.name === name);
+  if (!userObj) return;
+
+  if (enteredPin !== userObj.pin.toLowerCase()) {
+    showError("loginError", "❌ Niepoprawne hasło dla: " + name + ". Sprawdź hasło od organizatora!");
+    return;
+  }
+
+  ensureAudio();
+  currentUser = userObj;
+  document.getElementById("passwordInput").value = "";
+
+  const revealed = (drawState && drawState.revealed) ? drawState.revealed : {};
+  const pairs = (drawState && drawState.pairs) ? drawState.pairs : {};
+
+  if (revealed[currentUser.name] && pairs[currentUser.name]) {
+    // Gracz już wcześniej losował -> pokazujemy bezpiecznie ukryty wynik (kliknięcie odsłania)
+    openResultScreen(pairs[currentUser.name], true);
+  } else {
+    openWheelScreen();
+  }
+};
+
+function openWheelScreen() {
+  showScreen("wheelScreen");
+  document.getElementById("wheelUserLabel").innerText = currentUser.icon + " " + currentUser.name;
+  document.getElementById("wheelSubtitle").innerText =
+    "Cześć " + currentUser.name + "! Zakręć kołem i zobacz, komu kupisz mikołajkowy prezent!";
+  document.getElementById("wheelError").style.display = "none";
+
+  const ticker = document.getElementById("wheelTicker");
+  ticker.classList.remove("winner-glow");
+  ticker.innerText = "✨ Gotowy do zakręcenia! ✨";
+
+  const btn = document.getElementById("spinBtn");
+  btn.disabled = false;
+  btn.innerText = "🎡 ZAKRĘĆ KOŁEM!";
+  document.getElementById("wheelLogoutBtn").disabled = false;
+
+  setTimeout(() => {
+    setupWheelCanvas();
+    drawWheel();
+    startWheelIdleAnimation();
+  }, 40);
+}
+
+function openResultScreen(targetName, startHidden) {
+  showScreen("resultScreen");
+  document.getElementById("resultUserLabel").innerText = currentUser.icon + " " + currentUser.name;
+  const targetObj = PARTICIPANTS.find(p => p.name === targetName);
+  const icon = targetObj ? targetObj.icon : "🎁";
+  document.getElementById("secretNameText").innerText = icon + " " + targetName + " " + icon;
+
+  const box = document.getElementById("secretNameBox");
+  const toggleBtn = document.getElementById("toggleRevealBtn");
+
+  if (startHidden) {
+    box.classList.add("is-hidden");
+    toggleBtn.innerText = "👁️ Pokaż wylosowaną osobę";
+  } else {
+    box.classList.remove("is-hidden");
+    toggleBtn.innerText = "🙈 Ukryj imię na ekranie";
+  }
+}
+
+window.toggleSecretReveal = () => {
+  const box = document.getElementById("secretNameBox");
+  const btn = document.getElementById("toggleRevealBtn");
+  const hiddenNow = box.classList.toggle("is-hidden");
+  btn.innerText = hiddenNow ? "👁️ Pokaż wylosowaną osobę" : "🙈 Ukryj imię na ekranie";
+};
+
+window.logoutUser = () => {
+  if (isSpinning) return;
+  currentUser = null;
+  document.getElementById("passwordInput").value = "";
+  document.getElementById("passwordInput").type = "password";
+  document.getElementById("pwToggleBtn").innerText = "👁️";
+  document.getElementById("loginError").style.display = "none";
+  showScreen("loginScreen");
+};
+
+window.startWheelSpin = async () => {
+  if (!currentUser || isSpinning) return;
+  isSpinning = true;
+  ensureAudio();
+
+  const spinBtn = document.getElementById("spinBtn");
+  const logoutBtn = document.getElementById("wheelLogoutBtn");
+  const errEl = document.getElementById("wheelError");
+  const ticker = document.getElementById("wheelTicker");
+
+  errEl.style.display = "none";
+  spinBtn.disabled = true;
+  logoutBtn.disabled = true;
+  spinBtn.innerText = "🎄 Łączenie z bazą Mikołaja...";
+
+  let assignedTarget = null;
+  let alreadyRevealed = false;
+
+  try {
+    // Transakcja atomowa gwarantuje, że pary tworzą się raz i nikt nie trafi siebie ani duplikatu
+    const result = await runTransaction(db, async (tx) => {
+      const snap = await tx.get(drawDocRef);
+      let data = snap.exists() ? snap.data() : null;
+
+      if (!data || !isPairsValid(data.pairs)) {
+        const freshPairs = generateFairDerangement(NAMES);
+        data = {
+          pairs: freshPairs,
+          revealed: {},
+          createdAt: Date.now()
+        };
+        tx.set(drawDocRef, data);
+      }
+
+      const rev = data.revealed || {};
+      if (rev[currentUser.name]) {
+        return { target: data.pairs[currentUser.name], already: true };
+      }
+      return { target: data.pairs[currentUser.name], already: false };
+    });
+
+    assignedTarget = result.target;
+    alreadyRevealed = result.already;
+  } catch (err) {
+    isSpinning = false;
+    spinBtn.disabled = false;
+    logoutBtn.disabled = false;
+    spinBtn.innerText = "🎡 ZAKRĘĆ KOŁEM!";
+    showError("wheelError", "⚠️ Nie udało się połączyć z bazą Firebase: " + (err.message || err));
+    return;
+  }
+
+  if (alreadyRevealed) {
+    isSpinning = false;
+    openResultScreen(assignedTarget, false);
+    return;
+  }
+
+  const targetIdx = NAMES.indexOf(assignedTarget);
+  if (targetIdx === -1) {
+    isSpinning = false;
+    spinBtn.disabled = false;
+    logoutBtn.disabled = false;
+    showError("wheelError", "⚠️ Błąd danych losowania — poproś organizatora o reset.");
+    return;
+  }
+
+  spinBtn.innerText = "✨ Koło się kręci... trzymaj kciuki! ✨";
+  ticker.classList.remove("winner-glow");
+
+  // Precyzyjne wyliczenie kąta końcowego, żeby wskazówka wylądowała dokładnie na wylosowanym imieniu
+  const jitter = (Math.random() - 0.5) * SLICE_ANGLE * 0.52;
+  const targetMod = ((1.5 * Math.PI - (targetIdx + 0.5) * SLICE_ANGLE + jitter) % TWO_PI + TWO_PI) % TWO_PI;
+  const startRotation = wheelRotation;
+  const startMod = ((startRotation % TWO_PI) + TWO_PI) % TWO_PI;
+  const deltaToTarget = ((targetMod - startMod) % TWO_PI + TWO_PI) % TWO_PI;
+  const extraFullSpins = 11 + Math.floor(Math.random() * 3); // 11–13 pełnych obrotów
+  const totalDelta = extraFullSpins * TWO_PI + deltaToTarget;
+
+  // Dłuższy, pełen emocji obrót (~9.2 sekundy!)
+  const durationMs = 9200;
+  const startTime = performance.now();
+  let lastSliceIdx = getSliceIndexUnderPointer(startRotation);
+
+  function animateSpinFrame(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(1, elapsed / durationMs);
+    // Płynne, dramatyczne zwalnianie pod sam koniec
+    const eased = 1 - Math.pow(1 - t, 4.35);
+    wheelRotation = startRotation + totalDelta * eased;
+
+    // Prędkość kątowa do modulacji dźwięku i tempa migania lampek
+    const speedFactor = Math.pow(1 - t, 3.35);
+    rimLightPhase += 0.08 + speedFactor * 0.65;
+    pointerKick *= 0.80;
+
+    const curSliceIdx = getSliceIndexUnderPointer(wheelRotation);
+    if (curSliceIdx !== lastSliceIdx) {
+      lastSliceIdx = curSliceIdx;
+      pointerKick = -0.34;
+      playWheelTick(speedFactor);
+      ticker.innerText = "🎯 " + NAMES[curSliceIdx];
+    }
+
+    drawWheel();
+
+    if (t < 1) {
+      requestAnimationFrame(animateSpinFrame);
+    } else {
+      wheelRotation = startRotation + totalDelta;
+      pointerKick = 0;
+      drawWheel();
+
+      const landedName = NAMES[getSliceIndexUnderPointer(wheelRotation)];
+      ticker.innerText = "🎉 " + landedName + "! 🎉";
+      ticker.classList.add("winner-glow");
+
+      playWinFanfare();
+      launchFestiveConfetti();
+
+      // Zapisujemy w Firebase, że ten użytkownik już wylosował!
+      updateDoc(drawDocRef, {
+        ["revealed." + currentUser.name]: {
+          at: Date.now(),
+          target: assignedTarget
+        }
+      }).catch((e) => console.error("Save revealed error:", e));
+
+      // Krótka pauza na zobaczenie zatrzymanego koła, potem wielkie odsłonięcie karty!
+      setTimeout(() => {
+        isSpinning = false;
+        if (currentUser) {
+          openResultScreen(assignedTarget, false);
+        }
+      }, 1500);
+    }
+  }
+
+  requestAnimationFrame(animateSpinFrame);
+};
+
+// ============================================================================
+// 10. PANEL ORGANIZATORA (MONITORING BEZ SPOILERÓW + RESET + KOPIOWANIE HASEŁ)
+// ============================================================================
+window.openAdminModal = () => {
+  document.getElementById("adminModal").style.display = "flex";
+  document.getElementById("adminAuthBox").style.display = "block";
+  document.getElementById("adminBodyBox").style.display = "none";
+  document.getElementById("adminSpoilerBox").style.display = "none";
+  document.getElementById("adminError").style.display = "none";
+  document.getElementById("adminPinInput").value = "";
+  setTimeout(() => document.getElementById("adminPinInput").focus(), 60);
+};
+
+window.closeAdminModal = () => {
+  document.getElementById("adminModal").style.display = "none";
+};
+
+document.getElementById("adminPinInput").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") window.unlockAdmin();
+});
+
+window.unlockAdmin = () => {
+  const val = (document.getElementById("adminPinInput").value || "").trim();
+  if (val !== ADMIN_PIN) {
+    showError("adminError", "❌ Błędny PIN organizatora!");
+    return;
+  }
+  document.getElementById("adminAuthBox").style.display = "none";
+  document.getElementById("adminBodyBox").style.display = "block";
+  updateProgressUI();
+};
+
+window.copyPasswordsList = async () => {
+  const lines = [
+    "🎅 TAJNE HASŁA DO LOSOWANIA MIKOŁAJKOWEGO 🎄",
+    "(Wyślij każdej osobie wyłącznie jej hasło!)",
+    ""
+  ];
+  PARTICIPANTS.forEach(p => {
+    lines.push(p.icon + " " + p.name + ": " + p.pin);
+  });
+  const text = lines.join("\n");
+  try {
+    await navigator.clipboard.writeText(text);
+    alert("✅ Skopiowano listę wszystkich 13 haseł do schowka!");
+  } catch (e) {
+    prompt("Skopiuj listę haseł:", text);
+  }
+};
+
+window.resetEntireDraw = async () => {
+  if (!confirm("Czy na pewno chcesz ZRESETOWAĆ całe losowanie i wygenerować zupełnie nowe pary dla wszystkich 13 osób?")) return;
+  try {
+    const freshPairs = generateFairDerangement(NAMES);
+    await setDoc(drawDocRef, {
+      pairs: freshPairs,
+      revealed: {},
+      createdAt: Date.now()
+    });
+    document.getElementById("adminSpoilerBox").style.display = "none";
+    alert("✅ Gotowe! Całe losowanie zostało zresetowane i przygotowano nowe, losowe pary (bez spoilerów).");
+  } catch (err) {
+    alert("❌ Błąd resetu Firebase: " + (err.message || err));
+  }
+};
+
+window.toggleEmergencySpoilers = () => {
+  const box = document.getElementById("adminSpoilerBox");
+  if (box.style.display === "block") {
+    box.style.display = "none";
+    return;
+  }
+  if (!confirm("⚠️ UWAGA! Zobaczysz kto kogo wylosował (również kto wylosował Ciebie!). Na pewno chcesz to wyświetlić?")) return;
+  const pairs = (drawState && drawState.pairs) ? drawState.pairs : null;
+  const revealed = (drawState && drawState.revealed) ? drawState.revealed : {};
+  if (!pairs) {
+    box.innerHTML = "Brak wygenerowanych par — losowanie jeszcze się nie rozpoczęło.";
+  } else {
+    box.innerHTML = NAMES.map(n => {
+      const mark = revealed[n] ? "✅" : "⏳";
+      return mark + " <b>" + n + "</b> → " + (pairs[n] || "?");
+    }).join("<br>");
+  }
+  box.style.display = "block";
+};
+</script>
+</body>
+</html>
